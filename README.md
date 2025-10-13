@@ -78,6 +78,14 @@ Full curated scenarios (~432 combos):
 python sweep.py --full-scenarios --top 20
 ```
 
+Range mode (broader permutations, 5-point increments on risk and gap sizes):
+```bash
+python sweep.py --range-grid --workers 2 --top 20
+```
+- In range mode, `points_tp` and `points_sl` are swept in steps of 5 (5..25).
+- `gap_size_min_pts`/`gap_size_max_pts` are swept on 5-point increments and validated so that min < max and both are multiples of 5.
+- Taps and delivery speed are limited to coherent bands to avoid explosion (e.g., taps (0,1)/(2,3); delivery (None,2)/(3,5)).
+
 Reliability filter (avoid tiny-sample winners):
 ```bash
 python sweep.py --min-trades 25 --top 20
@@ -92,10 +100,25 @@ python sweep.py --workers 1
 python sweep.py --workers 4
 ```
 
+Resume long sweeps (skip already-computed combos and append as you go):
+```bash
+python sweep.py --range-grid --workers 2 --resume --out sweep_results.csv
+```
+- A stable signature is computed for each scenario; on `--resume`, the script reads `--out` and skips duplicates.
+- Results append incrementally so you can stop and continue later.
+- The “best” scenario is selected across both previous and current results.
+
 Outputs:
 - All results auto-save to `sweep_results.csv` (override with `--out PATH`).
 - Best scenario’s trades auto-save to `trades_best.csv` (override with `--best-trades-out PATH`).
 - Console prints best parameters and up to 200 rows of trades (truncates if larger).
+
+Analysis (find which variables correlate with target metric):
+```bash
+python sweep.py --range-grid --workers 2 --analyze --target-metric profit_factor --analysis-out sweep_analysis.csv
+```
+- Builds features from scenario parameters, computes Pearson/Spearman correlations, standardized linear regression coefficients, and permutation importance against the chosen target (`profit_factor` by default).
+- Prints top-ranked features and writes the full table to `sweep_analysis.csv`.
 
 Run a single scenario by JSON:
 ```bash
@@ -110,6 +133,13 @@ Scenario dimensions controlled in `config.py` and enforced in `models.py`:
 - first_five_only: True | None
 - gap_size_min_pts / gap_size_max_pts
 - min_bars_to_prev_break / max_bars_to_prev_break
+
+Notes:
+- In range mode, time buckets default to None to constrain combo count; you can still pass a custom JSON grid to explore time windows.
+- You can fully control permutations with a custom grid via `--grid` (JSON text or path). For example:
+  ```bash
+  python sweep.py --grid '{"points_tp":[10,15,20],"points_sl":[10,15,20],"entry_touch_type":[null,"tap_only","close_inside_only"]}'
+  ```
 
 Progress bar shows elapsed and ETA; if `tqdm` is installed it will use it automatically.
 
