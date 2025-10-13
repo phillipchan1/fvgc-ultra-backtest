@@ -58,9 +58,15 @@ Run the backtest with:
 python main.py
 ```
 
-### Scenarios & Sweep
+### Main vs Sweep
 
-We provide a parameter sweep utility to evaluate curated scenario permutations and compute metrics.
+- **main.py**: Runs the backtest once using the current defaults in `config.py`.
+  - Use this to inspect a single configuration, generate `trades.csv`, and view summary metrics.
+  - Good for day-to-day validation and manual review of one setup.
+
+- **sweep.py**: Runs many configurations (a grid or curated scenarios), ranks results, and saves outputs.
+  - Use this to compare permutations and find robust settings.
+  - Saves all runs to `sweep_results.csv` and the best scenario's trades to `trades_best.csv`.
 
 Quick sweep (fast, reduced permutations):
 ```bash
@@ -70,6 +76,11 @@ python sweep.py --top 20
 Full curated scenarios (~432 combos):
 ```bash
 python sweep.py --full-scenarios --top 20
+```
+
+Reliability filter (avoid tiny-sample winners):
+```bash
+python sweep.py --min-trades 25 --top 20
 ```
 
 Resource control:
@@ -83,14 +94,8 @@ python sweep.py --workers 4
 
 Outputs:
 - All results auto-save to `sweep_results.csv` (override with `--out PATH`).
-- The best scenario’s trades auto-save to `trades_best.csv` (override with `--best-trades-out PATH`).
-- The console also prints the best scenario’s parameters and shows up to 200 rows of its trades (truncates if larger).
-
-Reliability filter:
-```bash
-# Require at least N trades for selecting the best scenario (default 10)
-python sweep.py --min-trades 25 --top 20
-```
+- Best scenario’s trades auto-save to `trades_best.csv` (override with `--best-trades-out PATH`).
+- Console prints best parameters and up to 200 rows of trades (truncates if larger).
 
 Run a single scenario by JSON:
 ```bash
