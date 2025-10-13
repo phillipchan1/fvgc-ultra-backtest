@@ -95,6 +95,44 @@ CONFIG.update({
     "commission_roundturn_per_contract": 0.0,
 })
 
+# Scenario-focused filters (set to None/False to disable)
+# ---------------------------------------------------------------------------
+# These control curated permutations you want to test. Sweep can iterate these
+# explicitly rather than random grids. All are optional; when unset they don't
+# filter trades.
+CONFIG.update({
+    # Tap vs close-inside classification on the entry bar interacting with the gap.
+    # Values: "tap_only" | "close_inside_only" | None (no restriction)
+    "entry_touch_type": None,
+
+    # Minimum/maximum number of prior bar touches (overlaps) into the gap before entry
+    # Counted from gap creation up to the entry bar (inclusive of bars before entry).
+    "min_gap_taps": None,   # e.g., 1
+    "max_gap_taps": None,   # e.g., 3
+
+    # Whether the pullback penetration went beyond the 50% (midline) of the gap
+    # Values: True | False | None (no restriction)
+    "penetrated_midline": None,
+
+    # Restrict entries to specific ET time buckets. Provide a list like
+    # ["0930-0945", "0945-1000", "1000-1015"], or None for no restriction.
+    "allowed_time_buckets": None,
+
+    # If True, only allow trades during 09:30:00-09:35:00 ET
+    # If False or None, no special restriction (unless allowed_time_buckets applies)
+    "first_five_only": None,
+
+    # Restrict gap size in index points (inclusive bounds). None disables.
+    "gap_size_min_pts": None,  # e.g., 2.0
+    "gap_size_max_pts": None,  # e.g., 40.0
+
+    # Delivery speed: number of bars after gap creation until the first bar
+    # that breaks the previous candle in the entry direction.
+    # You can bound this with min/max; None disables.
+    "min_bars_to_prev_break": None,
+    "max_bars_to_prev_break": None,
+})
+
 # Required columns for data loading
 REQUIRED_COLS = [
     "ts_event", "open", "high", "low", "close", "volume", "symbol"

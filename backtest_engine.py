@@ -146,6 +146,13 @@ def resolve_trade(sig: Dict, df: pd.DataFrame, entry_idx: int) -> Dict:
         "fvg_upper": round(f.upper, 4),
         "fvg_size_pts": round(f.size_pts, 4),
         "fvg_middle_body_pts": round(f.middle_body_pts, 4),
+        # scenario annotations if present on signal
+        "entry_touch_type": sig.get("entry_touch_type"),
+        "gap_taps_before_entry": sig.get("gap_taps_before_entry"),
+        "penetrated_midline": sig.get("penetrated_midline"),
+        "time_bucket": sig.get("time_bucket"),
+        "first_five": sig.get("first_five"),
+        "bars_to_prev_break": sig.get("bars_to_prev_break"),
     }
 
 
@@ -208,9 +215,12 @@ def calculate_metrics(trades_df: pd.DataFrame) -> Dict[str, Dict[str, float]]:
     # Overall metrics
     results["TOTAL"] = summarize(trades_df)
 
-    # Per-model metrics
+    # Per-model metrics (robust to empty/missing columns)
     for model in ["fvg_ifvg", "fvg_bos", "fvg_no_fvg"]:
-        sub = trades_df[trades_df["entry_model"] == model]
+        if not trades_df.empty and "entry_model" in trades_df.columns:
+            sub = trades_df[trades_df["entry_model"] == model]
+        else:
+            sub = trades_df.iloc[0:0]
         results[model] = summarize(sub)
 
     return results

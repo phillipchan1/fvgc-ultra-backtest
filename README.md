@@ -58,6 +58,56 @@ Run the backtest with:
 python main.py
 ```
 
+### Scenarios & Sweep
+
+We provide a parameter sweep utility to evaluate curated scenario permutations and compute metrics.
+
+Quick sweep (fast, reduced permutations):
+```bash
+python sweep.py --top 20
+```
+
+Full curated scenarios (~432 combos):
+```bash
+python sweep.py --full-scenarios --top 20
+```
+
+Resource control:
+```bash
+# Sequential (default) keeps CPU/fans quieter
+python sweep.py --workers 1
+
+# Parallel (faster, higher CPU)
+python sweep.py --workers 4
+```
+
+Outputs:
+- All results auto-save to `sweep_results.csv` (override with `--out PATH`).
+- The best scenario’s trades auto-save to `trades_best.csv` (override with `--best-trades-out PATH`).
+- The console also prints the best scenario’s parameters and shows up to 200 rows of its trades (truncates if larger).
+
+Reliability filter:
+```bash
+# Require at least N trades for selecting the best scenario (default 10)
+python sweep.py --min-trades 25 --top 20
+```
+
+Run a single scenario by JSON:
+```bash
+python sweep.py --grid '{"entry_touch_type":"tap_only","allowed_time_buckets":["0930-0945"]}' --best-trades-out trades_best.csv
+```
+
+Scenario dimensions controlled in `config.py` and enforced in `models.py`:
+- entry_touch_type: tap_only | close_inside_only | None
+- min_gap_taps / max_gap_taps
+- penetrated_midline: True | False | None
+- allowed_time_buckets: ["0930-0945", "0945-1000", "1000-1015"] or None
+- first_five_only: True | None
+- gap_size_min_pts / gap_size_max_pts
+- min_bars_to_prev_break / max_bars_to_prev_break
+
+Progress bar shows elapsed and ETA; if `tqdm` is installed it will use it automatically.
+
 ## Benefits of Modular Structure
 
 1. **Single Responsibility**: Each module has one clear purpose

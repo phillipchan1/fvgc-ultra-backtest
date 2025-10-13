@@ -9,6 +9,160 @@ from config import CONFIG
 from fvg_detection import FVG, find_conflicts
 
 
+def _entry_touch_type(fvg: FVG, row: pd.Series) -> str:
+    """Classify entry-bar interaction with the gap.
+
+    Returns: "tap" if the bar touched the gap but closed outside it in continuation direction;
+             "close_inside" if the close is inside the gap bounds.
+    """
+    c = float(row["close"]) 
+    low = float(row["low"]) 
+    high = float(row["high"]) 
+    lower = float(fvg.lower)
+    upper = float(fvg.upper)
+    # Ensure there is an interaction
+    touched = (low <= upper and high >= lower)
+    if not touched:
+        return "none"
+    if fvg.direction == "bullish":
+        return "tap" if c >= upper else ("close_inside" if (c > lower and c < upper) else "tap")
+    else:
+        return "tap" if c <= lower else ("close_inside" if (c > lower and c < upper) else "tap")
+
+
+def _gap_taps_before_entry(df: pd.DataFrame, fvg: FVG, entry_idx: int) -> int:
+    """Count prior bars that touched the gap after creation and before entry bar."""
+    lower = float(fvg.lower)
+    upper = float(fvg.upper)
+    start = max(fvg.created_idx + 1, 0)
+    end = max(entry_idx - 1, start - 1)
+    if end < start:
+        return 0
+    window = df.iloc[start:end + 1]
+    touches = (window["low"] <= upper) & (window["high"] >= lower)
+    return int(touches.sum())
+
+
+def _penetrated_midline_on_entry(fvg: FVG, row: pd.Series) -> Optional[bool]:
+    """Whether the entry bar penetrated beyond the 50% of the gap in pullback direction."""
+    lower = float(fvg.lower)
+    upper = float(fvg.upper)
+    mid = (lower + upper) / 2.0
+    low = float(row["low"]) 
+    high = float(row["high"]) 
+    # Must interact with gap
+    if not (low <= upper and high >= lower):
+        return None
+    if fvg.direction == "bullish":
+        return low <= mid
+    else:
+        return high >= mid
+
+
+def _time_bucket_label(ts_et: str) -> str:
+    """Return time bucket label HHMM-HHMM for ET ISO timestamp string."""
+    # ts_et is ISO string in ET. Extract HH:MM:SS
+    hhmm = ts_et[11:16].replace(":", "")  # HHMM
+    h = int(hhmm[:2]); m = int(hhmm[2:])
+    mins = h * 60 + m
+    # Define buckets
+    buckets = [
+        (9 * 60 + 30, 9 * 60 + 45, "0930-0945"),
+        (9 * 60 + 45, 10 * 60 + 0, "0945-1000"),
+        (10 * 60 + 0, 10 * 60 + 15, "1000-1015"),
+    ]
+    for start, end, label in buckets:
+        if mins >= start and mins < end:
+            return label
+    return "other"
+
+
+def _bars_to_prev_break(df: pd.DataFrame, fvg: FVG) -> Optional[int]:
+    """Number of bars after creation until current bar breaks previous bar in FVG direction.
+
+    Uses wick comparison: for bullish, first j such that high[j] > high[j-1];
+    for bearish, first j such that low[j] < low[j-1]. Returns bar count delta from creation,
+    or None if not found.
+    """
+    start = fvg.created_idx + 1
+    for j in range(start, len(df)):
+        if fvg.direction == "bullish":
+            if j - 1 >= 0 and float(df.iloc[j]["high"]) > float(df.iloc[j - 1]["high"]):
+                return j - fvg.created_idx
+        else:
+            if j - 1 >= 0 and float(df.iloc[j]["low"]) < float(df.iloc[j - 1]["low"]):
+                return j - fvg.created_idx
+    return None
+
+
+def _scenario_filters(df: pd.DataFrame, fvg: FVG, row: pd.Series, idx: int) -> Optional[Dict]:
+    """Apply scenario-focused filters. Returns annotations dict if pass, else None."""
+    annotations: Dict = {}
+
+    # Touch classification
+    touch = _entry_touch_type(fvg, row)
+    annotations["entry_touch_type"] = touch
+    desired_touch = CONFIG.get("entry_touch_type")
+    if desired_touch == "tap_only" and touch != "tap":
+        return None
+    if desired_touch == "close_inside_only" and touch != "close_inside":
+        return None
+
+    # Tap counts before entry
+    taps = _gap_taps_before_entry(df, fvg, idx)
+    annotations["gap_taps_before_entry"] = int(taps)
+    min_taps = CONFIG.get("min_gap_taps")
+    max_taps = CONFIG.get("max_gap_taps")
+    if min_taps is not None and taps < int(min_taps):
+        return None
+    if max_taps is not None and taps > int(max_taps):
+        return None
+
+    # Midline penetration
+    pen = _penetrated_midline_on_entry(fvg, row)
+    annotations["penetrated_midline"] = pen if pen is not None else False
+    desired_pen = CONFIG.get("penetrated_midline")
+    if desired_pen is not None and pen is not None and bool(desired_pen) != bool(pen):
+        return None
+
+    # Time constraints
+    entry_et = row["timestamp"].tz_convert(CONFIG["session_tz"]).isoformat()
+    label = _time_bucket_label(entry_et)
+    annotations["time_bucket"] = label
+    allowed = CONFIG.get("allowed_time_buckets")
+    if allowed is not None and isinstance(allowed, list) and label not in allowed:
+        return None
+    first_five_only = CONFIG.get("first_five_only")
+    if first_five_only:
+        # 09:30:00 - 09:35:00
+        hhmmss = entry_et[11:19]
+        if not ("09:30:00" <= hhmmss < "09:35:00"):
+            return None
+    annotations["first_five"] = (label == "0930-0945" and entry_et[11:16] < "09:35")
+
+    # Gap size bounds
+    gap_size = float(fvg.size_pts) if fvg.size_pts is not None else 0.0
+    annotations["fvg_size_pts"] = gap_size
+    gmin = CONFIG.get("gap_size_min_pts")
+    gmax = CONFIG.get("gap_size_max_pts")
+    if gmin is not None and gap_size < float(gmin):
+        return None
+    if gmax is not None and gap_size > float(gmax):
+        return None
+
+    # Bars to prev break
+    bars_to_break = _bars_to_prev_break(df, fvg)
+    annotations["bars_to_prev_break"] = bars_to_break if bars_to_break is not None else -1
+    bmin = CONFIG.get("min_bars_to_prev_break")
+    bmax = CONFIG.get("max_bars_to_prev_break")
+    if bars_to_break is not None:
+        if bmin is not None and bars_to_break < int(bmin):
+            return None
+        if bmax is not None and bars_to_break > int(bmax):
+            return None
+
+    return annotations
+
 def strict_pullback_pass(fvg: FVG, row: pd.Series, idx: int) -> Optional[Dict]:
     """Check if FVG passes strict pullback requirements."""
     o, h, l, c = float(row["open"]), float(row["high"]), float(row["low"]), float(row["close"])
@@ -227,12 +381,17 @@ def eval_fvg_no_fvg(f: FVG, active: List[FVG], row: pd.Series, idx: int, df: pd.
         return None
     if CONFIG["block_if_opposite_ifvg_same_bar"] and opposite_ifvg_same_bar(df, idx, f.direction, f):
         return None
-    
+    # Scenario filters
+    annotations = _scenario_filters(df, f, row, idx)
+    if annotations is None:
+        return None
+
     return {
         "entry_model": "fvg_no_fvg",
         "side": base["side"],
         "entry_price": base["entry_price"],
-        "fvg": f
+        "fvg": f,
+        **annotations,
     }
 
 
@@ -254,12 +413,17 @@ def eval_fvg_ifvg(f: FVG, active: List[FVG], row: pd.Series, idx: int, df: pd.Da
         return None
     if not ifvg_prev_hilo_break_ok(row, f.direction):
         return None
-    
+    # Scenario filters
+    annotations = _scenario_filters(df, f, row, idx)
+    if annotations is None:
+        return None
+
     return {
         "entry_model": "fvg_ifvg",
         "side": base["side"],
         "entry_price": base["entry_price"],
-        "fvg": f
+        "fvg": f,
+        **annotations,
     }
 
 
@@ -283,12 +447,17 @@ def eval_fvg_bos(f: FVG, active: List[FVG], row: pd.Series, idx: int, df: pd.Dat
         return None
     if not passes_bos(row, lvl, f.direction):
         return None
-    
+    # Scenario filters
+    annotations = _scenario_filters(df, f, row, idx)
+    if annotations is None:
+        return None
+
     return {
         "entry_model": "fvg_bos",
         "side": base["side"],
         "entry_price": base["entry_price"],
-        "fvg": f
+        "fvg": f,
+        **annotations,
     }
 
 

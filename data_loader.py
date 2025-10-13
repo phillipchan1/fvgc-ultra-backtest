@@ -35,7 +35,7 @@ def resample_to_30s(df: pd.DataFrame) -> pd.DataFrame:
     agg = {"open": "first", "high": "max", "low": "min", "close": "last", "volume": "sum"}
     df = (
         df.set_index("timestamp")
-          .resample("30S").agg(agg)
+          .resample("30s").agg(agg)
           .dropna(subset=["open", "high", "low", "close"])
           .reset_index()
     )
