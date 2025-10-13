@@ -46,14 +46,20 @@ def prev_extreme_break_ok_no_fvg(row: pd.Series, direction: str) -> bool:
     """Check if previous extreme was broken (for no_fvg model)."""
     if not CONFIG["require_prev_extreme_break_no_fvg"]:
         return True
-    c = float(row["close"])
+    # Allow configuration of metric (close vs wick) and equality handling
+    metric = CONFIG.get("nofvg_break_metric", "close")
+    allow_equal = bool(CONFIG.get("nofvg_allow_equal", False))
+
+    px_high = float(row["high"]) if metric == "wick" else float(row["close"]) 
+    px_low = float(row["low"]) if metric == "wick" else float(row["close"]) 
+
     ph = float(row["prev_high"]) if pd.notna(row["prev_high"]) else None
     pl = float(row["prev_low"]) if pd.notna(row["prev_low"]) else None
-    
+
     if direction == "bullish" and ph is not None:
-        return c > ph
+        return (px_high > ph) or (allow_equal and px_high == ph)
     if direction == "bearish" and pl is not None:
-        return c < pl
+        return (px_low < pl) or (allow_equal and px_low == pl)
     return False
 
 
@@ -72,31 +78,82 @@ def opposite_ifvg_same_bar(df: pd.DataFrame, idx: int, direction: str, fvg: FVG)
 
 
 def has_internal_fvg(df: pd.DataFrame, idx: int, parent: FVG) -> bool:
-    """Check if FVG has internal FVG (for iFVG model)."""
-    row = df.iloc[idx]
-    if parent.direction == "bullish":
+    """Check if an internal FVG exists within a lookback window relative to parent.
+
+    Searches up to CONFIG["ifvg_lookback_bars"] bars back from `idx` (inclusive).
+    If CONFIG["ifvg_same_bar"] is True, at least one qualifying internal FVG must
+    be on the same bar as `idx`. Otherwise any bar in the window qualifies.
+    """
+    mode = CONFIG.get("ifvg_internal_criterion", "inside")  # "inside" | "overlap"
+    allow_opposite = bool(CONFIG.get("ifvg_allow_opposite_internal", True))
+    min_overlap_ratio = float(CONFIG.get("ifvg_overlap_min_ratio", 0.0))
+    same_bar_only = bool(CONFIG.get("ifvg_same_bar", False))
+    lookback = int(CONFIG.get("ifvg_lookback_bars", 6))
+
+    start = max(parent.created_idx + 1, idx - lookback + 1)
+    end = idx
+
+    p_low, p_up = float(parent.lower), float(parent.upper)
+
+    def bar_candidates(row: pd.Series):
+        cands = []
         if bool(row.get("bull_fvg", False)):
-            return parent.lower <= row["bull_lower"] <= row["bull_upper"] <= parent.upper
-    else:
+            cands.append(("bullish", float(row["bull_lower"]), float(row["bull_upper"])))
         if bool(row.get("bear_fvg", False)):
-            return parent.lower <= row["bear_lower"] <= row["bear_upper"] <= parent.upper
-    return False
+            lo = float(row["bear_lower"])  # high
+            up = float(row["bear_upper"])  # lo2
+            low_b, up_b = (min(lo, up), max(lo, up))
+            cands.append(("bearish", low_b, up_b))
+        return cands
+
+    found_same_bar = False
+    found_any = False
+
+    for k in range(start, end + 1):
+        row = df.iloc[k]
+        cands = bar_candidates(row)
+        if not cands:
+            continue
+        for child_dir, c_low, c_up in cands:
+            same_dir = (child_dir == parent.direction)
+            if not (same_dir or allow_opposite):
+                continue
+            if mode == "inside":
+                ok = (p_low <= c_low) and (c_up <= p_up)
+            else:
+                overlap = max(0.0, min(p_up, c_up) - max(p_low, c_low))
+                child_size = max(0.0, c_up - c_low)
+                ok = child_size > 0 and overlap > 0 and (overlap / child_size) >= min_overlap_ratio
+            if ok:
+                found_any = True
+                if k == idx:
+                    found_same_bar = True
+        if same_bar_only and k == idx:
+            # If we require same-bar, we can break early after evaluating idx
+            break
+
+    return (found_same_bar if same_bar_only else found_any)
 
 
 def ifvg_prev_hilo_break_ok(row: pd.Series, direction: str) -> bool:
-    """Check if previous high/low was broken (for iFVG model)."""
+    """Check if previous high/low was broken (for iFVG model) with configurable metric and equality."""
     if not CONFIG["ifvg_require_prev_high_low_break"]:
         return True
-    c = float(row["close"])
+    metric = CONFIG.get("ifvg_break_metric", "close")  # "close" | "wick"
+    allow_equal = bool(CONFIG.get("ifvg_allow_equal", False))
+
+    px_high = float(row["high"]) if metric == "wick" else float(row["close"])
+    px_low = float(row["low"]) if metric == "wick" else float(row["close"])
+
     ph = row.get("prev_high")
     pl = row.get("prev_low")
     ph = float(ph) if pd.notna(ph) else None
     pl = float(pl) if pd.notna(pl) else None
     
-    if direction == "bullish" and ph:
-        return c > ph
-    if direction == "bearish" and pl:
-        return c < pl
+    if direction == "bullish" and ph is not None:
+        return (px_high > ph) or (allow_equal and px_high == ph)
+    if direction == "bearish" and pl is not None:
+        return (px_low < pl) or (allow_equal and px_low == pl)
     return False
 
 
@@ -134,9 +191,18 @@ def last_swing_level(df: pd.DataFrame, idx: int, direction: str, left: int, righ
 
 def passes_bos(row: pd.Series, level: float, direction: str) -> bool:
     """Check if BOS level was broken."""
+    allow_equal = bool(CONFIG.get("bos_allow_equal", False))
     if CONFIG["bos_require_close_through"]:
-        return float(row["close"]) > level if direction == "bullish" else float(row["close"]) < level
-    return float(row["high"]) > level if direction == "bullish" else float(row["low"]) < level
+        cmp = float(row["close"]) - level
+        if direction == "bullish":
+            return (cmp > 0) or (allow_equal and cmp == 0)
+        else:
+            return (cmp < 0) or (allow_equal and cmp == 0)
+    else:
+        if direction == "bullish":
+            return (float(row["high"]) > level) or (allow_equal and float(row["high"]) == level)
+        else:
+            return (float(row["low"]) < level) or (allow_equal and float(row["low"]) == level)
 
 
 # =============================
@@ -151,7 +217,7 @@ def eval_fvg_no_fvg(f: FVG, active: List[FVG], row: pd.Series, idx: int, df: pd.
         return None
     
     conflict, _ = find_conflicts(active, f)
-    if conflict and CONFIG["skip_conflicting_fvgs"]:
+    if conflict and CONFIG["skip_conflicting_fvgs"] and not CONFIG.get("ifvg_ignore_internal_conflict", False):
         return None
     
     base = strict_pullback_pass(f, row, idx)

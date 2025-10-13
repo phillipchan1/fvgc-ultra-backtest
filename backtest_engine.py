@@ -45,10 +45,11 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
         # Evaluate each active FVG for entry signals
         chosen = []
         for f in active:
-            if not f.valid or f.fvg_id in consumed:
+            if not f.valid:
                 continue
-                
-            # Try each model in priority order
+
+            # Evaluate all models; optionally allow multiple per gap
+            passed_any = False
             for model in CONFIG["models_to_eval"]:
                 res = EVAL_MAP[model](f, active, row, i, df)
                 if res:
@@ -56,9 +57,13 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
                     if model_count.get(key, 0) >= CONFIG["max_trades_per_session_per_model"]:
                         continue
                     chosen.append(res)
-                    consumed.add(f.fvg_id)  # One entry per gap
                     model_count[key] = model_count.get(key, 0) + 1
-                    break
+                    passed_any = True
+                    if not CONFIG.get("allow_multiple_models_per_gap", False):
+                        break
+            if passed_any and not CONFIG.get("allow_multiple_models_per_gap", False):
+                # If only one allowed per gap, mark consumed
+                consumed.add(f.fvg_id)
 
         # Resolve each chosen trade
         for sig in chosen:
@@ -145,23 +150,67 @@ def resolve_trade(sig: Dict, df: pd.DataFrame, entry_idx: int) -> Dict:
 
 
 def calculate_metrics(trades_df: pd.DataFrame) -> Dict[str, Dict[str, float]]:
-    """Calculate backtest metrics."""
-    def metrics(df):
-        n = len(df)
-        wins = (df["outcome"] == "TP").sum()
-        wr = wins / n if n else 0.0
-        return n, wr
+    """Calculate backtest metrics including P/L and profit factor.
 
-    results = {}
-    
+    P/L is computed from entry/exit prices, adjusted for side, multiplied by
+    point value and contracts. Commissions are applied per round turn.
+    """
+    pv = float(CONFIG.get("point_value", 1.0))
+    contracts = int(CONFIG.get("contracts_per_trade", 1))
+    commission_rtt = float(CONFIG.get("commission_roundturn_per_contract", 0.0))
+    start_balance = float(CONFIG.get("starting_balance", 0.0))
+
+    def enrich(df: pd.DataFrame) -> pd.DataFrame:
+        if df.empty:
+            return df.assign(
+                pnl_points=0.0,
+                gross_dollars=0.0,
+                commission=0.0,
+                net_dollars=0.0,
+            )
+        move = df["exit_price"] - df["entry_price"]
+        points = move.where(df["side"] == "long", -move)
+        gross = points * pv * contracts
+        comm = commission_rtt * contracts
+        return df.assign(
+            pnl_points=points,
+            gross_dollars=gross,
+            commission=comm,
+            net_dollars=gross - comm,
+        )
+
+    def summarize(df: pd.DataFrame) -> Dict[str, float]:
+        n = int(len(df))
+        wins = int((df["outcome"] == "TP").sum()) if n else 0
+        wr = (wins / n) if n else 0.0
+        df2 = enrich(df)
+        gross_profit = float(df2["gross_dollars"].clip(lower=0).sum())
+        gross_loss = float((-df2["gross_dollars"].clip(upper=0)).sum())
+        commissions = float(df2["commission"].sum())
+        net = float(df2["net_dollars"].sum())
+        pf = (gross_profit / gross_loss) if gross_loss > 0 else float("inf") if gross_profit > 0 else 0.0
+        avg_trade = float(net / n) if n else 0.0
+        end_balance = start_balance + net if start_balance else None
+        return {
+            "trades": n,
+            "win_rate": wr,
+            "gross_profit": gross_profit,
+            "gross_loss": gross_loss,
+            "commissions": commissions,
+            "net": net,
+            "profit_factor": pf,
+            "avg_trade": avg_trade,
+            "ending_balance": end_balance if end_balance is not None else 0.0,
+        }
+
+    results: Dict[str, Dict[str, float]] = {}
+
     # Overall metrics
-    n, wr = metrics(trades_df)
-    results["TOTAL"] = {"trades": n, "win_rate": wr}
-    
+    results["TOTAL"] = summarize(trades_df)
+
     # Per-model metrics
     for model in ["fvg_ifvg", "fvg_bos", "fvg_no_fvg"]:
         sub = trades_df[trades_df["entry_model"] == model]
-        n, wr = metrics(sub)
-        results[model] = {"trades": n, "win_rate": wr}
-    
+        results[model] = summarize(sub)
+
     return results

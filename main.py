@@ -35,11 +35,20 @@ def main():
     
     print("\n=== FVG Backtest (30s) — One entry per gap ===")
     for model in ["fvg_ifvg", "fvg_bos", "fvg_no_fvg"]:
-        result = metrics[model]
-        print(f"{model:12s} trades={result['trades']:4d}  win_rate={result['win_rate']:.2%}")
+        m = metrics[model]
+        print(
+            f"{model:12s} trades={m['trades']:4d}  win_rate={m['win_rate']:.2%}  "
+            f"net=${m['net']:,.2f}  PF={m['profit_factor']:.2f}  avg=${m['avg_trade']:,.2f}"
+        )
     
     total = metrics["TOTAL"]
-    print(f"TOTAL         trades={total['trades']:4d}  win_rate={total['win_rate']:.2%}")
+    print(
+        f"TOTAL         trades={total['trades']:4d}  win_rate={total['win_rate']:.2%}  "
+        f"gross+=${total['gross_profit']:,.2f}  gross-=${total['gross_loss']:,.2f}  "
+        f"comms=${total['commissions']:,.2f}  net=${total['net']:,.2f}  PF={total['profit_factor']:.2f}"
+    )
+    if total.get("ending_balance", 0):
+        print(f"Ending balance: ${total['ending_balance']:,.2f}")
     
     # Save results
     trades.to_csv(CONFIG["trades_csv"], index=False)
