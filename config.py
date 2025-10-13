@@ -18,7 +18,7 @@ CONFIG = {
     "session_start": "09:30:00",
     "session_end": "10:15:00",
 
-    "points_tp": 10.0,
+    "points_tp": 5.0,
     "points_sl": 20.0,
     "assume_tp_first": False,
 
