@@ -5,13 +5,13 @@
 
 import pandas as pd
 from typing import List, Dict, Set
-from config import CONFIG
-from data_loader import in_session
-from fvg_detection import (
+from .config import CONFIG
+from .data_loader import in_session
+from .fvg_detection import (
     detect_fvgs, update_fvg_validity, prune_active_fvgs, 
     create_fvg_from_row, FVG
 )
-from models import EVAL_MAP
+from ..models.models import EVAL_MAP
 
 
 def run_backtest(df: pd.DataFrame) -> pd.DataFrame:

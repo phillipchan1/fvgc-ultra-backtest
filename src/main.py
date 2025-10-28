@@ -4,9 +4,13 @@
 # ---------------------------------------------------------------------------
 
 import warnings
-from data_loader import load_db_1s_csv, resample_to_30s
-from backtest_engine import run_backtest, calculate_metrics
-from config import CONFIG
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.core.data_loader import load_db_1s_csv, resample_to_30s
+from src.core.backtest_engine import run_backtest, calculate_metrics
+from src.core.config import CONFIG
 
 
 def main():
@@ -15,7 +19,7 @@ def main():
     
     # Load and preprocess data
     print("Loading data...")
-    df1s = load_db_1s_csv(CONFIG["data_path"])
+    df1s = load_db_1s_csv(os.path.join("data", "raw", CONFIG["data_path"]))
     print(f"Loaded {len(df1s)} 1-second bars")
     
     print("Resampling to 30-second bars...")
@@ -51,8 +55,8 @@ def main():
         print(f"Ending balance: ${total['ending_balance']:,.2f}")
     
     # Save results
-    trades.to_csv(CONFIG["trades_csv"], index=False)
-    print(f"\nSaved trades to: {CONFIG['trades_csv']}")
+    trades.to_csv(os.path.join("outputs", "trades", CONFIG["trades_csv"]), index=False)
+    print(f"\nSaved trades to: {os.path.join('outputs', 'trades', CONFIG['trades_csv'])}")
 
 
 if __name__ == "__main__":

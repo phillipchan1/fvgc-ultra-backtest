@@ -5,7 +5,7 @@
 
 import pandas as pd
 from typing import Optional
-from config import CONFIG, REQUIRED_COLS
+from .config import CONFIG, REQUIRED_COLS
 
 
 def load_db_1s_csv(path: str) -> pd.DataFrame:

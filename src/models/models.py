@@ -5,8 +5,8 @@
 
 import pandas as pd
 from typing import Optional, Dict, List
-from config import CONFIG
-from fvg_detection import FVG, find_conflicts
+from ..core.config import CONFIG
+from ..core.fvg_detection import FVG, find_conflicts
 
 
 def _entry_touch_type(fvg: FVG, row: pd.Series) -> str:
@@ -240,9 +240,18 @@ def has_internal_fvg(df: pd.DataFrame, idx: int, parent: FVG) -> bool:
     """
     mode = CONFIG.get("ifvg_internal_criterion", "inside")  # "inside" | "overlap"
     allow_opposite = bool(CONFIG.get("ifvg_allow_opposite_internal", True))
-    min_overlap_ratio = float(CONFIG.get("ifvg_overlap_min_ratio", 0.0))
+    # Be tolerant to None or non-numeric values
+    _overlap_raw = CONFIG.get("ifvg_overlap_min_ratio", 0.0)
+    try:
+        min_overlap_ratio = float(_overlap_raw) if _overlap_raw is not None else 0.0
+    except Exception:
+        min_overlap_ratio = 0.0
     same_bar_only = bool(CONFIG.get("ifvg_same_bar", False))
-    lookback = int(CONFIG.get("ifvg_lookback_bars", 6))
+    _lookback_raw = CONFIG.get("ifvg_lookback_bars", 6)
+    try:
+        lookback = int(_lookback_raw) if _lookback_raw is not None else 6
+    except Exception:
+        lookback = 6
 
     start = max(parent.created_idx + 1, idx - lookback + 1)
     end = idx

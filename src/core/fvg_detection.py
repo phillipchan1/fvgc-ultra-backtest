@@ -7,7 +7,7 @@ import pandas as pd
 import itertools
 from dataclasses import dataclass
 from typing import List, Tuple, Optional
-from config import CONFIG
+from .config import CONFIG
 
 # Global FVG sequence counter
 _fvg_seq = itertools.count(1)
