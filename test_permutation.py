@@ -11,7 +11,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from src.models.permutations import list_permutations, print_permutation_info, get_permutation
 from src.utils.permutation_validator import apply_single_filter, generate_comparison_report, explain_filter_logic
 from src.core.backtest_engine import run_backtest, calculate_metrics
-from src.core.data_loader import load_db_1s_csv, resample_to_30s
+from src.core.data_loader import load_db_1s_csv, resample_to_30s, load_processed_30s_csv
 from src.core.config import CONFIG
 
 
@@ -20,8 +20,7 @@ def run_baseline_backtest():
     print("Running baseline backtest...")
     
     # Load and preprocess data
-    df1s = load_db_1s_csv(os.path.join("data", "raw", CONFIG["data_path"]))
-    df30 = resample_to_30s(df1s)
+    df30 = load_processed_30s_csv(os.path.join("data", "raw", CONFIG["data_path"]))
     
     # Run backtest
     trades = run_backtest(df30)

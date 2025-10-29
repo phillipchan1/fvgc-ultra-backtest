@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "job_id": "GLBX-20251012-FPGK9FHXKJ",
+    "job_id": "GLBX-20251028-9DVBG593VY",
     "query": {
         "dataset": "GLBX.MDP3",
         "schema": "ohlcv-1s",
@@ -9,8 +9,8 @@
         ],
         "stype_in": "parent",
         "stype_out": "instrument_id",
-        "start": 1757548800000000000,
-        "end": 1760140800000000000,
+        "start": 1696204800000000000,
+        "end": 1761609600000000000,
         "limit": null,
         "encoding": "csv",
         "compression": null

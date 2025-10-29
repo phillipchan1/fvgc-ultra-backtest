@@ -8,6 +8,30 @@ from typing import Optional
 from .config import CONFIG, REQUIRED_COLS
 
 
+def load_processed_30s_csv(path: str) -> pd.DataFrame:
+    """Load processed 30-second CSV data."""
+    print(f"Loading processed 30s data: {path}")
+    
+    df = pd.read_csv(path)
+    
+    # Convert timestamp
+    df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
+    
+    # Convert numeric columns
+    for col in ["open", "high", "low", "close", "volume"]:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+    
+    # Add previous bar data (already included in processed data)
+    df["prev_close"] = pd.to_numeric(df["prev_close"], errors="coerce")
+    df["prev_high"] = pd.to_numeric(df["prev_high"], errors="coerce") 
+    df["prev_low"] = pd.to_numeric(df["prev_low"], errors="coerce")
+    
+    print(f"Loaded {len(df):,} 30-second bars")
+    print(f"Date range: {df['timestamp'].min()} to {df['timestamp'].max()}")
+    
+    return df
+
+
 def load_db_1s_csv(path: str) -> pd.DataFrame:
     """Load and validate Databento-style 1-second OHLCV data."""
     df = pd.read_csv(path)

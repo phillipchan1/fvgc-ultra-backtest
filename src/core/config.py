@@ -9,7 +9,7 @@ from typing import List
 # CONFIGURATION
 # =============================
 CONFIG = {
-    "data_path": "glbx-mdp3-20250911-20251010.ohlcv-1s.csv",
+    "data_path": "glbx-mdp3-20231002-20251027.ohlcv-30s-trading-session.csv",
     "symbol": None,
     "start_date": None,
     "end_date": None,
