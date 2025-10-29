@@ -5,6 +5,7 @@
 
 import pandas as pd
 import os
+import pytz
 from datetime import time
 
 def process_nq_data():
@@ -93,6 +94,14 @@ def process_nq_data():
     
     # Sort by timestamp and remove duplicates
     final_df = final_df.sort_values('timestamp').drop_duplicates(subset=['timestamp'])
+    
+    # Convert timestamps from UTC to Eastern Time
+    print("🕐 Converting timestamps from UTC to Eastern Time...")
+    et_tz = pytz.timezone('America/New_York')
+    # Ensure timestamp is timezone-aware (UTC)
+    final_df['timestamp'] = pd.to_datetime(final_df['timestamp'], utc=True)
+    # Convert to Eastern Time
+    final_df['timestamp'] = final_df['timestamp'].dt.tz_convert(et_tz)
     
     # Add previous bar data
     final_df['prev_close'] = final_df['close'].shift(1)

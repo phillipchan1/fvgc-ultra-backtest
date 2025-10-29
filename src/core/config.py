@@ -129,8 +129,9 @@ CONFIG.update({
     # Delivery speed: number of bars after gap creation until the first bar
     # that breaks the previous candle in the entry direction.
     # You can bound this with min/max; None disables.
+    # Default: max 3 bars (under 4) - only fast delivery trades
     "min_bars_to_prev_break": None,
-    "max_bars_to_prev_break": None,
+    "max_bars_to_prev_break": 3,
 })
 
 # Permutation testing defaults

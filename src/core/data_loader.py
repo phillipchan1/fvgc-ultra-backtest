@@ -9,13 +9,26 @@ from .config import CONFIG, REQUIRED_COLS
 
 
 def load_processed_30s_csv(path: str) -> pd.DataFrame:
-    """Load processed 30-second CSV data."""
+    """Load processed 30-second CSV data with ET timestamps."""
     print(f"Loading processed 30s data: {path}")
     
     df = pd.read_csv(path)
     
-    # Convert timestamp
-    df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
+    # Convert timestamp - timestamps are stored in ET timezone
+    # Use apply to handle mixed timezones (EDT/EST) properly
+    import pytz
+    et_tz = pytz.timezone('America/New_York')
+    
+    def parse_timestamp(ts_str):
+        """Parse timestamp and ensure it's in ET timezone."""
+        ts = pd.to_datetime(ts_str)
+        if ts.tzinfo is None:
+            # Timezone-naive, localize to ET
+            return et_tz.localize(ts)
+        # Already timezone-aware, convert to ET if needed
+        return ts.astimezone(et_tz)
+    
+    df["timestamp"] = df["timestamp"].apply(parse_timestamp)
     
     # Convert numeric columns
     for col in ["open", "high", "low", "close", "volume"]:

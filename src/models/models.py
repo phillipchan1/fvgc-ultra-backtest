@@ -155,6 +155,11 @@ def _scenario_filters(df: pd.DataFrame, fvg: FVG, row: pd.Series, idx: int) -> O
     annotations["bars_to_prev_break"] = bars_to_break if bars_to_break is not None else -1
     bmin = CONFIG.get("min_bars_to_prev_break")
     bmax = CONFIG.get("max_bars_to_prev_break")
+    
+    # If max is set and bars_to_break is None (never broke), filter out
+    if bmax is not None and bars_to_break is None:
+        return None
+    
     if bars_to_break is not None:
         if bmin is not None and bars_to_break < int(bmin):
             return None
