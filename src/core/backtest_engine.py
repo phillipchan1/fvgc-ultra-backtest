@@ -24,15 +24,42 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
     # Detect FVGs in the dataframe
     df = detect_fvgs(df)
 
+    prev_session_date = None
+    bars_in_session = 0
+    
     for i, row in df.iterrows():
         ts = row["timestamp"]
         local_date = ts.tz_convert(CONFIG["session_tz"]).date()
+        
+        # Track session changes
+        if prev_session_date != local_date:
+            bars_in_session = 0
+            prev_session_date = local_date
+        bars_in_session += 1
 
-        # Create new FVGs at this bar
+        # Create new FVGs at this bar (skip session gaps)
         if bool(row.get("bull_fvg", False)):
-            active.append(create_fvg_from_row(row, i, "bullish"))
+            fvg = create_fvg_from_row(row, i, "bullish")
+            # Filter out session gaps: exclude FVGs > 100pts or large FVGs in first 3 bars of session
+            max_fvg_size = CONFIG.get("max_fvg_size_pts", 100.0)
+            skip_start_bars = CONFIG.get("bars_to_skip_after_session_start", 3)
+            max_start_size = CONFIG.get("max_fvg_size_session_start", 50.0)
+            
+            if fvg.size_pts and fvg.size_pts <= max_fvg_size:
+                is_session_start = bars_in_session <= skip_start_bars
+                if not is_session_start or fvg.size_pts <= max_start_size:
+                    active.append(fvg)
         if bool(row.get("bear_fvg", False)):
-            active.append(create_fvg_from_row(row, i, "bearish"))
+            fvg = create_fvg_from_row(row, i, "bearish")
+            # Filter out session gaps
+            max_fvg_size = CONFIG.get("max_fvg_size_pts", 100.0)
+            skip_start_bars = CONFIG.get("bars_to_skip_after_session_start", 3)
+            max_start_size = CONFIG.get("max_fvg_size_session_start", 50.0)
+            
+            if fvg.size_pts and fvg.size_pts <= max_fvg_size:
+                is_session_start = bars_in_session <= skip_start_bars
+                if not is_session_start or fvg.size_pts <= max_start_size:
+                    active.append(fvg)
 
         # Update active FVGs
         active = prune_active_fvgs(active)
@@ -65,6 +92,11 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
                 # If only one allowed per gap, mark consumed
                 consumed.add(f.fvg_id)
 
+        # If disallow_same_timestamp_entry, only take the first signal at this timestamp
+        if CONFIG.get("disallow_same_timestamp_entry", False) and len(chosen) > 1:
+            # Keep only the first signal (prioritize first FVG/model combination)
+            chosen = [chosen[0]]
+        
         # Resolve each chosen trade
         for sig in chosen:
             trade = resolve_trade(sig, df, i)

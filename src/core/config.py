@@ -31,6 +31,10 @@ CONFIG = {
     "min_gap_pts": 0.75,
     "min_middle_body_pts": 1.0,
     "fvg_max_age_bars": 20,
+    # Filter session gaps (overnight gaps between trading days)
+    "max_fvg_size_pts": 100.0,  # Maximum FVG size - anything larger is likely a session gap
+    "bars_to_skip_after_session_start": 3,  # Skip FVG detection in first N bars of each session
+    "max_fvg_size_session_start": 50.0,  # Even smaller max for first few bars
     "max_active_per_side": 3,
     "invalidate_on_wick_through": False,
 
@@ -51,6 +55,8 @@ CONFIG = {
     # baseline shape (used by all models as the base continuation filter)
     "disallow_same_bar_entry": True,
     "min_bars_since_creation": 1,
+    # Prevent multiple trades at the exact same timestamp
+    "disallow_same_timestamp_entry": True,
     "require_pullback_from_outside": False,
     "require_directional_close": True,
     "require_prev_close_break": False,
