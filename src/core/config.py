@@ -13,6 +13,15 @@ CONFIG = {
     "symbol": None,
     "start_date": None,
     "end_date": None,
+    
+    # Quick date range filters for faster testing
+    # Options: None (use all data), "last_2_weeks", "last_month", "last_3_months", "last_6_months", "last_year"
+    # Examples:
+    #   "last_2_weeks"  - Fast testing, last 14 days (~1,000 bars)
+    #   "last_month"    - Medium testing, last 30 days (~2,100 bars)
+    #   None            - Full dataset, all 2+ years (~48,674 bars) - use when confident
+    # Or specify exact dates using start_date/end_date above (date_range ignored if dates set)
+    "date_range": "last_2_weeks",  # Start with 2 weeks for fast iteration, set to None for full dataset
 
     "session_tz": "America/New_York",
     "session_start": "09:30:00",

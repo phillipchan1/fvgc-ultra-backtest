@@ -4,8 +4,60 @@
 # ---------------------------------------------------------------------------
 
 import pandas as pd
+from datetime import timedelta
 from typing import Optional
 from .config import CONFIG, REQUIRED_COLS
+
+
+def apply_date_range_filter(df: pd.DataFrame) -> pd.DataFrame:
+    """Apply date range filtering based on CONFIG settings."""
+    if len(df) == 0:
+        return df
+    
+    # First apply explicit start/end dates if specified
+    if CONFIG.get("start_date"):
+        start_date = pd.Timestamp(CONFIG["start_date"], tz=df["timestamp"].iloc[0].tz)
+        df = df[df["timestamp"] >= start_date].copy()
+        df = df.reset_index(drop=True)
+    
+    if CONFIG.get("end_date"):
+        end_date = pd.Timestamp(CONFIG["end_date"], tz=df["timestamp"].iloc[0].tz)
+        df = df[df["timestamp"] <= end_date].copy()
+        df = df.reset_index(drop=True)
+    
+    # Apply quick date range filters (from end of data, backwards)
+    date_range = CONFIG.get("date_range")
+    if date_range and not CONFIG.get("start_date") and not CONFIG.get("end_date"):
+        if len(df) == 0:
+            return df
+        
+        # Get the last date in the data
+        last_date = df["timestamp"].max()
+        last_date_only = last_date.date()
+        
+        # Calculate start date based on range option
+        if date_range == "last_2_weeks":
+            start_date = last_date_only - timedelta(days=14)
+        elif date_range == "last_month":
+            start_date = last_date_only - timedelta(days=30)
+        elif date_range == "last_3_months":
+            start_date = last_date_only - timedelta(days=90)
+        elif date_range == "last_6_months":
+            start_date = last_date_only - timedelta(days=180)
+        elif date_range == "last_year":
+            start_date = last_date_only - timedelta(days=365)
+        else:
+            # Unknown option, don't filter
+            return df
+        
+        # Filter to date range
+        df = df[df["timestamp"].dt.date >= start_date].copy()
+        # Reset index to ensure sequential indexing after filtering
+        df = df.reset_index(drop=True)
+        
+        print(f"📅 Filtered to {date_range}: {start_date} to {last_date_only} ({len(df):,} bars)")
+    
+    return df
 
 
 def load_processed_30s_csv(path: str) -> pd.DataFrame:
@@ -38,6 +90,9 @@ def load_processed_30s_csv(path: str) -> pd.DataFrame:
     df["prev_close"] = pd.to_numeric(df["prev_close"], errors="coerce")
     df["prev_high"] = pd.to_numeric(df["prev_high"], errors="coerce") 
     df["prev_low"] = pd.to_numeric(df["prev_low"], errors="coerce")
+    
+    # Apply date range filtering
+    df = apply_date_range_filter(df)
     
     print(f"Loaded {len(df):,} 30-second bars")
     print(f"Date range: {df['timestamp'].min()} to {df['timestamp'].max()}")
