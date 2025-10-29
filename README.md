@@ -1,6 +1,6 @@
-# FVG Backtest - Organized Structure
+# FVG Backtest - Systematic Permutation Testing
 
-A modular, well-organized Fair Value Gap (FVG) backtesting system for trading strategy development.
+A modular, well-organized Fair Value Gap (FVG) backtesting system designed for **systematic permutation testing** with baseline comparison and combination analysis.
 
 ## 📁 Project Structure
 
@@ -16,9 +16,11 @@ fvgc-backtest/
 │   ├── models/                   # Trading models & strategies
 │   │   ├── __init__.py
 │   │   ├── models.py            # Entry model evaluators
-│   │   └── permutations.py     # Named permutation definitions
+│   │   ├── permutations.py     # Clean permutation definitions
+│   │   └── permutations_examples.py  # Example permutations (reference)
 │   ├── utils/                    # Utility functions
-│   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   └── permutation_validator.py  # Filter validation & comparison
 │   ├── main.py                  # Main entry point
 │   ├── sweep.py                 # Parameter sweep system
 │   ├── analyze_sweep.py         # Sweep analysis tools
@@ -47,7 +49,12 @@ fvgc-backtest/
 ├── docs/                        # Documentation
 │   ├── README.md               # This file
 │   └── backtest.py            # Original monolithic file
-├── test_permutation.py         # Permutation testing script
+├── test_permutation.py         # Individual permutation testing
+├── test_combination.py         # Multi-permutation testing  
+├── test_super_sweep.py         # All-combinations testing (Phase 2)
+├── setup.py                     # Project setup
+├── activate_env.sh              # Environment activation
+└── PROJECT_OVERVIEW.md          # Quick reference
 └── venv/                       # Virtual environment
 ```
 
@@ -55,7 +62,11 @@ fvgc-backtest/
 
 ### 1. Run Baseline Backtest
 ```bash
-python src/main.py
+# Activate environment
+source activate_env.sh
+
+# Run baseline
+python test_permutation.py baseline
 ```
 
 ### 2. Test Individual Permutations
@@ -65,50 +76,89 @@ python test_permutation.py list
 
 # Test a specific permutation
 python test_permutation.py tap_only
+python test_permutation.py small_gaps
 python test_permutation.py first_five_minutes
-python test_permutation.py small_gaps_fast_delivery
 ```
 
-### 3. Run Parameter Sweeps
+### 3. Test Permutation Combinations
 ```bash
-# Quick sweep
-python src/sweep.py --top 20
+# List example combinations
+python test_combination.py list
 
-# Full scenarios
-python src/sweep.py --full-scenarios --top 20
+# Test specific combinations
+python test_combination.py small_gaps tap_only
+python test_combination.py first_five_minutes fast_delivery
 ```
 
-## 🎯 Manual Testing Workflow
-
-The system is designed for **one permutation at a time** manual testing:
-
-### Step 1: Choose a Permutation
+### 4. Run Super Sweep (Phase 2)
 ```bash
-python test_permutation.py list
+# Test all combinations (up to 1000)
+python test_super_sweep.py
+
+# Analyze results
+python test_super_sweep.py analyze
 ```
 
-### Step 2: Test the Permutation
-```bash
-python test_permutation.py tap_only
-```
+## 🎯 Systematic Testing Workflow
 
-### Step 3: Review Results
-- Check console output for metrics
-- Review `outputs/trades/trades.csv` for trade details
-- Validate the permutation logic is working correctly
+### Phase 1: Individual Permutation Validation
 
-### Step 4: Add New Permutations
-Edit `src/models/permutations.py` to add new scenarios:
+1. **Establish Baseline**
+   ```bash
+   python test_permutation.py baseline
+   ```
+   - Generates `outputs/trades/baseline.csv` with all trades
+   - Establishes baseline metrics for comparison
 
-```python
-"my_new_scenario": {
-    "description": "My custom scenario description",
-    "changes": {
-        "entry_touch_type": "tap_only",
-        "first_five_only": True
-    }
-}
-```
+2. **Test Each Permutation Individually**
+   ```bash
+   python test_permutation.py tap_only
+   python test_permutation.py small_gaps
+   python test_permutation.py first_five_minutes
+   ```
+   - Generates 3 files per test:
+     - `permutation_{name}.csv` - Filtered trades
+     - `comparison_{name}.csv` - Side-by-side comparison
+     - Console output with metrics comparison
+
+3. **Validate Filter Logic**
+   - Review comparison CSV to ensure filter works correctly
+   - Check that excluded trades have valid reasons
+   - Verify metrics make sense for the filter
+
+### Phase 2: Combination Testing
+
+4. **Test Specific Combinations**
+   ```bash
+   python test_combination.py small_gaps tap_only
+   python test_combination.py first_five_minutes fast_delivery
+   ```
+   - Shows filter stages and cumulative effects
+   - Identifies which filters are most restrictive
+
+### Phase 3: Super Sweep (Optional)
+
+5. **Run All Combinations**
+   ```bash
+   python test_super_sweep.py 500  # Test up to 500 combinations
+   ```
+   - Automatically tests all valid combinations
+   - Ranks by profit factor
+   - Identifies best performing combinations
+
+## 📊 Output Files
+
+### Individual Tests (`outputs/trades/`)
+- `baseline.csv` - All trades from baseline backtest
+- `permutation_{name}.csv` - Trades passing specific filter
+- `comparison_{name}.csv` - Side-by-side comparison with filter reasons
+
+### Combination Tests (`outputs/trades/`)
+- `combo_{hash}.csv` - Trades passing all filters in combination
+- `comparison_combo_{hash}.csv` - Comparison report for combination
+
+### Super Sweep Results (`outputs/sweeps/`)
+- `super_sweep_results.csv` - All combinations ranked by performance
 
 ## 📊 Available Permutations
 
@@ -154,15 +204,41 @@ Edit `src/models/permutations.py` to add new scenarios:
 - `small_gaps_fast_delivery` - Small gaps with fast delivery
 - `early_session_tight_stops` - Early session with tight stops
 
-## 🔧 Configuration
+## 🔧 Adding New Permutations
 
-All settings are in `src/core/config.py`. Key sections:
+### Permutation Structure
 
-- **Data paths** - Input file locations
-- **Session settings** - Trading session times
-- **Risk management** - TP/SL points, position sizing
-- **Model parameters** - FVG detection criteria
-- **Scenario filters** - Entry conditions and constraints
+Edit `src/models/permutations.py` to add new filters:
+
+```python
+PERMUTATIONS = {
+    "my_new_filter": {
+        "description": "Description of what this filter does",
+        "filter_type": "range",  # or "categorical" or "config_change"
+        "param": "parameter_name",
+        "min": 0.0,              # for range type
+        "max": 10.0,             # for range type  
+        "increment": 0.5,        # for range type
+        "default_value": 5.0,    # for range type
+        "value": "some_value"    # for categorical/config_change
+    }
+}
+```
+
+### Filter Types
+
+- **`range`** - Filters trades based on numeric parameter ranges
+- **`categorical`** - Filters trades based on exact value matches
+- **`config_change`** - Changes backtest configuration (affects trade generation)
+
+### Validation
+
+Test your new permutation:
+```bash
+python test_permutation.py my_new_filter
+```
+
+The system will validate the definition and show filter logic.
 
 ## 📈 Output Files
 

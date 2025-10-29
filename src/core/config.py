@@ -133,6 +133,50 @@ CONFIG.update({
     "max_bars_to_prev_break": None,
 })
 
+# Permutation testing defaults
+CONFIG.update({
+    "permutation_defaults": {
+        # Gap size ranges
+        "gap_size_min": 0.75,
+        "gap_size_max": 40.0,
+        "gap_size_increment": 1.0,
+        
+        # Gap tap counts
+        "gap_taps_min": 0,
+        "gap_taps_max": 10,
+        "gap_taps_increment": 1,
+        
+        # Delivery speed (bars to previous break)
+        "bars_to_break_min": 0,
+        "bars_to_break_max": 15,
+        "bars_to_break_increment": 1,
+        
+        # Time buckets
+        "time_buckets": ["0930-0945", "0945-1000", "1000-1015"],
+        
+        # Touch types
+        "touch_types": ["tap_only", "close_inside_only"],
+        
+        # Midline penetration
+        "midline_options": [True, False],
+        
+        # Risk management
+        "tp_values": [5, 10, 15, 20, 25, 30],
+        "sl_values": [5, 10, 15, 20, 25, 30],
+        
+        # Models
+        "model_combinations": [
+            ["fvg_ifvg"],
+            ["fvg_bos"], 
+            ["fvg_no_fvg"],
+            ["fvg_ifvg", "fvg_bos"],
+            ["fvg_ifvg", "fvg_no_fvg"],
+            ["fvg_bos", "fvg_no_fvg"],
+            ["fvg_ifvg", "fvg_bos", "fvg_no_fvg"]
+        ]
+    }
+})
+
 # Required columns for data loading
 REQUIRED_COLS = [
     "ts_event", "open", "high", "low", "close", "volume", "symbol"
