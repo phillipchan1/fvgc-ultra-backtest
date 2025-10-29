@@ -1,6 +1,109 @@
 # FVG Backtest - Systematic Permutation Testing
 
+> **Goal**: Find the absolute most profitable Fair Value Gap continuation trading setup through systematic testing of market conditions and entry criteria.
+
 A modular, well-organized Fair Value Gap (FVG) backtesting system designed for **systematic permutation testing** with baseline comparison and combination analysis.
+
+## 🎯 Project Purpose
+
+This project implements a **Fair Value Gap (FVG) continuation trading strategy** with the goal of finding the **absolute most profitable setup** through systematic testing of different market conditions and entry criteria.
+
+### What is Fair Value Gap (FVG) Trading?
+
+Fair Value Gaps are price inefficiencies that occur when there's a gap between three consecutive candles, creating an "unfair" price area that markets tend to fill. This strategy focuses on **continuation trades** - entering in the direction of the gap when price pulls back to fill it.
+
+### Trading Strategy Overview
+
+The system implements three main entry models:
+
+1. **iFVG (Internal FVG)** - Enters when there's an internal FVG within a larger FVG
+2. **BOS (Break of Structure)** - Enters when price breaks previous swing levels
+3. **No-FVG** - Enters on continuation without additional FVG requirements
+
+### Why Systematic Testing?
+
+Rather than guessing which market conditions work best, this system:
+
+- **Tests every permutation individually** to understand what works
+- **Compares against baseline** to measure improvement
+- **Combines successful filters** to find optimal setups
+- **Ranks by profitability** to identify the best combinations
+
+### Key Research Questions
+
+This system helps answer critical questions like:
+
+- Which gap sizes are most profitable? (Small vs Medium vs Large)
+- What entry timing works best? (First 5 minutes vs Later in session)
+- How should entries interact with gaps? (Tap only vs Close inside)
+- What delivery speed is optimal? (Fast vs Slow price movement)
+- Which combinations of filters produce the highest win rates?
+
+### Expected Outcomes
+
+Through systematic testing, we aim to discover:
+
+- **Optimal gap size ranges** for maximum profitability
+- **Best entry timing** within the trading session
+- **Most effective entry conditions** (touch type, penetration, etc.)
+- **Ideal combinations** of multiple filters
+- **Risk management parameters** that maximize profit factor
+
+This research-driven approach ensures we're not just trading on intuition, but on **data-proven setups** that consistently generate profits.
+
+## 🔬 Methodology
+
+### Phase 1: Individual Filter Validation
+Each permutation is tested individually against the baseline to:
+- **Validate filter logic** - Ensure the filter works as intended
+- **Measure impact** - Quantify how the filter affects performance
+- **Identify winners** - Find filters that improve profitability
+- **Document behavior** - Understand why certain filters work
+
+### Phase 2: Combination Testing
+Successful individual filters are combined to:
+- **Test synergies** - See if filters work better together
+- **Find optimal combinations** - Discover the best multi-filter setups
+- **Avoid over-optimization** - Ensure combinations are robust
+- **Rank by performance** - Identify the most profitable setups
+
+### Phase 3: Super Sweep Analysis
+All valid combinations are tested to:
+- **Exhaustive search** - Leave no stone unturned
+- **Statistical significance** - Ensure results are meaningful
+- **Performance ranking** - Find the absolute best setup
+- **Pattern recognition** - Identify common traits of winners
+
+### Success Metrics
+
+The system ranks setups by:
+- **Profit Factor** - Gross profit ÷ Gross loss (primary metric)
+- **Win Rate** - Percentage of profitable trades
+- **Net P&L** - Total profit/loss in dollars
+- **Average Trade** - Mean profit per trade
+- **Trade Count** - Sample size for statistical validity
+
+## 📊 Data & Market Context
+
+### Dataset
+- **Instrument**: NQ (E-mini NASDAQ-100) futures
+- **Timeframe**: 30-second bars (resampled from 1-second data)
+- **Period**: September 11 - October 10, 2025
+- **Session**: 09:30 - 10:15 ET (first 45 minutes of regular session)
+
+### Why This Setup?
+- **High liquidity** - NQ futures provide tight spreads and reliable fills
+- **Volatile opening** - First 45 minutes contain most FVG opportunities
+- **Clean data** - Databento provides institutional-grade tick data
+- **Sufficient sample** - ~30 trading days provides statistical significance
+
+### Market Conditions Tested
+The system tests various market scenarios:
+- **Gap sizes** from 0.75 to 40+ points
+- **Entry timing** across different session periods
+- **Price interactions** with gap boundaries
+- **Momentum characteristics** (fast vs slow delivery)
+- **Risk management** with different stop/target levels
 
 ## 📁 Project Structure
 
@@ -239,6 +342,39 @@ python test_permutation.py my_new_filter
 ```
 
 The system will validate the definition and show filter logic.
+
+## 🎯 Expected Results & Next Steps
+
+### What We Expect to Find
+Based on FVG trading theory and market behavior, we anticipate discovering:
+
+- **Optimal gap size sweet spot** - Likely medium-sized gaps (5-15 points) that aren't too small (noise) or too large (rare)
+- **Best entry timing** - Probably early in session when volatility is highest
+- **Effective entry conditions** - Tap-only entries may outperform close-inside due to continuation bias
+- **Profitable combinations** - Multiple filters working together for higher win rates
+
+### Success Criteria
+A successful setup should achieve:
+- **Profit Factor > 1.5** - Meaningful edge over random trading
+- **Win Rate > 60%** - Consistent profitability
+- **Minimum 25 trades** - Statistical significance
+- **Positive expectancy** - Profitable on average
+
+### Implementation Plan
+Once optimal setups are identified:
+
+1. **Live Testing** - Paper trade the best setups for validation
+2. **Risk Management** - Implement proper position sizing
+3. **Automation** - Build automated trading system
+4. **Monitoring** - Track performance and adjust as needed
+5. **Scaling** - Apply to other instruments/timeframes
+
+### Research Value
+This systematic approach provides:
+- **Data-driven decisions** instead of gut feelings
+- **Quantified edge** with specific metrics
+- **Reproducible results** for consistent performance
+- **Scalable methodology** for other strategies
 
 ## 📈 Output Files
 
