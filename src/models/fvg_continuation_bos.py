@@ -57,37 +57,41 @@ class FVGContinuationBOSModel(EntryModel):
 
         return None
 
-    def _find_swing_high(self, start_index: int, dataframe: pd.DataFrame) -> Optional[int]:
-        """Finds the nearest swing high after the start_index."""
-        highs = dataframe['high']
-        for i in range(start_index, len(dataframe) - self._pivot_strength):
-            if i < self._pivot_strength:
-                continue
-            
-            is_basic_pivot = highs.iloc[i] > highs.iloc[i-1] and highs.iloc[i] > highs.iloc[i+1]
-            if not is_basic_pivot:
-                continue
+    def _find_swing_high(self, start_index: int, end_index: int, dataframe: pd.DataFrame) -> Optional[tuple]:
+        """
+        Finds the most recent local high in the range (simpler detection).
+        Returns (index, price) or None.
+        """
+        if start_index >= end_index:
+            return None
+        
+        highs = dataframe['high'].iloc[start_index:end_index]
+        if len(highs) == 0:
+            return None
+        
+        # Find the highest point in the range
+        max_idx = highs.idxmax()
+        max_price = highs[max_idx]
+        
+        return (max_idx, max_price)
 
-            window = highs.iloc[i - self._pivot_strength : i + self._pivot_strength + 1]
-            if highs.iloc[i] >= window.max():
-                return i
-        return None
-
-    def _find_swing_low(self, start_index: int, dataframe: pd.DataFrame) -> Optional[int]:
-        """Finds the nearest swing low after the start_index."""
-        lows = dataframe['low']
-        for i in range(start_index, len(dataframe) - self._pivot_strength):
-            if i < self._pivot_strength:
-                continue
-
-            is_basic_pivot = lows.iloc[i] < lows.iloc[i-1] and lows.iloc[i] < lows.iloc[i+1]
-            if not is_basic_pivot:
-                continue
-            
-            window = lows.iloc[i - self._pivot_strength : i + self._pivot_strength + 1]
-            if lows.iloc[i] <= window.min():
-                return i
-        return None
+    def _find_swing_low(self, start_index: int, end_index: int, dataframe: pd.DataFrame) -> Optional[tuple]:
+        """
+        Finds the most recent local low in the range (simpler detection).
+        Returns (index, price) or None.
+        """
+        if start_index >= end_index:
+            return None
+        
+        lows = dataframe['low'].iloc[start_index:end_index]
+        if len(lows) == 0:
+            return None
+        
+        # Find the lowest point in the range
+        min_idx = lows.idxmin()
+        min_price = lows[min_idx]
+        
+        return (min_idx, min_price)
 
     def _evaluate_bullish(
         self,
@@ -107,25 +111,19 @@ class FVGContinuationBOSModel(EntryModel):
         if not retrace_occurred:
             return None
 
-        # 1. Identify Swing High
-        swing_high_index = self._find_swing_high(fvg.created_idx + 1, dataframe)
-        if swing_high_index is None:
+        # 1. Find the most recent local high between FVG creation and current bar
+        swing_result = self._find_swing_high(fvg.created_idx + 1, bar_index, dataframe)
+        if swing_result is None:
             return None
         
-        swing_high_price = dataframe['high'].iloc[swing_high_index]
+        swing_high_index, swing_high_price = swing_result
         
-        # Check if swing high was swept (wick violation okay, but we track it)
-        max_high_so_far = dataframe['high'].iloc[swing_high_index:bar_index+1].max()
-        if max_high_so_far > swing_high_price:
-            return None  # Already swept
-
-        # BOS Rule: Current candle body must close THROUGH the swing high
-        # This is the key difference from noFVG - we REQUIRE closing through swing
+        # 2. BOS Rule: Current candle CLOSE must be THROUGH (above) the swing high
         if current_bar['close'] <= swing_high_price:
             return None  # Not a BOS - body didn't close through
 
-        # Distance Rule: Must be within max_close_dist from previous high
-        distance = current_bar['close'] - previous_bar['high']
+        # 3. Distance Rule: Close-to-close distance from previous bar (7.5 pts max)
+        distance = abs(current_bar['close'] - previous_bar['close'])
         if distance > self._max_close_dist:
             return None
 
@@ -160,25 +158,19 @@ class FVGContinuationBOSModel(EntryModel):
         if not retrace_occurred:
             return None
 
-        # 1. Identify Swing Low
-        swing_low_index = self._find_swing_low(fvg.created_idx + 1, dataframe)
-        if swing_low_index is None:
+        # 1. Find the most recent local low between FVG creation and current bar
+        swing_result = self._find_swing_low(fvg.created_idx + 1, bar_index, dataframe)
+        if swing_result is None:
             return None
         
-        swing_low_price = dataframe['low'].iloc[swing_low_index]
+        swing_low_index, swing_low_price = swing_result
         
-        # Check if swing low was swept
-        min_low_so_far = dataframe['low'].iloc[swing_low_index:bar_index+1].min()
-        if min_low_so_far < swing_low_price:
-            return None  # Already swept
-
-        # BOS Rule: Current candle body must close THROUGH the swing low
-        # This is the key difference from noFVG - we REQUIRE closing through swing
+        # 2. BOS Rule: Current candle CLOSE must be THROUGH (below) the swing low
         if current_bar['close'] >= swing_low_price:
             return None  # Not a BOS - body didn't close through
 
-        # Distance Rule: Must be within max_close_dist from previous low
-        distance = previous_bar['low'] - current_bar['close']
+        # 3. Distance Rule: Close-to-close distance from previous bar (7.5 pts max)
+        distance = abs(current_bar['close'] - previous_bar['close'])
         if distance > self._max_close_dist:
             return None
 

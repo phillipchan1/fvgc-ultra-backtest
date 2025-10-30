@@ -145,6 +145,10 @@ def load_processed_30s_csv(path: str, date_filter: Optional[str] = None) -> pd.D
             df = df[(df["timestamp"].dt.date >= start_date.date()) & 
                     (df["timestamp"].dt.date <= end_date.date())]
             print(f"📅 Filtered to month: {start_date.date()} to {end_date.date()} ({len(df)} bars)")
+        
+        elif test_period == "full_dataset":
+            # No date filtering - use entire dataset
+            pass
     
     # Filter by session time
     session_start = pd.to_datetime(CONFIG["session_start"]).time()

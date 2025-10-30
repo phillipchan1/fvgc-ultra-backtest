@@ -28,9 +28,9 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
     
     # Initialize entry models (run multiple models)
     entry_models = [
-        FVGContinuationNoFVGModel(),  # Bread and butter (no conflicting FVGs)
-        FVGContinuationBOSModel(),    # BOS (closes through swing point)
-        FVGContinuationIFVGModel(),   # iFVG (requires inverted conflicting FVG)
+        FVGContinuationBOSModel(),    # BOS (closes through swing point) - most specific, check first
+        FVGContinuationIFVGModel(),   # iFVG (requires inverted conflicting FVG) - specific
+        FVGContinuationNoFVGModel(),  # Bread and butter (no conflicting FVGs) - general, check last
     ]
     
     # Initialize trade management strategy
