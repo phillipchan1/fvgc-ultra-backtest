@@ -219,9 +219,6 @@ def main():
         if output_file:
             print(f"\n🎉 Processing complete!")
             print(f"📁 30s trading session data ready: {output_file}")
-            print("\nNext steps:")
-            print("1. Update config to use the new file")
-            print("2. Test the system: python test_permutation.py baseline")
         
     except Exception as e:
         print(f"❌ Error during processing: {e}")

@@ -14,7 +14,40 @@ def apply_date_range_filter(df: pd.DataFrame) -> pd.DataFrame:
     if len(df) == 0:
         return df
     
-    # First apply explicit start/end dates if specified
+    # Handle new test_period settings (priority)
+    test_period = CONFIG.get("test_period")
+    if test_period:
+        if test_period == "single_day":
+            test_date = CONFIG.get("test_date", "2025-10-23")
+            target_date = pd.Timestamp(test_date).date()
+            df = df[df["timestamp"].dt.date == target_date].copy()
+            df = df.reset_index(drop=True)
+            print(f"📅 Filtered to single day: {test_date} ({len(df):,} bars)")
+            
+        elif test_period == "week":
+            start_date = pd.Timestamp(CONFIG.get("test_start_date", "2025-10-23"))
+            end_date = start_date + pd.Timedelta(days=6)  # 7 days total
+            df = df[(df["timestamp"].dt.date >= start_date.date()) & 
+                    (df["timestamp"].dt.date <= end_date.date())].copy()
+            df = df.reset_index(drop=True)
+            print(f"📅 Filtered to week: {start_date.date()} to {end_date.date()} ({len(df):,} bars)")
+            
+        elif test_period == "month":
+            start_date = pd.Timestamp(CONFIG.get("test_start_date", "2025-10-23"))
+            end_date = start_date + pd.Timedelta(days=29)  # ~30 days
+            df = df[(df["timestamp"].dt.date >= start_date.date()) & 
+                    (df["timestamp"].dt.date <= end_date.date())].copy()
+            df = df.reset_index(drop=True)
+            print(f"📅 Filtered to month: {start_date.date()} to {end_date.date()} ({len(df):,} bars)")
+            
+        elif test_period == "full_dataset":
+            print(f"📅 Testing full dataset: {len(df):,} bars")
+            # No filtering needed
+        
+        # Return early if test_period is set
+        return df
+    
+    # Legacy: Apply explicit start/end dates if specified
     if CONFIG.get("start_date"):
         start_date = pd.Timestamp(CONFIG["start_date"], tz=df["timestamp"].iloc[0].tz)
         df = df[df["timestamp"] >= start_date].copy()
@@ -60,42 +93,76 @@ def apply_date_range_filter(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def load_processed_30s_csv(path: str) -> pd.DataFrame:
-    """Load processed 30-second CSV data with ET timestamps."""
+def load_processed_30s_csv(path: str, date_filter: Optional[str] = None) -> pd.DataFrame:
+    """Load and preprocess 3s data from CSV."""
+    
     print(f"Loading processed 30s data: {path}")
     
+    # Define required columns for basic operation
+    required_cols = ["ts_event", "open", "high", "low", "close"]
+    
+    # Read CSV
     df = pd.read_csv(path)
     
-    # Convert timestamp - timestamps are stored in ET timezone
-    # Use apply to handle mixed timezones (EDT/EST) properly
-    import pytz
-    et_tz = pytz.timezone('America/New_York')
+    # Ensure required columns are present
+    if not all(col in df.columns for col in required_cols):
+        raise ValueError("CSV missing one or more required columns")
+        
+    # Convert ts_event to timestamp (assuming nanoseconds)
+    df["timestamp"] = pd.to_datetime(df["ts_event"], unit="ns")
+
+    # Set timezone to config timezone, then remove it for simplicity if not filtering by session
+    # This avoids DST issues and simplifies date filtering
+    df["timestamp"] = df["timestamp"].dt.tz_localize("UTC").dt.tz_convert(CONFIG["session_tz"])
     
-    def parse_timestamp(ts_str):
-        """Parse timestamp and ensure it's in ET timezone."""
-        ts = pd.to_datetime(ts_str)
-        if ts.tzinfo is None:
-            # Timezone-naive, localize to ET
-            return et_tz.localize(ts)
-        # Already timezone-aware, convert to ET if needed
-        return ts.astimezone(et_tz)
+    # --- DATE FILTERING ---
+    if date_filter:
+        target_date = pd.to_datetime(date_filter).date()
+        df = df[df["timestamp"].dt.date == target_date]
+        print(f"📅 Filtered to single day: {date_filter} ({len(df)} bars)")
+        if len(df) == 0:
+            return pd.DataFrame()
+    else:
+        # Use test_period from config if no specific date_filter is passed
+        test_period = CONFIG.get("test_period")
+        if test_period == "single_day":
+            test_date_str = CONFIG.get("test_date")
+            if test_date_str:
+                target_date = pd.to_datetime(test_date_str).date()
+                df = df[df["timestamp"].dt.date == target_date]
+                print(f"📅 Filtered to single day from config: {test_date_str} ({len(df)} bars)")
+        
+        elif test_period == "week":
+            start_date = pd.Timestamp(CONFIG.get("test_start_date", "2025-10-23"))
+            end_date = start_date + pd.Timedelta(days=6)  # 7 days total
+            df = df[(df["timestamp"].dt.date >= start_date.date()) & 
+                    (df["timestamp"].dt.date <= end_date.date())]
+            print(f"📅 Filtered to week: {start_date.date()} to {end_date.date()} ({len(df)} bars)")
+        
+        elif test_period == "month":
+            start_date = pd.Timestamp(CONFIG.get("test_start_date", "2025-10-23"))
+            end_date = start_date + pd.Timedelta(days=29)  # ~30 days
+            df = df[(df["timestamp"].dt.date >= start_date.date()) & 
+                    (df["timestamp"].dt.date <= end_date.date())]
+            print(f"📅 Filtered to month: {start_date.date()} to {end_date.date()} ({len(df)} bars)")
     
-    df["timestamp"] = df["timestamp"].apply(parse_timestamp)
+    # Filter by session time
+    session_start = pd.to_datetime(CONFIG["session_start"]).time()
+    session_end = pd.to_datetime(CONFIG["session_end"]).time()
+    df = df[
+        (df["timestamp"].dt.time >= session_start) & 
+        (df["timestamp"].dt.time <= session_end)
+    ]
     
-    # Convert numeric columns
-    for col in ["open", "high", "low", "close", "volume"]:
-        df[col] = pd.to_numeric(df[col], errors="coerce")
-    
-    # Add previous bar data (already included in processed data)
-    df["prev_close"] = pd.to_numeric(df["prev_close"], errors="coerce")
-    df["prev_high"] = pd.to_numeric(df["prev_high"], errors="coerce") 
-    df["prev_low"] = pd.to_numeric(df["prev_low"], errors="coerce")
-    
-    # Apply date range filtering
-    df = apply_date_range_filter(df)
-    
-    print(f"Loaded {len(df):,} 30-second bars")
+    if df.empty:
+        print("No data in the specified date range and session time.")
+        return pd.DataFrame()
+        
     print(f"Date range: {df['timestamp'].min()} to {df['timestamp'].max()}")
+    
+    # Set index and sort
+    df.set_index(pd.to_datetime(df["ts_event"], unit="ns"), inplace=True)
+    df.sort_index(inplace=True)
     
     return df
 

@@ -4,11 +4,13 @@
 # ---------------------------------------------------------------------------
 
 import warnings
-import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import sys
 
-from src.core.data_loader import load_db_1s_csv, resample_to_30s
+# Add project root to path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.core.data_loader import load_processed_30s_csv
 from src.core.backtest_engine import run_backtest, calculate_metrics
 from src.core.config import CONFIG
 
@@ -17,18 +19,15 @@ def main():
     """Main execution function."""
     warnings.filterwarnings("ignore", category=FutureWarning)
     
-    # Load and preprocess data
-    print("Loading data...")
-    df1s = load_db_1s_csv(os.path.join("data", "raw", CONFIG["data_path"]))
-    print(f"Loaded {len(df1s)} 1-second bars")
-    
-    print("Resampling to 30-second bars...")
-    df30 = resample_to_30s(df1s)
-    print(f"Resampled to {len(df30)} 30-second bars")
+    # Load processed 30-second data
+    print("Loading processed 30-second data...")
+    data_path = os.path.join("data", "processed", CONFIG["data_path"])
+    df = load_processed_30s_csv(data_path)
+    print(f"Loaded {len(df):,} 30-second bars")
     
     # Run backtest
     print("Running backtest...")
-    trades = run_backtest(df30)
+    trades = run_backtest(df)
     
     if trades.empty:
         print("No trades generated.")
@@ -36,27 +35,12 @@ def main():
     
     # Calculate and display metrics
     metrics = calculate_metrics(trades)
-    
-    print("\n=== FVG Backtest (30s) — One entry per gap ===")
-    for model in ["fvg_ifvg", "fvg_bos", "fvg_no_fvg"]:
-        m = metrics[model]
-        print(
-            f"{model:12s} trades={m['trades']:4d}  win_rate={m['win_rate']:.2%}  "
-            f"net=${m['net']:,.2f}  PF={m['profit_factor']:.2f}  avg=${m['avg_trade']:,.2f}"
-        )
-    
-    total = metrics["TOTAL"]
-    print(
-        f"TOTAL         trades={total['trades']:4d}  win_rate={total['win_rate']:.2%}  "
-        f"gross+=${total['gross_profit']:,.2f}  gross-=${total['gross_loss']:,.2f}  "
-        f"comms=${total['commissions']:,.2f}  net=${total['net']:,.2f}  PF={total['profit_factor']:.2f}"
-    )
-    if total.get("ending_balance", 0):
-        print(f"Ending balance: ${total['ending_balance']:,.2f}")
+    print(f"\nMetrics: {metrics}")
     
     # Save results
-    trades.to_csv(os.path.join("outputs", "trades", CONFIG["trades_csv"]), index=False)
-    print(f"\nSaved trades to: {os.path.join('outputs', 'trades', CONFIG['trades_csv'])}")
+    output_path = os.path.join("outputs", "trades", CONFIG["trades_csv"])
+    trades.to_csv(output_path, index=False)
+    print(f"\nSaved trades to: {output_path}")
 
 
 if __name__ == "__main__":
