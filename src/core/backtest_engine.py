@@ -4,12 +4,13 @@
 # ---------------------------------------------------------------------------
 
 import pandas as pd
-from typing import List, Dict
+from typing import List, Dict, Optional
 from .config import CONFIG
 from .fvg_detection import (
     detect_fvgs, update_fvg_validity, prune_active_fvgs,
     create_fvg_from_row, FVG
 )
+from .trade_management import get_trade_management_strategy, TradeManagementResult
 from ..models.basic_pullback import BasicPullbackEntry
 from ..models.fvg_continuation_no_fvg import FVGContinuationNoFVGModel
 from ..models.fvg_continuation_ifvg import FVGContinuationIFVGModel
@@ -31,6 +32,36 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
         FVGContinuationBOSModel(),    # BOS (closes through swing point)
         FVGContinuationIFVGModel(),   # iFVG (requires inverted conflicting FVG)
     ]
+    
+    # Initialize trade management strategy
+    strategy_type = CONFIG.get("trade_management_strategy", "fixed")
+    if strategy_type == "fixed":
+        tm_strategy = get_trade_management_strategy(
+            "fixed",
+            points_tp=CONFIG["points_tp"],
+            points_sl=CONFIG["points_sl"]
+        )
+    elif strategy_type == "dynamic_fvg":
+        tm_strategy = get_trade_management_strategy(
+            "dynamic_fvg",
+            buffer_pts=CONFIG.get("dynamic_fvg_buffer_pts", 3.0),
+            min_pts=CONFIG.get("dynamic_fvg_min_pts", 15.0),
+            max_pts=CONFIG.get("dynamic_fvg_max_pts", 40.0)
+        )
+    elif strategy_type == "partial_close":
+        tm_strategy = get_trade_management_strategy(
+            "partial_close",
+            base_points_tp=CONFIG["points_tp"],
+            base_points_sl=CONFIG["points_sl"]
+        )
+    elif strategy_type == "trailing_sl":
+        tm_strategy = get_trade_management_strategy(
+            "trailing_sl",
+            base_points_tp=CONFIG["points_tp"],
+            base_points_sl=CONFIG["points_sl"]
+        )
+    else:
+        raise ValueError(f"Unknown trade_management_strategy: {strategy_type}")
     
     # Detect FVGs in the dataframe
     df = detect_fvgs(df)
@@ -107,31 +138,42 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
             
             if signal:
                 signal_generated = True
-                # Calculate exit prices
-                if signal.direction == "long":
-                    entry_price = signal.entry_price
-                    tp_price = entry_price + CONFIG["points_tp"]
-                    sl_price = entry_price - CONFIG["points_sl"]
-                    
-                    # Find exit
-                    exit_time, exit_price, exit_reason = find_exit(
-                        df, i, entry_price, tp_price, sl_price, "long"
-                    )
-                else:  # short
-                    entry_price = signal.entry_price
-                    tp_price = entry_price - CONFIG["points_tp"]
-                    sl_price = entry_price + CONFIG["points_sl"]
-                    
-                    # Find exit
-                    exit_time, exit_price, exit_reason = find_exit(
-                        df, i, entry_price, tp_price, sl_price, "short"
-                    )
+                entry_price = signal.entry_price
                 
-                # Calculate PnL
-                if signal.direction == "long":
-                    pnl = exit_price - entry_price
+                # Calculate exit prices using trade management strategy
+                tm_result = tm_strategy.calculate_exits(
+                    entry_price=entry_price,
+                    direction=signal.direction,
+                    fvg_lower=signal.fvg_lower,
+                    fvg_upper=signal.fvg_upper,
+                    fvg_size_pts=signal.fvg_size_pts
+                )
+                
+                # Find exit using trade management result
+                exit_time, exit_price, exit_reason, partial_info = find_exit(
+                    df, i, entry_price, tm_result, signal.direction
+                )
+                
+                # Calculate PnL (accounting for partial closes)
+                if partial_info is not None and partial_info.get('partial_pct', 0) > 0:
+                    # Partial close strategy: calculate weighted PnL
+                    partial_pct = partial_info['partial_pct']
+                    partial_price = partial_info['partial_exit_price']
+                    
+                    if signal.direction == "long":
+                        partial_pnl = (partial_price - entry_price) * partial_pct
+                        remaining_pnl = (exit_price - entry_price) * (1 - partial_pct)
+                    else:  # short
+                        partial_pnl = (entry_price - partial_price) * partial_pct
+                        remaining_pnl = (entry_price - exit_price) * (1 - partial_pct)
+                    
+                    total_pnl = partial_pnl + remaining_pnl
                 else:
-                    pnl = entry_price - exit_price
+                    # Simple full position exit
+                    if signal.direction == "long":
+                        total_pnl = exit_price - entry_price
+                    else:
+                        total_pnl = entry_price - exit_price
                 
                 # Create trade record
                 trade = {
@@ -140,15 +182,22 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
                     "direction": signal.direction,
                     "entry_price": entry_price,
                     "exit_price": exit_price,
-                    "tp_price": tp_price if signal.direction == "long" else tp_price,
-                    "sl_price": sl_price if signal.direction == "long" else sl_price,
+                    "tp_price": tm_result.tp_price,
+                    "sl_price": tm_result.sl_price,
                     "entry_model": signal.entry_model,
                     "fvg_id": signal.fvg_id,
                     "fvg_size_pts": signal.fvg_size_pts,
-                    "pnl": pnl,
-                    "pnl_pts": pnl,
+                    "pnl": total_pnl,
+                    "pnl_pts": total_pnl,
                     "exit_reason": exit_reason,
                 }
+                
+                # Add partial close info if applicable
+                if partial_info:
+                    trade["partial_exit_time"] = partial_info.get('partial_exit_time')
+                    trade["partial_exit_price"] = partial_info.get('partial_exit_price')
+                    trade["partial_pct"] = partial_info.get('partial_pct', 0)
+                
                 trades.append(trade)
                 
                 # Mark this FVG as used - only one trade per FVG total
@@ -175,36 +224,82 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def find_exit(df: pd.DataFrame, entry_idx: int, entry_price: float, 
-              tp_price: float, sl_price: float, direction: str):
+              tm_result: TradeManagementResult, direction: str):
     """
-    Find exit for a trade based on TP/SL.
+    Find exit for a trade based on trade management strategy.
+    
+    Handles:
+    - Simple TP/SL
+    - Partial closes at specified levels
+    - Trailing stop loss after partial close trigger
+    
+    Args:
+        df: DataFrame with price data
+        entry_idx: Index of entry bar
+        entry_price: Entry price
+        tm_result: TradeManagementResult with TP/SL and optional partial close info
+        direction: "long" or "short"
     
     Returns:
-        (exit_time, exit_price, exit_reason)
+        Tuple of (exit_time, exit_price, exit_reason, partial_exit_info)
+        partial_exit_info is dict with partial close details if applicable
     """
+    tp_price = tm_result.tp_price
+    sl_price = tm_result.sl_price
+    partial_close_triggered = False
+    partial_exit_info = None
+    current_sl = sl_price
+    
     # Look ahead from entry bar
     for i in range(entry_idx + 1, len(df)):
         bar = df.iloc[i]
         h, l, c = float(bar["high"]), float(bar["low"]), float(bar["close"])
         
+        # Check for partial close trigger (if specified)
+        if not partial_close_triggered and tm_result.partial_close_price is not None:
+            partial_triggered = False
+            
+            if direction == "long":
+                if h >= tm_result.partial_close_price:
+                    partial_triggered = True
+            else:  # short
+                if l <= tm_result.partial_close_price:
+                    partial_triggered = True
+            
+            if partial_triggered:
+                partial_close_triggered = True
+                
+                # Record partial close if applicable (pct > 0)
+                if tm_result.partial_close_pct > 0:
+                    partial_exit_info = {
+                        'partial_exit_time': bar["timestamp"],
+                        'partial_exit_price': tm_result.partial_close_price,
+                        'partial_pct': tm_result.partial_close_pct
+                    }
+                
+                # Update stop loss if trailing SL is specified
+                if tm_result.trailing_sl_price is not None:
+                    current_sl = tm_result.trailing_sl_price
+        
+        # Check for full exit (TP or SL)
         if direction == "long":
             # TP hit (high crosses TP)
             if h >= tp_price:
-                return bar["timestamp"], tp_price, "TP"
-            # SL hit (low crosses SL)
-            if l <= sl_price:
-                return bar["timestamp"], sl_price, "SL"
+                return bar["timestamp"], tp_price, "TP", partial_exit_info
+            # SL hit (low crosses current SL, which may have been adjusted)
+            if l <= current_sl:
+                return bar["timestamp"], current_sl, "SL", partial_exit_info
         else:  # short
             # TP hit (low crosses TP)
             if l <= tp_price:
-                return bar["timestamp"], tp_price, "TP"
-            # SL hit (high crosses SL)
-            if h >= sl_price:
-                return bar["timestamp"], sl_price, "SL"
+                return bar["timestamp"], tp_price, "TP", partial_exit_info
+            # SL hit (high crosses current SL, which may have been adjusted)
+            if h >= current_sl:
+                return bar["timestamp"], current_sl, "SL", partial_exit_info
     
     # No exit found - exit at end of data on close
     last_bar = df.iloc[-1]
-    return last_bar["timestamp"], float(last_bar["close"]), "END_OF_DATA"
+    return last_bar["timestamp"], float(last_bar["close"]), "END_OF_DATA", partial_exit_info
 
 
 def calculate_metrics(trades: pd.DataFrame) -> Dict:

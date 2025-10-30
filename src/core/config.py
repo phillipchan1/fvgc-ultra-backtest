@@ -34,9 +34,25 @@ CONFIG = {
     "session_start": "09:30:00",
     "session_end": "10:15:00",
     
-    # Risk management
+    # ============================================================================
+    # TRADE MANAGEMENT STRATEGY
+    # ============================================================================
+    # Options: "fixed", "dynamic_fvg", "partial_close", "trailing_sl"
+    # 
+    # "fixed": Simple fixed TP/SL points (configurable below)
+    # "dynamic_fvg": Size based on FVG, rounded to nearest 5, min 15, max 40
+    # "partial_close": Take 50% off at 50% profit, move SL to BE
+    # "trailing_sl": Move SL to 50% profit at 50% TP (2R minimum, no partial)
+    "trade_management_strategy": "fixed",
+    
+    # Risk management (used by fixed, partial_close, and trailing_sl strategies)
     "points_tp": 20.0,
     "points_sl": 20.0,
+    
+    # Dynamic FVG strategy settings
+    "dynamic_fvg_buffer_pts": 3.0,  # Buffer from FVG boundary
+    "dynamic_fvg_min_pts": 15.0,    # Minimum TP/SL points
+    "dynamic_fvg_max_pts": 40.0,    # Maximum TP/SL points
     
     # FVG settings
     "fvg_max_age_bars": 20,
