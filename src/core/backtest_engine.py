@@ -175,6 +175,29 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
                     else:
                         total_pnl = entry_price - exit_price
                 
+                # Calculate FVG tracking variables for optimization
+                fvg_midpoint = (signal.fvg_lower + signal.fvg_upper) / 2
+                retraced_in_gap = False
+                retraced_beyond_50 = False
+                
+                # Scan bars from FVG creation to current entry bar
+                for scan_idx in range(fvg.created_idx + 1, i + 1):
+                    scan_close = df.iloc[scan_idx]['close']
+                    
+                    # Check if closed in gap
+                    if signal.fvg_lower <= scan_close <= signal.fvg_upper:
+                        retraced_in_gap = True
+                        
+                        # Check if beyond 50% mark
+                        if signal.direction == "long":
+                            # For bullish FVG, closing below midpoint = approaching invalidation
+                            if scan_close < fvg_midpoint:
+                                retraced_beyond_50 = True
+                        else:  # short/bearish
+                            # For bearish FVG, closing above midpoint = approaching invalidation
+                            if scan_close > fvg_midpoint:
+                                retraced_beyond_50 = True
+                
                 # Create trade record
                 trade = {
                     "entry_time": signal.entry_time,
@@ -190,6 +213,8 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
                     "pnl": total_pnl,
                     "pnl_pts": total_pnl,
                     "exit_reason": exit_reason,
+                    "retraced_closed_in_gap": retraced_in_gap,
+                    "retraced_beyond_50pct": retraced_beyond_50,
                 }
                 
                 # Add partial close info if applicable
@@ -217,7 +242,8 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame(columns=[
             'entry_time', 'exit_time', 'direction', 'entry_price', 
             'exit_price', 'tp_price', 'sl_price', 'entry_model', 'fvg_id',
-            'fvg_size_pts', 'pnl', 'pnl_pts', 'exit_reason'
+            'fvg_size_pts', 'pnl', 'pnl_pts', 'exit_reason',
+            'retraced_closed_in_gap', 'retraced_beyond_50pct'
         ])
     
     return pd.DataFrame(trades)

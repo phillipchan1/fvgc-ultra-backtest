@@ -16,13 +16,13 @@ CONFIG = {
     #   "month" - Test ~30 days starting from test_start_date  
     #   "full_dataset" - Test entire dataset (2+ years)
     #   None - Use date_range or start_date/end_date below
-    "test_period": "week",  # Change this to test different periods
+    "test_period": "full_dataset",  # Change this to test different periods
     
     # For single_day testing
     "test_date": "2025-10-23",  # Format: YYYY-MM-DD
     
     # For week/month testing (start date)
-    "test_start_date": "2025-10-23",  # Format: YYYY-MM-DD
+    "test_start_date": "2025-10-01",  # Format: YYYY-MM-DD
     
     # Legacy date range filters (alternative to test_period)
     "date_range": None,  # Options: None, "last_2_weeks", "last_month", etc.

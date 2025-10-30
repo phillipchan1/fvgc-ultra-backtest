@@ -170,13 +170,19 @@ class PartialCloseStrategy(TradeManagementStrategy):
 
 class TrailingSLStrategy(TradeManagementStrategy):
     """
-    Type 4: Move SL to 50% profit when trade reaches 50% of TP.
+    Type 4: Move SL to 50% of original risk when trade reaches 50% of TP.
     
     Rules:
-    - When price reaches 50% of TP distance, move SL to 50% profit point
-    - This guarantees minimum 2:1 RR if stopped out after this point
+    - When price reaches 50% of TP distance, move SL to 50% of original risk
+    - This reduces risk from -20 to -10, giving trade "room to breathe"
+    - Allows full TP target to be reached without locking in profit early
     - No partial close, just SL adjustment
     - Original TP remains
+    
+    Example (Long @ 100):
+    - Initial: TP @ 120 (+20), SL @ 80 (-20)
+    - At 110 (+10 profit): SL moves to 90 (-10 risk)
+    - Trade can still reach 120 (+20) or stop at 90 (-10)
     """
     
     def __init__(self, base_points_tp: float = 20.0, base_points_sl: float = 20.0):
@@ -196,22 +202,21 @@ class TrailingSLStrategy(TradeManagementStrategy):
             tp = entry_price + self.base_points_tp
             sl = entry_price - self.base_points_sl
             
-            # When price reaches 50% of TP, move SL to 50% profit
-            # This acts as a trigger level, not a partial close
+            # Trigger: When price reaches 50% of TP distance
             partial_close = entry_price + (self.base_points_tp * 0.5)
             
-            # New SL: 50% profit point
-            trailing_sl = entry_price + (self.base_points_tp * 0.5)
+            # New SL: 50% of original risk (room to breathe, not locking profit)
+            trailing_sl = entry_price - (self.base_points_sl * 0.5)
             
         else:  # short
             tp = entry_price - self.base_points_tp
             sl = entry_price + self.base_points_sl
             
-            # When price reaches 50% of TP, move SL to 50% profit
+            # Trigger: When price reaches 50% of TP distance
             partial_close = entry_price - (self.base_points_tp * 0.5)
             
-            # New SL: 50% profit point
-            trailing_sl = entry_price - (self.base_points_tp * 0.5)
+            # New SL: 50% of original risk (room to breathe, not locking profit)
+            trailing_sl = entry_price + (self.base_points_sl * 0.5)
         
         return TradeManagementResult(
             tp_price=tp,
