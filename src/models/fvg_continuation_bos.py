@@ -13,7 +13,7 @@ class FVGContinuationBOSModel(EntryModel):
     confirming strong buyer/seller presence and structural break.
     """
 
-    def __init__(self, pivot_strength=3, max_close_dist=7.5, max_touches=3):
+    def __init__(self, pivot_strength=3, max_close_dist=7.5, max_touches=5):
         self._pivot_strength = pivot_strength
         self._max_close_dist = max_close_dist
         self._max_touches = max_touches

@@ -13,11 +13,11 @@ class FVGContinuationIFVGModel(EntryModel):
     on the bullish/bearish move. The inversion acts as confirmation.
     """
 
-    def __init__(self, pivot_strength=3, max_close_dist=None, equal_hl_tolerance=0.5, max_touches=3):
+    def __init__(self, pivot_strength=3, max_close_dist=7.5, equal_hl_tolerance=0.5, max_touches=5):
         self._pivot_strength = pivot_strength
-        self._max_close_dist = max_close_dist  # None = no distance limit for iFVG
+        self._max_close_dist = max_close_dist  # Distance from previous bar (consistent across all models)
         self._equal_hl_tolerance = equal_hl_tolerance
-        self._max_touches = max_touches
+        self._max_touches = max_touches  # Same as other models
 
     @property
     def name(self) -> str:
@@ -36,8 +36,9 @@ class FVGContinuationIFVGModel(EntryModel):
         if fvg.trade_taken or not fvg.valid:
             return None
 
-        # FVG must have been created at least one bar BEFORE the previous bar
-        if bar_index - 1 <= fvg.created_idx:
+        # For iFVG, we allow entry on the bar immediately after FVG creation
+        # (to capture same-candle inversions). Only reject if we're ON the FVG creation bar.
+        if bar_index <= fvg.created_idx:
             return None
 
         # Note: Touch counting is now handled in backtest_engine to avoid double-counting
@@ -142,21 +143,17 @@ class FVGContinuationIFVGModel(EntryModel):
         if current_bar['close'] <= previous_bar['high']:
             return None
         
-        # Rule 2: Distance check (relaxed for iFVG - only check if specified)
+        # Rule 2: Distance check (consistent across all models)
         if self._max_close_dist is not None:
             distance = current_bar['close'] - previous_bar['high']
             if distance > self._max_close_dist:
                 return None
         
-        # Rule 3: Ideal Entry Level Line
-        # Body must not close above the open of the first candle that formed the FVG
-        # Get the candle BEFORE the FVG (the first of the 3-candle FVG pattern)
-        fvg_first_candle_idx = fvg.created_idx - 2  # FVG forms on candle 3, so first is idx-2
-        if fvg_first_candle_idx >= 0:
-            ideal_entry_level = dataframe['open'].iloc[fvg_first_candle_idx]
-            # For bullish, body must not close above this level
-            if current_bar['close'] > ideal_entry_level:
-                return None
+        # Note: "Ideal Entry Level Line" check is REMOVED for iFVG model
+        # iFVG requires waiting for conflicting FVG formation and inversion,
+        # which naturally takes more time and allows price to move further from
+        # the original FVG's first candle open. The inversion itself provides
+        # the confirmation needed for entry.
 
         if abs(current_bar['high'] - swing_high_price) < self._equal_hl_tolerance:
             return None
@@ -229,20 +226,17 @@ class FVGContinuationIFVGModel(EntryModel):
         if current_bar['close'] >= previous_bar['low']:
             return None
         
-        # Rule 2: Distance check (relaxed for iFVG - only check if specified)
+        # Rule 2: Distance check (consistent across all models)
         if self._max_close_dist is not None:
             distance = previous_bar['low'] - current_bar['close']
             if distance > self._max_close_dist:
                 return None
         
-        # Rule 3: Ideal Entry Level Line
-        # Body must not close below the open of the first candle that formed the FVG
-        fvg_first_candle_idx = fvg.created_idx - 2  # FVG forms on candle 3, so first is idx-2
-        if fvg_first_candle_idx >= 0:
-            ideal_entry_level = dataframe['open'].iloc[fvg_first_candle_idx]
-            # For bearish, body must not close below this level
-            if current_bar['close'] < ideal_entry_level:
-                return None
+        # Note: "Ideal Entry Level Line" check is REMOVED for iFVG model
+        # iFVG requires waiting for conflicting FVG formation and inversion,
+        # which naturally takes more time and allows price to move further from
+        # the original FVG's first candle open. The inversion itself provides
+        # the confirmation needed for entry.
 
         if abs(current_bar['low'] - swing_low_price) < self._equal_hl_tolerance:
             return None

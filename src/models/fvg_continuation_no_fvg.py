@@ -9,7 +9,7 @@ class FVGContinuationNoFVGModel(EntryModel):
     Implementation of the "FVG + noFVG" continuation setup.
     """
 
-    def __init__(self, pivot_strength=3, max_close_dist=7.5, equal_hl_tolerance=0.5, max_touches=3):
+    def __init__(self, pivot_strength=3, max_close_dist=7.5, equal_hl_tolerance=0.5, max_touches=5):
         self._pivot_strength = pivot_strength
         self._max_close_dist = max_close_dist
         self._equal_hl_tolerance = equal_hl_tolerance
