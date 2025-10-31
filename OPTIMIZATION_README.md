@@ -12,39 +12,42 @@ python analyze_baseline_results.py
 # Done! Check outputs/optimization/ for results
 ```
 
-**That's it!** In ~6 minutes you'll have:
-- ✅ 960 parameter combinations tested
-- ✅ Variable importance rankings  
+**That's it!** In ~10 minutes you'll have:
+- ✅ 11,520 parameter combinations tested
+- ✅ Variable importance rankings (including engulfing distance!)
 - ✅ Best configuration identified
 - ✅ Win rate impact analysis
+- ✅ Multiple vs single entry comparison
 
 ## Overview
 
-The parameter optimization system uses a **fast post-hoc filtering approach** to test **960 combinations** of trading parameters in just **~6 minutes** (vs 8 hours with traditional grid search).
+The parameter optimization system uses a **fast post-hoc filtering approach** to test **11,520 combinations** of trading parameters in just **~10 minutes** (vs 24+ hours with traditional grid search).
 
 ### How It Works
 
-Instead of running 960 full backtests, we:
-1. **Run 4 baseline backtests** (one per trade management strategy) with NO filters → captures ALL trades
-2. **Apply 240 filter combinations** to each baseline dataset → 960 total tests
+Instead of running 11,520 full backtests, we:
+1. **Run 4 baseline backtests** (one per trade management strategy) with ALL entries enabled → captures ALL possible trades
+2. **Apply 2,880 filter combinations** to each baseline dataset → 11,520 total tests
 3. **Analyze which variables impact performance most** → data-driven insights
 
 **Why This Is Smart:**
-- Most variables (entry model, gap size, time, touches) are just **filters** on existing trades
+- Most variables (entry model, gap size, time, touches, engulfing distance, multi-entries) are just **filters** on existing trades
 - Only trade management requires re-running (changes exit logic)
-- Result: **48x faster** with identical insights!
+- Result: **144x faster** with identical insights!
 
 ## What Gets Tested
 
-### Variables (6 dimensions)
+### Variables (8 dimensions)
 1. **Entry Model**: noFVG, BOS, iFVG, ALL (4 options)
 2. **Gap Closure**: True, False, ALL (3 options)
 3. **Gap Size**: 0-3pts, 3-6pts, 6-10pts, 10+pts, ALL (5 options)
 4. **Time Windows**: 9:30-9:45, 9:45-10:00, 10:00-10:15, ALL (4 options)
 5. **Touch Ranges**: 1-2, 3-4, 5+, ALL (4 options)
-6. **Trade Management**: fixed, dynamic_fvg, partial_close, trailing_sl (4 options)
+6. **Engulfing Distance**: 0-3pts, 3-6pts, 6+pts, ALL (4 options) ⭐ NEW
+7. **Multiple Entries per FVG**: True, False, ALL (3 options) ⭐ NEW
+8. **Trade Management**: fixed, dynamic_fvg, partial_close, trailing_sl (4 options)
 
-**Total Combinations**: 4 TM × (4 × 3 × 5 × 4 × 4 filters) = **960**
+**Total Combinations**: 4 TM × (4 × 3 × 5 × 4 × 4 × 4 × 3 filters) = **11,520**
 
 ### Metrics Tracked
 - Win Rate (%)
@@ -76,11 +79,11 @@ python analyze_baseline_results.py
 This applies 960 filter combinations and generates complete analysis.
 
 ### Total Runtime
-- **Step 1**: ~30 seconds (4 backtests)
-- **Step 2**: ~5 minutes (960 filter combinations)
-- **Total**: ~6 minutes ⚡
+- **Step 1**: ~30 seconds (4 backtests with multi-entry enabled)
+- **Step 2**: ~10 minutes (11,520 filter combinations)
+- **Total**: ~10-11 minutes ⚡
 
-Compare to traditional grid search: **8+ hours** ❌
+Compare to traditional grid search: **24+ hours** ❌
 
 ## Output Files
 

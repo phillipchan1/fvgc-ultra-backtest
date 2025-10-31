@@ -208,6 +208,18 @@ def run_backtest(df: pd.DataFrame, override_config: Optional[Dict] = None) -> pd
                             if scan_close > fvg_midpoint:
                                 retraced_beyond_50 = True
                 
+                # Calculate engulfing closure distance (how far current close is from previous level)
+                if i > 0:
+                    prev_bar = df.iloc[i - 1]
+                    if signal.direction == "long":
+                        # For longs: distance from previous high
+                        engulfing_distance = row['close'] - prev_bar['high']
+                    else:
+                        # For shorts: distance from previous low
+                        engulfing_distance = prev_bar['low'] - row['close']
+                else:
+                    engulfing_distance = 0.0
+                
                 # Create trade record
                 trade = {
                     "entry_time": signal.entry_time,
@@ -221,6 +233,7 @@ def run_backtest(df: pd.DataFrame, override_config: Optional[Dict] = None) -> pd
                     "fvg_id": signal.fvg_id,
                     "fvg_size_pts": signal.fvg_size_pts,
                     "fvg_touch_count": fvg.touch_count,
+                    "engulfing_distance_pts": engulfing_distance,
                     "pnl": total_pnl,
                     "pnl_pts": total_pnl,
                     "exit_reason": exit_reason,
@@ -236,11 +249,12 @@ def run_backtest(df: pd.DataFrame, override_config: Optional[Dict] = None) -> pd
                 
                 trades.append(trade)
                 
-                # Mark this FVG as used - only one trade per FVG total
-                fvg.trade_taken = True
-                fvg.valid = False
-                fvg.expired = True
-                fvg.deactivated_reason = "trade_taken"
+                # Mark this FVG as used (if multiple entries not allowed)
+                if not config.get("allow_multiple_entries_per_fvg", False):
+                    fvg.trade_taken = True
+                    fvg.valid = False
+                    fvg.expired = True
+                    fvg.deactivated_reason = "trade_taken"
                 
                 # Only allow one trade per bar
                 break
@@ -253,7 +267,8 @@ def run_backtest(df: pd.DataFrame, override_config: Optional[Dict] = None) -> pd
         return pd.DataFrame(columns=[
             'entry_time', 'exit_time', 'direction', 'entry_price', 
             'exit_price', 'tp_price', 'sl_price', 'entry_model', 'fvg_id',
-            'fvg_size_pts', 'fvg_touch_count', 'pnl', 'pnl_pts', 'exit_reason',
+            'fvg_size_pts', 'fvg_touch_count', 'engulfing_distance_pts',
+            'pnl', 'pnl_pts', 'exit_reason',
             'retraced_closed_in_gap', 'retraced_beyond_50pct'
         ])
     

@@ -165,13 +165,13 @@ fvgc-backtest/
 
 ### ⚡ Fast Parameter Optimization (Recommended)
 
-The **fastest way** to find optimal settings - tests 960 combinations in ~6 minutes:
+The **fastest way** to find optimal settings - tests 11,520 combinations in ~10 minutes:
 
 ```bash
 # Step 1: Run 4 baseline backtests (~30 seconds)
 python run_baseline_backtests.py
 
-# Step 2: Analyze all combinations (~5 minutes)  
+# Step 2: Analyze all combinations (~10 minutes)  
 python analyze_baseline_results.py
 
 # Done! Results in outputs/optimization/
@@ -180,8 +180,9 @@ python analyze_baseline_results.py
 **What you get:**
 - ✅ Best configuration identified (71% WR, 3.3 PF in recent test!)
 - ✅ Variable importance rankings (what actually matters)
-- ✅ 960 combinations tested on 2+ years of data
+- ✅ 11,520 combinations tested on 2+ years of data
 - ✅ Complete correlation analysis
+- ✅ **NEW**: Engulfing distance & multiple entries analysis
 
 📖 **See [OPTIMIZATION_README.md](OPTIMIZATION_README.md) for full guide**
 

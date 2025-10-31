@@ -66,6 +66,9 @@ CONFIG = {
     # Entry model settings
     "fvg_touch_tolerance_pts": 1.0,  # Allow wick to be within this many points of gap bound to count as "touch"
     
+    # Entry limits
+    "allow_multiple_entries_per_fvg": False,  # Allow multiple trades on same FVG
+    
     # Output
     "trades_csv": "trades.csv",
 }

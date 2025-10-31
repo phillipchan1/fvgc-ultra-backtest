@@ -9,16 +9,16 @@
     "trade_management": "partial_close"
   },
   "expected_performance": {
-    "total_trades": 31,
-    "winning_trades": 22,
+    "total_trades": 39,
+    "winning_trades": 28,
     "losing_trades": 5,
-    "win_rate": 0.7096774193548387,
-    "net_pnl": 230.0,
-    "gross_profit": 330.0,
+    "win_rate": 0.717948717948718,
+    "net_pnl": 320.0,
+    "gross_profit": 420.0,
     "gross_loss": 100.0,
-    "profit_factor": 3.3,
+    "profit_factor": 4.2,
     "avg_win": 15.0,
     "avg_loss": 20.0,
-    "sharpe_ratio": 17.397058481303876
+    "sharpe_ratio": 26.186856791044388
   }
 }

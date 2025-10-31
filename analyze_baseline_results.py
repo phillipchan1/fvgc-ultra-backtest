@@ -34,6 +34,8 @@ class FilterSet:
     gap_size_range: str
     time_window: str
     touch_range: str
+    engulfing_distance: str
+    multiple_entries: str
     trade_management: str
 
 
@@ -44,9 +46,12 @@ def generate_filter_combinations() -> List[FilterSet]:
     gap_sizes = ["0-3", "3-6", "6-10", "10+", "ALL"]
     time_windows = ["9:30-9:45", "9:45-10:00", "10:00-10:15", "ALL"]
     touch_ranges = ["1-2", "3-4", "5+", "ALL"]
+    engulfing_distances = ["0-3", "3-6", "6+", "ALL"]  # NEW
+    multiple_entries_opts = ["True", "False", "ALL"]  # NEW
     
     combinations = itertools.product(
-        entry_models, gap_closures, gap_sizes, time_windows, touch_ranges
+        entry_models, gap_closures, gap_sizes, time_windows, touch_ranges,
+        engulfing_distances, multiple_entries_opts
     )
     
     filter_sets = []
@@ -57,6 +62,8 @@ def generate_filter_combinations() -> List[FilterSet]:
             gap_size_range=combo[2],
             time_window=combo[3],
             touch_range=combo[4],
+            engulfing_distance=combo[5],
+            multiple_entries=combo[6],
             trade_management="placeholder"  # Will be set per TM strategy
         )
         filter_sets.append(fs)
@@ -121,6 +128,22 @@ def apply_filters(trades_df: pd.DataFrame, filter_set: FilterSet) -> pd.DataFram
             df = df[(df['fvg_touch_count'] >= 3) & (df['fvg_touch_count'] <= 4)]
         elif filter_set.touch_range == "5+":
             df = df[df['fvg_touch_count'] >= 5]
+    
+    # Filter by engulfing distance
+    if filter_set.engulfing_distance != "ALL" and 'engulfing_distance_pts' in df.columns:
+        if filter_set.engulfing_distance == "0-3":
+            df = df[(df['engulfing_distance_pts'] >= 0) & (df['engulfing_distance_pts'] <= 3.0)]
+        elif filter_set.engulfing_distance == "3-6":
+            df = df[(df['engulfing_distance_pts'] > 3.0) & (df['engulfing_distance_pts'] <= 6.0)]
+        elif filter_set.engulfing_distance == "6+":
+            df = df[df['engulfing_distance_pts'] > 6.0]
+    
+    # Filter by multiple entries per FVG
+    if filter_set.multiple_entries != "ALL" and 'fvg_id' in df.columns:
+        if filter_set.multiple_entries == "False":
+            # Simulate single entry only: keep first trade per FVG
+            df = df.sort_values('entry_time').groupby('fvg_id').first().reset_index()
+        # If "True", keep all trades (no filtering needed)
     
     return df
 
@@ -232,6 +255,8 @@ def main():
                 'gap_size_range': filter_set.gap_size_range,
                 'time_window': filter_set.time_window,
                 'touch_range': filter_set.touch_range,
+                'engulfing_distance': filter_set.engulfing_distance,
+                'multiple_entries_per_fvg': filter_set.multiple_entries,
                 'trade_management': strategy
             }
             result.update(metrics)

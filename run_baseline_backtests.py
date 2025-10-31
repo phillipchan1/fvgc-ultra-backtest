@@ -26,6 +26,10 @@ def run_baseline_for_strategy(strategy_name: str, data_df, output_dir: str):
     config['trade_management_strategy'] = strategy_name
     config['test_period'] = 'full_dataset'
     
+    # IMPORTANT: Enable multiple entries to capture ALL possible trades
+    # We'll filter post-hoc to simulate single-entry-only scenarios
+    config['allow_multiple_entries_per_fvg'] = True
+    
     # Run backtest
     start_time = time.time()
     trades_df = run_backtest(data_df.copy(), override_config=config)
