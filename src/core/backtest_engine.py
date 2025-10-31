@@ -17,14 +17,24 @@ from ..models.fvg_continuation_ifvg import FVGContinuationIFVGModel
 from ..models.fvg_continuation_bos import FVGContinuationBOSModel
 
 
-def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
+def run_backtest(df: pd.DataFrame, override_config: Optional[Dict] = None) -> pd.DataFrame:
     """
     Run the main backtest loop.
     
     Detects FVGs, tracks active FVGs, evaluates entry models, and generates trades.
+    
+    Args:
+        df: DataFrame with OHLCV data
+        override_config: Optional config dict to override global CONFIG
+    
+    Returns:
+        DataFrame of trades
     """
     trades = []
     active_fvgs: List[FVG] = []
+    
+    # Use override config if provided, otherwise use global CONFIG
+    config = override_config if override_config is not None else CONFIG
     
     # Initialize entry models (run multiple models)
     entry_models = [
@@ -34,31 +44,31 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
     ]
     
     # Initialize trade management strategy
-    strategy_type = CONFIG.get("trade_management_strategy", "fixed")
+    strategy_type = config.get("trade_management_strategy", "fixed")
     if strategy_type == "fixed":
         tm_strategy = get_trade_management_strategy(
             "fixed",
-            points_tp=CONFIG["points_tp"],
-            points_sl=CONFIG["points_sl"]
+            points_tp=config["points_tp"],
+            points_sl=config["points_sl"]
         )
     elif strategy_type == "dynamic_fvg":
         tm_strategy = get_trade_management_strategy(
             "dynamic_fvg",
-            buffer_pts=CONFIG.get("dynamic_fvg_buffer_pts", 3.0),
-            min_pts=CONFIG.get("dynamic_fvg_min_pts", 15.0),
-            max_pts=CONFIG.get("dynamic_fvg_max_pts", 40.0)
+            buffer_pts=config.get("dynamic_fvg_buffer_pts", 3.0),
+            min_pts=config.get("dynamic_fvg_min_pts", 15.0),
+            max_pts=config.get("dynamic_fvg_max_pts", 40.0)
         )
     elif strategy_type == "partial_close":
         tm_strategy = get_trade_management_strategy(
             "partial_close",
-            base_points_tp=CONFIG["points_tp"],
-            base_points_sl=CONFIG["points_sl"]
+            base_points_tp=config["points_tp"],
+            base_points_sl=config["points_sl"]
         )
     elif strategy_type == "trailing_sl":
         tm_strategy = get_trade_management_strategy(
             "trailing_sl",
-            base_points_tp=CONFIG["points_tp"],
-            base_points_sl=CONFIG["points_sl"]
+            base_points_tp=config["points_tp"],
+            base_points_sl=config["points_sl"]
         )
     else:
         raise ValueError(f"Unknown trade_management_strategy: {strategy_type}")
@@ -210,6 +220,7 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
                     "entry_model": signal.entry_model,
                     "fvg_id": signal.fvg_id,
                     "fvg_size_pts": signal.fvg_size_pts,
+                    "fvg_touch_count": fvg.touch_count,
                     "pnl": total_pnl,
                     "pnl_pts": total_pnl,
                     "exit_reason": exit_reason,
@@ -242,7 +253,7 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame(columns=[
             'entry_time', 'exit_time', 'direction', 'entry_price', 
             'exit_price', 'tp_price', 'sl_price', 'entry_model', 'fvg_id',
-            'fvg_size_pts', 'pnl', 'pnl_pts', 'exit_reason',
+            'fvg_size_pts', 'fvg_touch_count', 'pnl', 'pnl_pts', 'exit_reason',
             'retraced_closed_in_gap', 'retraced_beyond_50pct'
         ])
     
