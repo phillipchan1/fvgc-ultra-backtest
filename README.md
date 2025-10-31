@@ -163,7 +163,38 @@ fvgc-backtest/
 
 ## 🚀 Quick Start
 
-### 1. Run Baseline Backtest
+### ⚡ Fast Parameter Optimization (Recommended)
+
+The **fastest way** to find optimal settings - tests 960 combinations in ~6 minutes:
+
+```bash
+# Step 1: Run 4 baseline backtests (~30 seconds)
+python run_baseline_backtests.py
+
+# Step 2: Analyze all combinations (~5 minutes)  
+python analyze_baseline_results.py
+
+# Done! Results in outputs/optimization/
+```
+
+**What you get:**
+- ✅ Best configuration identified (71% WR, 3.3 PF in recent test!)
+- ✅ Variable importance rankings (what actually matters)
+- ✅ 960 combinations tested on 2+ years of data
+- ✅ Complete correlation analysis
+
+📖 **See [OPTIMIZATION_README.md](OPTIMIZATION_README.md) for full guide**
+
+---
+
+### 🧪 Alternative: Legacy Permutation Testing
+
+For manual, step-by-step testing (slower but more granular):
+
+<details>
+<summary>Click to expand legacy testing workflow</summary>
+
+#### 1. Run Baseline Backtest
 ```bash
 # Activate environment
 source activate_env.sh
@@ -172,7 +203,7 @@ source activate_env.sh
 python test_permutation.py baseline
 ```
 
-### 2. Test Individual Permutations
+#### 2. Test Individual Permutations
 ```bash
 # List available permutations
 python test_permutation.py list
@@ -183,7 +214,7 @@ python test_permutation.py small_gaps
 python test_permutation.py first_five_minutes
 ```
 
-### 3. Test Permutation Combinations
+#### 3. Test Permutation Combinations
 ```bash
 # List example combinations
 python test_combination.py list
@@ -193,7 +224,7 @@ python test_combination.py small_gaps tap_only
 python test_combination.py first_five_minutes fast_delivery
 ```
 
-### 4. Run Super Sweep (Phase 2)
+#### 4. Run Super Sweep (Phase 2)
 ```bash
 # Test all combinations (up to 1000)
 python test_super_sweep.py
@@ -201,6 +232,8 @@ python test_super_sweep.py
 # Analyze results
 python test_super_sweep.py analyze
 ```
+
+</details>
 
 ## 🎯 Systematic Testing Workflow
 
