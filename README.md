@@ -165,13 +165,16 @@ fvgc-backtest/
 
 ### ⚡ Fast Parameter Optimization (Recommended)
 
-The **fastest way** to find optimal settings - tests 11,520 combinations in ~10 minutes:
+The **fastest way** to find optimal settings - tests 691,200 combinations in ~15-20 minutes:
 
 ```bash
+# Step 0: Generate session metadata (one-time, ~10 seconds)
+python scripts/generate_session_metadata.py
+
 # Step 1: Run 4 baseline backtests (~30 seconds)
 python run_baseline_backtests.py
 
-# Step 2: Analyze all combinations (~10 minutes)  
+# Step 2: Analyze all combinations (~15-20 minutes)  
 python analyze_baseline_results.py
 
 # Done! Results in outputs/optimization/
@@ -180,9 +183,10 @@ python analyze_baseline_results.py
 **What you get:**
 - ✅ Best configuration identified (71% WR, 3.3 PF in recent test!)
 - ✅ Variable importance rankings (what actually matters)
-- ✅ 11,520 combinations tested on 2+ years of data
+- ✅ 691,200 combinations tested on 2+ years of data
 - ✅ Complete correlation analysis
-- ✅ **NEW**: Engulfing distance & multiple entries analysis
+- ✅ **NEW**: Session volume, range, and red folder event analysis
+- ✅ Actionable insights: "Only trade red folder days with >150pt range"
 
 📖 **See [OPTIMIZATION_README.md](OPTIMIZATION_README.md) for full guide**
 

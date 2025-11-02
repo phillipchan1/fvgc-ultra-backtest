@@ -40,6 +40,11 @@ def analyze_variable_importance(
         'gap_size_range',
         'time_window',
         'touch_range',
+        'engulfing_distance',
+        'multiple_entries_per_fvg',
+        'volume_tier',
+        'range_tier',
+        'red_folder',
         'trade_management'
     ]
     
@@ -128,7 +133,9 @@ def generate_correlation_matrix(
     # Encode categorical variables
     categorical_vars = [
         'entry_model', 'gap_closure_filter', 'gap_size_range',
-        'time_window', 'touch_range', 'trade_management'
+        'time_window', 'touch_range', 'engulfing_distance',
+        'multiple_entries_per_fvg', 'volume_tier', 'range_tier',
+        'red_folder', 'trade_management'
     ]
     
     for var in categorical_vars:

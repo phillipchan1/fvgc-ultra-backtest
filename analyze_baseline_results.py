@@ -36,6 +36,9 @@ class FilterSet:
     touch_range: str
     engulfing_distance: str
     multiple_entries: str
+    volume_tier: str
+    range_tier: str
+    red_folder: str
     trade_management: str
 
 
@@ -46,12 +49,15 @@ def generate_filter_combinations() -> List[FilterSet]:
     gap_sizes = ["0-3", "3-6", "6-10", "10+", "ALL"]
     time_windows = ["9:30-9:45", "9:45-10:00", "10:00-10:15", "ALL"]
     touch_ranges = ["1-2", "3-4", "5+", "ALL"]
-    engulfing_distances = ["0-3", "3-6", "6+", "ALL"]  # NEW
-    multiple_entries_opts = ["True", "False", "ALL"]  # NEW
+    engulfing_distances = ["0-3", "3-6", "6+", "ALL"]
+    multiple_entries_opts = ["True", "False", "ALL"]
+    volume_tiers = ["Low", "Medium", "High", "Extremely High", "ALL"]  # NEW
+    range_tiers = ["<75pts", "75-150pts", "150+pts", "ALL"]  # NEW
+    red_folder_opts = ["True", "False", "ALL"]  # NEW
     
     combinations = itertools.product(
         entry_models, gap_closures, gap_sizes, time_windows, touch_ranges,
-        engulfing_distances, multiple_entries_opts
+        engulfing_distances, multiple_entries_opts, volume_tiers, range_tiers, red_folder_opts
     )
     
     filter_sets = []
@@ -64,6 +70,9 @@ def generate_filter_combinations() -> List[FilterSet]:
             touch_range=combo[4],
             engulfing_distance=combo[5],
             multiple_entries=combo[6],
+            volume_tier=combo[7],
+            range_tier=combo[8],
+            red_folder=combo[9],
             trade_management="placeholder"  # Will be set per TM strategy
         )
         filter_sets.append(fs)
@@ -144,6 +153,21 @@ def apply_filters(trades_df: pd.DataFrame, filter_set: FilterSet) -> pd.DataFram
             # Simulate single entry only: keep first trade per FVG
             df = df.sort_values('entry_time').groupby('fvg_id').first().reset_index()
         # If "True", keep all trades (no filtering needed)
+    
+    # Filter by volume tier
+    if filter_set.volume_tier != "ALL" and 'session_volume_tier' in df.columns:
+        df = df[df['session_volume_tier'] == filter_set.volume_tier]
+    
+    # Filter by range tier
+    if filter_set.range_tier != "ALL" and 'session_range_tier' in df.columns:
+        df = df[df['session_range_tier'] == filter_set.range_tier]
+    
+    # Filter by red folder
+    if filter_set.red_folder != "ALL" and 'is_red_folder_day' in df.columns:
+        if filter_set.red_folder == "True":
+            df = df[df['is_red_folder_day'] == True]
+        elif filter_set.red_folder == "False":
+            df = df[df['is_red_folder_day'] == False]
     
     return df
 
@@ -226,8 +250,9 @@ def main():
     print(f"Total filter combinations: {len(filter_sets)}")
     print(f"Total tests (4 TM × {len(filter_sets)} filters): {4 * len(filter_sets)}")
     
-    # Run analysis
+    # Run analysis (sequential - faster than multiprocessing for this case)
     print("\nApplying filters...")
+    print("(Note: Sequential processing is fastest for DataFrame filtering)")
     start_time = time.time()
     
     results = []
@@ -236,12 +261,9 @@ def main():
     for strategy in strategies:
         trades_df = baseline_trades[strategy]
         
+        print(f"\nProcessing {strategy} strategy ({len(filter_sets):,} combinations)...")
+        
         for idx, filter_set in enumerate(filter_sets, 1):
-            # Update progress every 100 combinations
-            if idx % 100 == 0 or idx == 1:
-                progress = (strategies.index(strategy) * len(filter_sets) + idx) / total_tests * 100
-                print(f"  [{progress:>5.1f}%] {strategy}/{filter_set.entry_model}/{filter_set.gap_closure}/{filter_set.gap_size_range}")
-            
             # Apply filters
             filtered = apply_filters(trades_df, filter_set)
             
@@ -257,10 +279,22 @@ def main():
                 'touch_range': filter_set.touch_range,
                 'engulfing_distance': filter_set.engulfing_distance,
                 'multiple_entries_per_fvg': filter_set.multiple_entries,
+                'volume_tier': filter_set.volume_tier,
+                'range_tier': filter_set.range_tier,
+                'red_folder': filter_set.red_folder,
                 'trade_management': strategy
             }
             result.update(metrics)
             results.append(result)
+            
+            # Progress update every 10000 combinations
+            if idx % 10000 == 0 or idx == 1:
+                progress = (strategies.index(strategy) * len(filter_sets) + idx) / total_tests * 100
+                elapsed_so_far = time.time() - start_time
+                est_total = elapsed_so_far / progress * 100 if progress > 0 else 0
+                est_remaining = est_total - elapsed_so_far
+                print(f"  [{progress:>5.1f}%] {idx:,}/{len(filter_sets):,} "
+                      f"(elapsed: {elapsed_so_far/60:.1f}m, remaining: ~{est_remaining/60:.1f}m)")
     
     elapsed = time.time() - start_time
     

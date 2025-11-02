@@ -1,0 +1,923 @@
+{
+  "best_params": {
+    "entry_model": "ALL",
+    "gap_closure_filter": "True",
+    "gap_size_range": "10+",
+    "time_window": "10:00-10:15",
+    "touch_range": "3-4",
+    "trade_management": "fixed",
+    "directional_filter": "bidirectional"
+  },
+  "best_score": 0.8823529411764706,
+  "all_params": [
+    {
+      "entry_model": "ALL",
+      "gap_closure_filter": "True",
+      "gap_size_range": "10+",
+      "time_window": "10:00-10:15",
+      "touch_range": "3-4",
+      "trade_management": "fixed",
+      "directional_filter": "bidirectional"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "10+",
+      "time_window": "9:30-9:45",
+      "touch_range": "5+",
+      "trade_management": "trailing_sl",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "ALL",
+      "gap_closure_filter": "False",
+      "gap_size_range": "10+",
+      "time_window": "9:30-9:45",
+      "touch_range": "1-2",
+      "trade_management": "partial_close",
+      "directional_filter": "bidirectional"
+    },
+    {
+      "entry_model": "noFVG",
+      "gap_closure_filter": "ALL",
+      "gap_size_range": "3-6",
+      "time_window": "9:30-9:45",
+      "touch_range": "5+",
+      "trade_management": "dynamic_fvg",
+      "directional_filter": "longs_only"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "ALL",
+      "gap_size_range": "10+",
+      "time_window": "9:45-10:00",
+      "touch_range": "1-2",
+      "trade_management": "trailing_sl",
+      "directional_filter": "bidirectional"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "3-6",
+      "time_window": "9:30-9:45",
+      "touch_range": "5+",
+      "trade_management": "partial_close",
+      "directional_filter": "longs_only"
+    },
+    {
+      "entry_model": "noFVG",
+      "gap_closure_filter": "False",
+      "gap_size_range": "0-3",
+      "time_window": "ALL",
+      "touch_range": "3-4",
+      "trade_management": "fixed",
+      "directional_filter": "bidirectional"
+    },
+    {
+      "entry_model": "noFVG",
+      "gap_closure_filter": "ALL",
+      "gap_size_range": "6-10",
+      "time_window": "9:45-10:00",
+      "touch_range": "ALL",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "iFVG",
+      "gap_closure_filter": "False",
+      "gap_size_range": "ALL",
+      "time_window": "ALL",
+      "touch_range": "5+",
+      "trade_management": "partial_close",
+      "directional_filter": "bidirectional"
+    },
+    {
+      "entry_model": "ALL",
+      "gap_closure_filter": "False",
+      "gap_size_range": "3-6",
+      "time_window": "9:45-10:00",
+      "touch_range": "1-2",
+      "trade_management": "fixed",
+      "directional_filter": "bidirectional"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "0-3",
+      "time_window": "9:30-9:45",
+      "touch_range": "5+",
+      "trade_management": "trailing_sl",
+      "directional_filter": "bidirectional"
+    },
+    {
+      "entry_model": "ALL",
+      "gap_closure_filter": "False",
+      "gap_size_range": "ALL",
+      "time_window": "ALL",
+      "touch_range": "3-4",
+      "trade_management": "fixed",
+      "directional_filter": "bidirectional"
+    },
+    {
+      "entry_model": "iFVG",
+      "gap_closure_filter": "False",
+      "gap_size_range": "6-10",
+      "time_window": "9:45-10:00",
+      "touch_range": "5+",
+      "trade_management": "dynamic_fvg",
+      "directional_filter": "longs_only"
+    },
+    {
+      "entry_model": "ALL",
+      "gap_closure_filter": "ALL",
+      "gap_size_range": "3-6",
+      "time_window": "9:45-10:00",
+      "touch_range": "1-2",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "ALL",
+      "time_window": "9:45-10:00",
+      "touch_range": "5+",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "iFVG",
+      "gap_closure_filter": "False",
+      "gap_size_range": "3-6",
+      "time_window": "ALL",
+      "touch_range": "5+",
+      "trade_management": "partial_close",
+      "directional_filter": "longs_only"
+    },
+    {
+      "entry_model": "iFVG",
+      "gap_closure_filter": "True",
+      "gap_size_range": "0-3",
+      "time_window": "9:45-10:00",
+      "touch_range": "1-2",
+      "trade_management": "dynamic_fvg",
+      "directional_filter": "longs_only"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "3-6",
+      "time_window": "ALL",
+      "touch_range": "3-4",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "0-3",
+      "time_window": "10:00-10:15",
+      "touch_range": "3-4",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "noFVG",
+      "gap_closure_filter": "True",
+      "gap_size_range": "3-6",
+      "time_window": "10:00-10:15",
+      "touch_range": "3-4",
+      "trade_management": "fixed",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "3-6",
+      "time_window": "9:30-9:45",
+      "touch_range": "5+",
+      "trade_management": "trailing_sl",
+      "directional_filter": "longs_only"
+    },
+    {
+      "entry_model": "noFVG",
+      "gap_closure_filter": "False",
+      "gap_size_range": "3-6",
+      "time_window": "ALL",
+      "touch_range": "5+",
+      "trade_management": "fixed",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "10+",
+      "time_window": "9:45-10:00",
+      "touch_range": "3-4",
+      "trade_management": "trailing_sl",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "ALL",
+      "gap_size_range": "10+",
+      "time_window": "9:45-10:00",
+      "touch_range": "3-4",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "10+",
+      "time_window": "9:45-10:00",
+      "touch_range": "3-4",
+      "trade_management": "partial_close",
+      "directional_filter": "bidirectional"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "0-3",
+      "time_window": "9:45-10:00",
+      "touch_range": "1-2",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "3-6",
+      "time_window": "9:45-10:00",
+      "touch_range": "5+",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "ALL",
+      "gap_size_range": "0-3",
+      "time_window": "9:45-10:00",
+      "touch_range": "5+",
+      "trade_management": "trailing_sl",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "ALL",
+      "gap_size_range": "0-3",
+      "time_window": "9:45-10:00",
+      "touch_range": "3-4",
+      "trade_management": "trailing_sl",
+      "directional_filter": "bidirectional"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "0-3",
+      "time_window": "9:30-9:45",
+      "touch_range": "5+",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "3-6",
+      "time_window": "9:30-9:45",
+      "touch_range": "1-2",
+      "trade_management": "trailing_sl",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "3-6",
+      "time_window": "9:30-9:45",
+      "touch_range": "1-2",
+      "trade_management": "partial_close",
+      "directional_filter": "bidirectional"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "6-10",
+      "time_window": "9:30-9:45",
+      "touch_range": "3-4",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "False",
+      "gap_size_range": "6-10",
+      "time_window": "ALL",
+      "touch_range": "5+",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "3-6",
+      "time_window": "9:30-9:45",
+      "touch_range": "5+",
+      "trade_management": "trailing_sl",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "3-6",
+      "time_window": "9:30-9:45",
+      "touch_range": "5+",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "iFVG",
+      "gap_closure_filter": "True",
+      "gap_size_range": "ALL",
+      "time_window": "ALL",
+      "touch_range": "5+",
+      "trade_management": "partial_close",
+      "directional_filter": "longs_only"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "ALL",
+      "gap_size_range": "10+",
+      "time_window": "9:45-10:00",
+      "touch_range": "5+",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "0-3",
+      "time_window": "9:30-9:45",
+      "touch_range": "1-2",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "3-6",
+      "time_window": "10:00-10:15",
+      "touch_range": "5+",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "ALL",
+      "gap_size_range": "10+",
+      "time_window": "9:45-10:00",
+      "touch_range": "1-2",
+      "trade_management": "trailing_sl",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "ALL",
+      "gap_size_range": "10+",
+      "time_window": "9:45-10:00",
+      "touch_range": "5+",
+      "trade_management": "trailing_sl",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "0-3",
+      "time_window": "9:30-9:45",
+      "touch_range": "5+",
+      "trade_management": "fixed",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "iFVG",
+      "gap_closure_filter": "True",
+      "gap_size_range": "3-6",
+      "time_window": "9:45-10:00",
+      "touch_range": "5+",
+      "trade_management": "partial_close",
+      "directional_filter": "longs_only"
+    },
+    {
+      "entry_model": "noFVG",
+      "gap_closure_filter": "True",
+      "gap_size_range": "3-6",
+      "time_window": "9:30-9:45",
+      "touch_range": "5+",
+      "trade_management": "dynamic_fvg",
+      "directional_filter": "longs_only"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "False",
+      "gap_size_range": "3-6",
+      "time_window": "9:30-9:45",
+      "touch_range": "5+",
+      "trade_management": "dynamic_fvg",
+      "directional_filter": "longs_only"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "10+",
+      "time_window": "9:45-10:00",
+      "touch_range": "5+",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "3-6",
+      "time_window": "9:30-9:45",
+      "touch_range": "ALL",
+      "trade_management": "partial_close",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "3-6",
+      "time_window": "9:30-9:45",
+      "touch_range": "3-4",
+      "trade_management": "trailing_sl",
+      "directional_filter": "none"
+    },
+    {
+      "entry_model": "BOS",
+      "gap_closure_filter": "True",
+      "gap_size_range": "3-6",
+      "time_window": "9:30-9:45",
+      "touch_range": "3-4",
+      "trade_management": "fixed",
+      "directional_filter": "longs_only"
+    }
+  ],
+  "all_scores": [
+    0.8823529411764706,
+    999.0,
+    1.0961538461538463,
+    999.0,
+    999.0,
+    999.0,
+    0.9714285714285714,
+    1.173913043478261,
+    999.0,
+    1.0,
+    999.0,
+    0.927536231884058,
+    999.0,
+    1.10625,
+    1.05,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    0.9090909090909091,
+    999.0,
+    1.4166666666666667,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    1.1594202898550725,
+    0.9285714285714286,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    1.0096153846153846,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    999.0
+  ],
+  "all_metrics": [
+    {
+      "total_trades": 32,
+      "winning_trades": 15,
+      "losing_trades": 17,
+      "profit_factor": 0.8823529411764706,
+      "win_rate": 0.46875,
+      "net_pnl": -40.0,
+      "gross_profit": 300.0,
+      "gross_loss": 340.0,
+      "valid": true
+    },
+    {
+      "total_trades": 5,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 43,
+      "winning_trades": 19,
+      "losing_trades": 13,
+      "profit_factor": 1.0961538461538463,
+      "win_rate": 0.4418604651162791,
+      "net_pnl": 25.0,
+      "gross_profit": 285.0,
+      "gross_loss": 260.0,
+      "valid": true
+    },
+    {
+      "total_trades": 17,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 15,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 1,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 138,
+      "winning_trades": 68,
+      "losing_trades": 70,
+      "profit_factor": 0.9714285714285714,
+      "win_rate": 0.4927536231884058,
+      "net_pnl": -40.0,
+      "gross_profit": 1360.0,
+      "gross_loss": 1400.0,
+      "valid": true
+    },
+    {
+      "total_trades": 78,
+      "winning_trades": 36,
+      "losing_trades": 23,
+      "profit_factor": 1.173913043478261,
+      "win_rate": 0.46153846153846156,
+      "net_pnl": 80.0,
+      "gross_profit": 540.0,
+      "gross_loss": 460.0,
+      "valid": true
+    },
+    {
+      "total_trades": 13,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 64,
+      "winning_trades": 32,
+      "losing_trades": 32,
+      "profit_factor": 1.0,
+      "win_rate": 0.5,
+      "net_pnl": 0.0,
+      "gross_profit": 640.0,
+      "gross_loss": 640.0,
+      "valid": true
+    },
+    {
+      "total_trades": 5,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 665,
+      "winning_trades": 320,
+      "losing_trades": 345,
+      "profit_factor": 0.927536231884058,
+      "win_rate": 0.48120300751879697,
+      "net_pnl": -500.0,
+      "gross_profit": 6400.0,
+      "gross_loss": 6900.0,
+      "valid": true
+    },
+    {
+      "total_trades": 2,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 135,
+      "winning_trades": 59,
+      "losing_trades": 40,
+      "profit_factor": 1.10625,
+      "win_rate": 0.43703703703703706,
+      "net_pnl": 85.0,
+      "gross_profit": 885.0,
+      "gross_loss": 800.0,
+      "valid": true
+    },
+    {
+      "total_trades": 44,
+      "winning_trades": 21,
+      "losing_trades": 15,
+      "profit_factor": 1.05,
+      "win_rate": 0.4772727272727273,
+      "net_pnl": 15.0,
+      "gross_profit": 315.0,
+      "gross_loss": 300.0,
+      "valid": true
+    },
+    {
+      "total_trades": 1,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 1,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 23,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 15,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 42,
+      "winning_trades": 20,
+      "losing_trades": 22,
+      "profit_factor": 0.9090909090909091,
+      "win_rate": 0.47619047619047616,
+      "net_pnl": -40.0,
+      "gross_profit": 400.0,
+      "gross_loss": 440.0,
+      "valid": true
+    },
+    {
+      "total_trades": 1,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 116,
+      "winning_trades": 68,
+      "losing_trades": 48,
+      "profit_factor": 1.4166666666666667,
+      "win_rate": 0.5862068965517241,
+      "net_pnl": 400.0,
+      "gross_profit": 1360.0,
+      "gross_loss": 960.0,
+      "valid": true
+    },
+    {
+      "total_trades": 10,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 22,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 7,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 18,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 8,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 86,
+      "winning_trades": 40,
+      "losing_trades": 46,
+      "profit_factor": 1.1594202898550725,
+      "win_rate": 0.46511627906976744,
+      "net_pnl": 110.0,
+      "gross_profit": 800.0,
+      "gross_loss": 690.0,
+      "valid": true
+    },
+    {
+      "total_trades": 62,
+      "winning_trades": 26,
+      "losing_trades": 36,
+      "profit_factor": 0.9285714285714286,
+      "win_rate": 0.41935483870967744,
+      "net_pnl": -40.0,
+      "gross_profit": 520.0,
+      "gross_loss": 560.0,
+      "valid": true
+    },
+    {
+      "total_trades": 7,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 6,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 3,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 3,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 73,
+      "winning_trades": 35,
+      "losing_trades": 26,
+      "profit_factor": 1.0096153846153846,
+      "win_rate": 0.4794520547945205,
+      "net_pnl": 5.0,
+      "gross_profit": 525.0,
+      "gross_loss": 520.0,
+      "valid": true
+    },
+    {
+      "total_trades": 6,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 6,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 28,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 22,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 7,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 9,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 22,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 22,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 7,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 2,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 8,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 13,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 10,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 6,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 6,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    },
+    {
+      "total_trades": 1,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "net_pnl": 0.0,
+      "valid": false
+    }
+  ],
+  "n_iterations": 50,
+  "total_time_seconds": 531.8586790561676,
+  "convergence_iteration": 1
+}

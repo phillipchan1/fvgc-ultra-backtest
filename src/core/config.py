@@ -16,7 +16,7 @@ CONFIG = {
     #   "month" - Test ~30 days starting from test_start_date  
     #   "full_dataset" - Test entire dataset (2+ years)
     #   None - Use date_range or start_date/end_date below
-    "test_period": "full_dataset",  # Change this to test different periods
+    "test_period": None,  # Change this to test different periods (None = use start_date/end_date)
     
     # For single_day testing
     "test_date": "2025-10-23",  # Format: YYYY-MM-DD
@@ -26,8 +26,8 @@ CONFIG = {
     
     # Legacy date range filters (alternative to test_period)
     "date_range": None,  # Options: None, "last_2_weeks", "last_month", etc.
-    "start_date": None,  # Explicit start date (YYYY-MM-DD)
-    "end_date": None,    # Explicit end date (YYYY-MM-DD)
+    "start_date": "2025-09-01",  # Explicit start date (YYYY-MM-DD)
+    "end_date": "2025-10-31",    # Explicit end date (YYYY-MM-DD)
     
     # Trading session
     "session_tz": "America/New_York",

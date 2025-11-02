@@ -149,6 +149,19 @@ def load_processed_30s_csv(path: str, date_filter: Optional[str] = None) -> pd.D
         elif test_period == "full_dataset":
             # No date filtering - use entire dataset
             pass
+        
+        elif test_period is None:
+            # Use explicit start_date/end_date if test_period is None
+            config_start = CONFIG.get("start_date")
+            config_end = CONFIG.get("end_date")
+            if config_start:
+                start_date_val = pd.Timestamp(config_start).date()
+                df = df[df["timestamp"].dt.date >= start_date_val]
+            if config_end:
+                end_date_val = pd.Timestamp(config_end).date()
+                df = df[df["timestamp"].dt.date <= end_date_val]
+            if config_start or config_end:
+                print(f"📅 Filtered to custom range: {config_start or 'start'} to {config_end or 'end'} ({len(df)} bars)")
     
     # Filter by session time
     session_start = pd.to_datetime(CONFIG["session_start"]).time()

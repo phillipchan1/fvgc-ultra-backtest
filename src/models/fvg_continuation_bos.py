@@ -35,8 +35,9 @@ class FVGContinuationBOSModel(EntryModel):
         if fvg.trade_taken or not fvg.valid:
             return None
 
-        # FVG must have been created at least one bar BEFORE the previous bar
-        if bar_index - 1 <= fvg.created_idx:
+        # FVG must have been created at least one bar before current bar
+        # This allows entry on the bar immediately after FVG creation if BOS occurs
+        if bar_index <= fvg.created_idx:
             return None
 
         # Note: Touch counting handled in backtest_engine
@@ -61,10 +62,19 @@ class FVGContinuationBOSModel(EntryModel):
         """
         Finds the most recent local high in the range (simpler detection).
         Returns (index, price) or None.
+        
+        Note: For BOS, the swing high is simply the highest high between FVG creation
+        and current bar. This can be just the FVG creation bar itself if entering
+        immediately after FVG forms.
         """
-        if start_index >= end_index:
+        if start_index > end_index:
             return None
         
+        # Include the range from start_index to end_index (inclusive of start, exclusive of end)
+        # But if start == end, we have no bars to check
+        if start_index == end_index:
+            return None
+            
         highs = dataframe['high'].iloc[start_index:end_index]
         if len(highs) == 0:
             return None
@@ -79,10 +89,19 @@ class FVGContinuationBOSModel(EntryModel):
         """
         Finds the most recent local low in the range (simpler detection).
         Returns (index, price) or None.
+        
+        Note: For BOS, the swing low is simply the lowest low between FVG creation
+        and current bar. This can be just the FVG creation bar itself if entering
+        immediately after FVG forms.
         """
-        if start_index >= end_index:
+        if start_index > end_index:
             return None
         
+        # Include the range from start_index to end_index (inclusive of start, exclusive of end)
+        # But if start == end, we have no bars to check
+        if start_index == end_index:
+            return None
+            
         lows = dataframe['low'].iloc[start_index:end_index]
         if len(lows) == 0:
             return None
@@ -112,7 +131,9 @@ class FVGContinuationBOSModel(EntryModel):
             return None
 
         # 1. Find the most recent local high between FVG creation and current bar
-        swing_result = self._find_swing_high(fvg.created_idx + 1, bar_index, dataframe)
+        # For immediate entries (bar after FVG), include the FVG bar itself
+        # Search from FVG bar to current bar (exclusive)
+        swing_result = self._find_swing_high(fvg.created_idx, bar_index, dataframe)
         if swing_result is None:
             return None
         
@@ -159,7 +180,9 @@ class FVGContinuationBOSModel(EntryModel):
             return None
 
         # 1. Find the most recent local low between FVG creation and current bar
-        swing_result = self._find_swing_low(fvg.created_idx + 1, bar_index, dataframe)
+        # For immediate entries (bar after FVG), include the FVG bar itself
+        # Search from FVG bar to current bar (exclusive)
+        swing_result = self._find_swing_low(fvg.created_idx, bar_index, dataframe)
         if swing_result is None:
             return None
         
