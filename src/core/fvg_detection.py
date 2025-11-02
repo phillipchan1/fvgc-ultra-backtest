@@ -72,77 +72,19 @@ def update_fvg_validity(active_fvgs: List[FVG], row: pd.Series, idx: int):
             continue
             
         # Check for inversion - only check close (not wick)
-        # Special handling for iFVG: If a conflicting FVG is inverted, the original FVG stays valid
+        # If price closes through the FVG, it's invalidated
         
         if f.direction == "bullish":
+            # Bullish FVG is invalidated if close is below the lower bound
             if c < f.lower:
-                # Check if this close inverts any conflicting bearish FVGs
-                # OR if there are conflicting bearish FVGs present that could be inverted
-                inverted_conflicting_fvg = False
-                has_conflicting_fvgs = False
-                
-                # Check existing FVGs
-                for other in active_fvgs:
-                    if other.fvg_id == f.fvg_id or other.direction != "bearish":
-                        continue
-                    # Check if this bearish FVG was created after the bullish FVG
-                    if other.created_idx > f.created_idx:
-                        # Check if it overlaps with a reasonable range (leg zone concept)
-                        if other.lower <= f.upper + 20.0:  # Within 20 pts above the bullish FVG
-                            has_conflicting_fvgs = True
-                            # Did current close invert this bearish FVG?
-                            if c > other.upper:
-                                inverted_conflicting_fvg = True
-                                break  # Found an inverted conflicting FVG, keep bullish FVG valid
-                
-                # Also check if current bar is FORMING a bearish FVG
-                if not has_conflicting_fvgs and 'bear_fvg' in row.index:
-                    if bool(row.get('bear_fvg', False)):
-                        # A bearish FVG is forming on this bar
-                        has_conflicting_fvgs = True
-                
-                # Keep the FVG valid if:
-                # 1. We inverted a conflicting FVG (iFVG completion)
-                # 2. We have conflicting FVGs present OR forming (potential iFVG setup)
-                if not inverted_conflicting_fvg and not has_conflicting_fvgs:
-                    f.valid = False
-                    f.deactivated_reason = "inverted"
-                # Otherwise, keep it valid (iFVG scenario or potential iFVG)
+                f.valid = False
+                f.deactivated_reason = "inverted"
                 
         elif f.direction == "bearish":
+            # Bearish FVG is invalidated if close is above the upper bound
             if c > f.upper:
-                # Check if this close inverts any conflicting bullish FVGs
-                # OR if there are conflicting bullish FVGs present that could be inverted
-                inverted_conflicting_fvg = False
-                has_conflicting_fvgs = False
-                
-                # Check existing FVGs
-                for other in active_fvgs:
-                    if other.fvg_id == f.fvg_id or other.direction != "bullish":
-                        continue
-                    # Check if this bullish FVG was created after the bearish FVG
-                    if other.created_idx > f.created_idx:
-                        # Check if it overlaps with a reasonable range
-                        if other.upper >= f.lower - 20.0:  # Within 20 pts below the bearish FVG
-                            has_conflicting_fvgs = True
-                            # Did current close invert this bullish FVG?
-                            if c < other.lower:
-                                inverted_conflicting_fvg = True
-                                break  # Found an inverted conflicting FVG, keep bearish FVG valid
-                
-                # Also check if current bar is FORMING a bullish FVG
-                if not has_conflicting_fvgs and 'bull_fvg' in row.index:
-                    if bool(row.get('bull_fvg', False)):
-                        # A bullish FVG is forming on this bar
-                        has_conflicting_fvgs = True
-                
-                # Keep the FVG valid if:
-                # 1. We inverted a conflicting FVG (iFVG completion)
-                # 2. We have conflicting FVGs present OR forming (potential iFVG setup)
-                if not inverted_conflicting_fvg and not has_conflicting_fvgs:
-                    f.valid = False
-                    f.deactivated_reason = "inverted"
-                # Otherwise, keep it valid (iFVG scenario or potential iFVG)
+                f.valid = False
+                f.deactivated_reason = "inverted"
 
 
 def prune_active_fvgs(active: List[FVG]) -> List[FVG]:
