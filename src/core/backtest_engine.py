@@ -292,7 +292,7 @@ def run_backtest(df: pd.DataFrame, override_config: Optional[Dict] = None) -> pd
     elif strategy_type == "dynamic_fvg":
         tm_strategy = get_trade_management_strategy(
             "dynamic_fvg",
-            buffer_pts=config.get("dynamic_fvg_buffer_pts", 3.0),
+            buffer_pts=config.get("dynamic_fvg_buffer_pts", 5.0),
             min_pts=config.get("dynamic_fvg_min_pts", 15.0),
             max_pts=config.get("dynamic_fvg_max_pts", 40.0)
         )
@@ -307,6 +307,20 @@ def run_backtest(df: pd.DataFrame, override_config: Optional[Dict] = None) -> pd
             "trailing_sl",
             base_points_tp=config["points_tp"],
             base_points_sl=config["points_sl"]
+        )
+    elif strategy_type == "dynamic_trailing_sl":
+        tm_strategy = get_trade_management_strategy(
+            "dynamic_trailing_sl",
+            buffer_pts=config.get("dynamic_fvg_buffer_pts", 5.0),
+            min_pts=config.get("dynamic_fvg_min_pts", 15.0),
+            max_pts=config.get("dynamic_fvg_max_pts", 40.0)
+        )
+    elif strategy_type == "dynamic_partial_close":
+        tm_strategy = get_trade_management_strategy(
+            "dynamic_partial_close",
+            buffer_pts=config.get("dynamic_fvg_buffer_pts", 5.0),
+            min_pts=config.get("dynamic_fvg_min_pts", 15.0),
+            max_pts=config.get("dynamic_fvg_max_pts", 40.0)
         )
     else:
         raise ValueError(f"Unknown trade_management_strategy: {strategy_type}")

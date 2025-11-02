@@ -53,16 +53,19 @@ def run_baseline_for_strategy(strategy_name: str, data_df, output_dir: str):
 
 
 def main():
-    """Run all 4 baseline backtests"""
+    """Run all 6 baseline backtests"""
     print("\n" + "="*80)
     print("BASELINE BACKTESTS - NO FILTERS")
     print("="*80)
-    print("\nRunning 4 backtests (one per trade management strategy)")
+    print("\nRunning 6 backtests (one per trade management strategy)")
     print("This captures ALL trades for fast post-hoc filtering\n")
     
     # Create output directory
     output_dir = "outputs/baseline"
     os.makedirs(output_dir, exist_ok=True)
+    
+    # Set config to use full dataset BEFORE loading data
+    CONFIG['test_period'] = 'full_dataset'
     
     # Load data once
     print("Loading data...")
@@ -70,12 +73,14 @@ def main():
     df = load_processed_30s_csv(data_path, date_filter=None)
     print(f"Loaded {len(df):,} bars (full 2+ year dataset)")
     
-    # Trade management strategies to test
+    # Trade management strategies to test (complete 2x3 grid)
     strategies = [
-        "fixed",
-        "dynamic_fvg",
-        "partial_close",
-        "trailing_sl"
+        "fixed",                    # Fixed 20/20, no SL movement
+        "dynamic_fvg",              # Dynamic FVG-based, no SL movement
+        "trailing_sl",              # Fixed 20/20 + trailing SL
+        "partial_close",            # Fixed 20/20 + partial close
+        "dynamic_trailing_sl",      # Dynamic FVG + trailing SL
+        "dynamic_partial_close"     # Dynamic FVG + partial close
     ]
     
     # Run each baseline
