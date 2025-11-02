@@ -57,10 +57,11 @@ class FVGContinuationNoFVGModel(EntryModel):
 
         return None
 
-    def _find_swing_high(self, start_index: int, dataframe: pd.DataFrame) -> Optional[int]:
-        """Finds the nearest swing high after the start_index."""
+    def _find_swing_high(self, start_index: int, end_index: int, dataframe: pd.DataFrame) -> Optional[int]:
+        """Finds the nearest swing high between start_index and end_index (exclusive)."""
         highs = dataframe['high']
-        for i in range(start_index, len(dataframe) - self._pivot_strength):
+        # Search only up to (but not including) end_index to avoid looking into the future
+        for i in range(start_index, min(end_index, len(dataframe) - self._pivot_strength)):
             if i < self._pivot_strength: continue
             
             # Check if high[i] is a basic pivot
@@ -74,10 +75,11 @@ class FVGContinuationNoFVGModel(EntryModel):
                 return i
         return None
 
-    def _find_swing_low(self, start_index: int, dataframe: pd.DataFrame) -> Optional[int]:
-        """Finds the nearest swing low after the start_index."""
+    def _find_swing_low(self, start_index: int, end_index: int, dataframe: pd.DataFrame) -> Optional[int]:
+        """Finds the nearest swing low between start_index and end_index (exclusive)."""
         lows = dataframe['low']
-        for i in range(start_index, len(dataframe) - self._pivot_strength):
+        # Search only up to (but not including) end_index to avoid looking into the future
+        for i in range(start_index, min(end_index, len(dataframe) - self._pivot_strength)):
             if i < self._pivot_strength: continue
 
             # Check if low[i] is a basic pivot
@@ -110,7 +112,8 @@ class FVGContinuationNoFVGModel(EntryModel):
             return None
 
         # 1. Identify Swing High
-        swing_high_index = self._find_swing_high(fvg.created_idx + 1, dataframe)
+        # Search from FVG creation up to (but not including) current bar
+        swing_high_index = self._find_swing_high(fvg.created_idx + 1, bar_index, dataframe)
         if swing_high_index is None:
             return None
         
@@ -212,7 +215,8 @@ class FVGContinuationNoFVGModel(EntryModel):
             return None
 
         # 1. Identify Swing Low
-        swing_low_index = self._find_swing_low(fvg.created_idx + 1, dataframe)
+        # Search from FVG creation up to (but not including) current bar
+        swing_low_index = self._find_swing_low(fvg.created_idx + 1, bar_index, dataframe)
         if swing_low_index is None:
             return None
         
