@@ -55,9 +55,9 @@ class FVGContinuationIFVGModel(EntryModel):
         previous_bar = dataframe.iloc[bar_index - 1]
 
         if fvg.direction == 'bullish':
-            return self._evaluate_bullish(fvg, current_bar, previous_bar, bar_index, dataframe)
+            return self._evaluate_bullish(fvg, current_bar, previous_bar, bar_index, dataframe, active_fvgs)
         elif fvg.direction == 'bearish':
-            return self._evaluate_bearish(fvg, current_bar, previous_bar, bar_index, dataframe)
+            return self._evaluate_bearish(fvg, current_bar, previous_bar, bar_index, dataframe, active_fvgs)
 
         return None
 
@@ -101,8 +101,20 @@ class FVGContinuationIFVGModel(EntryModel):
         current_bar: pd.Series,
         previous_bar: pd.Series,
         bar_index: int,
-        dataframe: pd.DataFrame
+        dataframe: pd.DataFrame,
+        active_fvgs: List[FVG] = None
     ) -> Optional[TradeSignal]:
+        
+        # Proximity Filter: Check for opposing FVGs within 20 points
+        # For bullish entries, reject if there's an active bearish FVG within 20 pts above
+        if active_fvgs:
+            for other_fvg in active_fvgs:
+                if other_fvg.direction == 'bearish' and other_fvg.valid:
+                    # Check if bearish FVG is above and within 20 pts
+                    if other_fvg.lower > fvg.upper:  # Bearish FVG is above
+                        distance = other_fvg.lower - fvg.upper
+                        if distance < 20:
+                            return None  # Too close to opposing FVG
         
         # Check for retracement into FVG
         retrace_occurred = False
@@ -185,8 +197,20 @@ class FVGContinuationIFVGModel(EntryModel):
         current_bar: pd.Series,
         previous_bar: pd.Series,
         bar_index: int,
-        dataframe: pd.DataFrame
+        dataframe: pd.DataFrame,
+        active_fvgs: List[FVG] = None
     ) -> Optional[TradeSignal]:
+        
+        # Proximity Filter: Check for opposing FVGs within 20 points
+        # For bearish entries, reject if there's an active bullish FVG within 20 pts below
+        if active_fvgs:
+            for other_fvg in active_fvgs:
+                if other_fvg.direction == 'bullish' and other_fvg.valid:
+                    # Check if bullish FVG is below and within 20 pts
+                    if other_fvg.upper < fvg.lower:  # Bullish FVG is below
+                        distance = fvg.lower - other_fvg.upper
+                        if distance < 20:
+                            return None  # Too close to opposing FVG
         
         # Check for retracement into FVG
         retrace_occurred = False

@@ -4,8 +4,8 @@
 # ---------------------------------------------------------------------------
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Optional, List
+from dataclasses import dataclass, field
+from typing import Optional, List, Dict
 import pandas as pd
 from ..core.fvg_detection import FVG
 
@@ -24,6 +24,9 @@ class TradeSignal:
     # Metadata for analysis
     fvg_direction: str  # 'bullish' or 'bearish'
     fvg_size_pts: float
+    
+    # Additional metadata dictionary for permutation tracking
+    metadata: Dict = field(default_factory=dict)
 
 
 class EntryModel(ABC):
