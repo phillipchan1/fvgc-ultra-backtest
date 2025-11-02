@@ -143,8 +143,8 @@ class FVGContinuationBOSModel(EntryModel):
         if current_bar['close'] <= swing_high_price:
             return None  # Not a BOS - body didn't close through
 
-        # 3. Distance Rule: Close-to-close distance from previous bar (7.5 pts max)
-        distance = abs(current_bar['close'] - previous_bar['close'])
+        # 3. Distance Rule: Close must be within 7.5 pts above previous candle's HIGH
+        distance = current_bar['close'] - previous_bar['high']
         if distance > self._max_close_dist:
             return None
 
@@ -192,8 +192,8 @@ class FVGContinuationBOSModel(EntryModel):
         if current_bar['close'] >= swing_low_price:
             return None  # Not a BOS - body didn't close through
 
-        # 3. Distance Rule: Close-to-close distance from previous bar (7.5 pts max)
-        distance = abs(current_bar['close'] - previous_bar['close'])
+        # 3. Distance Rule: Close must be within 7.5 pts below previous candle's LOW
+        distance = previous_bar['low'] - current_bar['close']
         if distance > self._max_close_dist:
             return None
 
