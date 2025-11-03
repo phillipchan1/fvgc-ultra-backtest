@@ -375,31 +375,24 @@ def run_backtest(df: pd.DataFrame, override_config: Optional[Dict] = None) -> pd
         # Update validity of existing active FVGs
         update_fvg_validity(active_fvgs, row, i)
         
-        # Create new FVGs at this bar (filter out session gaps and tiny gaps)
+        # Create new FVGs at this bar (only filter out extremely large session gaps)
         if bool(row.get("bull_fvg", False)):
             fvg = create_fvg_from_row(row, i, "bullish")
-            # Filter out large session gaps and too-small gaps
-            min_fvg_size = config.get("fvg_min_size_pts", 1.5)
+            # Only filter out extremely large session gaps (>100 pts)
+            # No minimum size requirement - track all sizes
             max_fvg_size = config.get("max_fvg_size_pts", 100.0)
-            skip_start_bars = config.get("bars_to_skip_after_session_start", 3)
-            max_start_size = config.get("max_fvg_size_session_start", 50.0)
             
-            if fvg.size_pts and min_fvg_size <= fvg.size_pts <= max_fvg_size:
-                is_session_start = bars_in_session <= skip_start_bars
-                if not is_session_start or fvg.size_pts <= max_start_size:
-                    active_fvgs.append(fvg)
+            if fvg.size_pts and fvg.size_pts <= max_fvg_size:
+                active_fvgs.append(fvg)
         
         if bool(row.get("bear_fvg", False)):
             fvg = create_fvg_from_row(row, i, "bearish")
-            min_fvg_size = config.get("fvg_min_size_pts", 1.5)
+            # Only filter out extremely large session gaps (>100 pts)
+            # No minimum size requirement - track all sizes
             max_fvg_size = config.get("max_fvg_size_pts", 100.0)
-            skip_start_bars = config.get("bars_to_skip_after_session_start", 3)
-            max_start_size = config.get("max_fvg_size_session_start", 50.0)
             
-            if fvg.size_pts and min_fvg_size <= fvg.size_pts <= max_fvg_size:
-                is_session_start = bars_in_session <= skip_start_bars
-                if not is_session_start or fvg.size_pts <= max_start_size:
-                    active_fvgs.append(fvg)
+            if fvg.size_pts and fvg.size_pts <= max_fvg_size:
+                active_fvgs.append(fvg)
         
         # Prune active FVGs (keep only most recent per side)
         active_fvgs = prune_active_fvgs(active_fvgs)
@@ -414,253 +407,266 @@ def run_backtest(df: pd.DataFrame, override_config: Optional[Dict] = None) -> pd
                     fvg.touch_count += 1
         
         # Evaluate entry models for each active FVG
-        signal_generated = False
+        signals_this_bar = []  # Collect ALL signals from all FVGs and models
+        
         for fvg in active_fvgs:
-            # CRITICAL: Skip FVGs that have already been traded
-            # This ensures ONE TRADE PER FVG maximum
-            if fvg.trade_taken:
+            # Skip FVGs that have already been traded (if config disallows multiple entries)
+            if fvg.trade_taken and not config.get("allow_multiple_entries_per_fvg", False):
                 continue
             
             if not fvg.valid or fvg.expired:
                 continue
             
-            # Try each entry model until one generates a signal
-            signal = None
+            # Try ALL entry models, collect ALL signals (don't break on first)
             for entry_model in entry_models:
                 signal = entry_model.evaluate(fvg, active_fvgs, row, i, df)
                 if signal:
-                    break  # Use first model that generates signal
-            
-            if signal:
-                # IMMEDIATELY mark FVG as traded before doing anything else
-                # This prevents any possibility of the same FVG being traded again
+                    signals_this_bar.append((signal, fvg))
+        
+        # Process ALL signals generated this bar
+        for signal, fvg in signals_this_bar:
+            # Mark FVG as traded ONLY if config disallows multiple entries
+            if not config.get("allow_multiple_entries_per_fvg", False):
                 fvg.trade_taken = True
                 fvg.valid = False
                 fvg.expired = True
                 fvg.deactivated_reason = "trade_taken"
+            
+            entry_price = signal.entry_price
+            
+            # Calculate exit prices using trade management strategy
+            tm_result = tm_strategy.calculate_exits(
+                entry_price=entry_price,
+                direction=signal.direction,
+                fvg_lower=signal.fvg_lower,
+                fvg_upper=signal.fvg_upper,
+                fvg_size_pts=signal.fvg_size_pts
+            )
+            
+            # Find exit using trade management result
+            exit_time, exit_price, exit_reason, partial_info, exit_idx = find_exit(
+                df, i, entry_price, tm_result, signal.direction
+            )
                 
-                signal_generated = True
-                entry_price = signal.entry_price
+            # Calculate PnL (accounting for partial closes)
+            if partial_info is not None and partial_info.get('partial_pct', 0) > 0:
+                # Partial close strategy: calculate weighted PnL
+                partial_pct = partial_info['partial_pct']
+                partial_price = partial_info['partial_exit_price']
                 
-                # Calculate exit prices using trade management strategy
-                tm_result = tm_strategy.calculate_exits(
-                    entry_price=entry_price,
-                    direction=signal.direction,
-                    fvg_lower=signal.fvg_lower,
-                    fvg_upper=signal.fvg_upper,
-                    fvg_size_pts=signal.fvg_size_pts
-                )
+                if signal.direction == "long":
+                    partial_pnl = (partial_price - entry_price) * partial_pct
+                    remaining_pnl = (exit_price - entry_price) * (1 - partial_pct)
+                else:  # short
+                    partial_pnl = (entry_price - partial_price) * partial_pct
+                    remaining_pnl = (entry_price - exit_price) * (1 - partial_pct)
                 
-                # Find exit using trade management result
-                exit_time, exit_price, exit_reason, partial_info, exit_idx = find_exit(
-                    df, i, entry_price, tm_result, signal.direction
-                )
+                total_pnl = partial_pnl + remaining_pnl
+            else:
+                # Simple full position exit
+                if signal.direction == "long":
+                    total_pnl = exit_price - entry_price
+                else:
+                    total_pnl = entry_price - exit_price
+            
+            # Calculate FVG tracking variables for optimization
+            fvg_midpoint = (signal.fvg_lower + signal.fvg_upper) / 2
+            retraced_in_gap = False
+            retraced_beyond_50 = False
+            
+            # Scan bars from FVG creation to current entry bar
+            for scan_idx in range(fvg.created_idx + 1, i + 1):
+                scan_close = df.iloc[scan_idx]['close']
                 
-                # Calculate PnL (accounting for partial closes)
-                if partial_info is not None and partial_info.get('partial_pct', 0) > 0:
-                    # Partial close strategy: calculate weighted PnL
-                    partial_pct = partial_info['partial_pct']
-                    partial_price = partial_info['partial_exit_price']
+                # Check if closed in gap
+                if signal.fvg_lower <= scan_close <= signal.fvg_upper:
+                    retraced_in_gap = True
                     
+                    # Check if beyond 50% mark
                     if signal.direction == "long":
-                        partial_pnl = (partial_price - entry_price) * partial_pct
-                        remaining_pnl = (exit_price - entry_price) * (1 - partial_pct)
-                    else:  # short
-                        partial_pnl = (entry_price - partial_price) * partial_pct
-                        remaining_pnl = (entry_price - exit_price) * (1 - partial_pct)
-                    
-                    total_pnl = partial_pnl + remaining_pnl
+                        # For bullish FVG, closing below midpoint = approaching invalidation
+                        if scan_close < fvg_midpoint:
+                            retraced_beyond_50 = True
+                    else:  # short/bearish
+                        # For bearish FVG, closing above midpoint = approaching invalidation
+                        if scan_close > fvg_midpoint:
+                            retraced_beyond_50 = True
+            
+            # Calculate engulfing closure distance (how far current close is from previous level)
+            if i > 0:
+                prev_bar = df.iloc[i - 1]
+                if signal.direction == "long":
+                    # For longs: distance from previous high
+                    engulfing_distance = row['close'] - prev_bar['high']
                 else:
-                    # Simple full position exit
-                    if signal.direction == "long":
-                        total_pnl = exit_price - entry_price
-                    else:
-                        total_pnl = entry_price - exit_price
+                    # For shorts: distance from previous low
+                    engulfing_distance = prev_bar['low'] - row['close']
+            else:
+                engulfing_distance = 0.0
+            
+            # Calculate bars since FVG creation
+            bars_since_fvg_creation = i - fvg.created_idx
+            
+            # Calculate trade duration
+            entry_ts = pd.Timestamp(signal.entry_time)
+            exit_ts = pd.Timestamp(exit_time)
+            trade_duration_minutes = (exit_ts - entry_ts).total_seconds() / 60.0
+            
+            # Calculate all permutation metrics
+            time_metrics = calculate_time_metrics(entry_ts, session_start_idx, i)
+            bar_metrics = calculate_bar_metrics(row, df.iloc[i - 1] if i > 0 else row)
+            volatility_metrics = calculate_volatility_metrics(df, i, row)
+            mae_mfe_metrics = track_mae_mfe(df, i, exit_idx, signal.direction, entry_price, tm_result.tp_price, tm_result.sl_price)
+            fvg_quality_metrics = calculate_fvg_quality_metrics(fvg, active_fvgs, df, i, entry_price)
+            
+            # Calculate price context metrics
+            distance_from_session_high = session_high - entry_price if session_high is not None else None
+            distance_from_session_low = entry_price - session_low if session_low is not None else None
+            
+            if session_high is not None and session_low is not None and session_high > session_low:
+                session_range = session_high - session_low
+                session_range_pct_position = (entry_price - session_low) / session_range
+            else:
+                session_range_pct_position = None
+            
+            if session_open is not None and session_open > 0:
+                price_pct_change_from_open = ((entry_price - session_open) / session_open) * 100
+            else:
+                price_pct_change_from_open = None
+            
+            # Calculate bars since last swing
+            last_swing_idx = find_last_swing_point(df, i, 'high' if signal.direction == 'long' else 'low')
+            bars_since_last_swing = i - last_swing_idx if last_swing_idx is not None else None
+            
+            # Get swing point info from signal metadata (if BOS model)
+            swing_point_price = signal.metadata.get('swing_point_price', None) if hasattr(signal, 'metadata') else None
+            distance_from_swing = signal.metadata.get('distance_from_swing', None) if hasattr(signal, 'metadata') else None
+            swing_bars_ago = signal.metadata.get('swing_bars_ago', None) if hasattr(signal, 'metadata') else None
+            
+            # Get new tracking metrics from signal metadata
+            close_distance_from_prev_bar = signal.metadata.get('close_distance_from_prev_bar', None) if hasattr(signal, 'metadata') else None
+            conflicting_fvg_id = signal.metadata.get('conflicting_fvg_id', None) if hasattr(signal, 'metadata') else None
+            conflicting_fvg_size = signal.metadata.get('conflicting_fvg_size', None) if hasattr(signal, 'metadata') else None
+            conflicting_fvg_distance = signal.metadata.get('conflicting_fvg_distance', None) if hasattr(signal, 'metadata') else None
+            conflicting_fvg_mitigated = signal.metadata.get('conflicting_fvg_mitigated', None) if hasattr(signal, 'metadata') else None
+            swing_swept_before_entry = signal.metadata.get('swing_swept_before_entry', False) if hasattr(signal, 'metadata') else False
+            entry_bar_swept_swing = signal.metadata.get('entry_bar_swept_swing', False) if hasattr(signal, 'metadata') else False
+            entry_bar_closed_through_swing = signal.metadata.get('entry_bar_closed_through_swing', False) if hasattr(signal, 'metadata') else False
+            created_equal_high_low = signal.metadata.get('created_equal_high_low', False) if hasattr(signal, 'metadata') else False
+            
+            # Create trade record
+            trade = {
+                # Original fields
+                "entry_time": signal.entry_time,
+                "exit_time": exit_time,
+                "direction": signal.direction,
+                "entry_price": entry_price,
+                "exit_price": exit_price,
+                "tp_price": tm_result.tp_price,
+                "sl_price": tm_result.sl_price,
+                "entry_model": signal.entry_model,
+                "fvg_id": signal.fvg_id,
+                "fvg_size_pts": signal.fvg_size_pts,
+                "fvg_touch_count": fvg.touch_count,
+                "bars_since_fvg_creation": bars_since_fvg_creation,
+                "engulfing_distance_pts": engulfing_distance,
+                "pnl": total_pnl,
+                "pnl_pts": total_pnl,
+                "exit_reason": exit_reason,
+                "retraced_closed_in_gap": retraced_in_gap,
+                "retraced_beyond_50pct": retraced_beyond_50,
                 
-                # Calculate FVG tracking variables for optimization
-                fvg_midpoint = (signal.fvg_lower + signal.fvg_upper) / 2
-                retraced_in_gap = False
-                retraced_beyond_50 = False
+                # Time-based metrics
+                "time_window": time_metrics['time_window'],
+                "minutes_into_session": time_metrics['minutes_into_session'],
+                "is_first_5_mins": time_metrics['is_first_5_mins'],
+                "day_of_week": time_metrics['day_of_week'],
+                "entry_time_decimal": time_metrics['entry_time_decimal'],
+                "trade_duration_minutes": trade_duration_minutes,
                 
-                # Scan bars from FVG creation to current entry bar
-                for scan_idx in range(fvg.created_idx + 1, i + 1):
-                    scan_close = df.iloc[scan_idx]['close']
-                    
-                    # Check if closed in gap
-                    if signal.fvg_lower <= scan_close <= signal.fvg_upper:
-                        retraced_in_gap = True
-                        
-                        # Check if beyond 50% mark
-                        if signal.direction == "long":
-                            # For bullish FVG, closing below midpoint = approaching invalidation
-                            if scan_close < fvg_midpoint:
-                                retraced_beyond_50 = True
-                        else:  # short/bearish
-                            # For bearish FVG, closing above midpoint = approaching invalidation
-                            if scan_close > fvg_midpoint:
-                                retraced_beyond_50 = True
+                # Price context metrics
+                "distance_from_session_high": distance_from_session_high,
+                "distance_from_session_low": distance_from_session_low,
+                "session_range_pct_position": session_range_pct_position,
+                "price_pct_change_from_open": price_pct_change_from_open,
                 
-                # Calculate engulfing closure distance (how far current close is from previous level)
-                if i > 0:
-                    prev_bar = df.iloc[i - 1]
-                    if signal.direction == "long":
-                        # For longs: distance from previous high
-                        engulfing_distance = row['close'] - prev_bar['high']
-                    else:
-                        # For shorts: distance from previous low
-                        engulfing_distance = prev_bar['low'] - row['close']
-                else:
-                    engulfing_distance = 0.0
+                # Volatility metrics
+                "recent_atr_5bars": volatility_metrics['recent_atr_5bars'],
+                "entry_bar_vs_atr": volatility_metrics['entry_bar_vs_atr'],
+                "bars_since_last_swing": bars_since_last_swing,
                 
-                # Calculate bars since FVG creation
-                bars_since_fvg_creation = i - fvg.created_idx
+                # Trade sequence metrics
+                "consecutive_losses": consecutive_losses,
+                "consecutive_wins": consecutive_wins,
+                "same_direction_count": same_direction_streak,
+                "trades_today_before_this": trades_today,
                 
-                # Calculate trade duration
-                entry_ts = pd.Timestamp(signal.entry_time)
-                exit_ts = pd.Timestamp(exit_time)
-                trade_duration_minutes = (exit_ts - entry_ts).total_seconds() / 60.0
+                # Entry quality metrics
+                "mae_points": mae_mfe_metrics['mae_points'],
+                "mfe_points": mae_mfe_metrics['mfe_points'],
+                "mae_pct_of_risk": mae_mfe_metrics['mae_pct_of_risk'],
+                "mfe_pct_of_target": mae_mfe_metrics['mfe_pct_of_target'],
+                "entered_at_fvg_boundary": fvg_quality_metrics['entered_at_fvg_boundary'],
                 
-                # Calculate all permutation metrics
-                time_metrics = calculate_time_metrics(entry_ts, session_start_idx, i)
-                bar_metrics = calculate_bar_metrics(row, df.iloc[i - 1] if i > 0 else row)
-                volatility_metrics = calculate_volatility_metrics(df, i, row)
-                mae_mfe_metrics = track_mae_mfe(df, i, exit_idx, signal.direction, entry_price, tm_result.tp_price, tm_result.sl_price)
-                fvg_quality_metrics = calculate_fvg_quality_metrics(fvg, active_fvgs, df, i, entry_price)
+                # FVG quality metrics
+                "has_conflicting_fvg": fvg_quality_metrics['has_conflicting_fvg'],
+                "conflicting_fvg_distance": fvg_quality_metrics['conflicting_fvg_distance'],
+                "fvg_middle_candle_body_pts": fvg_quality_metrics['fvg_middle_candle_body_pts'],
+                "fvg_filled_before_entry": fvg_quality_metrics['fvg_filled_before_entry'],
+                "fvg_remaining_size": fvg_quality_metrics['fvg_remaining_size'],
+                "multiple_fvgs_same_direction": fvg_quality_metrics['multiple_fvgs_same_direction'],
                 
-                # Calculate price context metrics
-                distance_from_session_high = session_high - entry_price if session_high is not None else None
-                distance_from_session_low = entry_price - session_low if session_low is not None else None
+                # Swing/structure metrics (BOS only)
+                "swing_point_price": swing_point_price,
+                "distance_from_swing": distance_from_swing,
+                "swing_bars_ago": swing_bars_ago,
                 
-                if session_high is not None and session_low is not None and session_high > session_low:
-                    session_range = session_high - session_low
-                    session_range_pct_position = (entry_price - session_low) / session_range
-                else:
-                    session_range_pct_position = None
+                # Bar characteristics
+                "entry_bar_body_pts": bar_metrics['entry_bar_body_pts'],
+                "entry_bar_range_pts": bar_metrics['entry_bar_range_pts'],
+                "entry_bar_wick_ratio": bar_metrics['entry_bar_wick_ratio'],
+                "previous_bar_body_pts": bar_metrics['previous_bar_body_pts'],
+                "previous_bar_range_pts": bar_metrics['previous_bar_range_pts'],
                 
-                if session_open is not None and session_open > 0:
-                    price_pct_change_from_open = ((entry_price - session_open) / session_open) * 100
-                else:
-                    price_pct_change_from_open = None
-                
-                # Calculate bars since last swing
-                last_swing_idx = find_last_swing_point(df, i, 'high' if signal.direction == 'long' else 'low')
-                bars_since_last_swing = i - last_swing_idx if last_swing_idx is not None else None
-                
-                # Get swing point info from signal metadata (if BOS model)
-                swing_point_price = signal.metadata.get('swing_point_price', None) if hasattr(signal, 'metadata') else None
-                distance_from_swing = signal.metadata.get('distance_from_swing', None) if hasattr(signal, 'metadata') else None
-                swing_bars_ago = signal.metadata.get('swing_bars_ago', None) if hasattr(signal, 'metadata') else None
-                
-                # Create trade record
-                trade = {
-                    # Original fields
-                    "entry_time": signal.entry_time,
-                    "exit_time": exit_time,
-                    "direction": signal.direction,
-                    "entry_price": entry_price,
-                    "exit_price": exit_price,
-                    "tp_price": tm_result.tp_price,
-                    "sl_price": tm_result.sl_price,
-                    "entry_model": signal.entry_model,
-                    "fvg_id": signal.fvg_id,
-                    "fvg_size_pts": signal.fvg_size_pts,
-                    "fvg_touch_count": fvg.touch_count,
-                    "bars_since_fvg_creation": bars_since_fvg_creation,
-                    "engulfing_distance_pts": engulfing_distance,
-                    "pnl": total_pnl,
-                    "pnl_pts": total_pnl,
-                    "exit_reason": exit_reason,
-                    "retraced_closed_in_gap": retraced_in_gap,
-                    "retraced_beyond_50pct": retraced_beyond_50,
-                    
-                    # Time-based metrics
-                    "time_window": time_metrics['time_window'],
-                    "minutes_into_session": time_metrics['minutes_into_session'],
-                    "is_first_5_mins": time_metrics['is_first_5_mins'],
-                    "day_of_week": time_metrics['day_of_week'],
-                    "entry_time_decimal": time_metrics['entry_time_decimal'],
-                    "trade_duration_minutes": trade_duration_minutes,
-                    
-                    # Price context metrics
-                    "distance_from_session_high": distance_from_session_high,
-                    "distance_from_session_low": distance_from_session_low,
-                    "session_range_pct_position": session_range_pct_position,
-                    "price_pct_change_from_open": price_pct_change_from_open,
-                    
-                    # Volatility metrics
-                    "recent_atr_5bars": volatility_metrics['recent_atr_5bars'],
-                    "entry_bar_vs_atr": volatility_metrics['entry_bar_vs_atr'],
-                    "bars_since_last_swing": bars_since_last_swing,
-                    
-                    # Trade sequence metrics
-                    "consecutive_losses": consecutive_losses,
-                    "consecutive_wins": consecutive_wins,
-                    "same_direction_count": same_direction_streak,
-                    "trades_today_before_this": trades_today,
-                    
-                    # Entry quality metrics
-                    "mae_points": mae_mfe_metrics['mae_points'],
-                    "mfe_points": mae_mfe_metrics['mfe_points'],
-                    "mae_pct_of_risk": mae_mfe_metrics['mae_pct_of_risk'],
-                    "mfe_pct_of_target": mae_mfe_metrics['mfe_pct_of_target'],
-                    "entered_at_fvg_boundary": fvg_quality_metrics['entered_at_fvg_boundary'],
-                    
-                    # FVG quality metrics
-                    "has_conflicting_fvg": fvg_quality_metrics['has_conflicting_fvg'],
-                    "conflicting_fvg_distance": fvg_quality_metrics['conflicting_fvg_distance'],
-                    "fvg_middle_candle_body_pts": fvg_quality_metrics['fvg_middle_candle_body_pts'],
-                    "fvg_filled_before_entry": fvg_quality_metrics['fvg_filled_before_entry'],
-                    "fvg_remaining_size": fvg_quality_metrics['fvg_remaining_size'],
-                    "multiple_fvgs_same_direction": fvg_quality_metrics['multiple_fvgs_same_direction'],
-                    
-                    # Swing/structure metrics (BOS only)
-                    "swing_point_price": swing_point_price,
-                    "distance_from_swing": distance_from_swing,
-                    "swing_bars_ago": swing_bars_ago,
-                    
-                    # Bar characteristics
-                    "entry_bar_body_pts": bar_metrics['entry_bar_body_pts'],
-                    "entry_bar_range_pts": bar_metrics['entry_bar_range_pts'],
-                    "entry_bar_wick_ratio": bar_metrics['entry_bar_wick_ratio'],
-                    "previous_bar_body_pts": bar_metrics['previous_bar_body_pts'],
-                    "previous_bar_range_pts": bar_metrics['previous_bar_range_pts'],
-                }
-                
-                # Add partial close info if applicable
-                if partial_info:
-                    trade["partial_exit_time"] = partial_info.get('partial_exit_time')
-                    trade["partial_exit_price"] = partial_info.get('partial_exit_price')
-                    trade["partial_pct"] = partial_info.get('partial_pct', 0)
-                
-                trades.append(trade)
-                
-                # Update trade sequence tracking
-                trades_today += 1
-                
-                if total_pnl > 0:
-                    consecutive_wins += 1
-                    consecutive_losses = 0
-                    last_trade_result = 'win'
-                else:
-                    consecutive_losses += 1
-                    consecutive_wins = 0
-                    last_trade_result = 'loss'
-                
-                if signal.direction == last_direction:
-                    same_direction_streak += 1
-                else:
-                    same_direction_streak = 1
-                    last_direction = signal.direction
-                
-                # FVG already marked as trade_taken at the top when signal was generated
-                # No need to mark again here
-                
-                # Only allow one trade per bar
-                break
+                # New tracking metrics
+                "close_distance_from_prev_bar": close_distance_from_prev_bar,
+                "conflicting_fvg_id": conflicting_fvg_id,
+                "conflicting_fvg_size": conflicting_fvg_size,
+                "conflicting_fvg_distance": conflicting_fvg_distance,
+                "conflicting_fvg_mitigated": conflicting_fvg_mitigated,
+                "swing_swept_before_entry": swing_swept_before_entry,
+                "entry_bar_swept_swing": entry_bar_swept_swing,
+                "entry_bar_closed_through_swing": entry_bar_closed_through_swing,
+                "created_equal_high_low": created_equal_high_low,
+            }
+            
+            # Add partial close info if applicable
+            if partial_info:
+                trade["partial_exit_time"] = partial_info.get('partial_exit_time')
+                trade["partial_exit_price"] = partial_info.get('partial_exit_price')
+                trade["partial_pct"] = partial_info.get('partial_pct', 0)
+            
+            trades.append(trade)
+            
+            # Update trade sequence tracking
+            trades_today += 1
+            
+            if total_pnl > 0:
+                consecutive_wins += 1
+                consecutive_losses = 0
+                last_trade_result = 'win'
+            else:
+                consecutive_losses += 1
+                consecutive_wins = 0
+                last_trade_result = 'loss'
+            
+            if signal.direction == last_direction:
+                same_direction_streak += 1
+            else:
+                same_direction_streak = 1
+                last_direction = signal.direction
         
-        # If a signal was generated, don't evaluate other FVGs on this bar
-        if signal_generated:
-            continue
+        # Continue to next bar (we've processed all signals for this bar)
     
     if len(trades) == 0:
         return pd.DataFrame(columns=[
@@ -689,7 +695,11 @@ def run_backtest(df: pd.DataFrame, override_config: Optional[Dict] = None) -> pd
             'swing_point_price', 'distance_from_swing', 'swing_bars_ago',
             # Bar characteristics
             'entry_bar_body_pts', 'entry_bar_range_pts', 'entry_bar_wick_ratio',
-            'previous_bar_body_pts', 'previous_bar_range_pts'
+            'previous_bar_body_pts', 'previous_bar_range_pts',
+            # New tracking metrics
+            'close_distance_from_prev_bar', 'conflicting_fvg_id', 'conflicting_fvg_size',
+            'conflicting_fvg_distance', 'conflicting_fvg_mitigated', 'swing_swept_before_entry',
+            'entry_bar_swept_swing', 'entry_bar_closed_through_swing', 'created_equal_high_low'
         ])
     
     return pd.DataFrame(trades)

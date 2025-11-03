@@ -134,23 +134,20 @@ class FVGContinuationNoFVGModel(EntryModel):
         
         swing_high_price = dataframe['high'].iloc[swing_high_index]
         
-        # Check if swing high PRICE has been swept (not just if the bar is in the past)
-        # This allows entries after the swing bar forms, as long as price hasn't swept it
-        max_high_so_far = dataframe['high'].iloc[swing_high_index:bar_index+1].max()
-        if max_high_so_far > swing_high_price:
-            return None  # Swing was swept
+        # Check if swing high was swept before entry (track but don't reject)
+        max_high_so_far = dataframe['high'].iloc[swing_high_index:bar_index].max()
+        swing_swept_before_entry = max_high_so_far > swing_high_price
 
         # 2. Define Leg Zone
         leg_low_price = dataframe['low'].iloc[fvg.created_idx + 1 : swing_high_index + 1].min()
         leg_high_price = swing_high_price
         
-        # 3. Scan for conflicting FVGs (strict - no FVGs allowed, even if inverted)
-        conflicting_fvg_exists = self._scan_for_conflicting_fvgs(
+        # 3. Scan for conflicting FVGs (track details, don't reject)
+        conflicting_fvg_info = self._scan_for_conflicting_fvgs(
             'bearish', fvg.created_idx + 1, swing_high_index,
-            leg_low_price, leg_high_price, dataframe
+            leg_low_price, leg_high_price, dataframe,
+            fvg.lower, fvg.upper, bar_index
         )
-        if conflicting_fvg_exists:
-            return None
 
         # Check if swing point was already broken by ANY prior candle (BOS scenario)
         # Check all candles from swing point up to (but not including) current bar
@@ -178,26 +175,33 @@ class FVGContinuationNoFVGModel(EntryModel):
                     return None  # Previous candle broke through local structure
         
         # 4. Entry Candle Criteria
-        # Rule 1: Closure
+        # Rule 1: Closure (still required - must close above previous high)
         if current_bar['close'] <= previous_bar['high']:
             return None
         
-        # Rule 2: Distance
-        distance = current_bar['close'] - previous_bar['high']
-        if distance > self._max_close_dist:
-            return None
+        # Track distance from previous bar (don't reject)
+        close_distance_from_prev_bar = current_bar['close'] - previous_bar['high']
 
-        # Rule 3: No Equal Highs
-        if abs(current_bar['high'] - swing_high_price) < self._equal_hl_tolerance:
-            return None
-            
-        # Rule 4: No Swing Point Sweep
-        if current_bar['high'] > swing_high_price:
-            return None
-            
-        # Rule 5: No Body Close Through Swing
-        if current_bar['close'] > swing_high_price:
-            return None
+        # Track equal highs (don't reject)
+        created_equal_high_low = abs(current_bar['high'] - swing_high_price) < self._equal_hl_tolerance
+        
+        # Track swing point sweep (don't reject)
+        entry_bar_swept_swing = current_bar['high'] > swing_high_price
+        
+        # Track body close through swing (don't reject)
+        entry_bar_closed_through_swing = current_bar['close'] > swing_high_price
+        
+        # Extract conflicting FVG details
+        if conflicting_fvg_info:
+            conflicting_fvg_id = conflicting_fvg_info['fvg_id']
+            conflicting_fvg_size = conflicting_fvg_info['fvg_size']
+            conflicting_fvg_distance = conflicting_fvg_info['fvg_distance']
+            conflicting_fvg_mitigated = conflicting_fvg_info['is_mitigated']
+        else:
+            conflicting_fvg_id = None
+            conflicting_fvg_size = None
+            conflicting_fvg_distance = None
+            conflicting_fvg_mitigated = None
             
         return TradeSignal(
             entry_time=current_bar["timestamp"],
@@ -208,7 +212,20 @@ class FVGContinuationNoFVGModel(EntryModel):
             fvg_lower=fvg.lower,
             fvg_upper=fvg.upper,
             fvg_direction="bullish",
-            fvg_size_pts=fvg.size_pts
+            fvg_size_pts=fvg.size_pts,
+            metadata={
+                'swing_point_price': swing_high_price,
+                'swing_bars_ago': bar_index - swing_high_index,
+                'close_distance_from_prev_bar': close_distance_from_prev_bar,
+                'conflicting_fvg_id': conflicting_fvg_id,
+                'conflicting_fvg_size': conflicting_fvg_size,
+                'conflicting_fvg_distance': conflicting_fvg_distance,
+                'conflicting_fvg_mitigated': conflicting_fvg_mitigated,
+                'swing_swept_before_entry': swing_swept_before_entry,
+                'entry_bar_swept_swing': entry_bar_swept_swing,
+                'entry_bar_closed_through_swing': entry_bar_closed_through_swing,
+                'created_equal_high_low': created_equal_high_low
+            }
         )
 
     def _evaluate_bearish(
@@ -249,22 +266,20 @@ class FVGContinuationNoFVGModel(EntryModel):
         
         swing_low_price = dataframe['low'].iloc[swing_low_index]
         
-        # Check if swing low PRICE has been swept (not just if the bar is in the past)
-        min_low_so_far = dataframe['low'].iloc[swing_low_index:bar_index+1].min()
-        if min_low_so_far < swing_low_price:
-            return None  # Swing was swept
+        # Check if swing low was swept before entry (track but don't reject)
+        min_low_so_far = dataframe['low'].iloc[swing_low_index:bar_index].min()
+        swing_swept_before_entry = min_low_so_far < swing_low_price
 
         # 2. Define Leg Zone
         leg_high_price = dataframe['high'].iloc[fvg.created_idx + 1 : swing_low_index + 1].max()
         leg_low_price = swing_low_price
         
-        # 3. Scan for conflicting FVGs (strict - no FVGs allowed, even if inverted)
-        conflicting_fvg_exists = self._scan_for_conflicting_fvgs(
+        # 3. Scan for conflicting FVGs (track details, don't reject)
+        conflicting_fvg_info = self._scan_for_conflicting_fvgs(
             'bullish', fvg.created_idx + 1, swing_low_index,
-            leg_low_price, leg_high_price, dataframe
+            leg_low_price, leg_high_price, dataframe,
+            fvg.lower, fvg.upper, bar_index
         )
-        if conflicting_fvg_exists:
-            return None
 
         # Check if swing point was already broken by ANY prior candle (BOS scenario)
         # Check all candles from swing point up to (but not including) current bar
@@ -292,26 +307,33 @@ class FVGContinuationNoFVGModel(EntryModel):
                     return None  # Previous candle broke through local structure
         
         # 4. Entry Candle Criteria
-        # Rule 1: Closure
+        # Rule 1: Closure (still required - must close below previous low)
         if current_bar['close'] >= previous_bar['low']:
             return None
         
-        # Rule 2: Distance
-        distance = previous_bar['low'] - current_bar['close']
-        if distance > self._max_close_dist:
-            return None
+        # Track distance from previous bar (don't reject)
+        close_distance_from_prev_bar = previous_bar['low'] - current_bar['close']
 
-        # Rule 3: No Equal Lows
-        if abs(current_bar['low'] - swing_low_price) < self._equal_hl_tolerance:
-            return None
-            
-        # Rule 4: No Swing Point Sweep
-        if current_bar['low'] < swing_low_price:
-            return None
-            
-        # Rule 5: No Body Close Through Swing
-        if current_bar['close'] < swing_low_price:
-            return None
+        # Track equal lows (don't reject)
+        created_equal_high_low = abs(current_bar['low'] - swing_low_price) < self._equal_hl_tolerance
+        
+        # Track swing point sweep (don't reject)
+        entry_bar_swept_swing = current_bar['low'] < swing_low_price
+        
+        # Track body close through swing (don't reject)
+        entry_bar_closed_through_swing = current_bar['close'] < swing_low_price
+        
+        # Extract conflicting FVG details
+        if conflicting_fvg_info:
+            conflicting_fvg_id = conflicting_fvg_info['fvg_id']
+            conflicting_fvg_size = conflicting_fvg_info['fvg_size']
+            conflicting_fvg_distance = conflicting_fvg_info['fvg_distance']
+            conflicting_fvg_mitigated = conflicting_fvg_info['is_mitigated']
+        else:
+            conflicting_fvg_id = None
+            conflicting_fvg_size = None
+            conflicting_fvg_distance = None
+            conflicting_fvg_mitigated = None
             
         return TradeSignal(
             entry_time=current_bar["timestamp"],
@@ -322,27 +344,80 @@ class FVGContinuationNoFVGModel(EntryModel):
             fvg_lower=fvg.lower,
             fvg_upper=fvg.upper,
             fvg_direction="bearish",
-            fvg_size_pts=fvg.size_pts
+            fvg_size_pts=fvg.size_pts,
+            metadata={
+                'swing_point_price': swing_low_price,
+                'swing_bars_ago': bar_index - swing_low_index,
+                'close_distance_from_prev_bar': close_distance_from_prev_bar,
+                'conflicting_fvg_id': conflicting_fvg_id,
+                'conflicting_fvg_size': conflicting_fvg_size,
+                'conflicting_fvg_distance': conflicting_fvg_distance,
+                'conflicting_fvg_mitigated': conflicting_fvg_mitigated,
+                'swing_swept_before_entry': swing_swept_before_entry,
+                'entry_bar_swept_swing': entry_bar_swept_swing,
+                'entry_bar_closed_through_swing': entry_bar_closed_through_swing,
+                'created_equal_high_low': created_equal_high_low
+            }
         )
         
-    def _scan_for_conflicting_fvgs(self, fvg_direction: str, start_idx: int, end_idx: int, leg_low: float, leg_high: float, dataframe: pd.DataFrame) -> bool:
-        """Scans for conflicting FVGs within a given range."""
+    def _scan_for_conflicting_fvgs(self, fvg_direction: str, start_idx: int, end_idx: int, 
+                                    leg_low: float, leg_high: float, dataframe: pd.DataFrame,
+                                    entry_fvg_lower: float, entry_fvg_upper: float, bar_index: int) -> dict:
+        """
+        Scans for conflicting FVGs within a given range.
+        Returns dict with details if conflict found, None otherwise.
+        """
         for i in range(start_idx, end_idx - 1):
+            fvg_idx = i + 1
             if fvg_direction == 'bearish':
                 # Looking for bearish FVGs
-                if 'bear_fvg' in dataframe.columns and dataframe['bear_fvg'].iloc[i+1]:
-                    fvg_top = dataframe['bear_upper'].iloc[i+1]
-                    fvg_bottom = dataframe['bear_lower'].iloc[i+1]
+                if 'bear_fvg' in dataframe.columns and dataframe['bear_fvg'].iloc[fvg_idx]:
+                    fvg_top = dataframe['bear_upper'].iloc[fvg_idx]
+                    fvg_bottom = dataframe['bear_lower'].iloc[fvg_idx]
                     if (fvg_top >= leg_low) and (fvg_bottom <= leg_high):
-                        return True
+                        # Found conflicting FVG - check if mitigated
+                        is_mitigated = False
+                        for check_idx in range(fvg_idx + 1, bar_index + 1):
+                            # Mitigated = price touched the FVG
+                            if dataframe['high'].iloc[check_idx] >= fvg_bottom:
+                                is_mitigated = True
+                                break
+                        
+                        fvg_size = fvg_top - fvg_bottom
+                        # Distance from entry FVG (bearish is above bullish entry FVG)
+                        distance = fvg_bottom - entry_fvg_upper
+                        
+                        return {
+                            'fvg_id': fvg_idx,
+                            'fvg_size': fvg_size,
+                            'fvg_distance': distance,
+                            'is_mitigated': is_mitigated
+                        }
             elif fvg_direction == 'bullish':
                 # Looking for bullish FVGs
-                if 'bull_fvg' in dataframe.columns and dataframe['bull_fvg'].iloc[i+1]:
-                    fvg_top = dataframe['bull_upper'].iloc[i+1]
-                    fvg_bottom = dataframe['bull_lower'].iloc[i+1]
+                if 'bull_fvg' in dataframe.columns and dataframe['bull_fvg'].iloc[fvg_idx]:
+                    fvg_top = dataframe['bull_upper'].iloc[fvg_idx]
+                    fvg_bottom = dataframe['bull_lower'].iloc[fvg_idx]
                     if (fvg_bottom <= leg_high) and (fvg_top >= leg_low):
-                        return True
-        return False
+                        # Found conflicting FVG - check if mitigated
+                        is_mitigated = False
+                        for check_idx in range(fvg_idx + 1, bar_index + 1):
+                            # Mitigated = price touched the FVG
+                            if dataframe['low'].iloc[check_idx] <= fvg_top:
+                                is_mitigated = True
+                                break
+                        
+                        fvg_size = fvg_top - fvg_bottom
+                        # Distance from entry FVG (bullish is below bearish entry FVG)
+                        distance = entry_fvg_lower - fvg_top
+                        
+                        return {
+                            'fvg_id': fvg_idx,
+                            'fvg_size': fvg_size,
+                            'fvg_distance': distance,
+                            'is_mitigated': is_mitigated
+                        }
+        return None
     
     def _scan_for_conflicting_fvgs_with_inversion(self, fvg_direction: str, start_idx: int, end_idx: int, 
                                                    current_bar_idx: int, leg_low: float, leg_high: float, 

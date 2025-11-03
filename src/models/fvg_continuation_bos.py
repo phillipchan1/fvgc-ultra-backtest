@@ -145,31 +145,23 @@ class FVGContinuationBOSModel(EntryModel):
         if not retrace_occurred:
             return None
 
-        # 1. Find the most recent local high between FVG creation and current bar
-        # The swing must be established AFTER FVG creation (not on the FVG bar itself)
-        # Search from bar AFTER FVG creation to current bar (exclusive of current)
-        # This ensures: FVG created -> price moves up -> swing forms -> BOS on current bar
-        swing_result = self._find_swing_high(fvg.created_idx + 1, bar_index, dataframe)
+        # 1. Find the most recent local high that will be broken
+        # Can include bars from BEFORE FVG creation up to (not including) current bar
+        # This allows immediate BOS entries when swing already exists
+        swing_result = self._find_swing_high(max(0, fvg.created_idx - 5), bar_index, dataframe)
         if swing_result is None:
             return None
         
         swing_high_index, swing_high_price = swing_result
         
-        # Ensure swing was not created on the FVG creation bar
-        # The swing point must be established AFTER the FVG
-        if swing_high_index <= fvg.created_idx:
-            return None
-        
         # 2. BOS Rule: Current candle CLOSE must be THROUGH (above) the swing high
         if current_bar['close'] <= swing_high_price:
             return None  # Not a BOS - body didn't close through
 
-        # 3. Distance Rule: Close must be within 7.5 pts above previous candle's HIGH
-        distance = current_bar['close'] - previous_bar['high']
-        if distance > self._max_close_dist:
-            return None
+        # 3. Calculate distance from previous bar (track but don't reject)
+        close_distance_from_prev_bar = current_bar['close'] - previous_bar['high']
 
-        # Entry is valid - body closed through swing point with acceptable distance
+        # Entry is valid - body closed through swing point
         # Calculate metadata for permutation tracking
         distance_from_swing = current_bar['close'] - swing_high_price
         swing_bars_ago = bar_index - swing_high_index
@@ -187,7 +179,16 @@ class FVGContinuationBOSModel(EntryModel):
             metadata={
                 'swing_point_price': swing_high_price,
                 'distance_from_swing': distance_from_swing,
-                'swing_bars_ago': swing_bars_ago
+                'swing_bars_ago': swing_bars_ago,
+                'close_distance_from_prev_bar': close_distance_from_prev_bar,
+                'conflicting_fvg_id': None,
+                'conflicting_fvg_size': None,
+                'conflicting_fvg_distance': None,
+                'conflicting_fvg_mitigated': None,
+                'swing_swept_before_entry': False,
+                'entry_bar_swept_swing': False,
+                'entry_bar_closed_through_swing': False,
+                'created_equal_high_low': False
             }
         )
 
@@ -221,31 +222,23 @@ class FVGContinuationBOSModel(EntryModel):
         if not retrace_occurred:
             return None
 
-        # 1. Find the most recent local low between FVG creation and current bar
-        # The swing must be established AFTER FVG creation (not on the FVG bar itself)
-        # Search from bar AFTER FVG creation to current bar (exclusive of current)
-        # This ensures: FVG created -> price moves down -> swing forms -> BOS on current bar
-        swing_result = self._find_swing_low(fvg.created_idx + 1, bar_index, dataframe)
+        # 1. Find the most recent local low that will be broken
+        # Can include bars from BEFORE FVG creation up to (not including) current bar
+        # This allows immediate BOS entries when swing already exists
+        swing_result = self._find_swing_low(max(0, fvg.created_idx - 5), bar_index, dataframe)
         if swing_result is None:
             return None
         
         swing_low_index, swing_low_price = swing_result
         
-        # Ensure swing was not created on the FVG creation bar
-        # The swing point must be established AFTER the FVG
-        if swing_low_index <= fvg.created_idx:
-            return None
-        
         # 2. BOS Rule: Current candle CLOSE must be THROUGH (below) the swing low
         if current_bar['close'] >= swing_low_price:
             return None  # Not a BOS - body didn't close through
 
-        # 3. Distance Rule: Close must be within 7.5 pts below previous candle's LOW
-        distance = previous_bar['low'] - current_bar['close']
-        if distance > self._max_close_dist:
-            return None
+        # 3. Calculate distance from previous bar (track but don't reject)
+        close_distance_from_prev_bar = previous_bar['low'] - current_bar['close']
 
-        # Entry is valid - body closed through swing point with acceptable distance
+        # Entry is valid - body closed through swing point
         # Calculate metadata for permutation tracking
         distance_from_swing = swing_low_price - current_bar['close']
         swing_bars_ago = bar_index - swing_low_index
@@ -263,7 +256,16 @@ class FVGContinuationBOSModel(EntryModel):
             metadata={
                 'swing_point_price': swing_low_price,
                 'distance_from_swing': distance_from_swing,
-                'swing_bars_ago': swing_bars_ago
+                'swing_bars_ago': swing_bars_ago,
+                'close_distance_from_prev_bar': close_distance_from_prev_bar,
+                'conflicting_fvg_id': None,
+                'conflicting_fvg_size': None,
+                'conflicting_fvg_distance': None,
+                'conflicting_fvg_mitigated': None,
+                'swing_swept_before_entry': False,
+                'entry_bar_swept_swing': False,
+                'entry_bar_closed_through_swing': False,
+                'created_equal_high_low': False
             }
         )
 

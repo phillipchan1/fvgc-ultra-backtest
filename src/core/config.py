@@ -57,13 +57,12 @@ CONFIG = {
     # FVG settings
     "fvg_max_age_bars": 20,
     "max_active_per_side": 3,
-    "fvg_min_age_bars": 2,  # Minimum bars after FVG creation before it can be traded
-    "fvg_min_size_pts": 1.5,  # Minimum FVG size - smaller gaps are too insignificant
+    "fvg_min_age_bars": 1,  # Minimum bars after FVG creation before it can be traded (not on creation bar)
     
-    # Session gap filtering
+    # Session gap filtering (only filter extremely large gaps)
     "max_fvg_size_pts": 100.0,  # Maximum FVG size - larger are likely session gaps
-    "bars_to_skip_after_session_start": 3,  # Skip FVG detection in first N bars
-    "max_fvg_size_session_start": 50.0,  # Even smaller max for first few bars
+    # NOTE: No minimum size filtering - all FVG sizes tracked
+    # NOTE: No session start filtering - capture all FVGs from bar 1
     
     # Entry model settings
     "fvg_touch_tolerance_pts": 1.0,  # Allow wick to be within this many points of gap bound to count as "touch"
