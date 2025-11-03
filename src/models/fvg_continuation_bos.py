@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from .base import EntryModel, TradeSignal
 from ..core.fvg_detection import FVG
+from ..core.config import CONFIG
 
 
 class FVGContinuationBOSModel(EntryModel):
@@ -35,9 +36,11 @@ class FVGContinuationBOSModel(EntryModel):
         if fvg.trade_taken or not fvg.valid:
             return None
 
-        # FVG must have been created at least one bar before current bar
-        # This allows entry on the bar immediately after FVG creation if BOS occurs
-        if bar_index <= fvg.created_idx:
+        # FVG must have minimum age before trading
+        # This prevents trading gaps that were just created
+        min_age_bars = CONFIG.get("fvg_min_age_bars", 2)
+        bars_since_creation = bar_index - fvg.created_idx
+        if bars_since_creation < min_age_bars:
             return None
 
         # Note: Touch counting handled in backtest_engine
@@ -143,13 +146,19 @@ class FVGContinuationBOSModel(EntryModel):
             return None
 
         # 1. Find the most recent local high between FVG creation and current bar
-        # For immediate entries (bar after FVG), include the FVG bar itself
-        # Search from FVG bar to current bar (exclusive)
-        swing_result = self._find_swing_high(fvg.created_idx, bar_index, dataframe)
+        # The swing must be established AFTER FVG creation (not on the FVG bar itself)
+        # Search from bar AFTER FVG creation to current bar (exclusive of current)
+        # This ensures: FVG created -> price moves up -> swing forms -> BOS on current bar
+        swing_result = self._find_swing_high(fvg.created_idx + 1, bar_index, dataframe)
         if swing_result is None:
             return None
         
         swing_high_index, swing_high_price = swing_result
+        
+        # Ensure swing was not created on the FVG creation bar
+        # The swing point must be established AFTER the FVG
+        if swing_high_index <= fvg.created_idx:
+            return None
         
         # 2. BOS Rule: Current candle CLOSE must be THROUGH (above) the swing high
         if current_bar['close'] <= swing_high_price:
@@ -213,13 +222,19 @@ class FVGContinuationBOSModel(EntryModel):
             return None
 
         # 1. Find the most recent local low between FVG creation and current bar
-        # For immediate entries (bar after FVG), include the FVG bar itself
-        # Search from FVG bar to current bar (exclusive)
-        swing_result = self._find_swing_low(fvg.created_idx, bar_index, dataframe)
+        # The swing must be established AFTER FVG creation (not on the FVG bar itself)
+        # Search from bar AFTER FVG creation to current bar (exclusive of current)
+        # This ensures: FVG created -> price moves down -> swing forms -> BOS on current bar
+        swing_result = self._find_swing_low(fvg.created_idx + 1, bar_index, dataframe)
         if swing_result is None:
             return None
         
         swing_low_index, swing_low_price = swing_result
+        
+        # Ensure swing was not created on the FVG creation bar
+        # The swing point must be established AFTER the FVG
+        if swing_low_index <= fvg.created_idx:
+            return None
         
         # 2. BOS Rule: Current candle CLOSE must be THROUGH (below) the swing low
         if current_bar['close'] >= swing_low_price:

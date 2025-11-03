@@ -17,11 +17,12 @@ def run_sept_oct_backtest():
     CONFIG["test_period"] = None # Use explicit start/end dates
     CONFIG["start_date"] = "2025-09-01"
     CONFIG["end_date"] = "2025-10-31"
-    CONFIG["trade_management_strategy"] = "fixed" # Default to fixed for this check
-    CONFIG["allow_multiple_entries_per_fvg"] = False # Default to single entry
+    CONFIG["trade_management_strategy"] = "dynamic_partial_close" # Best strategy
+    CONFIG["allow_multiple_entries_per_fvg"] = True # Capture all trades for review
 
     print("=" * 100)
     print("RUNNING BACKTEST: SEPTEMBER-OCTOBER 2025")
+    print("Strategy: Dynamic + Partial Close (Best Performer)")
     print("=" * 100)
 
     # Load data
@@ -61,15 +62,26 @@ def run_sept_oct_backtest():
     trades.to_csv(output_file, index=False)
     print(f"\n✅ Saved to: {output_file}")
 
-    # Show summary
+    # Show detailed summary for manual verification
     print("\n" + "-" * 100)
-    print(f"First 20 trades:")
+    print(f"ALL TRADES (for manual verification):")
     print("-" * 100)
-    for idx, trade in trades.head(20).iterrows():
-        entry_time = pd.Timestamp(trade['entry_time']).strftime('%Y-%m-%d %H:%M:%S')
-        print(f"{entry_time} {trade['direction'].upper():<5} {trade['entry_model']:<25} {trade['pnl']:>7.2f} {trade['exit_reason']}")
+    print(f"{'Entry Time':<20} {'Dir':<6} {'Model':<15} {'Entry':<8} {'FVG':<12} {'Touch':<6} {'PnL':<8} {'Exit':<10}")
+    print("-" * 100)
+    
+    for idx, trade in trades.iterrows():
+        entry_time = pd.Timestamp(trade['entry_time']).strftime('%m-%d %H:%M')
+        entry_price = f"{trade['entry_price']:.1f}"
+        fvg_info = f"{trade['fvg_size_pts']:.1f}pts"
+        touch = f"{trade['fvg_touch_count']:.0f}"
+        pnl = f"{trade['pnl']:+.1f}"
+        
+        print(f"{entry_time:<20} {trade['direction'].upper():<6} {trade['entry_model'].replace('fvg_continuation_', ''):<15} {entry_price:<8} {fvg_info:<12} {touch:<6} {pnl:<8} {trade['exit_reason']:<10}")
 
     print("\n" + "=" * 100)
+    print(f"\n📊 All {len(trades)} trades saved to: {output_file}")
+    print("💡 Review this CSV in detail to identify entry model issues")
+    print("=" * 100)
 
 if __name__ == "__main__":
     run_sept_oct_backtest()

@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from .base import EntryModel, TradeSignal
 from ..core.fvg_detection import FVG
+from ..core.config import CONFIG
 
 
 class FVGContinuationIFVGModel(EntryModel):
@@ -36,9 +37,11 @@ class FVGContinuationIFVGModel(EntryModel):
         if fvg.trade_taken or not fvg.valid:
             return None
 
-        # For iFVG, we allow entry on the bar immediately after FVG creation
-        # (to capture same-candle inversions). Only reject if we're ON the FVG creation bar.
-        if bar_index <= fvg.created_idx:
+        # FVG must have minimum age before trading
+        # This prevents trading gaps that were just created
+        min_age_bars = CONFIG.get("fvg_min_age_bars", 2)
+        bars_since_creation = bar_index - fvg.created_idx
+        if bars_since_creation < min_age_bars:
             return None
 
         # Note: Touch counting is now handled in backtest_engine to avoid double-counting

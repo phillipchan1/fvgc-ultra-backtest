@@ -375,26 +375,28 @@ def run_backtest(df: pd.DataFrame, override_config: Optional[Dict] = None) -> pd
         # Update validity of existing active FVGs
         update_fvg_validity(active_fvgs, row, i)
         
-        # Create new FVGs at this bar (filter out session gaps)
+        # Create new FVGs at this bar (filter out session gaps and tiny gaps)
         if bool(row.get("bull_fvg", False)):
             fvg = create_fvg_from_row(row, i, "bullish")
-            # Filter out large session gaps
-            max_fvg_size = CONFIG.get("max_fvg_size_pts", 100.0)
-            skip_start_bars = CONFIG.get("bars_to_skip_after_session_start", 3)
-            max_start_size = CONFIG.get("max_fvg_size_session_start", 50.0)
+            # Filter out large session gaps and too-small gaps
+            min_fvg_size = config.get("fvg_min_size_pts", 1.5)
+            max_fvg_size = config.get("max_fvg_size_pts", 100.0)
+            skip_start_bars = config.get("bars_to_skip_after_session_start", 3)
+            max_start_size = config.get("max_fvg_size_session_start", 50.0)
             
-            if fvg.size_pts and fvg.size_pts <= max_fvg_size:
+            if fvg.size_pts and min_fvg_size <= fvg.size_pts <= max_fvg_size:
                 is_session_start = bars_in_session <= skip_start_bars
                 if not is_session_start or fvg.size_pts <= max_start_size:
                     active_fvgs.append(fvg)
         
         if bool(row.get("bear_fvg", False)):
             fvg = create_fvg_from_row(row, i, "bearish")
-            max_fvg_size = CONFIG.get("max_fvg_size_pts", 100.0)
-            skip_start_bars = CONFIG.get("bars_to_skip_after_session_start", 3)
-            max_start_size = CONFIG.get("max_fvg_size_session_start", 50.0)
+            min_fvg_size = config.get("fvg_min_size_pts", 1.5)
+            max_fvg_size = config.get("max_fvg_size_pts", 100.0)
+            skip_start_bars = config.get("bars_to_skip_after_session_start", 3)
+            max_start_size = config.get("max_fvg_size_session_start", 50.0)
             
-            if fvg.size_pts and fvg.size_pts <= max_fvg_size:
+            if fvg.size_pts and min_fvg_size <= fvg.size_pts <= max_fvg_size:
                 is_session_start = bars_in_session <= skip_start_bars
                 if not is_session_start or fvg.size_pts <= max_start_size:
                     active_fvgs.append(fvg)
@@ -414,6 +416,11 @@ def run_backtest(df: pd.DataFrame, override_config: Optional[Dict] = None) -> pd
         # Evaluate entry models for each active FVG
         signal_generated = False
         for fvg in active_fvgs:
+            # CRITICAL: Skip FVGs that have already been traded
+            # This ensures ONE TRADE PER FVG maximum
+            if fvg.trade_taken:
+                continue
+            
             if not fvg.valid or fvg.expired:
                 continue
             
@@ -425,6 +432,13 @@ def run_backtest(df: pd.DataFrame, override_config: Optional[Dict] = None) -> pd
                     break  # Use first model that generates signal
             
             if signal:
+                # IMMEDIATELY mark FVG as traded before doing anything else
+                # This prevents any possibility of the same FVG being traded again
+                fvg.trade_taken = True
+                fvg.valid = False
+                fvg.expired = True
+                fvg.deactivated_reason = "trade_taken"
+                
                 signal_generated = True
                 entry_price = signal.entry_price
                 
@@ -638,12 +652,8 @@ def run_backtest(df: pd.DataFrame, override_config: Optional[Dict] = None) -> pd
                     same_direction_streak = 1
                     last_direction = signal.direction
                 
-                # Mark this FVG as used (if multiple entries not allowed)
-                if not config.get("allow_multiple_entries_per_fvg", False):
-                    fvg.trade_taken = True
-                    fvg.valid = False
-                    fvg.expired = True
-                    fvg.deactivated_reason = "trade_taken"
+                # FVG already marked as trade_taken at the top when signal was generated
+                # No need to mark again here
                 
                 # Only allow one trade per bar
                 break

@@ -71,17 +71,18 @@ def update_fvg_validity(active_fvgs: List[FVG], row: pd.Series, idx: int):
             f.deactivated_reason = "expired"
             continue
             
-        # Check for inversion - only check close (not wick)
-        # If price closes through the FVG, it's invalidated
+        # Check for inversion - ONLY check close (not wick)
+        # FVG is invalidated ONLY if price CLOSES through it completely
+        # Wicking into/through the FVG is just "touching" or "mitigation", NOT invalidation
         
         if f.direction == "bullish":
-            # Bullish FVG is invalidated if close is below the lower bound
+            # Bullish FVG is invalidated ONLY if close is below the lower bound
             if c < f.lower:
                 f.valid = False
                 f.deactivated_reason = "inverted"
                 
         elif f.direction == "bearish":
-            # Bearish FVG is invalidated if close is above the upper bound
+            # Bearish FVG is invalidated ONLY if close is above the upper bound
             if c > f.upper:
                 f.valid = False
                 f.deactivated_reason = "inverted"
