@@ -1,0 +1,27 @@
+---
+description: Conventions for creating FVGC analysis studies
+globs: studies/**/*.py
+alwaysApply: false
+---
+
+# Studies Convention
+
+## Structure
+
+Every study lives in `studies/<name>/` with two files:
+
+- `run.py` — executable script that produces results
+- `analysis.md` — documents question, methodology, results, conclusions
+
+## Rules
+
+1. Copy `studies/_template/` to start a new study.
+2. Always import from the `fvgc` package:
+   ```python
+   from fvgc.data import load_candles
+   from fvgc.model import generate_signals
+   from fvgc.engine import simulate_trades, summarize_results
+   ```
+3. Never copy or reimplement model logic inline.
+4. Use `summarize_results()` and `print_summary()` for consistent stats output.
+5. Write findings to `analysis.md` in the same folder.

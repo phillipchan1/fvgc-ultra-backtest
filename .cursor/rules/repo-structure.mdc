@@ -1,0 +1,23 @@
+---
+description: FVGC repository structure and conventions
+alwaysApply: true
+---
+
+# Repository Structure
+
+This repo has three layers — keep them separate:
+
+- `fvgc/` — Python package with the core model + engine. Importable everywhere.
+- `tools/` — CLI scripts (run_backtest.py, consolidate_data.py).
+- `studies/` — Each subfolder is one analysis with `run.py` + `analysis.md`.
+- `data/` — Raw and consolidated OHLCV CSVs (Git LFS). Never commit generated logs.
+- `logs/` — Runtime output, gitignored.
+
+## Rules
+
+1. **Never modify `fvgc/model.py` without explicit user approval.** This is the validated FVGC v2.0.5 entry model.
+2. New studies go in `studies/<name>/` — copy from `studies/_template/`.
+3. Studies must import from `fvgc.model`, `fvgc.engine`, `fvgc.data` — never duplicate that logic.
+4. All CSVs are tracked via Git LFS (`.gitattributes` rule: `*.csv filter=lfs`).
+5. Keep `fvgc/constants.py` as the single source for tunable parameters.
+6. CLI scripts in `tools/` use `sys.path.insert` to find the `fvgc` package.

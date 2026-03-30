@@ -1,0 +1,18 @@
+---
+description: Guard rules for the validated FVGC entry model
+globs: fvgc/model.py
+alwaysApply: false
+---
+
+# FVGC Model — Protected File
+
+This file contains the **validated FVGC v2.0.5 signal detection logic**.
+
+## Rules
+
+1. **Treat as frozen.** Do not modify unless the user explicitly requests a rule change.
+2. Any change requires a corresponding **Notion spec version bump** (e.g., v2.0.6).
+3. Preserve the public API: `generate_signals(candles) -> (signals, fvgs)`.
+4. Update the version history in the module docstring after every change.
+5. After changes, run parity check: compare output of `tools/run_backtest.py` against known-good results.
+6. Never refactor for style alone — correctness is the priority.
