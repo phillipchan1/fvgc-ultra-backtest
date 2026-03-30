@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """
-FVGC v1.9.4 Signal Detector
+FVGC v2.0.5 Signal Detector
 
-v1.9.2: RTH FVG detection relaxed — only c2/c3 need to be at 09:30+.
-v1.9.3: Swing check uses most recent swing at entry time only.
-v1.9.4: Swing check validates BOTH directions (same + opposite).
+v2.0.5: §3.7 opposing FVG touch + inverse = IFVG (valid); touch without inverse = dead.
+v2.0.4: §1.2 swing sweep kill only runs after first tap, not from creation.
+v2.0.3: §1.2 self-reference exclusion on swing sweep kill check.
+v2.0.2: §1.2 swing sweep without BOS permanently kills FVG (third kill condition).
+v2.0.1: §3.5 self-reference expanded — skip any candle that IS the swing point.
+v2.0: Minimum FVG size 3 NQ points (§1.1).
+v1.9.2–v1.9.4: Prior swing / tap / opposing-FVG rules (see Notion).
 
 Entry variants: NoFVG, IFVG, BOS, Protected Swing
 """
@@ -29,7 +33,7 @@ SL_INCREMENT = 5
 SL_MIN = 15
 SL_MAX = 60
 RR_RATIO = 1.0
-MIN_FVG_SIZE = 0.0
+MIN_FVG_SIZE = 3.0  # NQ points; §1.1 v2.0
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -46,14 +50,50 @@ TARGET_DATES = ['2026-03-24', '2026-03-25']
 # Data loading
 # ===================================================================
 
-def load_candles(path: Path = RAW_DATA_PATH) -> pd.DataFrame:
-    """Load pre-aggregated candles from consolidate_data.py output."""
-    print(f"Loading candles from {path} ...")
-    candles = pd.read_csv(path)
-    candles['timestamp_utc'] = pd.to_datetime(candles['timestamp_utc'], utc=True)
+def load_candles(path: Path = RAW_DATA_PATH, interval: str = '30s') -> pd.DataFrame:
+    """Load candles — handles both pre-aggregated and raw 1s Databento CSVs."""
+    print(f"Loading data from {path} ...")
+    df = pd.read_csv(path)
+
+    if 'timestamp_utc' in df.columns:
+        df['timestamp_utc'] = pd.to_datetime(df['timestamp_utc'], utc=True)
+        df['timestamp_ny'] = df['timestamp_utc'].dt.tz_convert(NY_TZ)
+        df = df.sort_values('timestamp_utc').reset_index(drop=True)
+        print(f"  {len(df):,} pre-aggregated candles loaded")
+        return df
+
+    df['ts_event'] = pd.to_datetime(df['ts_event'], utc=True)
+    print(f"  {len(df):,} raw 1s rows — aggregating to {interval} ...")
+
+    df = df[(df['open'] >= 10_000) & (df['close'] >= 10_000) &
+            (df['low'] >= 10_000) & (df['high'] >= 10_000)]
+
+    # Drop spreads if present
+    if 'symbol' in df.columns:
+        df = df[~df['symbol'].str.contains('-', na=False)]
+
+    df = df.sort_values('ts_event').reset_index(drop=True)
+    ts_col = df['ts_event'].dt.floor(interval)
+
+    df['_mid'] = (df['open'] + df['close']) / 2
+    group_median = df.groupby(ts_col)['_mid'].transform('median')
+    outlier_mask = (df['_mid'] - group_median).abs() > 100
+    n_outliers = outlier_mask.sum()
+    if n_outliers:
+        print(f"  Dropped {n_outliers} outlier rows")
+    df = df[~outlier_mask]
+
+    candles = (
+        df.groupby(ts_col)
+        .agg(open=('open', 'first'), high=('high', 'max'),
+             low=('low', 'min'), close=('close', 'last'),
+             volume=('volume', 'sum'))
+        .reset_index()
+        .rename(columns={'ts_event': 'timestamp_utc'})
+    )
     candles['timestamp_ny'] = candles['timestamp_utc'].dt.tz_convert(NY_TZ)
     candles = candles.sort_values('timestamp_utc').reset_index(drop=True)
-    print(f"  {len(candles):,} candles loaded")
+    print(f"  {len(candles):,} {interval} candles")
     return candles
 
 
@@ -257,16 +297,16 @@ def _window_touched_swing(
     start_idx: int, end_idx: int, candles: pd.DataFrame,
     swings_df: pd.DataFrame, swing_type: str,
 ) -> bool:
-    """§3.5: Self-reference exclusion — if swing point IS the tap candle, skip it."""
+    """§3.5 v2.0.1: Skip any candle in the window that IS the swing point."""
     swing = current_swing_at(swings_df, end_idx, swing_type)
     if swing is None:
         return False
 
-    check_from = start_idx
-    if swing['idx'] == start_idx:
-        check_from = start_idx + 1
+    swing_bar_idx = swing['idx']
 
-    for j in range(check_from, end_idx + 1):
+    for j in range(start_idx, end_idx + 1):
+        if j == swing_bar_idx:
+            continue
         c = candles.iloc[j]
         if swing_type == 'high' and c['high'] >= swing['price']:
             return True
@@ -289,18 +329,31 @@ def _inversed_opposing_in_window(
 
 def _check_opposing_fvg_interaction(
     candle: pd.Series, direction: str, active_fvgs: List[Dict],
-) -> bool:
-    """v1.9 §3.7: Entry candle tapping an active opposing FVG invalidates signal."""
-    for opp in active_fvgs:
-        if not opp['active']:
-            continue
+    all_fvgs: List[Dict], bar_idx: int,
+) -> str:
+    """v2.0.5 §3.7: Entry candle opposing FVG interaction.
+
+    Checks both active FVGs and FVGs killed on the current bar (same-bar kills
+    should still block entries).
+    Returns 'no_contact', 'ifvg' (touched + inversed), or 'dead' (touched, not inversed).
+    """
+    candidates = [f for f in active_fvgs if f['active']]
+    candidates += [f for f in all_fvgs
+                   if f.get('killed_at_idx') == bar_idx
+                   or f.get('inversed_at_idx') == bar_idx]
+
+    for opp in candidates:
         if direction == 'long' and opp['direction'] == 'bearish':
             if candle['high'] >= opp['bottom']:
-                return True
+                if candle['close'] > opp['top']:
+                    return 'ifvg'
+                return 'dead'
         if direction == 'short' and opp['direction'] == 'bullish':
             if candle['low'] <= opp['top']:
-                return True
-    return False
+                if candle['close'] < opp['bottom']:
+                    return 'ifvg'
+                return 'dead'
+    return 'no_contact'
 
 
 # ===================================================================
@@ -331,6 +384,7 @@ def generate_signals(candles: pd.DataFrame) -> Tuple[List[Dict], List[Dict]]:
             new_fvg['id'] = fvg_seq
             active_fvgs.append(new_fvg)
 
+        # --- Phase 1: midpoint + inversion kills (pre-entry) ---
         still_active = []
         for fvg in active_fvgs:
             if not fvg['active']:
@@ -365,12 +419,39 @@ def generate_signals(candles: pd.DataFrame) -> Tuple[List[Dict], List[Dict]]:
             still_active.append(fvg)
         active_fvgs = still_active
 
+        # --- Phase 2: entry checks (before swing-sweep kill) ---
         if i >= 1 and in_trading_window(ts_ny):
             prev = candles.iloc[i - 1]
             entry = _try_entry_cascading(active_fvgs, candle, prev, i, candles,
                                          swings_df, all_fvgs, ts_ny)
             if entry is not None:
                 signals.append(entry)
+
+        # --- Phase 3: swing sweep kill (v2.0.4 §1.2 — only after tap) ---
+        still_active2 = []
+        for fvg in active_fvgs:
+            if not fvg['active']:
+                still_active2.append(fvg)
+                continue
+            if fvg['tap_bar_idx_1'] is None:
+                still_active2.append(fvg)
+                continue
+            swing_type = 'low' if fvg['direction'] == 'bearish' else 'high'
+            swing = current_swing_at(swings_df, i, swing_type)
+            if swing is not None and swing['idx'] != i:
+                swept = False
+                if fvg['direction'] == 'bearish' and candle['low'] <= swing['price'] and candle['close'] > swing['price']:
+                    swept = True
+                elif fvg['direction'] == 'bullish' and candle['high'] >= swing['price'] and candle['close'] < swing['price']:
+                    swept = True
+                if swept:
+                    fvg['active'] = False
+                    fvg['killed_reason'] = 'swing_swept_no_bos'
+                    fvg['killed_at_idx'] = i
+                    all_fvgs.append(fvg)
+                    continue
+            still_active2.append(fvg)
+        active_fvgs = still_active2
 
     all_fvgs.extend(active_fvgs)
     return signals, all_fvgs
@@ -381,7 +462,7 @@ def _try_entry_cascading(
     idx: int, candles: pd.DataFrame, swings_df: pd.DataFrame,
     all_fvgs: List[Dict], ts_ny: pd.Timestamp,
 ) -> Optional[Dict]:
-    """v1.9.4: Cascading tap + re-tap rule + opposing FVG check."""
+    """v2.0.5: Cascading tap + re-tap rule + refined opposing FVG check."""
     for fvg in active_fvgs:
         if not fvg['active']:
             continue
@@ -397,7 +478,9 @@ def _try_entry_cascading(
             if candle['close'] >= prev['low']:
                 continue
 
-        if _check_opposing_fvg_interaction(candle, direction, active_fvgs):
+        opp_result = _check_opposing_fvg_interaction(candle, direction, active_fvgs,
+                                                       all_fvgs, idx)
+        if opp_result == 'dead':
             continue
 
         tap_candidates = []
@@ -415,8 +498,11 @@ def _try_entry_cascading(
             if tap_idx > idx:
                 continue
 
-            variant = _classify_variant(tap_idx, candle, idx, candles,
-                                        swings_df, all_fvgs, direction)
+            if opp_result == 'ifvg':
+                variant = 'ifvg'
+            else:
+                variant = _classify_variant(tap_idx, candle, idx, candles,
+                                            swings_df, all_fvgs, direction)
             if variant is None:
                 continue
 
@@ -488,7 +574,7 @@ def log_signals(signals: List[Dict], path: Path = TRADES_LOG_PATH):
 # ===================================================================
 
 def main():
-    parser = argparse.ArgumentParser(description='FVGC v1.9.4 signal detector')
+    parser = argparse.ArgumentParser(description='FVGC v2.0.5 signal detector')
     parser.add_argument(
         '--last-days', type=int, metavar='N',
         help='Print signals from the last N calendar days (from newest bar date in data)',
@@ -500,7 +586,7 @@ def main():
     args = parser.parse_args()
 
     print("=" * 60)
-    print("FVGC v1.9.4 Signal Detector")
+    print("FVGC v2.0.5 Signal Detector")
     print("=" * 60)
     LOGS_DIR.mkdir(exist_ok=True)
 
