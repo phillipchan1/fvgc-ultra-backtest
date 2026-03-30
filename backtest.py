@@ -35,7 +35,7 @@ MIN_FVG_SIZE = 0.0
 # Paths
 # ---------------------------------------------------------------------------
 DATA_DIR = Path('data')
-RAW_DATA_PATH = DATA_DIR / 'raw' / 'glbx-mdp3-20260226-20260325.ohlcv-1s.csv'
+RAW_DATA_PATH = DATA_DIR / 'raw' / 'nq-front-month-consolidated.ohlcv-1s.csv'
 LOGS_DIR = Path('logs')
 FVGS_LOG_PATH = LOGS_DIR / 'fvgs.csv'
 TRADES_LOG_PATH = LOGS_DIR / 'trades_generated.csv'
@@ -521,6 +521,10 @@ def main():
         '--last-days', type=int, metavar='N',
         help='Print signals from the last N calendar days (from newest bar date in data)',
     )
+    parser.add_argument(
+        '--data', type=Path, default=RAW_DATA_PATH, metavar='PATH',
+        help=f'Path to OHLCV-1s CSV (default: {RAW_DATA_PATH})',
+    )
     args = parser.parse_args()
 
     print("=" * 60)
@@ -528,7 +532,7 @@ def main():
     print("=" * 60)
     LOGS_DIR.mkdir(exist_ok=True)
 
-    candles = load_and_aggregate()
+    candles = load_and_aggregate(args.data)
     print("\nDetecting FVGs and scanning for entries ...")
     signals, fvgs = generate_signals(candles)
 
