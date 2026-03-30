@@ -1,1 +1,5 @@
 data/raw/glbx-mdp3-20231002-20251027.ohlcv-1s.csv
+data/raw/*.ohlcv-1s.csv
+__pycache__/
+logs/
+.DS_Store
