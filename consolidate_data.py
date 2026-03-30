@@ -1,26 +1,32 @@
 #!/usr/bin/env python3
 """
-Consolidate multiple Databento NQ OHLCV-1s CSV files into a single
-clean front-month continuous series.
+Consolidate multiple Databento NQ OHLCV-1s CSV files into clean
+front-month 15s and 30s candle files.
 
 Steps:
   1. Load all raw ohlcv-1s CSVs from data/raw/
   2. Drop calendar-spread rows (symbol contains '-')
-  3. Drop back-month / low-volume contracts when multiple outrights share a timestamp
-  4. Deduplicate, sort, and write one consolidated file
+  3. Keep only the front-month contract per calendar date (by volume)
+  4. Apply price floor + outlier filters (same logic as backtest)
+  5. Aggregate to 15s and 30s OHLCV candles
+  6. Write compact output files
 
 Run:
   python consolidate_data.py
 """
 
 import pandas as pd
+import pytz
 from pathlib import Path
-from datetime import datetime
 
 DATA_DIR = Path('data/raw')
-OUTPUT_PATH = DATA_DIR / 'nq-front-month-consolidated.ohlcv-1s.csv'
+OUTPUT_DIR = Path('data/consolidated')
 
 NQ_QUARTERLY_ORDER = ['H', 'M', 'U', 'Z']
+NY_TZ = pytz.timezone('America/New_York')
+PRICE_FLOOR = 10_000
+OUTLIER_THRESHOLD = 100
+
 
 def contract_sort_key(symbol: str) -> tuple:
     """Parse NQ contract symbol (e.g. NQH6) into (year, quarter_idx) for ordering."""
@@ -70,8 +76,6 @@ def determine_front_month_schedule(df: pd.DataFrame) -> pd.DataFrame:
     front_month = daily_vol.drop_duplicates(subset='_date', keep='first')[['_date', 'symbol']]
     front_month = front_month.rename(columns={'symbol': 'front_month'})
 
-    # Smooth out one-off flickers: if contract A is front month on day D-1 and D+1
-    # but not D, it's a data artifact — keep A on day D too.
     fm = front_month.sort_values('_date').reset_index(drop=True)
     for i in range(1, len(fm) - 1):
         if fm.loc[i - 1, 'front_month'] == fm.loc[i + 1, 'front_month'] and \
@@ -88,29 +92,25 @@ def determine_front_month_schedule(df: pd.DataFrame) -> pd.DataFrame:
     return fm
 
 
-def clean(df: pd.DataFrame) -> pd.DataFrame:
+def clean_front_month(df: pd.DataFrame) -> pd.DataFrame:
     before = len(df)
 
-    # 1. Drop spreads (symbols with '-')
     spread_mask = df['symbol'].str.contains('-', na=False)
     n_spreads = spread_mask.sum()
     df = df[~spread_mask].copy()
-    print(f"\nDropped {n_spreads:,} spread rows (symbols with '-')")
+    print(f"\nDropped {n_spreads:,} spread rows")
 
-    # 2. Parse timestamps
     df['ts_event'] = pd.to_datetime(df['ts_event'], utc=True)
 
-    # 3. Determine front month per calendar date by volume
     fm_schedule = determine_front_month_schedule(df)
     df['_date'] = df['ts_event'].dt.date
     df = df.merge(fm_schedule, on='_date', how='left')
     non_front = df['symbol'] != df['front_month']
     n_back = non_front.sum()
     df = df[~non_front].copy()
-    print(f"\nDropped {n_back:,} back-month rows (not front month for that date)")
+    print(f"Dropped {n_back:,} back-month rows")
     df = df.drop(columns=['_date', 'front_month'])
 
-    # 4. Deduplicate any remaining same-timestamp rows
     df = df.sort_values('ts_event')
     dupes = df.duplicated(subset='ts_event', keep='first').sum()
     if dupes:
@@ -118,50 +118,63 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
         print(f"Dropped {dupes:,} duplicate-timestamp rows")
 
     df = df.reset_index(drop=True)
-    print(f"\nFinal row count: {len(df):,}  (from {before:,} raw)")
+    print(f"Clean 1s rows: {len(df):,}  (from {before:,} raw)")
     return df
 
 
-def report(df: pd.DataFrame):
-    print("\n" + "=" * 60)
-    print("CONSOLIDATION REPORT")
-    print("=" * 60)
-    print(f"Total rows:  {len(df):,}")
-    print(f"Date range:  {df['ts_event'].min()} -> {df['ts_event'].max()}")
+def apply_filters(df: pd.DataFrame) -> pd.DataFrame:
+    """Apply price floor and outlier filters (mirrors backtest logic)."""
+    before = len(df)
 
-    symbols = df['symbol'].unique()
-    print(f"Contracts:   {', '.join(sorted(symbols, key=contract_sort_key))}")
+    floor_mask = (
+        (df['open'] >= PRICE_FLOOR) & (df['close'] >= PRICE_FLOOR) &
+        (df['low'] >= PRICE_FLOOR) & (df['high'] >= PRICE_FLOOR)
+    )
+    df = df[floor_mask].copy()
+    n_floor = before - len(df)
+    if n_floor:
+        print(f"Dropped {n_floor:,} sub-floor rows (OHLC < {PRICE_FLOOR})")
 
-    # Contract transitions
-    df_sym = df[['ts_event', 'symbol']].copy()
-    df_sym['prev_symbol'] = df_sym['symbol'].shift(1)
-    transitions = df_sym[df_sym['symbol'] != df_sym['prev_symbol']].iloc[1:]
-    if not transitions.empty:
-        print("\nContract roll points:")
-        for _, row in transitions.iterrows():
-            print(f"  {row['prev_symbol']} -> {row['symbol']}  at  {row['ts_event']}")
+    df['_ts_30s'] = df['ts_event'].dt.floor('30s')
+    df['_mid'] = (df['open'] + df['close']) / 2
+    group_median = df.groupby('_ts_30s')['_mid'].transform('median')
+    outlier_mask = (df['_mid'] - group_median).abs() > OUTLIER_THRESHOLD
+    n_outliers = outlier_mask.sum()
+    if n_outliers:
+        print(f"Dropped {n_outliers:,} outlier rows (>{OUTLIER_THRESHOLD} pts from 30s median)")
+    df = df[~outlier_mask].copy()
+    df = df.drop(columns=['_ts_30s', '_mid'])
 
-    # Gap detection (gaps > 2 hours during trading days)
-    ts = df['ts_event'].sort_values().reset_index(drop=True)
-    diffs = ts.diff()
-    gap_threshold = pd.Timedelta(hours=26)
-    gaps = diffs[diffs > gap_threshold]
-    if not gaps.empty:
-        print(f"\nData gaps (>{gap_threshold}):")
-        for idx in gaps.index:
-            gap_start = ts.iloc[idx - 1]
-            gap_end = ts.iloc[idx]
-            print(f"  {gap_start} -> {gap_end}  ({diffs.iloc[idx]})")
-    else:
-        print("\nNo significant data gaps detected.")
+    print(f"After filters: {len(df):,} clean 1s rows")
+    return df
 
-    # Per-contract stats
-    print("\nPer-contract breakdown:")
-    for sym in sorted(symbols, key=contract_sort_key):
-        sub = df[df['symbol'] == sym]
-        print(f"  {sym}: {len(sub):>10,} rows  "
-              f"({sub['ts_event'].min().strftime('%Y-%m-%d %H:%M')} -> "
-              f"{sub['ts_event'].max().strftime('%Y-%m-%d %H:%M')})")
+
+def aggregate(df: pd.DataFrame, interval: str) -> pd.DataFrame:
+    """Aggregate 1s bars into OHLCV candles at the given interval."""
+    ts_col = f'_ts_{interval}'
+    df[ts_col] = df['ts_event'].dt.floor(interval)
+
+    candles = (
+        df.groupby(ts_col)
+        .agg(
+            open=('open', 'first'),
+            high=('high', 'max'),
+            low=('low', 'min'),
+            close=('close', 'last'),
+            volume=('volume', 'sum'),
+        )
+        .reset_index()
+        .rename(columns={ts_col: 'timestamp_utc'})
+    )
+    candles['timestamp_ny'] = candles['timestamp_utc'].dt.tz_convert(NY_TZ)
+    candles = candles.sort_values('timestamp_utc').reset_index(drop=True)
+    return candles
+
+
+def report(candles: pd.DataFrame, label: str):
+    print(f"\n--- {label} ---")
+    print(f"  Candles: {len(candles):,}")
+    print(f"  Range:   {candles['timestamp_utc'].min()} -> {candles['timestamp_utc'].max()}")
 
 
 def main():
@@ -170,13 +183,21 @@ def main():
     print("=" * 60)
 
     df = load_raw_files()
-    df = clean(df)
-    report(df)
+    df = clean_front_month(df)
+    df = apply_filters(df)
 
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(OUTPUT_PATH, index=False)
-    print(f"\nWrote consolidated file: {OUTPUT_PATH}")
-    print(f"Size: {OUTPUT_PATH.stat().st_size / 1e6:.1f} MB")
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    for interval, suffix in [('15s', '15s'), ('30s', '30s')]:
+        candles = aggregate(df, interval)
+        report(candles, f"{interval} candles")
+
+        out_path = OUTPUT_DIR / f'nq-front-month.ohlcv-{suffix}.csv'
+        candles.to_csv(out_path, index=False)
+        size_mb = out_path.stat().st_size / 1e6
+        print(f"  Wrote: {out_path}  ({size_mb:.1f} MB)")
+
+    print("\nDone.")
 
 
 if __name__ == '__main__':

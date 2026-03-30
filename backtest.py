@@ -35,7 +35,7 @@ MIN_FVG_SIZE = 0.0
 # Paths
 # ---------------------------------------------------------------------------
 DATA_DIR = Path('data')
-RAW_DATA_PATH = DATA_DIR / 'raw' / 'nq-front-month-consolidated.ohlcv-1s.csv'
+RAW_DATA_PATH = DATA_DIR / 'consolidated' / 'nq-front-month.ohlcv-30s.csv'
 LOGS_DIR = Path('logs')
 FVGS_LOG_PATH = LOGS_DIR / 'fvgs.csv'
 TRADES_LOG_PATH = LOGS_DIR / 'trades_generated.csv'
@@ -46,42 +46,14 @@ TARGET_DATES = ['2026-03-24', '2026-03-25']
 # Data loading
 # ===================================================================
 
-def load_and_aggregate(path: Path = RAW_DATA_PATH) -> pd.DataFrame:
-    print(f"Loading 1s data from {path} ...")
-    df = pd.read_csv(path)
-    df['ts_event'] = pd.to_datetime(df['ts_event'], utc=True)
-
-    price_floor = 10000
-    before = len(df)
-    df = df[(df['open'] >= price_floor) & (df['close'] >= price_floor) &
-            (df['low'] >= price_floor) & (df['high'] >= price_floor)]
-    dropped = before - len(df)
-    if dropped:
-        print(f"  Dropped {dropped} sub-floor rows")
-
-    df = df.sort_values('ts_event').reset_index(drop=True)
-    df['ts_30s'] = df['ts_event'].dt.floor('30s')
-
-    OUTLIER_THRESHOLD = 100
-    df['mid'] = (df['open'] + df['close']) / 2
-    group_median = df.groupby('ts_30s')['mid'].transform('median')
-    outlier_mask = (df['mid'] - group_median).abs() > OUTLIER_THRESHOLD
-    n_outliers = outlier_mask.sum()
-    if n_outliers:
-        print(f"  Dropped {n_outliers} outlier-tick rows")
-    df = df[~outlier_mask].copy()
-
-    candles = (
-        df.groupby('ts_30s')
-        .agg(open=('open', 'first'), high=('high', 'max'),
-             low=('low', 'min'), close=('close', 'last'),
-             volume=('volume', 'sum'))
-        .reset_index()
-        .rename(columns={'ts_30s': 'timestamp_utc'})
-    )
+def load_candles(path: Path = RAW_DATA_PATH) -> pd.DataFrame:
+    """Load pre-aggregated candles from consolidate_data.py output."""
+    print(f"Loading candles from {path} ...")
+    candles = pd.read_csv(path)
+    candles['timestamp_utc'] = pd.to_datetime(candles['timestamp_utc'], utc=True)
     candles['timestamp_ny'] = candles['timestamp_utc'].dt.tz_convert(NY_TZ)
     candles = candles.sort_values('timestamp_utc').reset_index(drop=True)
-    print(f"  {len(candles)} 30s candles")
+    print(f"  {len(candles):,} candles loaded")
     return candles
 
 
@@ -532,7 +504,7 @@ def main():
     print("=" * 60)
     LOGS_DIR.mkdir(exist_ok=True)
 
-    candles = load_and_aggregate(args.data)
+    candles = load_candles(args.data)
     print("\nDetecting FVGs and scanning for entries ...")
     signals, fvgs = generate_signals(candles)
 
