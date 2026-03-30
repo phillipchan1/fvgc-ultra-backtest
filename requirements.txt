@@ -1,2 +1,5 @@
 pandas
 pytz
+matplotlib
+seaborn
+numpy
