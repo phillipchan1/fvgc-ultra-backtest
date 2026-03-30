@@ -1,1 +1,0 @@
-# Trading models and strategies
