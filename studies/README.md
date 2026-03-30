@@ -12,6 +12,9 @@ studies/
   day_of_week/        # Example: performance by day of week
     run.py
     analysis.md
+  baseline/           # Full-history indicator-only baseline (30s consolidated)
+    run.py
+    analysis.md
 ```
 
 ## Creating a new study

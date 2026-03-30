@@ -24,9 +24,14 @@ LOGS_DIR = Path('logs')
 
 def main():
     parser = argparse.ArgumentParser(description=f'FVGC v{__version__} signal detector')
-    parser.add_argument(
+    scope = parser.add_mutually_exclusive_group()
+    scope.add_argument(
         '--last-days', type=int, metavar='N',
         help='Print signals from the last N calendar days',
+    )
+    scope.add_argument(
+        '--baseline', action='store_true',
+        help='Full history: summary stats only (no per-trade listing); writes logs/baseline_*.csv',
     )
     parser.add_argument(
         '--data', type=Path, default=DEFAULT_DATA, metavar='PATH',
@@ -49,6 +54,15 @@ def main():
 
     print("\nSimulating trades ...")
     signals = simulate_trades(signals, candles)
+
+    if args.baseline:
+        stats = summarize_results(signals)
+        print("\n--- Full-history baseline (indicator only) ---")
+        print_summary(stats)
+        log_signals(signals, path=LOGS_DIR / 'baseline_trades.csv')
+        log_fvgs(fvgs, path=LOGS_DIR / 'baseline_fvgs.csv')
+        print(f"\nWrote {LOGS_DIR / 'baseline_trades.csv'}, {LOGS_DIR / 'baseline_fvgs.csv'}")
+        return
 
     if args.last_days is not None:
         end_d = candles['timestamp_ny'].max().date()
