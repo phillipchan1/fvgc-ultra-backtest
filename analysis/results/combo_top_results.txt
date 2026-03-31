@@ -1,0 +1,107 @@
+======================================================================
+MULTI-FACTOR COMBO PERMUTATION TEST RESULTS
+======================================================================
+
+Tested 2593 combos at p < 0.05
+Expected ~130 significant by chance alone (WR)
+Found 549 significant by win rate (raw p < 0.05)
+Found 538 significant by profit factor (raw p < 0.05)
+Survive BH FDR correction at q < 0.10 (WR): 219
+
+Note: Baseline win rate across all trades = 51.7%
+
+----------------------------------------------------------------------
+TOP 20 BY WIN RATE (n >= 30, p_wr < 0.05)
+----------------------------------------------------------------------
+    1. macro_w1 + overnight_down + wide_45min_or               n=  31  WR= 83.9%  PF= 4.76  p_wr=0.0000 [FDR]
+    2. gap_down + macro_w1 + wide_45min_or                     n=  36  WR= 83.3%  PF= 5.31  p_wr=0.0000 [FDR]
+    3. elevated_vixy + macro_w1 + wide_45min_or                n=  45  WR= 80.0%  PF= 4.41  p_wr=0.0000 [FDR]
+    4. large_930_candle + prior_day_down + short_only          n=  31  WR= 77.4%  PF= 3.41  p_wr=0.0030 [FDR]
+    5. bearish_930 + macro_w1 + wide_45min_or                  n=  44  WR= 77.3%  PF= 3.47  p_wr=0.0010 [FDR]
+    6. macro_w1 + wide_45min_or + wide_5min_or                 n=  39  WR= 76.9%  PF= 3.51  p_wr=0.0000 [FDR]
+    7. macro_w1 + no_red_folder + wide_45min_or                n=  64  WR= 75.0%  PF= 3.21  p_wr=0.0000 [FDR]
+    8. macro_w1 + no_pre_rth_news + wide_45min_or              n=  67  WR= 74.6%  PF= 3.27  p_wr=0.0000 [FDR]
+    9. macro_w1 + short_only + wide_45min_or                   n=  51  WR= 74.5%  PF= 3.07  p_wr=0.0000 [FDR]
+   10. has_red_folder + large_930_candle + short_only          n=  35  WR= 74.3%  PF= 3.45  p_wr=0.0030 [FDR]
+   11. macro_w1 + prior_day_down + short_only                  n=  59  WR= 72.9%  PF= 2.52  p_wr=0.0010 [FDR]
+   12. overnight_down + prior_day_down + short_only            n=  55  WR= 72.7%  PF= 2.12  p_wr=0.0010 [FDR]
+   13. macro_w1 + wide_45min_or                                n=  77  WR= 72.7%  PF= 2.84  p_wr=0.0000 [FDR]
+   14. bearish_930 + macro_w1 + wide_5min_or                   n=  44  WR= 72.7%  PF= 2.66  p_wr=0.0020 [FDR]
+   15. elevated_vixy + large_930_candle + prior_day_down       n=  33  WR= 72.7%  PF= 2.27  p_wr=0.0130
+   16. bearish_930 + prior_day_up + wide_5min_or               n=  40  WR= 72.5%  PF= 3.13  p_wr=0.0020 [FDR]
+   17. gap_down + macro_w1 + prior_day_down                    n=  32  WR= 71.9%  PF= 2.40  p_wr=0.0240
+   18. macro_w1 + short_only + wide_5min_or                    n=  49  WR= 71.4%  PF= 2.46  p_wr=0.0060 [FDR]
+   19. large_930_candle + macro_w1 + wide_45min_or             n=  31  WR= 71.0%  PF= 2.89  p_wr=0.0200
+   20. prior_day_down + short_only + small_930_candle          n=  31  WR= 71.0%  PF= 2.11  p_wr=0.0190
+
+----------------------------------------------------------------------
+TOP 20 BY PROFIT FACTOR (n >= 30, p_pf < 0.05)
+----------------------------------------------------------------------
+    1. gap_down + macro_w1 + wide_45min_or                     n=  36  WR= 83.3%  PF= 5.31  p_wr=0.0000 [FDR]
+    2. macro_w1 + overnight_down + wide_45min_or               n=  31  WR= 83.9%  PF= 4.76  p_wr=0.0000 [FDR]
+    3. elevated_vixy + macro_w1 + wide_45min_or                n=  45  WR= 80.0%  PF= 4.41  p_wr=0.0000 [FDR]
+    4. macro_w1 + wide_45min_or + wide_5min_or                 n=  39  WR= 76.9%  PF= 3.51  p_wr=0.0000 [FDR]
+    5. bearish_930 + macro_w1 + wide_45min_or                  n=  44  WR= 77.3%  PF= 3.47  p_wr=0.0010 [FDR]
+    6. has_red_folder + large_930_candle + short_only          n=  35  WR= 74.3%  PF= 3.45  p_wr=0.0030 [FDR]
+    7. large_930_candle + prior_day_down + short_only          n=  31  WR= 77.4%  PF= 3.41  p_wr=0.0030 [FDR]
+    8. macro_w1 + no_pre_rth_news + wide_45min_or              n=  67  WR= 74.6%  PF= 3.27  p_wr=0.0000 [FDR]
+    9. macro_w1 + no_red_folder + wide_45min_or                n=  64  WR= 75.0%  PF= 3.21  p_wr=0.0000 [FDR]
+   10. bearish_930 + prior_day_up + wide_5min_or               n=  40  WR= 72.5%  PF= 3.13  p_wr=0.0020 [FDR]
+   11. macro_w1 + short_only + wide_45min_or                   n=  51  WR= 74.5%  PF= 3.07  p_wr=0.0000 [FDR]
+   12. large_930_candle + macro_w1 + wide_45min_or             n=  31  WR= 71.0%  PF= 2.89  p_wr=0.0200
+   13. macro_w1 + wide_5min_or + wide_overnight                n=  40  WR= 70.0%  PF= 2.85  p_wr=0.0130
+   14. macro_w1 + wide_45min_or                                n=  77  WR= 72.7%  PF= 2.84  p_wr=0.0000 [FDR]
+   15. macro_w1 + wide_45min_or + wide_overnight               n=  33  WR= 69.7%  PF= 2.80  p_wr=0.0230
+   16. bearish_930 + macro_w1 + wide_overnight                 n=  47  WR= 70.2%  PF= 2.73  p_wr=0.0030 [FDR]
+   17. elevated_vixy + macro_w1 + wide_overnight               n=  44  WR= 70.5%  PF= 2.70  p_wr=0.0060 [FDR]
+   18. bearish_930 + macro_w1 + wide_5min_or                   n=  44  WR= 72.7%  PF= 2.66  p_wr=0.0020 [FDR]
+   19. macro_w1 + prior_day_down + short_only                  n=  59  WR= 72.9%  PF= 2.52  p_wr=0.0010 [FDR]
+   20. large_930_candle + macro_w1 + short_only                n=  42  WR= 66.7%  PF= 2.50  p_wr=0.0470
+
+----------------------------------------------------------------------
+TOP 20 BY WIN RATE (n >= 50, robust sample)
+----------------------------------------------------------------------
+    1. macro_w1 + no_red_folder + wide_45min_or                n=  64  WR= 75.0%  PF= 3.21  p_wr=0.0000 [FDR]
+    2. macro_w1 + no_pre_rth_news + wide_45min_or              n=  67  WR= 74.6%  PF= 3.27  p_wr=0.0000 [FDR]
+    3. macro_w1 + short_only + wide_45min_or                   n=  51  WR= 74.5%  PF= 3.07  p_wr=0.0000 [FDR]
+    4. macro_w1 + prior_day_down + short_only                  n=  59  WR= 72.9%  PF= 2.52  p_wr=0.0010 [FDR]
+    5. overnight_down + prior_day_down + short_only            n=  55  WR= 72.7%  PF= 2.12  p_wr=0.0010 [FDR]
+    6. macro_w1 + wide_45min_or                                n=  77  WR= 72.7%  PF= 2.84  p_wr=0.0000 [FDR]
+    7. gap_down + prior_day_down + short_only                  n=  65  WR= 70.8%  PF= 2.06  p_wr=0.0020 [FDR]
+    8. macro_w1 + not_fomc_week + wide_45min_or                n=  67  WR= 70.1%  PF= 2.47  p_wr=0.0010 [FDR]
+    9. no_red_folder + prior_day_down + small_930_candle       n=  50  WR= 70.0%  PF= 2.27  p_wr=0.0060 [FDR]
+   10. no_pre_rth_news + prior_day_down + small_930_candle     n=  55  WR= 69.1%  PF= 2.14  p_wr=0.0080 [FDR]
+   11. bearish_930 + macro_w1 + overnight_down                 n=  64  WR= 68.8%  PF= 2.30  p_wr=0.0030 [FDR]
+   12. bearish_930 + low_vixy + small_930_candle               n=  50  WR= 68.0%  PF= 2.15  p_wr=0.0160
+   13. gap_down + short_only + wide_45min_or                   n=  92  WR= 67.4%  PF= 2.18  p_wr=0.0000 [FDR]
+   14. bearish_930 + large_930_candle + wide_overnight         n=  61  WR= 67.2%  PF= 2.24  p_wr=0.0100
+   15. elevated_vixy + short_only + wide_45min_or              n= 111  WR= 66.7%  PF= 2.26  p_wr=0.0030 [FDR]
+   16. bullish_930 + elevated_vixy + prior_day_down            n=  69  WR= 66.7%  PF= 1.67  p_wr=0.0090
+   17. bullish_930 + long_only + macro_w2                      n= 135  WR= 66.7%  PF= 1.63  p_wr=0.0000 [FDR]
+   18. bullish_930 + overnight_down + wide_45min_or            n=  77  WR= 66.2%  PF= 1.98  p_wr=0.0030 [FDR]
+   19. bearish_930 + macro_w1 + short_only                     n= 151  WR= 66.2%  PF= 2.17  p_wr=0.0000 [FDR]
+   20. not_fomc_week + prior_day_down + small_930_candle       n=  59  WR= 66.1%  PF= 1.85  p_wr=0.0130
+
+----------------------------------------------------------------------
+BOTTOM 20 — AVOID LIST (lowest WR, n >= 30, p_wr < 0.05)
+----------------------------------------------------------------------
+    1. gap_down + normal_vixy + tight_45min_or                 n=  38  WR= 21.1%  PF= 0.22  p_wr=0.0000 [FDR]
+    2. overnight_down + short_only + tight_45min_or            n=  31  WR= 22.6%  PF= 0.32  p_wr=0.0010 [FDR]
+    3. bullish_930 + gap_down + is_fomc_week                   n=  35  WR= 22.9%  PF= 0.26  p_wr=0.0010 [FDR]
+    4. bullish_930 + overnight_down + tight_overnight          n=  30  WR= 23.3%  PF= 0.27  p_wr=0.0000 [FDR]
+    5. macro_w1 + prior_day_up + tight_45min_or                n=  47  WR= 23.4%  PF= 0.33  p_wr=0.0000 [FDR]
+    6. is_fomc_week + long_only + tight_45min_or               n=  36  WR= 25.0%  PF= 0.33  p_wr=0.0030 [FDR]
+    7. is_fomc_week + tight_45min_or + tight_5min_or           n=  40  WR= 25.0%  PF= 0.34  p_wr=0.0000 [FDR]
+    8. macro_w1 + normal_vixy + prior_day_up                   n=  32  WR= 25.0%  PF= 0.32  p_wr=0.0030 [FDR]
+    9. gap_down + short_only + tight_45min_or                  n=  44  WR= 25.0%  PF= 0.36  p_wr=0.0010 [FDR]
+   10. bullish_930 + is_fomc_week + short_only                 n=  36  WR= 25.0%  PF= 0.33  p_wr=0.0000 [FDR]
+   11. gap_down + macro_w1 + tight_45min_or                    n=  35  WR= 25.7%  PF= 0.40  p_wr=0.0020 [FDR]
+   12. is_fomc_week + macro_w2 + short_only                    n=  42  WR= 26.2%  PF= 0.43  p_wr=0.0000 [FDR]
+   13. long_only + macro_w1 + tight_45min_or                   n=  57  WR= 26.3%  PF= 0.35  p_wr=0.0000 [FDR]
+   14. bullish_930 + overnight_down + tight_45min_or           n=  45  WR= 26.7%  PF= 0.33  p_wr=0.0000 [FDR]
+   15. is_fomc_week + tight_5min_or                            n=  45  WR= 26.7%  PF= 0.37  p_wr=0.0000 [FDR]
+   16. is_fomc_week + no_red_folder + tight_45min_or           n=  37  WR= 27.0%  PF= 0.34  p_wr=0.0020 [FDR]
+   17. gap_down + prior_day_up + tight_45min_or                n=  50  WR= 28.0%  PF= 0.46  p_wr=0.0000 [FDR]
+   18. low_vixy + small_930_candle + tight_45min_or            n=  39  WR= 28.2%  PF= 0.38  p_wr=0.0040 [FDR]
+   19. bearish_930 + gap_down + tight_45min_or                 n=  46  WR= 28.3%  PF= 0.43  p_wr=0.0000 [FDR]
+   20. is_fomc_week + no_pre_rth_news + tight_5min_or          n=  42  WR= 28.6%  PF= 0.42  p_wr=0.0000 [FDR]
