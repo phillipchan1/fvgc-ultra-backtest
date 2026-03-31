@@ -9,6 +9,7 @@ studies/
   _template/          # Copy this to start a new study
     run.py
     analysis.md
+  <name>/results/     # Optional: CSV trade lists for verification (see .cursor/rules/studies.mdc)
   day_of_week/        # Example: performance by day of week
     run.py
     analysis.md
@@ -29,3 +30,4 @@ studies/
 - Always import from the `fvgc` package — never duplicate model logic.
 - Use `fvgc.engine.summarize_results()` for consistent stats.
 - Write findings to `analysis.md` in the same folder.
+- If the study filters or segments trades, write those rows to **`results/*.csv`** under the study folder (see Cursor rule `studies.mdc`).

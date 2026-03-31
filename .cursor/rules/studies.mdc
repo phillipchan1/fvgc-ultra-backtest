@@ -8,10 +8,11 @@ alwaysApply: false
 
 ## Structure
 
-Every study lives in `studies/<name>/` with two files:
+Every study lives in `studies/<name>/` with:
 
 - `run.py` — executable script that produces results
 - `analysis.md` — documents question, methodology, results, conclusions
+- `results/` — **verifiable trade lists** (CSV) emitted by the study (see below)
 
 ## Rules
 
@@ -25,3 +26,4 @@ Every study lives in `studies/<name>/` with two files:
 3. Never copy or reimplement model logic inline.
 4. Use `summarize_results()` and `print_summary()` for consistent stats output.
 5. Write findings to `analysis.md` in the same folder.
+6. **Trade list outputs:** Any study that filters or segments trades must write one or more CSVs under **`studies/<name>/results/`** so results can be verified in a spreadsheet (include the same columns as the source trade log where applicable, plus study-specific flags). Name files clearly (e.g. `trades_<cohort>_<params>.csv`). Create `results/` if missing. Document the filenames in `analysis.md`.
