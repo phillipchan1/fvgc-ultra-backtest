@@ -347,13 +347,26 @@ def main() -> None:
             ob_rows.append(summarize_subset(m, f'obstruction_{lab}'))
     pd.DataFrame(ob_rows).to_csv(RESULTS_DIR / 'summary_by_obstruction_count.csv', index=False)
 
-    # --- magnet group ---
+    # --- magnet group (valid ≤3R only — the actionable subset for a continuation model) ---
+    # magnet_valid=True means the nearest level in trade direction is within 3R.
+    # This is the correct lens: "when I had a reachable draw, which level type led to
+    # the best outcome?" Trades where the level was >3R away are excluded because
+    # targeting a level 4-8R away is not how this model operates.
+    dfx_valid = dfx[dfx['magnet_valid'] == True]
     mg_rows = []
-    for g in sorted(dfx['nearest_magnet_group'].dropna().unique()):
-        m = dfx[dfx['nearest_magnet_group'] == g]
+    for g in sorted(dfx_valid['nearest_magnet_group'].dropna().unique()):
+        m = dfx_valid[dfx_valid['nearest_magnet_group'] == g]
         if len(m):
             mg_rows.append(summarize_subset(m, str(g)))
     pd.DataFrame(mg_rows).to_csv(RESULTS_DIR / 'summary_by_magnet_group.csv', index=False)
+
+    # Also produce unfiltered version for reference
+    mg_rows_all = []
+    for g in sorted(dfx['nearest_magnet_group'].dropna().unique()):
+        m = dfx[dfx['nearest_magnet_group'] == g]
+        if len(m):
+            mg_rows_all.append(summarize_subset(m, str(g)))
+    pd.DataFrame(mg_rows_all).to_csv(RESULTS_DIR / 'summary_by_magnet_group_all.csv', index=False)
 
     # --- confluence ---
     cf_rows = []
@@ -451,7 +464,8 @@ def main() -> None:
     print_wr_pf_table('WR by nearest_magnet_R bucket', rows_plus_baseline(rows_mag, dfx))
     print_wr_pf_table('WR by path_clear', rows_plus_baseline(pc_rows, dfx))
     print_wr_pf_table('WR by obstruction_count', rows_plus_baseline(ob_rows, dfx))
-    print_wr_pf_table('WR by nearest_magnet_group', rows_plus_baseline(mg_rows, dfx))
+    print_wr_pf_table('WR by nearest_magnet_group (magnet_valid=True, ≤3R)', rows_plus_baseline(mg_rows, dfx_valid))
+    print_wr_pf_table('WR by nearest_magnet_group (ALL distances, reference)', rows_plus_baseline(mg_rows_all, dfx))
     print_wr_pf_table('WR by level_confluence_count', rows_plus_baseline(cf_rows, dfx))
     print_wr_pf_table('WR by available_level_count', rows_plus_baseline(alc_rows, dfx))
 
