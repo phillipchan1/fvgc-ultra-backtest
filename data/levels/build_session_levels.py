@@ -49,44 +49,110 @@ def _session_fvg_na() -> dict:
     }
 
 
-PRE_RTH_SWEEP_LEVEL_NAMES = frozenset({
-    'prev_day_high', 'prev_day_low', 'london_high', 'london_low',
-    'asia_high', 'asia_low', '6am_high', '6am_low',
-    'nwog_high', 'nwog_low', 'bsl_level', 'ssl_level',
-})
+# For each level name, the earliest time (on the session date) from which we
+# check for a pre-RTH sweep.  The sweep window is [sweep_start, 9:30 AM).
+#
+# The key rule: only check bars AFTER the level is fully formed.
+#   - prev_day / nwog: formed before 18:00 prev day → check all of overnight
+#   - asia:            forms 19:00 prev – 2:00 AM → check 2:00 AM onward
+#   - london:          forms 2:00 – 8:00 AM → check 8:00 AM onward
+#   - 6am:             forms 4:00 – 8:00 AM → check 8:00 AM onward
+#   - bsl_ssl:         derived from London (2:00 – 8:00 AM) → check 8:00 AM onward
+#   - overnight:       IS the overnight H/L extreme → can never be swept pre-RTH
+#                      (it would only be swept during RTH); always False
+_SWEEP_START: dict[str, dtime | None] = {
+    # None  → always False (overnight extreme cannot be swept pre-RTH)
+    # dtime → only look at bars from that time onward on the session date
+    'prev_day_high': None,          # handled via full overnight window below
+    'prev_day_low':  None,
+    'nwog_high':     None,
+    'nwog_low':      None,
+    'asia_high':     dtime(2, 0),
+    'asia_low':      dtime(2, 0),
+    'london_high':   dtime(8, 0),
+    'london_low':    dtime(8, 0),
+    '6am_high':      dtime(8, 0),
+    '6am_low':       dtime(8, 0),
+    'bsl_level':     dtime(8, 0),
+    'ssl_level':     dtime(8, 0),
+}
+
+# overnight_high/low are intentionally absent — they get swept_pre_rth = False always.
+_OVERNIGHT_LEVEL_NAMES = frozenset({'overnight_high', 'overnight_low'})
 
 
-def _finalize_pre_rth_sweep(rows: list[dict], overnight: pd.DataFrame) -> None:
-    """Mutate rows with swept_pre_rth / swept_pre_rth_time using overnight window only."""
-    on = overnight.sort_values('ts_ny').reset_index(drop=True) if not overnight.empty else overnight
+def _finalize_pre_rth_sweep(
+    rows: list[dict],
+    overnight: pd.DataFrame,
+    session_date: date,
+) -> None:
+    """
+    Mutate rows in-place with swept_pre_rth / swept_pre_rth_time.
+
+    Uses level-specific sweep windows so that levels whose formation period is
+    inside the overnight window (Asia, London, 6am, BSL/SSL) are only checked
+    for sweeps AFTER they have fully formed — not during their own formation bars.
+
+    overnight: all pre-RTH bars for this session (18:00 prev day → 9:29:30 today),
+               must have a 'ts_ny' column in NY timezone.
+    """
+    if not overnight.empty:
+        on = overnight.sort_values('ts_ny').reset_index(drop=True)
+        on_times = on['ts_ny'].dt.time
+        on_dates = on['ts_ny'].dt.date
+    else:
+        on = overnight
+
     for row in rows:
         row['swept_pre_rth'] = ''
         row['swept_pre_rth_time'] = ''
         nm = row['level_name']
-        if nm not in PRE_RTH_SWEEP_LEVEL_NAMES:
+
+        # overnight levels: always available at RTH open (they ARE the overnight H/L)
+        if nm in _OVERNIGHT_LEVEL_NAMES:
+            row['swept_pre_rth'] = False
             continue
+
+        if nm not in _SWEEP_START:
+            continue
+
         px = row.get('price')
         if px is None or (isinstance(px, float) and np.isnan(px)):
             continue
         price = float(px)
         side = REG_BY_NAME[nm].side
+
         if on.empty:
             row['swept_pre_rth'] = False
             continue
-        if side == 'resistance':
-            mask = on['high'] >= price
-        elif side == 'support':
-            mask = on['low'] <= price
+
+        sweep_start = _SWEEP_START[nm]
+        if sweep_start is None:
+            # prev_day / nwog: use full overnight window (no time restriction)
+            window = on
         else:
-            mask = (on['high'] >= price) | (on['low'] <= price)
-        hit = on[mask]
+            # Asia/London/6am/BSL: only bars on the SESSION date from sweep_start
+            mask_window = (on_dates == session_date) & (on_times >= sweep_start)
+            window = on.loc[mask_window]
+
+        if window.empty:
+            row['swept_pre_rth'] = False
+            continue
+
+        if side == 'resistance':
+            hit_mask = window['high'] >= price
+        elif side == 'support':
+            hit_mask = window['low'] <= price
+        else:
+            hit_mask = (window['high'] >= price) | (window['low'] <= price)
+
+        hit = window.loc[hit_mask]
         if hit.empty:
             row['swept_pre_rth'] = False
         else:
             row['swept_pre_rth'] = True
             first_ts = hit.sort_values('ts_ny').iloc[0]['ts_ny']
-            ts = pd.Timestamp(first_ts)
-            row['swept_pre_rth_time'] = ts.isoformat()
+            row['swept_pre_rth_time'] = pd.Timestamp(first_ts).isoformat()
 
 
 def _mask_rth(ts: pd.Series) -> pd.Series:
@@ -280,7 +346,7 @@ def compute_day_levels(
     add_row('or_high', np.nan, 'stub_not_implemented')
     add_row('or_low', np.nan, 'stub_not_implemented')
 
-    _finalize_pre_rth_sweep(rows, overnight)
+    _finalize_pre_rth_sweep(rows, overnight, d)
 
     return rows
 
