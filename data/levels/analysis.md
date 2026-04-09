@@ -21,38 +21,40 @@ This is the correct lens for a continuation model. `magnet_valid=True` means the
 
 | Group | n | WR% | PF | Notes |
 |-------|---|-----|----|-------|
-| bsl_ssl | 11 | **63.6** | 3.62 | Small sample, very high PF |
-| prev_day | 60 | **58.3** | 1.61 | Solid, reliable |
-| asia | 52 | **57.7** | 1.20 | Strong signal |
-| htf_fvg_Daily | 42 | **57.1** | 1.38 | Strong when reachable |
-| htf_fvg_15m | 164 | **56.7** | 1.37 | Largest sample with edge |
-| htf_fvg_1H | 114 | 50.9 | 1.12 | Near-baseline |
-| overnight | 127 | 49.6 | 0.95 | Below baseline |
-| 6am | 134 | 49.3 | 1.07 | Near-baseline |
-| london | 171 | 46.8 | 0.94 | **Below baseline** |
-| htf_fvg_4H | 70 | **45.7** | 0.91 | **Below baseline** |
-| **baseline (valid only)** | **947** | **51.6** | **1.13** | |
+| htf_fvg_1H | 53 | **64.2** | 2.16 | Fresh unmitigated 1H gaps |
+| bsl_ssl | 10 | **60.0** | 3.00 | Small sample, very high PF |
+| htf_fvg_15m | 89 | **58.4** | 1.51 | Strong with good sample |
+| prev_day | 77 | **57.1** | 1.45 | Reliable |
+| asia | 59 | 54.2 | 1.22 | Modest edge |
+| 6am | 129 | 51.9 | 1.18 | Near-baseline |
+| htf_fvg_Daily | 31 | 51.6 | 1.03 | Near-baseline |
+| overnight | 117 | 48.7 | 0.86 | **Below baseline** |
+| london | 173 | 47.4 | 0.95 | **Below baseline** |
+| htf_fvg_4H | 35 | 45.7 | 0.99 | **Below baseline** |
+| **baseline (valid only)** | **778** | **51.5** | **1.09** | |
 
 **Key takeaways:**
-- When a level is within reach (≤3R), the best draws are: BSL/SSL, prev_day, Asia, HTF Daily FVG, HTF 15m FVG.
-- **London within 3R underperforms** (46.8%, PF 0.94). When London is right there, it may be acting as reversal structure rather than a draw that completes. Be cautious using London as your primary target.
-- **htf_fvg_4H within 3R also underperforms** (45.7%, PF 0.91). Possibly too wide a zone to act as a clean magnet in this time window.
-- 6am and overnight hover near-baseline — neutral, not additive.
+- **htf_fvg_1H leads** (64.2%, PF 2.16) after the mitigation fix. These are now genuinely fresh, unmitigated gaps — prior data included wicked-into FVGs that diluted the signal.
+- **htf_fvg_15m** (58.4%, PF 1.51) and **prev_day** (57.1%, PF 1.45) remain strong.
+- **London within 3R underperforms** (47.4%, PF 0.95). London levels are often swept as part of the opening drive rather than acting as a clean draw. Use with caution as primary target.
+- **overnight underperforms** (48.7%, PF 0.86) — lowest PF in the group.
+- **htf_fvg_4H within 3R underperforms** (45.7%, PF 0.99). Possibly too wide a zone for a clean 45-min target.
 
 **Reference: all distances (including unreachable levels >3R)**
 
 | Group | n | WR% | PF |
 |-------|---|-----|----|
-| nwog | 5 | 80.0 | 3.80 |
-| bsl_ssl | 17 | 58.8 | 2.52 |
-| asia | 80 | 58.8 | 1.32 |
-| htf_fvg_15m | 228 | 56.6 | 1.36 |
-| prev_day | 95 | 54.7 | 1.35 |
-| htf_fvg_4H | 120 | 50.8 | 1.07 |
-| 6am | 233 | 51.9 | 1.16 |
-| htf_fvg_1H | 171 | 46.8 | 0.97 |
-| overnight | 181 | 49.7 | 0.94 |
-| london | 276 | 48.2 | 0.93 |
+| nwog | 8 | 75.0 | 3.17 |
+| htf_fvg_15m | 173 | **61.8** | 1.64 |
+| bsl_ssl | 16 | 56.3 | 2.17 |
+| prev_day | 147 | 54.4 | 1.28 |
+| htf_fvg_1H | 90 | 53.3 | 1.12 |
+| 6am | 247 | 53.0 | 1.21 |
+| htf_fvg_Daily | 55 | 50.9 | 1.05 |
+| asia | 107 | 50.5 | 1.05 |
+| london | 341 | 48.1 | 0.95 |
+| overnight | 199 | 47.2 | 0.84 |
+| htf_fvg_4H | 69 | 39.1 | 0.73 |
 | **baseline** | **1572** | **51.7** | **1.09** |
 
 Note: the all-distances view is misleading for a continuation model. A level 6-8R away is not a draw — it just happens to be the nearest available level in that direction. Use the ≤3R view for decision-making.
@@ -61,13 +63,13 @@ Note: the all-distances view is misleading for a continuation model. A level 6-8
 
 | R bucket | n | WR% | PF |
 |----------|---|-----|----|
-| < 1R | 366 | 54.6 | 1.24 |
-| 1–2R | 336 | 48.8 | 1.00 |
-| 2–3R | 242 | 50.8 | 1.13 |
-| no valid levels | 625 | 51.8 | 1.03 |
+| < 1R | 223 | **54.3** | 1.21 |
+| 1–2R | 309 | 49.8 | 1.08 |
+| 2–3R | 242 | **54.1** | 1.24 |
+| no valid levels | 794 | 50.9 | 1.01 |
 | baseline | 1572 | 51.7 | 1.09 |
 
-**Key takeaway:** The edge comes entirely from levels within **1R**. A target level that's less than one stop distance away produces 54.6% WR and 1.24 PF. Beyond 1R the edge disappears. This is the clearest quantitative filter in this dataset: if your target level is more than 1R away, it doesn't help.
+**Key takeaway:** Edge at **<1R** (54.3%) and **2–3R** (54.1%). The 1–2R band is the weakest (49.8%, essentially flat). Having a level anywhere within 3R beats having none (50.9%), but the sweet spots are very close (<1R) or near the outer edge of your target window (2–3R).
 
 ### Available level count (ALC)
 
@@ -75,43 +77,43 @@ Number of distinct groups with at least one available level in the trade directi
 
 | ALC | n | WR% | PF |
 |-----|---|-----|----|
-| 0 | 625 | 51.8 | 1.03 |
-| 1 | 278 | 54.3 | 1.31 |
-| 2 | 220 | 57.3 | 1.45 |
-| 3+ | 449 | 47.2 | 0.94 |
+| 0 | 794 | 50.9 | 1.01 |
+| 1 | 295 | **54.9** | 1.31 |
+| 2 | 167 | **55.1** | 1.30 |
+| 3+ | 316 | 49.1 | 1.01 |
 | baseline | 1572 | 51.7 | 1.09 |
 
-**Key takeaway:** ALC 1–2 is the sweet spot. One or two level types converging in your direction is a meaningful positive. Three or more actually underperforms — likely because price is in a contested, level-dense zone where levels are also acting as friction rather than draws.
+**Key takeaway:** ALC 1–2 is the sweet spot (55% WR, PF 1.30). Three or more levels in direction underperforms baseline — price is in a contested, level-dense zone where friction replaces draw.
 
 ### Path clear vs obstruction
 
 | State | n | WR% | PF |
 |-------|---|-----|----|
-| path_clear = True (no obstruction) | 1206 | 50.8 | 1.05 |
-| path_clear = False (1+ obstruction) | 366 | 54.6 | 1.24 |
+| path_clear = True (no obstruction) | 1349 | 51.3 | 1.07 |
+| path_clear = False (1+ obstruction) | 223 | **54.3** | 1.21 |
 | baseline | 1572 | 51.7 | 1.09 |
 
-**Counterintuitive but consistent:** having an obstruction between entry and TP outperforms a clear path. The most likely explanation: a single level between you and TP often acts as a stepping-stone rather than a wall — price needs to sweep it to reach your target, and that sequence (sweep obstruction → reach TP) is the path of continuation plays.
+**Counterintuitive but consistent:** having an obstruction between entry and TP outperforms a clear path. The most likely explanation: a single level between you and TP often acts as a stepping-stone — price needs to sweep it to reach your target, and that sequence (sweep obstruction → reach TP) is the path of continuation plays.
 
 | Obstruction count | n | WR% | PF |
 |------------------|---|-----|----|
-| 0 | 1206 | 50.8 | 1.05 |
-| 1 | 205 | 56.1 | 1.30 |
-| 2+ | 161 | 52.8 | 1.17 |
+| 0 | 1349 | 51.3 | 1.07 |
+| 1 | 135 | **58.5** | 1.40 |
+| 2+ | 88 | 47.7 | 0.98 |
 | baseline | 1572 | 51.7 | 1.09 |
 
-One obstruction is the most additive. Two or more is still positive but diminishing.
+**One obstruction is strongly additive** (58.5%, PF 1.40). Two or more is below baseline — too many levels in path = contested zone, not stepping-stones.
 
 ### Confluence count (levels within 10 pts of target)
 
 | Confluence | n | WR% | PF |
 |-----------|---|-----|----|
-| 1 | 781 | 53.8 | 1.23 |
-| 2 | 318 | 49.4 | 1.00 |
-| 3+ | 367 | 49.6 | 0.97 |
+| 1 | 832 | 52.3 | 1.13 |
+| 2 | 228 | 51.3 | 1.13 |
+| 3+ | 392 | 50.0 | 1.01 |
 | baseline | 1572 | 51.7 | 1.09 |
 
-A **single** level at the target is better than a cluster. When 3+ levels stack at the same price, they may be acting as magnet *and* resistance simultaneously — price reaches the zone and reverses hard, creating losses or early exits.
+A single clean level at the target is slightly better than a stacked zone. When 3+ groups stack at the same price, the zone may act as both magnet and reversal point simultaneously.
 
 ### Best combinations: short cluster × available level count
 
@@ -119,24 +121,26 @@ From the existing short clusters (macro_w1, prior_close_low):
 
 | Cluster | ALC | n | WR% | PF |
 |---------|-----|---|-----|----|
-| short_prior_close_low | 2 | 25 | **80.0** | 3.45 |
-| short_prior_close_low | 1 | 22 | 77.3 | 3.74 |
-| either_cluster | 2 | 50 | 68.0 | 2.29 |
-| either_cluster | 1 | 59 | 64.4 | 1.84 |
-| short_macro_w1 | 2 | 36 | 66.7 | 2.40 |
-| short_macro_w1 | 1 | 45 | 64.4 | 1.74 |
-| neither_cluster | 3+ | 111 | 44.1 | 0.86 |
+| short_prior_close_low | 1 | 27 | **77.8** | 4.52 |
+| short_prior_close_low | 2 | 18 | **66.7** | 2.37 |
+| short_macro_w1 | 1 | 52 | **65.4** | 1.96 |
+| either_cluster | 1 | 67 | **64.2** | 2.08 |
+| either_cluster | 2 | 45 | 60.0 | 1.82 |
+| short_macro_w1 | 2 | 34 | 58.8 | 1.75 |
+| neither_cluster | 1 | 61 | 42.6 | 0.90 |
+| neither_cluster | 3+ | 90 | 47.8 | 0.94 |
 | baseline | — | 1572 | 51.7 | 1.09 |
 
-**The signal compounds.** A short in the prior_close_low cluster with 1–2 available levels in the downside direction hits 77–80% WR. Neither-cluster trades with 3+ levels underperform significantly at 44%.
+**The signal compounds.** A short in the prior_close_low cluster with 1 available level in the downside direction hits 77.8% WR, PF 4.52. Neither-cluster trades underperform regardless of ALC.
 
 ### What this means for trade selection
 
-1. **Before entry, check:** is there a level within 1R of your target in the trade direction? If yes and it's a 15m FVG, Asia, BSL/SSL, or prev_day level — that's a meaningful tailwind.
-2. **ALC filter:** 1–2 available levels in direction = best zone. 0 is neutral. 3+ is a flag to reduce or skip.
-3. **Obstruction is not a dealbreaker.** One level between entry and TP is fine — it may actually help by being swept en route.
-4. **Confluence cuts both ways.** A single clean level target beats a stacked zone.
+1. **Before entry, check for a fresh (unmitigated) level within 3R.** Best draws: 1H FVG, 15m FVG, prev_day, BSL/SSL. These produce meaningful WR lift above baseline.
+2. **ALC filter:** 1–2 available levels in direction = best zone (~55% WR, PF 1.30). 0 is neutral. 3+ is a flag to reduce or skip.
+3. **One obstruction between entry and TP is a positive signal** (58.5%, PF 1.40) — it suggests price has a level to sweep en route.
+4. **Two or more obstructions = friction** (47.7%, below baseline). Don't take trades with a crowded path.
 5. **London and overnight as nearest targets underperform.** These are often swept as part of the opening drive rather than being strong singular draws.
+6. **htf_fvg_4H within 3R also underperforms.** Too wide a zone for a clean 45-min target.
 
 ---
 
@@ -147,12 +151,13 @@ From the existing short clusters (macro_w1, prior_close_low):
 
 "Available" here = `swept_pre_rth = False` and valid price on that date. Scoped to levels within **300 pts** of RTH open (run `--scope N` to change).
 
-**Coverage:** 13,979 level-day pairs across 616 days, all groups.
+**Coverage:** 10,743 level-day pairs across 616 days, all groups. (HTF FVG count reduced vs prior — correctly excludes wicked-into gaps.)
 
 **Availability notes:**
 - `6am_high / 6am_low` — forms at close of the 6am 4H candle (10:00 AM ET). Hit window = 10:00–10:15 only (15 min).
 - `or_high / or_low` — not computed (stub). Excluded.
 - `overnight_high / overnight_low` — always available (they are the overnight extreme, cannot be swept before RTH opens).
+- HTF FVGs: mitigated = wicked into the near edge (bearish: `high >= fvg_bottom`; bullish: `low <= fvg_top`). Only unmitigated FVGs are included.
 
 ### Group ranking: hit rate within first 45 min (≤300 pts from open)
 
@@ -163,44 +168,44 @@ From the existing short clusters (macro_w1, prior_close_low):
 | 3 | bsl_ssl | **56.5%** | 1,096 | London swing H/L |
 | 4 | london | **54.3%** | 1,096 | |
 | 5 | 6am | **46.1%** | 1,106 | 15-min check window (10:00–10:15) |
-| 6 | htf_fvg_Daily | 43.8% | 429 | |
-| 7 | overnight | 41.1% | 1,067 | |
-| 8 | prev_day | 40.6% | 937 | |
-| 9 | htf_fvg_4H | 35.9% | 1,153 | |
-| 10 | htf_fvg_1H | 30.5% | 2,063 | |
-| 11 | htf_fvg_15m | 29.0% | 3,750 | |
+| 6 | overnight | 41.1% | 1,067 | |
+| 7 | prev_day | 40.6% | 937 | |
+| 8 | htf_fvg_Daily | 26.3% | 285 | Fresh daily gaps only |
+| 9 | htf_fvg_15m | 26.2% | 2,065 | |
+| 10 | htf_fvg_4H | 23.5% | 677 | |
+| 11 | htf_fvg_1H | 22.5% | 1,132 | |
 
-**Key takeaway:** Session structure levels (NWOG, Asia, BSL/SSL, London) get hit far more often than HTF FVGs. If an Asia or London level is available and within range, expect a 55–60% base rate of price visiting it in the first 45 min.
+**Key takeaway:** Session structure levels (NWOG, Asia, BSL/SSL, London) get hit far more often than HTF FVGs. This gap widened after the mitigation fix — HTF FVGs drop from ~30–44% to ~22–26% because only genuinely fresh (never-wicked) gaps remain. If an Asia or London level is available and within range, expect 55–60% base rate of price visiting it in the first 45 min. HTF FVGs in the first 45 min are visited only ~1-in-4 times.
 
 ### Distance from open is the dominant factor
 
 | Distance from RTH open | Hit Rate | n |
 |------------------------|----------|---|
-| 0–25 pts | **88.1%** | 2,185 |
-| 25–50 pts | **67.1%** | 2,031 |
-| 50–100 pts | 44.2% | 3,248 |
-| 100–200 pts | 19.3% | 3,879 |
-| 200–300 pts | 6.8% | 2,636 |
+| 0–25 pts | **86.1%** | 1,926 |
+| 25–50 pts | **62.6%** | 1,708 |
+| 50–100 pts | 39.6% | 2,643 |
+| 100–200 pts | 17.1% | 2,814 |
+| 200+ pts | 6.3% | 1,652 |
 
-**This is the single most powerful predictor.** A level within 25 pts of the open gets hit 88% of the time. Beyond 100 pts, hit rate drops below 20%. For continuation target selection, prioritize levels inside 100 pts.
+**This is the single most powerful predictor.** A level within 25 pts of the open gets hit 86% of the time. Beyond 100 pts, hit rate drops below 20%. For continuation target selection, prioritize levels inside 100 pts.
 
 ### Group × distance (hit rate %)
 
 | Group | 0–25 | 25–50 | 50–100 | 100–200 | 200+ |
 |-------|------|-------|--------|---------|------|
-| htf_fvg_Daily | **100%** | **96.8%** | 81.8% | 40.4% | 9.0% |
-| htf_fvg_4H | 95.1% | 81.0% | 58.2% | 24.2% | 7.4% |
-| htf_fvg_1H | 93.4% | 73.7% | 46.8% | 18.2% | 4.9% |
+| htf_fvg_Daily | **100%** | 70.8% | 42.2% | 16.5% | 2.2% |
 | asia | 92.4% | 73.2% | 54.3% | 30.1% | 27.1% |
-| htf_fvg_15m | 92.2% | 68.2% | 38.1% | 13.4% | 3.0% |
 | bsl_ssl | 90.5% | 68.7% | 46.6% | 22.2% | 29.5% |
-| prev_day | 94.2% | 68.3% | 43.1% | 24.5% | 11.7% |
+| htf_fvg_1H | 89.0% | 52.5% | 32.3% | 12.9% | 3.1% |
 | london | 90.0% | 66.8% | 43.6% | 18.8% | 20.9% |
+| prev_day | 94.2% | 68.3% | 43.1% | 24.5% | 11.7% |
+| htf_fvg_15m | 85.8% | 58.3% | 30.0% | 12.7% | 2.1% |
+| htf_fvg_4H | 84.3% | 54.7% | 32.1% | 11.1% | 1.6% |
 | overnight | 83.8% | 57.8% | 34.6% | 11.6% | 7.1% |
 | nwog | 97.7% | 70.0% | 33.3% | 8.3% | 0.0% |
 | 6am | 66.8% | 52.1% | 37.1% | 21.2% | 23.1% |
 
-**Notable:** HTF Daily FVG within 50 pts is hit 96.8% of the time. When a Daily FVG is right there, price is nearly certain to interact with it. Asia and BSL/SSL maintain elevated hit rates even at 100–200 pts (27–30%) compared to HTF 15m (13%) — session levels have a gravitational pull that persists at distance.
+**Notable:** All groups converge near 85–100% when within 25 pts. Asia and BSL/SSL maintain elevated hit rates even at 100–200 pts (22–30%) compared to HTF FVGs (11–13%) — session levels have gravitational pull that persists at distance. HTF FVGs outside 50 pts are hit <33% of the time.
 
 ### Gap direction effects
 
@@ -212,20 +217,22 @@ From the existing short clusters (macro_w1, prior_close_low):
 | london | 56.7% | 50.8% | 56.4% |
 | overnight | 45.6% | 35.5% | 43.8% |
 | prev_day | 34.6% | 38.3% | 43.2% |
-| htf_fvg_Daily | 31.6% | 47.6% | 43.8% |
+| htf_fvg_Daily | 19.2% | 31.1% | 25.3% |
+| htf_fvg_15m | 23.6% | 25.5% | 28.1% |
 
 **NWOG is most sensitive to gap direction.** A flat gap on Monday means 93% hit rate — the market hasn't moved away from the weekly open. Gap up or down reduces it significantly.
 
 **prev_day reverses the pattern** — higher hit rate on gap_up days (43%) than flat (35%). When the market gaps toward prev_day resistance, it follows through to tag it.
 
-**HTF Daily FVG** is more likely hit on gap_down days (47.6%) than flat (31.6%), suggesting gap_down days create the move that runs into those support zones.
+**HTF FVG Daily** is more likely hit on gap_down days (31.1%) than flat (19.2%), suggesting gap_down days create the move that runs into those support zones.
 
 ### 9:30 candle direction
 
 | Group | Down candle | Up candle |
 |-------|-------------|-----------|
-| htf_fvg_1H | 33.8% | 26.8% |
-| htf_fvg_4H | 38.2% | 33.6% |
+| htf_fvg_1H | 25.3% | 19.3% |
+| htf_fvg_4H | 25.0% | 22.0% |
+| htf_fvg_15m | 29.2% | 22.7% |
 | all groups avg | ~42% | ~38% |
 
 Weak but consistent: a down opening candle produces modestly higher hit rates across all groups (~4% lift on average). The signal is too small to be a primary filter but slightly confirms momentum.
@@ -239,6 +246,7 @@ Weak but consistent: a down opening candle produces modestly higher hit rates ac
 | asia | flat | down | 69.6% | 56 |
 | nwog | gap_up | up | 65.6% | 61 |
 | bsl_ssl | flat | down | 64.3% | 56 |
+| bsl_ssl | flat | up | 61.8% | 34 |
 | asia | flat | up | 61.8% | 34 |
 | asia | gap_up | down | 61.7% | 308 |
 | bsl_ssl | gap_up | down | 60.5% | 314 |
@@ -246,7 +254,8 @@ Weak but consistent: a down opening candle produces modestly higher hit rates ac
 | london | flat | down | 58.9% | 56 |
 | london | gap_up | down | 57.8% | 315 |
 | asia | gap_down | up | 57.0% | 207 |
-| htf_fvg_Daily | gap_down | down | **55.1%** | 78 |
+| bsl_ssl | gap_up | up | 56.2% | 281 |
+| london | gap_up | up | 54.8% | 281 |
 
 **For a continuation model:** Asia and BSL/SSL on gap_up days with a down 930 candle show ~60% hit rate with large sample sizes (274–314 trades). These are your highest-confidence targets in this dataset.
 
@@ -335,12 +344,37 @@ python data/levels/study_level_proximity.py
 python data/levels/study_level_hit_rate_45min.py
 ```
 
+### FVG mitigation fix (fixed Apr 2026)
+
+The original mitigation logic used the **far edge** of the gap (full fill) as the threshold:
+- Bearish FVG: mitigated when `high >= top` (price fully filled the gap)
+- Bullish FVG: mitigated when `low <= bottom` (price fully filled the gap)
+
+**Fix:** mitigation now uses the **near edge** (wick-in = mitigated):
+- Bearish FVG: mitigated when `high >= bottom` (price wicked into the gap from below)
+- Bullish FVG: mitigated when `low <= top` (price wicked into the gap from above)
+
+Same fix applied to `fvg_swept_pre_rth` (overnight pre-market sweep detection).
+
+The `price` field for HTF FVG rows was also corrected:
+- Before: `price = fvg_mid` (midpoint of gap)
+- After: `price = fvg_bottom` for bearish FVGs (near edge approached from below), `price = fvg_top` for bullish FVGs (near edge approached from above)
+
+This is now consistent with how `is_level_swept` checks proximity: `high >= price` for resistance, `low <= price` for support.
+
+**Impact:** HTF FVG row counts in the ≤300pt scope dropped significantly (e.g., htf_fvg_1H: 2,063 → 1,132) as previously "active" but wicked-into FVGs are now correctly excluded. Hit rates for HTF FVGs also dropped (~30–44% → ~22–26%) — the prior numbers were inflated by stale levels.
+
+### In-session sweep fix (fixed Apr 2026)
+
+`enrich_trades_with_levels.py` was pointing to `data/raw/glbx-mdp3-20231002-20251027.ohlcv-30s-trading-session.csv` which only covers through Oct 2025. All 2026 trades had empty bar windows — every level appeared `available` even when swept during RTH before entry.
+
+**Fix:** switched to `data/consolidated/nq-front-month.ohlcv-30s.csv` which covers the full backtest range.
+
 ### Data sources
 
 | Use | File |
 |-----|------|
-| Level construction | `data/consolidated/nq-front-month.ohlcv-30s.csv` |
-| In-session sweep detection | `data/raw/glbx-mdp3-20231002-20251027.ohlcv-30s-trading-session.csv` |
+| Level construction + in-session sweep | `data/consolidated/nq-front-month.ohlcv-30s.csv` |
 | Trading calendar | `data/trading_days/trading_days.csv` |
 | Trades | `logs/baseline_trades.csv` |
 
@@ -360,11 +394,15 @@ python data/levels/study_level_hit_rate_45min.py
 
 ### FVG geometry
 
-**Bullish FVG** (`c1.high < c3.low`): gap bottom = `c1.high`, top = `c3.low`. Mitigation: later bar `low <= bottom`.
+**Bullish FVG** (`c1.high < c3.low`): gap bottom = `c1.high`, top = `c3.low`. Mitigation: later bar `low <= top` (wicked into gap from above).
 
-**Bearish FVG** (`c1.low > c3.high`): gap bottom = `c3.high`, top = `c1.low`. Mitigation: later bar `high >= top`.
+**Bearish FVG** (`c1.low > c3.high`): gap bottom = `c3.high`, top = `c1.low`. Mitigation: later bar `high >= bottom` (wicked into gap from below).
 
-`price` in `liquidity_levels.csv` = `fvg_mid` for HTF rows. `fvg_top` / `fvg_bottom` retain the zone. Hit rate study uses body edges for FVGs (enters the zone), not mid.
+`price` in `liquidity_levels.csv` = near edge for HTF rows:
+- Bearish FVG: `price = fvg_bottom` (nearest edge when approaching from below)
+- Bullish FVG: `price = fvg_top` (nearest edge when approaching from above)
+
+`fvg_top` / `fvg_bottom` / `fvg_mid` retain the full zone geometry.
 
 ### `trades_with_levels.csv` key columns
 
