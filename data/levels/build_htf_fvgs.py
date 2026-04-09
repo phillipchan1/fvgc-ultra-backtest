@@ -171,9 +171,9 @@ def fvg_swept_pre_rth(
     if overnight.empty:
         return False, ''
     if direction == 'bullish':
-        mask = overnight['low'] <= bottom
+        mask = overnight['low'] <= top
     else:
-        mask = overnight['high'] >= top
+        mask = overnight['high'] >= bottom
     hit = overnight[mask]
     if hit.empty:
         return False, ''
@@ -201,10 +201,10 @@ def walk_timeframe(
         row = candles.iloc[i]
         still: list[dict[str, Any]] = []
         for fvg in pending:
-            if fvg['direction'] == 'bullish' and float(row['low']) <= fvg['bottom']:
+            if fvg['direction'] == 'bullish' and float(row['low']) <= fvg['top']:
                 fvg['mitigated'] = True
                 fvg['mitigated_ts'] = row['timestamp_ny']
-            elif fvg['direction'] == 'bearish' and float(row['high']) >= fvg['top']:
+            elif fvg['direction'] == 'bearish' and float(row['high']) >= fvg['bottom']:
                 fvg['mitigated'] = True
                 fvg['mitigated_ts'] = row['timestamp_ny']
             else:
@@ -264,7 +264,7 @@ def build_htf_rows(
                 'level_name': level_name,
                 'group': grp,
                 'side': direction_to_side(direction),
-                'price': fvg['mid'],
+                'price': fvg['bottom'] if direction == 'bearish' else fvg['top'],
                 'available_time': 'open',
                 'swept_pre_rth': spr,
                 'swept_pre_rth_time': spr_t,
