@@ -235,6 +235,21 @@ def bars_old_count(candles: pd.DataFrame, created_ts: Any, cut: pd.Timestamp) ->
     return int(((ts < cut) & (ts > ct)).sum())
 
 
+# Candle close times during the first 45 min of RTH that can produce new FVGs.
+# These become available as targets immediately at their close time.
+#   15m: closes at 9:45 (opening-drive candle) and 10:00
+#   1H:  closes at 10:00 (9am–10am candle)
+#   4H:  closes at 10:00 (6am–10am candle)
+#   Daily: closes at 16:00 — outside 45-min window, skip
+_INTRADAY_MILESTONES: dict[str, list[dtime]] = {
+    '15m':   [dtime(9, 45), dtime(10, 0)],
+    '1H':    [dtime(10, 0)],
+    # 4H grouper aligns to UTC epoch → closes at 8am EDT / 7am EST (pre-session), not 10am
+    '4H':    [],
+    'Daily': [],
+}
+
+
 def build_htf_rows(
     all_fvgs: list[dict[str, Any]],
     candles: pd.DataFrame,
@@ -247,9 +262,22 @@ def build_htf_rows(
     if grp is None:
         return rows
 
+    # Pre-index intraday FVGs by (session_date, milestone_time) for fast lookup.
+    # Only FVGs whose created_ts lands on one of the milestone times are captured here.
+    milestones = _INTRADAY_MILESTONES.get(tf_label, [])
+    intraday_index: dict[tuple[date, dtime], list[dict[str, Any]]] = {}
+    for fvg in all_fvgs:
+        ct = _ny_ts(fvg['created_ts'])
+        t = dtime(ct.hour, ct.minute)
+        if t in milestones:
+            key = (ct.date(), t)
+            intraday_index.setdefault(key, []).append(fvg)
+
     for D in trading_dates:
         cut = cutoff_ts(D)
         on = overnight_window(by_date, D)
+
+        # Pass 1: pre-session FVGs — formed before RTH open, may persist across days
         for fvg in all_fvgs:
             if not snapshot_include(fvg, cut):
                 continue
@@ -277,6 +305,35 @@ def build_htf_rows(
                 'bars_old': bo,
                 'notes': '',
             })
+
+        # Pass 2: intraday FVGs — formed during the first 45 min of THIS session only.
+        # swept_pre_rth is always False (they form during RTH).
+        # In-session sweep detection in enrich_trades_with_levels.py handles mitigation.
+        for ms_time in milestones:
+            for fvg in intraday_index.get((D, ms_time), []):
+                ct = _ny_ts(fvg['created_ts'])
+                direction = str(fvg['direction'])
+                avail = ct.strftime('%H:%M')
+                level_name = f"htf_fvg_{tf_label}_{direction}_{fvg['created_idx']}_intraday"
+                rows.append({
+                    'date': D,
+                    'level_name': level_name,
+                    'group': grp,
+                    'side': direction_to_side(direction),
+                    'price': fvg['bottom'] if direction == 'bearish' else fvg['top'],
+                    'available_time': avail,
+                    'swept_pre_rth': False,
+                    'swept_pre_rth_time': '',
+                    'timeframe': tf_label,
+                    'fvg_direction': direction,
+                    'fvg_top': fvg['top'],
+                    'fvg_bottom': fvg['bottom'],
+                    'fvg_mid': fvg['mid'],
+                    'created_date': D,
+                    'bars_old': 0,
+                    'notes': 'intraday',
+                })
+
     return rows
 
 
