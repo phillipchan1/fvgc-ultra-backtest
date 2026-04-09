@@ -1,0 +1,104 @@
+======================================================================
+SINGLE-FACTOR IMPORTANCE RANKING
+======================================================================
+
+Baseline: WR=51.7%, PF=1.09
+Total factors tested: 33
+Significant factors (p < 0.05): 9
+
+──────────────────────────────────────────────────────────────────────
+RANKED BY WIN RATE LIFT (positive = better than baseline)
+──────────────────────────────────────────────────────────────────────
+  Rank  Factor                         n     WR%    Lift      PF     p_wr  Sig
+  ───── ───────────────────────── ────── ─────── ─────── ─────── ──────── ────
+  1     wide_45min_or                308   57.5%   +5.8%    1.44   0.0117    *
+  2     prior_day_down               333   57.1%   +5.3%    1.26   0.0162    *
+  3     small_930_candle             315   56.2%   +4.5%    1.31   0.0408    *
+  4     variant_ifvg                 193   56.0%   +4.2%    1.30   0.1227     
+  5     bearish_930                  833   55.0%   +3.3%    1.28   0.0032   **
+  6     elevated_vixy                863   53.9%   +2.2%    1.21   0.0322    *
+  7     macro_w1                     432   53.5%   +1.8%    1.22   0.2114     
+  8     gap_up                       876   53.3%   +1.6%    1.16   0.0857     
+  9     not_fomc_week               1289   53.1%   +1.4%    1.15   0.0102    *
+  10    macro_w2                     549   53.0%   +1.3%    1.12   0.2373     
+  11    tight_overnight              306   52.9%   +1.2%    1.14   0.3475     
+  12    no_red_folder               1245   52.6%   +0.9%    1.14   0.0946     
+  13    no_pre_rth_news             1369   52.2%   +0.5%    1.12   0.1646     
+  14    variant_no_fvg               707   52.2%   +0.5%    1.10   0.3802     
+  15    large_930_candle             303   52.1%   +0.4%    1.15   0.4583     
+  16    short_only                   765   51.9%   +0.2%    1.15   0.4663     
+  17    tight_5min_or                305   51.8%   +0.1%    1.15   0.5151     
+  18    overnight_up                 740   51.8%   +0.0%    1.11   0.5041     
+  19    long_only                    807   51.5%   -0.2%    1.04   0.4672     
+  20    wide_5min_or                 308   51.3%   -0.4%    1.11   0.4623     
+  21    variant_bos                  429   51.3%   -0.4%    1.05   0.4409     
+  22    overnight_down               523   50.7%   -1.1%    1.05   0.2933     
+  23    normal_vixy                  292   50.3%   -1.4%    1.02   0.3181     
+  24    wide_overnight               304   50.3%   -1.4%    1.10   0.3158     
+  25    macro_w3                     576   49.8%   -1.9%    1.01   0.1419     
+  26    gap_down                     635   49.8%   -1.9%    1.04   0.1170     
+  27    low_vixy                     253   49.4%   -2.3%    1.04   0.2274     
+  28    prior_day_up                 502   48.8%   -2.9%    0.99   0.0647     
+  29    has_red_folder               268   48.1%   -3.6%    0.95   0.1145     
+  30    bullish_930                  680   47.9%   -3.8%    0.92   0.0046   **
+  31    variant_protected_swing      243   47.7%   -4.0%    0.95   0.1038     
+  32    is_fomc_week                 224   44.2%   -7.5%    0.88   0.0095   **
+  33    tight_45min_or               305   39.7%  -12.1%    0.64   0.0000   **
+
+──────────────────────────────────────────────────────────────────────
+RANKED BY PROFIT FACTOR (top 20)
+──────────────────────────────────────────────────────────────────────
+  1     wide_45min_or             n=  308  WR=57.5%  PF=1.44  p_pf=0.0056 **
+  2     small_930_candle          n=  315  WR=56.2%  PF=1.31  p_pf=0.0471 *
+  3     variant_ifvg              n=  193  WR=56.0%  PF=1.30  p_pf=0.1146 
+  4     bearish_930               n=  833  WR=55.0%  PF=1.28  p_pf=0.0012 **
+  5     prior_day_down            n=  333  WR=57.1%  PF=1.26  p_pf=0.0904 
+  6     macro_w1                  n=  432  WR=53.5%  PF=1.22  p_pf=0.1117 
+  7     elevated_vixy             n=  863  WR=53.9%  PF=1.21  p_pf=0.0212 *
+  8     gap_up                    n=  876  WR=53.3%  PF=1.16  p_pf=0.1141 
+  9     tight_5min_or             n=  305  WR=51.8%  PF=1.15  p_pf=0.3153 
+  10    large_930_candle          n=  303  WR=52.1%  PF=1.15  p_pf=0.3172 
+  11    short_only                n=  765  WR=51.9%  PF=1.15  p_pf=0.1805 
+  12    not_fomc_week             n= 1289  WR=53.1%  PF=1.15  p_pf=0.0292 *
+  13    tight_overnight           n=  306  WR=52.9%  PF=1.14  p_pf=0.3479 
+  14    no_red_folder             n= 1245  WR=52.6%  PF=1.14  p_pf=0.0577 
+  15    macro_w2                  n=  549  WR=53.0%  PF=1.12  p_pf=0.3505 
+  16    no_pre_rth_news           n= 1369  WR=52.2%  PF=1.12  p_pf=0.1627 
+  17    wide_5min_or              n=  308  WR=51.3%  PF=1.11  p_pf=0.4291 
+  18    overnight_up              n=  740  WR=51.8%  PF=1.11  p_pf=0.3683 
+  19    wide_overnight            n=  304  WR=50.3%  PF=1.10  p_pf=0.5222 
+  20    variant_no_fvg            n=  707  WR=52.2%  PF=1.10  p_pf=0.4631 
+
+──────────────────────────────────────────────────────────────────────
+AVOID LIST — Factors that HURT performance (negative lift, p < 0.10)
+──────────────────────────────────────────────────────────────────────
+  1     tight_45min_or            n=  305  WR=39.7%  lift=-12.1%  PF=0.64  p=0.0000 **
+  2     is_fomc_week              n=  224  WR=44.2%  lift=-7.5%  PF=0.88  p=0.0095 **
+  3     bullish_930               n=  680  WR=47.9%  lift=-3.8%  PF=0.92  p=0.0046 **
+  4     prior_day_up              n=  502  WR=48.8%  lift=-2.9%  PF=0.99  p=0.0647 *
+
+──────────────────────────────────────────────────────────────────────
+BEST FACTOR PER CATEGORY
+──────────────────────────────────────────────────────────────────────
+  930 Candle          Best: small_930_candle       lift=+4.5%  PF=1.31
+                      Worst: bullish_930           lift=-3.8%  PF=0.92
+  Calendar            Best: not_fomc_week          lift=+1.4%  PF=1.15
+                      Worst: is_fomc_week          lift=-7.5%  PF=0.88
+  Direction           Best: short_only             lift=+0.2%  PF=1.15
+                      Worst: long_only             lift=-0.2%  PF=1.04
+  Gap                 Best: gap_up                 lift=+1.6%  PF=1.16
+                      Worst: gap_down              lift=-1.9%  PF=1.04
+  Macro Window        Best: macro_w1               lift=+1.8%  PF=1.22
+                      Worst: macro_w3              lift=-1.9%  PF=1.01
+  News                Best: no_red_folder          lift=+0.9%  PF=1.14
+                      Worst: has_red_folder        lift=-3.6%  PF=0.95
+  Opening Range       Best: wide_45min_or          lift=+5.8%  PF=1.44
+                      Worst: tight_45min_or        lift=-12.1%  PF=0.64
+  Overnight           Best: tight_overnight        lift=+1.2%  PF=1.14
+                      Worst: wide_overnight        lift=-1.4%  PF=1.10
+  Prior Day           Best: prior_day_down         lift=+5.3%  PF=1.26
+                      Worst: prior_day_up          lift=-2.9%  PF=0.99
+  VIXY                Best: elevated_vixy          lift=+2.2%  PF=1.21
+                      Worst: low_vixy              lift=-2.3%  PF=1.04
+  Variant             Best: variant_ifvg           lift=+4.2%  PF=1.30
+                      Worst: variant_protected_swing lift=-4.0%  PF=0.95
