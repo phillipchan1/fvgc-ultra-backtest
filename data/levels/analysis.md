@@ -259,6 +259,78 @@ Weak but consistent: a down opening candle produces modestly higher hit rates ac
 
 **For a continuation model:** Asia and BSL/SSL on gap_up days with a down 930 candle show ~60% hit rate with large sample sizes (274–314 trades). These are your highest-confidence targets in this dataset.
 
+### Which 15-min window do levels get hit in?
+
+Of the levels that get hit in the first 45 min, here is the distribution across the three 15-min macro windows:
+
+| Group | 9:30-9:45 | 9:45-10:00 | 10:00-10:15 |
+|-------|-----------|------------|-------------|
+| nwog | **93%** | 4% | 3% |
+| asia | **84%** | 9% | 7% |
+| bsl_ssl | **82%** | 9% | 9% |
+| london | **82%** | 9% | 8% |
+| prev_day | **83%** | 9% | 8% |
+| overnight | 71% | 15% | 14% |
+| htf_fvg_Daily | 68% | 21% | 11% |
+| htf_fvg_4H | 69% | 13% | 18% |
+| htf_fvg_15m | 66% | 17% | 17% |
+| htf_fvg_1H | 58% | **20%** | **23%** |
+| 6am | 0% | 0% | **100%** | (available only from 10:00) |
+
+**Key takeaway:** Session levels (Asia, BSL/SSL, London, prev_day, NWOG) are overwhelmingly hit in the **first macro** (9:30–9:45). If an Asia or London level hasn't been touched by 9:45, the probability of it being hit later is low. HTF FVGs — especially 1H — are more spread across all three windows (~20% each in windows 2 and 3). Session levels are the opening drive target; FVGs are more often the target of secondary impulses in macros 2 and 3.
+
+### WR by macro window × nearest magnet (magnet_valid=True)
+
+Which level type produces the best WR outcome per 15-min window?
+
+**9:30–9:45 (macro 1)**
+
+| Level group | n | WR% | PF |
+|-------------|---|-----|----|
+| asia | 22 | **72.7** | 3.23 |
+| prev_day | 21 | **61.9** | 1.71 |
+| htf_fvg_1H | 18 | 61.1 | 2.03 |
+| london | 66 | 53.0 | 1.30 |
+| overnight | 50 | 42.0 | 0.68 |
+| **baseline** | **276** | **54.0** | **1.30** |
+
+**9:45–10:00 (macro 2)**
+
+| Level group | n | WR% | PF |
+|-------------|---|-----|----|
+| htf_fvg_15m | 29 | **69.0** | 2.19 |
+| htf_fvg_1H | 22 | **68.2** | 2.44 |
+| prev_day | 27 | 59.3 | 1.66 |
+| 6am | 39 | 56.4 | 1.63 |
+| london | 54 | 46.3 | 0.81 |
+| asia | 20 | 40.0 | 0.59 |
+| **baseline** | **255** | **53.7** | **1.17** |
+
+**10:00–10:15 (macro 3)**
+
+| Level group | n | WR% | PF |
+|-------------|---|-----|----|
+| htf_fvg_1H | 12 | **66.7** | 2.59 |
+| htf_fvg_15m | 39 | 56.4 | 1.55 |
+| htf_fvg_4H | 11 | 54.5 | 1.22 |
+| london | 51 | 41.2 | 0.76 |
+| htf_fvg_Daily | 12 | 25.0 | 0.29 |
+| **baseline** | **240** | **50.4** | **1.07** |
+
+**Key takeaways:**
+
+1. **Asia as target is strictly a macro 1 play.** 72.7% WR in 9:30–9:45, drops to 40.0% in macro 2. If price hasn't reached Asia by 9:45, stop using it as your draw.
+
+2. **htf_fvg_1H is consistent across all three windows** (61% / 68% / 67%) — the only group that maintains strong WR throughout. This makes sense: fresh unmitigated 1H gaps are meaningful draws in any impulse.
+
+3. **htf_fvg_15m is especially strong in macro 2** (69%, PF 2.19 vs 45% in macro 1). Macro 2 is the FVG macro.
+
+4. **London declines with each macro** (53% → 46% → 41%). By macro 3, London as a target is significantly below baseline. Never target London in macro 3.
+
+5. **Overall WR by window** (magnet_valid=True): 9:30–9:45 = 54.0% / 9:45–10:00 = 53.7% / 10:00–10:15 = 50.4%. First two macros are above baseline; macro 3 converges toward it.
+
+6. **htf_fvg_Daily in macro 3 = 25% WR** — severely underperforms. If a Daily FVG hasn't been hit in macros 1-2 and you're in macro 3, don't trade toward it.
+
 ---
 
 ## Putting both studies together: continuation model targeting
