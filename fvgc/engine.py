@@ -9,12 +9,18 @@ from typing import List, Dict
 # Trade simulation
 # ===================================================================
 
+R_LEVELS = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0]
+
+
 def simulate_trades(signals: List[Dict], candles: pd.DataFrame) -> List[Dict]:
     """Walk forward from each entry to determine W/L outcome.
 
     For each signal with valid SL/TP, check subsequent candles to see
-    whether TP or SL is hit first.  Returns signals with 'outcome',
-    'exit_price', 'exit_time', and 'pnl' fields added.
+    whether TP or SL is hit first.  Tracks MFE (max favorable excursion)
+    and MAE (max adverse excursion) through the end of the trading day,
+    plus whether each R-level target was reached before the stop loss.
+
+    Returns signals with outcome, exit, pnl, MFE/MAE, and R-level fields.
     """
     results = []
     for sig in signals:
@@ -30,70 +36,116 @@ def simulate_trades(signals: List[Dict], candles: pd.DataFrame) -> List[Dict]:
 
         entry_idx = sig['entry_idx']
         direction = sig['direction']
+        entry_price = sig['entry_price']
         entry_date = sig['timestamp'].date()
+        sl_dist = sig.get('sl_dist', abs(entry_price - sl))
 
         outcome = 'open'
         exit_price = ''
         exit_time = ''
         pnl = ''
 
+        max_fav = 0.0
+        max_adv = 0.0
+        sl_hit = False
+        r_hit_bars = {}
+
         for j in range(entry_idx + 1, len(candles)):
             bar = candles.iloc[j]
             if bar['timestamp_ny'].date() != entry_date:
-                outcome = 'eod'
-                exit_price = bar_prev['close']
-                exit_time = bar_prev['timestamp_ny']
-                if direction == 'short':
-                    pnl = sig['entry_price'] - exit_price
-                else:
-                    pnl = exit_price - sig['entry_price']
+                if outcome == 'open':
+                    outcome = 'eod'
+                    exit_price = bar_prev['close']
+                    exit_time = bar_prev['timestamp_ny']
+                    if direction == 'short':
+                        pnl = entry_price - exit_price
+                    else:
+                        pnl = exit_price - entry_price
                 break
 
             bar_prev = bar
+            bars_held = j - entry_idx
 
-            if direction == 'short':
-                if bar['high'] >= sl and bar['low'] <= tp:
-                    outcome = 'ambiguous'
-                    exit_price = sl
-                    exit_time = bar['timestamp_ny']
-                    pnl = -(sl - sig['entry_price'])
-                    break
-                if bar['high'] >= sl:
-                    outcome = 'loss'
-                    exit_price = sl
-                    exit_time = bar['timestamp_ny']
-                    pnl = -(sl - sig['entry_price'])
-                    break
-                if bar['low'] <= tp:
-                    outcome = 'win'
-                    exit_price = tp
-                    exit_time = bar['timestamp_ny']
-                    pnl = sig['entry_price'] - tp
-                    break
+            # Track MFE/MAE (full day from entry)
+            if direction == 'long':
+                fav = bar['high'] - entry_price
+                adv = entry_price - bar['low']
             else:
-                if bar['low'] <= sl and bar['high'] >= tp:
-                    outcome = 'ambiguous'
-                    exit_price = sl
-                    exit_time = bar['timestamp_ny']
-                    pnl = -(sig['entry_price'] - sl)
-                    break
-                if bar['low'] <= sl:
-                    outcome = 'loss'
-                    exit_price = sl
-                    exit_time = bar['timestamp_ny']
-                    pnl = -(sig['entry_price'] - sl)
-                    break
-                if bar['high'] >= tp:
-                    outcome = 'win'
-                    exit_price = tp
-                    exit_time = bar['timestamp_ny']
-                    pnl = tp - sig['entry_price']
-                    break
+                fav = entry_price - bar['low']
+                adv = bar['high'] - entry_price
+
+            max_fav = max(max_fav, fav)
+            max_adv = max(max_adv, adv)
+
+            # Track R-level hits before SL
+            if not sl_hit and sl_dist > 0:
+                for r in R_LEVELS:
+                    if r not in r_hit_bars and fav >= sl_dist * r:
+                        r_hit_bars[r] = bars_held
+
+            # Determine 1R outcome
+            if outcome == 'open':
+                if direction == 'short':
+                    if bar['high'] >= sl and bar['low'] <= tp:
+                        outcome = 'ambiguous'
+                        exit_price = sl
+                        exit_time = bar['timestamp_ny']
+                        pnl = -(sl - entry_price)
+                        sl_hit = True
+                        break
+                    if bar['high'] >= sl:
+                        outcome = 'loss'
+                        exit_price = sl
+                        exit_time = bar['timestamp_ny']
+                        pnl = -(sl - entry_price)
+                        sl_hit = True
+                        break
+                    if bar['low'] <= tp:
+                        outcome = 'win'
+                        exit_price = tp
+                        exit_time = bar['timestamp_ny']
+                        pnl = entry_price - tp
+                        # Don't break — continue tracking MFE through end of day
+                else:
+                    if bar['low'] <= sl and bar['high'] >= tp:
+                        outcome = 'ambiguous'
+                        exit_price = sl
+                        exit_time = bar['timestamp_ny']
+                        pnl = -(entry_price - sl)
+                        sl_hit = True
+                        break
+                    if bar['low'] <= sl:
+                        outcome = 'loss'
+                        exit_price = sl
+                        exit_time = bar['timestamp_ny']
+                        pnl = -(entry_price - sl)
+                        sl_hit = True
+                        break
+                    if bar['high'] >= tp:
+                        outcome = 'win'
+                        exit_price = tp
+                        exit_time = bar['timestamp_ny']
+                        pnl = tp - entry_price
+                        # Don't break — continue tracking MFE through end of day
+
+        # MFE/MAE in R-multiples
+        mfe_r = round(max_fav / sl_dist, 2) if sl_dist > 0 else 0
+        mae_r = round(max_adv / sl_dist, 2) if sl_dist > 0 else 0
 
         sig['outcome'] = outcome
         sig['exit_price'] = exit_price
         sig['exit_time'] = exit_time
         sig['pnl'] = pnl
+        sig['mfe_pts'] = round(max_fav, 2)
+        sig['mae_pts'] = round(max_adv, 2)
+        sig['mfe_r'] = mfe_r
+        sig['mae_r'] = mae_r
+
+        for r in R_LEVELS:
+            r_key = str(r).replace('.', '_')
+            sig[f'hit_{r_key}R'] = r in r_hit_bars
+            sig[f'bars_to_{r_key}R'] = r_hit_bars.get(r, '')
+
         results.append(sig)
     return results
 
@@ -195,7 +247,16 @@ def log_signals(signals: List[Dict], path: Path) -> None:
             'fvg_mid': s['fvg_mid'],
             'fvg_created_at': s['fvg_created_ts'].strftime('%Y-%m-%d %H:%M:%S'),
             'entry_idx': s.get('entry_idx', ''),
+            'mfe_pts': s.get('mfe_pts', ''),
+            'mae_pts': s.get('mae_pts', ''),
+            'mfe_r': s.get('mfe_r', ''),
+            'mae_r': s.get('mae_r', ''),
         }
+        # R-level hit flags
+        for r in R_LEVELS:
+            r_key = str(r).replace('.', '_')
+            row[f'hit_{r_key}R'] = s.get(f'hit_{r_key}R', '')
+            row[f'bars_to_{r_key}R'] = s.get(f'bars_to_{r_key}R', '')
         rows.append(row)
     pd.DataFrame(rows).to_csv(path, index=False)
     print(f"Logged {len(rows)} signals -> {path}")
