@@ -34,7 +34,7 @@ RTH_START = dtime(9, 30)
 
 BASELINE_PATH = ROOT / 'logs' / 'baseline_trades.csv'
 LIQUIDITY_PATH = ROOT / 'data' / 'levels' / 'liquidity_levels.csv'
-RAW_30S_PATH = ROOT / 'data' / 'raw' / 'glbx-mdp3-20231002-20251027.ohlcv-30s-trading-session.csv'
+RAW_30S_PATH = ROOT / 'data' / 'consolidated' / 'nq-front-month.ohlcv-30s.csv'
 OUTPUT_PATH = ROOT / 'data' / 'levels' / 'trades_with_levels.csv'
 
 HTF_TF_KEYS = ('15m', '1H', '4H', 'Daily')
@@ -114,6 +114,9 @@ def between(entry: float, tp: float, p: float) -> bool:
 
 def load_30s_session() -> pd.DataFrame:
     df = pd.read_csv(RAW_30S_PATH)
+    # consolidated file uses timestamp_utc; raw file uses timestamp
+    if 'timestamp_utc' in df.columns and 'timestamp' not in df.columns:
+        df = df.rename(columns={'timestamp_utc': 'timestamp'})
     df['timestamp'] = pd.to_datetime(df['timestamp'], utc=True)
     df['ts_ny'] = df['timestamp'].dt.tz_convert(NY_TZ)
     df['date_ny'] = df['ts_ny'].dt.date
