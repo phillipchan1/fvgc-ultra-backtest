@@ -64,6 +64,13 @@ RTH_45_END = dtime(10, 15)
 # 6am level forms at 10:00 (close of the 6am–10am 4H candle)
 SIX_AM_AVAIL = dtime(10, 0)
 
+# 15-min macro windows within first 45 min
+MACRO_WINDOWS: list[tuple[str, dtime, dtime]] = [
+    ('9:30-9:45',  dtime(9, 30),  dtime(9, 45)),
+    ('9:45-10:00', dtime(9, 45),  dtime(10, 0)),
+    ('10:00-10:15', dtime(10, 0), dtime(10, 15)),
+]
+
 # Gap thresholds (NQ points, prev RTH close → current RTH open)
 GAP_UP_MIN   =  10.0
 GAP_DOWN_MAX = -10.0
@@ -195,6 +202,13 @@ def compute_day_stats(bars: pd.DataFrame) -> pd.DataFrame:
             row[f'hi_{key}'] = float(window['high'].max()) if not window.empty else np.nan
             row[f'lo_{key}'] = float(window['low'].min())  if not window.empty else np.nan
 
+        # Per-macro-window H/L (each 15-min slot independently)
+        for wlabel, wstart, wend in MACRO_WINDOWS:
+            wbars = rth_bars[(rth_bars['bar_time'] >= wstart) & (rth_bars['bar_time'] < wend)]
+            key = wstart.strftime('%H%M')
+            row[f'w_hi_{key}'] = float(wbars['high'].max()) if not wbars.empty else np.nan
+            row[f'w_lo_{key}'] = float(wbars['low'].min())  if not wbars.empty else np.nan
+
         records.append(row)
 
     return pd.DataFrame(records)
@@ -245,6 +259,44 @@ def check_hit(row: pd.Series) -> bool:
         return bool(lo <= price)
     else:  # 'both'
         return bool(hi >= price or lo <= price)
+
+
+def _level_touched(side: str, group: str, price: float, fvg_top: float, fvg_bottom: float, hi: float, lo: float) -> bool:
+    """Same touch logic as check_hit but operates on pre-computed H/L scalars."""
+    if pd.isna(hi) or pd.isna(lo):
+        return False
+    if group.startswith('htf_fvg'):
+        if side == 'resistance' and pd.notna(fvg_bottom):
+            return bool(hi >= fvg_bottom)
+        if side == 'support' and pd.notna(fvg_top):
+            return bool(lo <= fvg_top)
+        return bool(hi >= price) if side == 'resistance' else bool(lo <= price)
+    if side == 'resistance':
+        return bool(hi >= price)
+    elif side == 'support':
+        return bool(lo <= price)
+    return bool(hi >= price or lo <= price)
+
+
+def find_first_hit_window(row: pd.Series) -> str | None:
+    """Return label of the first 15-min macro window in which the level is touched, or None."""
+    price  = float(row['price'])
+    side   = str(row['side']).lower()
+    group  = str(row['group'])
+    avail  = _parse_avail(str(row.get('available_time', 'open')))
+    fvg_top    = row.get('fvg_top',    np.nan)
+    fvg_bottom = row.get('fvg_bottom', np.nan)
+
+    for wlabel, wstart, wend in MACRO_WINDOWS:
+        # Level must be available at or before this window starts
+        if avail > wstart:
+            continue
+        key = wstart.strftime('%H%M')
+        hi = row.get(f'w_hi_{key}', np.nan)
+        lo = row.get(f'w_lo_{key}', np.nan)
+        if _level_touched(side, group, price, fvg_top, fvg_bottom, hi, lo):
+            return wlabel
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -308,9 +360,10 @@ def main(scope_pts: float = DEFAULT_SCOPE_PTS) -> None:
           f'{in_scope.sum():,} rows ({100*in_scope.mean():.1f}%)')
     levels = levels.loc[in_scope].copy()
 
-    # Hit flag
+    # Hit flag + first hit window
     print('Checking hit in first 45 min...')
     levels['hit'] = levels.apply(check_hit, axis=1)
+    levels['first_hit_window'] = levels.apply(find_first_hit_window, axis=1)
     n_hit  = int(levels['hit'].sum())
     n_tot  = len(levels)
     print(f'  Overall hit rate: {pct(n_hit, n_tot)}% ({n_hit:,}/{n_tot:,})')
@@ -380,12 +433,33 @@ def main(scope_pts: float = DEFAULT_SCOPE_PTS) -> None:
     t7.to_csv(RESULTS_DIR / 'hit_rate_top_combos.csv', index=False)
 
     # ------------------------------------------------------------------
+    # Table 8: Group × first hit window (of levels that were hit)
+    # ------------------------------------------------------------------
+    hits_only = levels[levels['hit']].copy()
+    window_order = [w for w, _, _ in MACRO_WINDOWS]
+    hits_only['first_hit_window'] = pd.Categorical(hits_only['first_hit_window'], categories=window_order, ordered=True)
+    t8 = (
+        hits_only.groupby(['group', 'first_hit_window'], observed=True)
+        .size()
+        .reset_index(name='n_hits')
+    )
+    t8_pivot = t8.pivot_table(index='group', columns='first_hit_window', values='n_hits', observed=True, fill_value=0).reset_index()
+    # Add hit% per window (of total hits for that group)
+    group_totals = hits_only.groupby('group').size().rename('total_hits')
+    t8_pivot = t8_pivot.merge(group_totals, on='group')
+    for w in window_order:
+        if w in t8_pivot.columns:
+            t8_pivot[f'{w}_pct'] = (100 * t8_pivot[w] / t8_pivot['total_hits']).round(1)
+    print_table('First Hit Window Distribution by Group (% of hits per group)', t8_pivot)
+    t8_pivot.to_csv(RESULTS_DIR / 'hit_window_by_group.csv', index=False)
+
+    # ------------------------------------------------------------------
     # Verification export: one row per level-day with all context
     # ------------------------------------------------------------------
     verify_cols = [
         'date', 'group', 'level_name', 'side', 'price',
         'available_time', 'distance_pts', 'distance_bucket', 'above_open',
-        'hit', 'rth_open', 'gap_pts', 'gap_dir', 'c930_dir',
+        'hit', 'first_hit_window', 'rth_open', 'gap_pts', 'gap_dir', 'c930_dir',
         'rth_45_high', 'rth_45_low',
     ]
     # Add swept_pre_rth if present (useful for spot-checking)
