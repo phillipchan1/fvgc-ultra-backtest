@@ -17,7 +17,7 @@ How does the FVGC entry model behave on 1m bars over the full available consolid
 python studies/baseline_1m/run.py
 ```
 
-Outputs under `logs/` (gitignored): `baseline_1m_trades.csv`, `baseline_1m_fvgs.csv`.
+Verifiable outputs: `results/trades.csv`, `results/fvgs.csv` (committed; re-run `run.py` to regenerate).
 
 ## Results
 

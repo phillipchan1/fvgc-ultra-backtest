@@ -17,7 +17,7 @@ How does the FVGC entry model behave on 15s bars over the full available consoli
 python studies/baseline_15s/run.py
 ```
 
-Outputs under `logs/` (gitignored): `baseline_15s_trades.csv`, `baseline_15s_fvgs.csv`.
+Verifiable outputs: `results/trades.csv`, `results/fvgs.csv` (committed; re-run `run.py` to regenerate).
 
 ## Results
 

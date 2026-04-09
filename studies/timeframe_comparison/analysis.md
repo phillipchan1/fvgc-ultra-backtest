@@ -8,7 +8,7 @@ How does FVGC indicator performance vary across timeframes (15s through 5m)?
 
 Same model and constants applied to each pre-aggregated consolidated CSV. SL/TP logic is bar-agnostic (NQ points, not time-based), so the same 15–60 pt range applies at every timeframe. SL distance grows at wider timeframes because the 2-bar swing lookback spans more price action.
 
-Each timeframe has its own `baseline_<tf>/run.py` and outputs `logs/baseline_<tf>_trades.csv`.
+Each timeframe has its own `baseline_<tf>/run.py`; verifiable trade and FVG lists are `baseline_<tf>/results/trades.csv` and `results/fvgs.csv`.
 
 **30s is the canonical baseline** that feeds all downstream studies. Other timeframes are for comparative analysis only.
 
