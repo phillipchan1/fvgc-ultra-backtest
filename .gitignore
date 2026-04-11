@@ -4,3 +4,5 @@ __pycache__/
 *.pyc
 logs/
 .DS_Store
+studies/sweep_continuation/results/*.csv
+!studies/sweep_continuation/results/.gitkeep
