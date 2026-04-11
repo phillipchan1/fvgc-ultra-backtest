@@ -60,7 +60,7 @@ def detect_sweeps(
     highs = candles['high'].values
     lows = candles['low'].values
     closes = candles['close'].values
-    ts_ny = candles['timestamp_ny'].values
+    ts_ny_series = candles['timestamp_ny']  # keep tz-aware; .values converts to UTC
 
     events: List[Dict] = []
     for row in levels.itertuples(index=False):
@@ -104,7 +104,7 @@ def detect_sweeps(
             'level_created_idx': start,
             'level_age_bars': offset,
             'sweep_idx': sweep_idx,
-            'sweep_ts': pd.Timestamp(ts_ny[sweep_idx]),
+            'sweep_ts': ts_ny_series.iloc[sweep_idx],
             'sweep_direction': direction,
             'sweep_close': float(bar_close),
             'sweep_atr': float(a),
