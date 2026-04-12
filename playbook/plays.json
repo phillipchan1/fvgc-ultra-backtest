@@ -1,0 +1,117 @@
+[
+  {
+    "name": "W1 Short \u2014 Confluence Model",
+    "notion_url": "https://www.notion.so/33de2f0e776081889879c4dcbd495996",
+    "status": "verified",
+    "confidence": "high",
+    "direction": "short",
+    "macro": "9:30-9:45",
+    "sample_size": 229,
+    "wr_base": "60.7%",
+    "pf_1r": 1.54,
+    "pf_2r": 2.67,
+    "pf_3r": 3.10,
+    "avg_mfe_r": 6.5,
+    "pre_market_factors": ["gap_down", "overnight_down", "prior_day_down"],
+    "bonus_factors": {
+      "large_gap": {
+        "condition": "gap_pts <= -100",
+        "desc": "Gap down 100+ pts counts as bonus confluence on top of gap_down",
+        "standalone_wr": "75.0%"
+      }
+    },
+    "intraday_triggers": ["bearish_930"],
+    "confluence_model": {
+      "enabled": true,
+      "tiers": [
+        {"min": 0, "max": 1, "action": "Skip", "wr": "54.1%", "pf_1r": 1.18, "target": null},
+        {"min": 2, "max": 2, "action": "Trade", "wr": "66.9%", "pf_1r": 2.03, "target": "1R"},
+        {"min": 3, "max": 3, "action": "Trade + Hold", "wr": "70.0%", "pf_1r": 2.33, "target": "2R (trail stop)"},
+        {"min": 4, "max": 5, "action": "Full Send", "wr": "83.3%", "pf_1r": 5.00, "target": "3R+ (trail aggressively)"}
+      ],
+      "note": "Count: gap_down, large_gap (bonus), overnight_down, prior_day_down, bearish_930. More confluences = bigger target."
+    },
+    "description": "The master W1 short playbook. Count your pre-market confluences plus the 9:30 candle. Scale TP from 1R to 3R+ as confluences stack.",
+    "action_plan": "Night before: count pre-market confluences (gap down, large gap 100+, overnight down, prior day weak). At 9:30:30: did the candle close bearish? Final count \u2192 look up tier \u2192 size and TP accordingly."
+  },
+  {
+    "name": "FVGC Off of 930 Candle",
+    "notion_url": "https://www.notion.so/33de2f0e776081aa9c6bdc297e5fb68b",
+    "status": "backtesting",
+    "confidence": "high",
+    "direction": "short",
+    "macro": "9:30-9:45",
+    "sample_size": 54,
+    "wr_base": "74.1%",
+    "pf_1r": null,
+    "pre_market_factors": [],
+    "intraday_triggers": ["fvg_in_930_window"],
+    "confluence_model": null,
+    "description": "FVG created in the first 90 seconds of RTH (9:29:30\u20139:31:00). Take the short FVGC entry. 74% WR standalone \u2014 structural edge from the opening burst.",
+    "action_plan": "Watch for FVG formation in 9:29:30\u20139:31:00 window on 30s bars. Take the short. If 2+ W1 confluences also present, hold for higher R."
+  },
+  {
+    "name": "No News + Macro 1 Short",
+    "notion_url": "https://www.notion.so/33de2f0e77608120a62bc46755fce98c",
+    "status": "idea",
+    "confidence": "high",
+    "direction": "short",
+    "macro": "9:30-9:45",
+    "sample_size": 185,
+    "wr_base": "60.0%",
+    "pre_market_factors": ["no_red_folder"],
+    "intraday_triggers": [],
+    "confluence_model": null,
+    "description": "On days with no high-impact news, short FVGC entries in Macro 1 achieve 75% WR when combined with wide OR.",
+    "action_plan": "Check economic calendar. If clean day (no red folder), shorts in macro 1 have a structural edge. Combine with wide OR for 75% WR."
+  },
+  {
+    "name": "FVGC To Opening Range H/L",
+    "notion_url": "https://www.notion.so/33de2f0e776080409d14f582b1868b64",
+    "status": "verified",
+    "confidence": "high",
+    "direction": "both",
+    "macro": "9:45-10:00",
+    "sample_size": null,
+    "wr_base": "80%",
+    "pre_market_factors": [],
+    "intraday_triggers": ["or_15min_set"],
+    "confluence_model": null,
+    "description": "After the 15-min OR is set, OR high and OR low become magnetic levels. 94% chance one side gets swept before 10:15 (avg time 7 min).",
+    "action_plan": "At 9:45: note the 15-min OR high and low. Take FVGC entries toward whichever side structure favors. 94% one side swept before 10:15."
+  },
+  {
+    "name": "Reversal-Confirmed FVG Continuation (HTF 15m Sweep)",
+    "notion_url": "https://www.notion.so/340e2f0e7760813c8df9c4a25d4eb677",
+    "status": "backtesting",
+    "confidence": "medium",
+    "direction": "both",
+    "macro": "any",
+    "sample_size": 100,
+    "wr_base": "68.0%",
+    "pf_1r": 2.13,
+    "avg_mfe_r": 6.4,
+    "pre_market_factors": [],
+    "intraday_triggers": ["htf_15m_fvg_sweep", "opposing_fvg_inversion"],
+    "confluence_model": null,
+    "description": "Sweep of unmitigated 15m FVG + opposing FVG inversion \u2192 FVGC reversal entry. 68% at 1R, median MFE 6.4R.",
+    "action_plan": "Identify unmitigated 15m FVGs pre-market. If one gets swept (non-reclaiming) and an opposing FVG inverts, take the FVGC reversal signal."
+  },
+  {
+    "name": "15m FVG Breakout Continuation",
+    "notion_url": "https://www.notion.so/340e2f0e776081cd922adc681ab3fdb1",
+    "status": "backtesting",
+    "confidence": "medium",
+    "direction": "both",
+    "macro": "any",
+    "sample_size": 40,
+    "wr_base": "93.3%",
+    "pf_1r": 2.33,
+    "avg_mfe_r": 9.44,
+    "pre_market_factors": [],
+    "intraday_triggers": ["htf_15m_fvg_break", "opposing_fvg_inversion"],
+    "confluence_model": null,
+    "description": "Price breaks through 15m FVG (continuation, not reversal). 93.3% WR at 1R on 40 trades. Median MFE 8.7R. Only works on 15m FVGs.",
+    "action_plan": "Watch for price breaking through (not bouncing off) a 15m FVG. If opposing FVG inverts, take FVGC in the break direction. Hold \u2014 these run hard."
+  }
+]
