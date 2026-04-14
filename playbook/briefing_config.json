@@ -1,0 +1,137 @@
+{
+  "_comment": "Configuration for tools/morning_briefing.py. Edit this file (not the script) to teach the briefing about new factors, rename setups, tune thresholds, or add new liquidity-level priorities. Combo/factor edges are auto-parsed from the study output files under 'sources' — re-run those studies and the briefing learns.",
+
+  "sources": {
+    "combo_results": "analysis/results/combo_top_results.txt",
+    "factor_importance": "studies/factor_importance/results/factor_importance_report.txt",
+    "liquidity_levels_csv": "data/levels/liquidity_levels.csv",
+    "htf_fvgs_active_csv": "data/levels/htf_fvgs_active.csv",
+    "trading_days_csv": "data/trading_days/trading_days.csv",
+    "events_csv": "data/raw/market_high_volume_events_2020_2025.csv",
+    "nq_1m_csv": "data/raw/glbx-mdp3-20200927-20260221.ohlcv-1m.csv"
+  },
+
+  "tuning": {
+    "min_n_robust": 50,
+    "min_wr_top": 65.0,
+    "max_wr_avoid": 35.0,
+    "max_pf_avoid": 0.75,
+    "top_watches_to_show": 8,
+    "avoid_to_show": 6,
+    "level_scope_pts": 100,
+    "level_max_r_target": 3.0,
+    "typical_sl_pts": 25
+  },
+
+  "live_data": {
+    "enabled": true,
+    "source": "yahoo",
+    "symbol": "NQ=F",
+    "range": "2d",
+    "interval": "1m",
+    "note": "Uses the public Yahoo Finance v8/chart endpoint — no auth, no dependency outside stdlib. NQ=F returns continuous front-month NQ with 1-minute bars including pre/post market. Works for the overnight → pre-open window we need."
+  },
+
+  "factors": {
+    "gap_up":            {"kind": "pre_open",  "category": "Gap",           "desc": "cash opens above prior RTH close"},
+    "gap_down":          {"kind": "pre_open",  "category": "Gap",           "desc": "cash opens below prior RTH close"},
+    "overnight_up":      {"kind": "pre_open",  "category": "Overnight",    "desc": "overnight drifted up >0.1%"},
+    "overnight_down":    {"kind": "pre_open",  "category": "Overnight",    "desc": "overnight drifted down >0.1%"},
+    "tight_overnight":   {"kind": "pre_open",  "category": "Overnight",    "desc": "overnight range in bottom 20% of history"},
+    "wide_overnight":    {"kind": "pre_open",  "category": "Overnight",    "desc": "overnight range in top 20% of history"},
+    "prior_day_up":      {"kind": "pre_open",  "category": "Prior Day",    "desc": "prior RTH closed in top 25% of its range"},
+    "prior_day_down":    {"kind": "pre_open",  "category": "Prior Day",    "desc": "prior RTH closed in bottom 25% of its range"},
+    "low_vixy":          {"kind": "pre_open",  "category": "VIXY",          "desc": "VIXY prior close in bottom quartile"},
+    "normal_vixy":       {"kind": "pre_open",  "category": "VIXY",          "desc": "VIXY prior close in the middle quartile"},
+    "elevated_vixy":     {"kind": "pre_open",  "category": "VIXY",          "desc": "VIXY prior close in top two quartiles"},
+    "no_red_folder":     {"kind": "pre_open",  "category": "News",          "desc": "no red-folder events scheduled today"},
+    "has_red_folder":    {"kind": "pre_open",  "category": "News",          "desc": "at least one red-folder event on the calendar"},
+    "no_pre_rth_news":   {"kind": "pre_open",  "category": "News",          "desc": "no pre-RTH release (NFP/CPI/etc. before 10:00)"},
+    "has_pre_rth_news":  {"kind": "pre_open",  "category": "News",          "desc": "pre-RTH release scheduled today"},
+    "not_fomc_week":     {"kind": "pre_open",  "category": "Calendar",      "desc": "this week does not contain an FOMC statement"},
+    "is_fomc_week":      {"kind": "pre_open",  "category": "Calendar",      "desc": "FOMC week — historical edge collapses, be cautious"},
+
+    "macro_w1":          {"kind": "timing",    "category": "Macro Window",  "desc": "9:30–9:45 ET — the strongest macro window in the sample"},
+    "macro_w2":          {"kind": "timing",    "category": "Macro Window",  "desc": "9:45–10:00 ET"},
+    "macro_w3":          {"kind": "timing",    "category": "Macro Window",  "desc": "10:00–10:15 ET"},
+
+    "short_only":        {"kind": "direction", "category": "Direction",     "desc": "filter that applies to short entries only"},
+    "long_only":         {"kind": "direction", "category": "Direction",     "desc": "filter that applies to long entries only"},
+
+    "bearish_930":       {"kind": "post_open", "category": "9:30 Candle",   "desc": "9:30 candle closed bearish"},
+    "bullish_930":       {"kind": "post_open", "category": "9:30 Candle",   "desc": "9:30 candle closed bullish"},
+    "large_930_candle":  {"kind": "post_open", "category": "9:30 Candle",   "desc": "9:30 candle range in top 20%"},
+    "small_930_candle":  {"kind": "post_open", "category": "9:30 Candle",   "desc": "9:30 candle range in bottom 20%"},
+    "wide_5min_or":      {"kind": "post_open", "category": "Opening Range", "desc": "5-min OR (9:30–9:35) in top 20%"},
+    "tight_5min_or":     {"kind": "post_open", "category": "Opening Range", "desc": "5-min OR (9:30–9:35) in bottom 20%"},
+    "wide_45min_or":     {"kind": "post_open", "category": "Opening Range", "desc": "45-min OR (9:30–10:15) in top 20% — KEY confirmation"},
+    "tight_45min_or":    {"kind": "post_open", "category": "Opening Range", "desc": "45-min OR in bottom 20% — HARD stand-down signal"},
+
+    "variant_no_fvg":         {"kind": "post_open", "category": "Variant", "desc": "model variant: no_fvg"},
+    "variant_ifvg":           {"kind": "post_open", "category": "Variant", "desc": "model variant: inverted FVG"},
+    "variant_bos":            {"kind": "post_open", "category": "Variant", "desc": "model variant: break of structure"},
+    "variant_protected_swing":{"kind": "post_open", "category": "Variant", "desc": "model variant: protected swing"},
+
+    "thursday":               {"kind": "pre_open",  "category": "Calendar",      "desc": "today is Thursday — strongest day in the sample"},
+    "entry_inside_prior_day_value_area": {"kind": "post_open", "category": "Volume Profile", "desc": "FVGC entry price falls between prior day's VAL and VAH (70% value area)"}
+  },
+
+  "level_groups": {
+    "_comment": "Priorities for the Liquidity Levels section. hit_rate_45m = probability the level is touched within 9:30–10:15 when within 100 pts of open. wr_as_magnet = FVGC trade WR when that group is the nearest magnet within 3R (from data/levels/analysis.md, Apr 2026 rebuild). tier is a manual rollup: A = primary target / strong draw, B = secondary, C = weaker / avoid as sole magnet.",
+    "htf_fvg_1H":    {"tier": "A", "hit_rate_45m": 22.5, "wr_as_magnet": 64.2, "pf_as_magnet": 2.16, "note": "Fresh unmitigated 1H FVG — top WR when it IS the draw, even though hit rate is lower. Respect as primary."},
+    "htf_fvg_15m":   {"tier": "A", "hit_rate_45m": 26.2, "wr_as_magnet": 58.4, "pf_as_magnet": 1.51, "note": "15m unfilled FVG — strongest in macro 2 (9:45–10:00), 69% WR there."},
+    "prev_day":      {"tier": "A", "hit_rate_45m": 40.6, "wr_as_magnet": 57.1, "pf_as_magnet": 1.45, "note": "Prior RTH high/low. Reliable continuation target."},
+    "asia":          {"tier": "A", "hit_rate_45m": 59.2, "wr_as_magnet": 54.2, "pf_as_magnet": 1.22, "note": "Strictly a macro-1 target — WR drops to 40% in macro 2."},
+    "bsl_ssl":       {"tier": "A", "hit_rate_45m": 56.5, "wr_as_magnet": 60.0, "pf_as_magnet": 3.00, "note": "London swing H/L — tiny sample but elite PF when it IS the magnet."},
+    "nwog":          {"tier": "A", "hit_rate_45m": 72.5, "wr_as_magnet": 75.0, "pf_as_magnet": 3.17, "note": "Monday only. NWOG within 25 pts + flat gap → 93% hit rate."},
+    "6am":           {"tier": "B", "hit_rate_45m": 46.1, "wr_as_magnet": 51.9, "pf_as_magnet": 1.18, "note": "Forms at 10:00 ET — only draws in macro 3."},
+    "htf_fvg_Daily": {"tier": "B", "hit_rate_45m": 26.3, "wr_as_magnet": 51.6, "pf_as_magnet": 1.03, "note": "Daily FVGs within 50 pts of open have ~97% hit rate — if close, respect."},
+    "overnight":     {"tier": "C", "hit_rate_45m": 41.1, "wr_as_magnet": 48.7, "pf_as_magnet": 0.86, "note": "Often swept as part of the opening drive rather than acting as a clean draw."},
+    "london":        {"tier": "C", "hit_rate_45m": 54.3, "wr_as_magnet": 47.4, "pf_as_magnet": 0.95, "note": "High hit rate but sub-baseline WR as nearest magnet. Never target London in macro 3."},
+    "htf_fvg_4H":    {"tier": "C", "hit_rate_45m": 23.5, "wr_as_magnet": 45.7, "pf_as_magnet": 0.99, "note": "Too wide a zone for a clean 45-min target."}
+  },
+
+  "distance_bucket_hit_rates": {
+    "_comment": "From study_level_hit_rate_45min.py — hit probability vs distance from RTH open (any group).",
+    "0-25":   86.1,
+    "25-50":  62.6,
+    "50-100": 39.6,
+    "100-200":17.1,
+    "200+":    6.3
+  },
+
+  "manual_one_liners": [
+    {
+      "when_all": ["gap_down", "prior_day_down"],
+      "say": "Gap-down on a weak prior close — classic short-bias setup. If the 9:30 closes bearish and the 45-min OR widens out, treat the first 9:30–9:45 FVGC short as a high-confidence multi-R play."
+    },
+    {
+      "when_all": ["is_fomc_week"],
+      "say": "FOMC week — historical edge evaporates (baseline WR ~44%). Be very selective, smaller size, and prefer to stand down on any tight-OR morning."
+    },
+    {
+      "when_all": ["has_pre_rth_news"],
+      "say": "Pre-RTH red-folder print (NFP/CPI style). Let the dust settle, watch for the 45-min OR to print wide, and avoid chasing the first impulse."
+    },
+    {
+      "when_all": ["elevated_vixy", "prior_day_down"],
+      "say": "Elevated vol regime after a weak close. Short setups have historically been strongest here — align with the 9:30–9:45 macro window."
+    },
+    {
+      "when_all": ["prior_day_up", "gap_up"],
+      "say": "Prior-day-up + gap-up is one of the weaker static profiles in the sample. Demand strong confirmation (wide 45-min OR + bearish 9:30 for a fade) before sizing up."
+    },
+    {
+      "when_all": ["thursday"],
+      "say": "Thursday VP play is active. Pull up prior day's volume profile — note VAH and VAL. If FVGC entries form between VAL and VAH, take them (long or short). 73.7% WR, 2.89 PF on 76 trades (p=0.0002). MW2 (9:45-10:00) is strongest. If bearish 930 candle, consider trailing to 2R."
+    }
+  ],
+
+  "day_of_week_notes": {
+    "Monday":    "Monday is middling in the sample (WR ~50.5%). NWOG comes into play today only.",
+    "Tuesday":   "Tuesday is the weakest day in the sample (WR ~49.2%). Stay selective.",
+    "Wednesday": "Wednesday is middling (WR ~50.9%). Longs have historically been the weaker side.",
+    "Thursday":  "Thursday is the STRONGEST day in the sample (WR ~55.8%). Volume Profile play: if entry is inside prior day's Value Area (VAL-VAH), 73.7% WR / 2.89 PF. Pull up prior day VP and note the levels.",
+    "Friday":    "Friday is average (WR ~51.9%). Watch for OpEx and witching weeks."
+  }
+}
