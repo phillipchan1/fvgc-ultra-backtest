@@ -377,6 +377,17 @@ def determine_factors_from_context(ctx, config: dict, csv_path: Path,
     factors['is_fomc_week'] = fomc
     factors['not_fomc_week'] = not fomc
 
+    # Day of week
+    factors['monday'] = target_date.weekday() == 0
+    factors['tuesday'] = target_date.weekday() == 1
+    factors['wednesday'] = target_date.weekday() == 2
+    factors['thursday'] = target_date.weekday() == 3
+    factors['friday'] = target_date.weekday() == 4
+
+    # entry_inside_prior_day_value_area — requires manual VP check, always False here
+    # The Thursday VA play will show as 'partial' on Thursdays with a prompt to verify
+    factors['entry_inside_prior_day_value_area'] = False
+
     # VIXY from prior trading day row
     prior_row = load_prior_trading_day_row(csv_path, target_date)
     if prior_row and prior_row.get('vixy_prior_close'):
@@ -444,6 +455,35 @@ def determine_factors_from_csv(csv_path: Path, events_path: Path,
     factors['no_pre_rth_news'] = not factors['has_pre_rth_news']
     factors['is_fomc_week'] = row.get('is_fomc_week', '').lower() == 'true'
     factors['not_fomc_week'] = not factors['is_fomc_week']
+
+    # Day of week (parse from timestamp or day_of_week column if available)
+    dow_str = row.get('day_of_week_name', '') or row.get('day_of_week', '')
+    ts_str = row.get('timestamp', '') or row.get('date', '')
+    if dow_str:
+        dow_str = dow_str.lower()
+        factors['monday'] = dow_str == 'monday'
+        factors['tuesday'] = dow_str == 'tuesday'
+        factors['wednesday'] = dow_str == 'wednesday'
+        factors['thursday'] = dow_str == 'thursday'
+        factors['friday'] = dow_str == 'friday'
+    elif ts_str:
+        try:
+            from datetime import datetime
+            ts_date = datetime.fromisoformat(ts_str[:10]).date()
+            factors['monday'] = ts_date.weekday() == 0
+            factors['tuesday'] = ts_date.weekday() == 1
+            factors['wednesday'] = ts_date.weekday() == 2
+            factors['thursday'] = ts_date.weekday() == 3
+            factors['friday'] = ts_date.weekday() == 4
+        except Exception:
+            for d in ('monday', 'tuesday', 'wednesday', 'thursday', 'friday'):
+                factors[d] = False
+    else:
+        for d in ('monday', 'tuesday', 'wednesday', 'thursday', 'friday'):
+            factors[d] = False
+
+    # entry_inside_prior_day_value_area — requires manual VP check, always False here
+    factors['entry_inside_prior_day_value_area'] = False
 
     # VIXY
     vixy = _float_or_none(row.get('vixy_prior_close'))
@@ -884,6 +924,7 @@ def print_briefing(
     # [8] PLAYBOOK PLAYS
     matched_plays = match_plays(plays, today_factors)
     active_plays = [mp for mp in matched_plays if mp.status in ('active', 'always')]
+    partial_plays = [mp for mp in matched_plays if mp.status == 'partial']
     if active_plays:
         print(f'[8] ACTIVE PLAYS FROM PLAYBOOK')
         for mp in active_plays:
@@ -895,6 +936,15 @@ def print_briefing(
                 # Wrap action plan text
                 plan = p['action_plan']
                 print(f'        {plan}')
+        print()
+    if partial_plays:
+        print(f'    --- VERIFY BEFORE USING ---')
+        for mp in partial_plays:
+            p = mp.play
+            missing = ', '.join(mp.pre_missing)
+            print(f'    🔍 {p["name"]} [{p.get("direction", "?")}] '
+                  f'— WR {p.get("wr_base", "?")} (n={p.get("sample_size", "?")}) '
+                  f'| needs manual check: {missing}')
         print()
 
     # [9] TODAY'S GAME PLAN
