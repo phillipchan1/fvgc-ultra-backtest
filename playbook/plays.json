@@ -68,17 +68,40 @@
   {
     "name": "FVGC To Opening Range H/L",
     "notion_url": "https://www.notion.so/33de2f0e776080409d14f582b1868b64",
-    "status": "verified",
+    "status": "backtesting",
     "confidence": "high",
     "direction": "both",
-    "macro": "9:45-10:00",
-    "sample_size": null,
-    "wr_base": "80%",
+    "macro": "9:45-10:15",
+    "sample_size": 60,
+    "wr_base": "61.7%",
+    "pf_1r": 1.54,
+    "avg_mfe_r": 3.75,
     "pre_market_factors": [],
-    "intraday_triggers": ["or_15min_set"],
+    "intraday_triggers": ["or_15min_set", "or_close_bias", "neither_or_side_swept"],
+    "kill_switch": {
+      "or_swept": "Once EITHER OR side is swept, play is dead for the day. No entries.",
+      "no_bias": "OR close in middle 20% of range = no signal, skip.",
+      "be_stop": "NEVER move to breakeven after OR tag. 70-85% BE-out rate destroys the play."
+    },
     "confluence_model": null,
-    "description": "After the 15-min OR is set, OR high and OR low become magnetic levels. 94% chance one side gets swept before 10:15 (avg time 7 min).",
-    "action_plan": "At 9:45: note the 15-min OR high and low. Take FVGC entries toward whichever side structure favors. 94% one side swept before 10:15."
+    "tight_config": {
+      "condition": "Standard config + SL 25-35 pts",
+      "n": 28,
+      "wr": "75.0%",
+      "pf_1r": 3.21,
+      "note": "~1 trade/month. Highest conviction version."
+    },
+    "runner_analysis": {
+      "verdict": "Don't hold past 1R.",
+      "post_or_retrace_rate": "80% of time price retraces through OR before continuing",
+      "exception": "2+ structural levels within 50pts past OR = 89% clean continuation"
+    },
+    "description": "After the 15-min OR is set (9:45), take FVGC entries aligned toward the unswept OR high or OR low. Critical rule: play is dead once either side is swept. With OR close bias + R-to-OR <1.0: 62% WR, 1.54 PF on 60 trades. Tight SL filter (25-35pts): 75% WR, 3.21 PF on 28 trades. OR is 100% magnetic — one side swept every day.",
+    "action_plan": "At 9:45: note OR high and OR low. Check OR close bias (top 40% = short toward OR_L, bottom 40% = long toward OR_H, middle = skip). Take FVGC entries where R-to-OR < 1.0 and neither OR side has been swept. Hold original SL, target 1R. Play is dead once any OR level is breached.",
+    "trade_lists": {
+      "all_trades": "studies/or_continuation/results/or_continuation_30s.csv",
+      "enriched": "studies/or_continuation/results/or_enriched_profiles_30s.csv"
+    }
   },
   {
     "name": "Reversal-Confirmed FVG Continuation (HTF 15m Sweep)",
