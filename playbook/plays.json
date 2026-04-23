@@ -268,5 +268,61 @@
     "trade_lists": {
       "all_trades": "studies/volume_profile_confluence/results/thu_inside_va_trades.csv"
     }
+  },
+  {
+    "name": "Small-Gap Fade Long (9:31 Entry, Half-Gap Target, Gap>=25pts)",
+    "notion_url": null,
+    "status": "backtesting",
+    "confidence": "medium",
+    "tier": "B",
+    "direction": "long",
+    "macro": "9:30-10:45",
+    "sample_size": 46,
+    "wr_base": "80.4%",
+    "pf_points": 3.61,
+    "pf_r": 2.53,
+    "mean_r_per_trade": 0.159,
+    "total_pnl_pts_24mo": 812.6,
+    "frequency": "~20 trades/year (1-2 per month)",
+    "pre_market_factors": ["gap_down_ge_25pts", "gap_atr_ratio_lt_0.6", "open_inside_prior_day_range"],
+    "intraday_triggers": ["candle_930_bullish"],
+    "kill_switch": {
+      "shorts": "Gap-up symmetric short cell does NOT clear WR>=65/PF>=2. Longs only.",
+      "gap_atr_high": "Skip if gap_atr_ratio >= 0.6 — medium/large gaps don't resolve in 45 min.",
+      "gap_too_small": "Skip if |gap| < 25 NQ points. Tiny gaps are pure noise: bucket analysis showed gap<20pts gave 28% WR / mean -0.73R. This is the most important filter.",
+      "open_outside_range": "Skip if 9:31 open is not strictly between prior-day RTH low and high.",
+      "930_bearish_or_doji": "Skip if 9:30 candle isn't bullish (close > open). No trade."
+    },
+    "confluence_model": null,
+    "context_notes": {
+      "entry_timing": "Entry at 9:31:00 open — AFTER the 9:30 1-minute candle has closed. Earlier backtest with 9:30:00 entry had lookahead.",
+      "pf_metric_note": "PF(pts)=3.61x is raw point PnL ratio. PF(R)=2.53x is risk-adjusted (each trade normalized to 1R = 1.5x gap). Both clear 2.0 full-period. IS PF(R) is 1.80x (below 2.0 threshold) — the strategy's edge is real but not exceptional in-sample.",
+      "gap_floor_rationale": "The |gap| >= 25pts floor was derived from bucket analysis: gap<20pts gave 28% WR / -0.73R (pure noise), gap 20-40pts gave 76% WR / +0.02R, gap 40-80pts gave 83% WR / +0.19R. The cliff between 10-20pts and 20+pts is a structural boundary (noise vs real institutional positioning), not a fine-tuned parameter.",
+      "inverted_rr": "R:R is 0.33:1 (TP 0.5*gap vs SL 1.5*gap). Requires WR > 75% just to breakeven per R. 80% WR IS is real but leaves thin margin — a 4-loss streak takes back ~1 year of wins. Mentally hard to trade.",
+      "oos_caveat": "OOS (2025-06-01+, n=13) shows 84.6% WR / PF(R) 35x — strong, but n=13 is too small. 95% CI on 84.6%/n=13 is roughly [55%, 98%]. Anchor live expectations to IS (n=33, WR 78.8%, PF(R) 1.80, Mean R +0.11).",
+      "v4_alternative": "V4 full_trail variant (full unit, 50%-of-MFE trail after MFE>=1R) had higher expectancy (+0.339R/trade vs +0.159R) and higher PF(R) 2.60x, but lower WR (67.4%) and 1.57x IS PF(R). More expensive to execute (wider exits on trail), but captures tail days. See results/v3_V4_full_trail_trades.csv."
+    },
+    "validation": {
+      "in_sample": {"n": 33, "wr": "78.8%", "pf_pts": 2.60, "pf_r": 1.80, "mean_r": 0.114, "pnl_pts": 477.9},
+      "out_of_sample": {"n": 13, "wr": "84.6%", "pf_pts": 26.75, "pf_r": 35.48, "mean_r": 0.274, "pnl_pts": 334.8, "split_date": "2025-06-01"},
+      "all_period": {"n": 46, "wr": "80.4%", "pf_pts": 3.61, "pf_r": 2.53, "mean_r": 0.159, "pnl_pts": 812.6},
+      "lookahead_check": "Entry at 9:31:00 (after 9:30 candle closes) eliminates lookahead on candle_930_aligned filter.",
+      "filter_derivation": "Baseline (gap>=2pts) had PF(R)=0.77 — under-water in risk-adjusted terms. Gap-size bucket analysis revealed noise/signal cliff at 20pts. Promoting gap>=25pts as the operational floor."
+    },
+    "bracket": {
+      "tp": "entry + 0.5 * |gap|  (halfway back to prior-day close)",
+      "sl": "entry - 1.5 * |gap|",
+      "time_stop": "10:45  (close at most recent bar close <= 10:45)",
+      "rr_at_tp": "0.33 — inverted, compensated by ~80% WR"
+    },
+    "description": "Gap-down NQ >= 25pts opens inside prior-day RTH range, small relative to ATR (|gap|/14d-ATR < 0.6). If the 9:30 1-min candle closes bullish (buyers stepped in after open), enter long at 9:31:00 open and fade to 50% of the gap. Stop 1.5x gap, time-stop 10:45. ~1-2 trades/month. 80.4% WR / PF(pts) 3.61 / PF(R) 2.53 full-period (30s TF, 2023-10 -> 2026-03). IS PF(R) 1.80 is the honest conservative estimate. Lookahead-checked, IS/OOS split, gap-floor derived from bucket analysis.",
+    "action_plan": "Pre-market: note prior-day RTH high / low / close. At 9:30 open: compute gap = open - PDC. If |gap| < 25 NQ pts, SKIP (this is the key filter — no exceptions). If gap >= 0 (gap-up), skip. If open outside prior-day range, skip. Compute 14d ATR of prior-day RTH range; if |gap|/ATR >= 0.6, skip. Watch the 9:30 1-min candle. At 9:30:59 if it closed bullish (close > open), enter long at 9:31:00 open. TP = entry + 0.5*|gap|. SL = entry - 1.5*|gap|. Time-stop at 10:45 (close remaining at market).",
+    "trade_lists": {
+      "playbook_cell_annotated": "studies/small_gap_fade/results/playbook_trade_list.csv",
+      "playbook_cell_raw": "studies/small_gap_fade/results/playbook_v3_trades.csv",
+      "v3_exit_shootout_ledger": "studies/small_gap_fade/results/v3_trade_ledger.csv",
+      "v3_summary": "studies/small_gap_fade/results/v3_summary.csv",
+      "v4_trail_alternative": "studies/small_gap_fade/results/v3_V4_full_trail_trades.csv"
+    }
   }
 ]
