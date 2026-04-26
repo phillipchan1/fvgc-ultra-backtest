@@ -56,6 +56,14 @@ TP_R = 1.0
 ATR_LOOKBACK = 14
 STRUCTURAL_BUFFER_PTS = 2.0
 
+# Gap-sized bracket (matches the small_gap_fade playbook cell):
+#   stop = 1.5 × gap, TP = 0.5 × gap (TP1 partial, not full PDC),
+#   gap_atr filter applied below, time_stop tightened for 930 anchors.
+GAP_STOP_MULT = 1.5
+GAP_TP_FRAC = 0.5
+GAP_ATR_MAX = 0.6
+GAP_TIME_STOP = dtime(10, 15)
+
 # Per-anchor configuration:
 #   archetype   — 'entry_bar' or 'first_touch_reject'
 #   direction   — 'short' or 'long'
@@ -179,6 +187,17 @@ def atr_bracket(direction: str, entry_price: float, atr_14d: float) -> tuple:
     return entry_price - sl_dist, entry_price + tp_dist, sl_dist
 
 
+def gap_sized_bracket(direction: str, entry_price: float, gap_abs: float) -> tuple:
+    """Phil's natural 930-gap bracket: stop = 1.2 × gap above (short) / below (long)
+    the entry, TP = full gap (price returns to PDC). The gap itself IS the
+    structural protection."""
+    sl_dist = GAP_STOP_MULT * gap_abs
+    tp_dist = GAP_TP_FRAC * gap_abs
+    if direction == 'short':
+        return entry_price + sl_dist, entry_price - tp_dist, sl_dist
+    return entry_price - sl_dist, entry_price + tp_dist, sl_dist
+
+
 def structural_bracket(direction: str, entry_price: float,
                        trigger_high: float, trigger_low: float) -> tuple:
     if direction == 'short':
@@ -245,6 +264,7 @@ def find_entry_bar_signals(arr: dict, day_idx: dict, daily: pd.DataFrame, anchor
             'trigger_high': float(bar_high),
             'trigger_low':  float(bar_low),
             'atr_14d': float(levels['atr_14d']),
+            'gap_abs': float(abs(gap)),
         })
     return sigs
 
@@ -371,6 +391,10 @@ def walk_trade(sig: dict, arr: dict, sl: float, tp: float, sl_dist: float,
 
 def run_anchor(anchor: dict, arr: dict, day_idx: dict, daily: pd.DataFrame,
                bracket_mode: str) -> pd.DataFrame:
+    # Gap-sized bracket only meaningful for the 930-gap entry_bar anchors
+    if bracket_mode == 'gap' and anchor['archetype'] != 'entry_bar':
+        return pd.DataFrame()
+
     if anchor['archetype'] == 'entry_bar':
         sigs = find_entry_bar_signals(arr, day_idx, daily, anchor)
     else:
@@ -380,14 +404,24 @@ def run_anchor(anchor: dict, arr: dict, day_idx: dict, daily: pd.DataFrame,
     for sig in sigs:
         d = sig['date']
         s, e = day_idx[d]
+        time_stop = anchor['search_end']
         if bracket_mode == 'atr':
             sl, tp, sl_dist = atr_bracket(sig['direction'], sig['entry_price'], sig['atr_14d'])
+        elif bracket_mode == 'gap':
+            # Playbook filter: small gaps only (gap_atr < 0.6)
+            atr = sig['atr_14d']
+            if atr <= 0 or (sig['gap_abs'] / atr) >= GAP_ATR_MAX:
+                continue
+            sl, tp, sl_dist = gap_sized_bracket(
+                sig['direction'], sig['entry_price'], sig['gap_abs'],
+            )
+            time_stop = GAP_TIME_STOP
         else:
             sl, tp, sl_dist = structural_bracket(
                 sig['direction'], sig['entry_price'],
                 sig['trigger_high'], sig['trigger_low'],
             )
-        res = walk_trade(sig, arr, sl, tp, sl_dist, anchor['search_end'], e)
+        res = walk_trade(sig, arr, sl, tp, sl_dist, time_stop, e)
         ts = arr['ts'][sig['entry_idx']]
         rows.append({
             'date': d,
@@ -486,9 +520,11 @@ def print_summary_table(summaries: list, bracket_mode: str):
 
 def parse_args():
     p = argparse.ArgumentParser(description='Anchor rejection comparison study')
-    p.add_argument('--bracket', choices=['atr', 'structural'], default='atr',
+    p.add_argument('--bracket', choices=['atr', 'structural', 'gap'], default='atr',
                    help='atr (default): max(15, 0.30*ATR14) stop; '
-                        'structural: trigger-bar wick + 2pt buffer')
+                        'structural: trigger-bar wick + 2pt buffer; '
+                        'gap: stop=1.2*gap, tp=full gap (930 anchors only — '
+                        'control sanity check that recovers Phil\'s natural play)')
     return p.parse_args()
 
 
@@ -538,6 +574,9 @@ def main():
     for anchor in ANCHORS:
         print(f"\n  -> {anchor['name']:<28} ({anchor['archetype']}, {anchor['direction']})")
         trades = run_anchor(anchor, arr, day_idx, daily, args.bracket)
+        if trades.empty:
+            print(f"     (skipped — bracket={args.bracket} not applicable)")
+            continue
         suffix = '' if args.bracket == 'atr' else f"_{args.bracket}"
         out = RESULTS_DIR / f"trades_{anchor['name']}{suffix}.csv"
         trades.to_csv(out, index=False)

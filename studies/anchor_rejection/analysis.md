@@ -37,6 +37,13 @@ not headlines (how well does the bracket fit?).
 buffer instead of ATR-based, with the same 1R TP. Lets us check if the ranking
 is bracket-dependent.
 
+**Optional `--bracket gap` (control sanity check, 930 anchors only):** matches
+the `small_gap_fade` playbook cell — `stop = 1.5 × gap`, `TP = 0.5 × gap`,
+`gap_atr_ratio < 0.6` filter, time-stop 10:15. Confirms the natural play's
+edge survives in this framework: **930_gap_short prints 77.9% WR (n=136)**,
+930_gap_long 74.2% (n=87). The gap *is* the protection, and a small TP that
+matches realistic intraday gap-closure moves keeps wins fast.
+
 **Trigger detail for `first_touch_reject`:** walk the search window; first 30s
 bar whose `high > level` AND `close < level` (short; mirror for long); also
 require the day's RTH open is on the approach side. Entry at the next bar's
@@ -69,9 +76,15 @@ the goal here is the raw mechanical edge per anchor.
 ### Key observations
 
 1. **The 930-gap headline does not survive a generic ATR bracket.** Control
-   prints 50.7% / PF 0.94 vs the 75% headline — confirming that the natural
-   play's edge is partly in the *bracket fit* (gap-sized stop + gap-fraction
-   target tracking the move), not just in the trigger.
+   prints 50.7% / PF 0.94 here vs the **77.9% WR** the same trigger gets when
+   the natural gap-sized bracket is restored (see `--bracket gap` above). Most
+   of that ~25-point WR delta is the bracket: a 70pt ATR stop forces the trade
+   to behave like a swing instead of a same-day fade, time-stops balloon
+   (39/179 vs 32/136 here, but with 1R targets that rarely fill within the
+   move's actual scale), and the trigger's edge bleeds out. The `gap_atr<0.6`
+   filter and tighter 10:15 time-stop that the playbook uses contribute the
+   rest. The trigger has real edge — **the bracket has to fit the move, not
+   the other way around.**
 
 2. **`930_gap_long` is the surprise winner.** 59.1% WR, PF 1.48, +0.17 mean R.
    Symmetric control was supposed to be a sanity check; instead it suggests
@@ -152,6 +165,7 @@ most plays. Of the seven non-control anchors:
 git lfs pull   # data files are LFS-tracked
 python studies/anchor_rejection/run.py                     # ATR bracket (default)
 python studies/anchor_rejection/run.py --bracket structural
+python studies/anchor_rejection/run.py --bracket gap       # 930 anchors only — control sanity check
 ```
 
 Outputs: `results/trades_<anchor>.csv` per anchor and `results/summary.csv`
