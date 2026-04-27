@@ -297,17 +297,38 @@ def compute_percentile(csv_path: Path, column: str, percentile: float) -> float 
     return vals[idx]
 
 
+def _open_events_dictreader(events_path: Path):
+    """csv.DictReader for events CSV, tolerating a leading blank line.
+    The events file ships with a leading \\n that breaks naive DictReader
+    (fieldnames become []). Returns the file handle and reader, both of
+    which the caller must close/exhaust."""
+    f = open(events_path)
+    # Skip blank lines so DictReader picks up the real header.
+    pos = f.tell()
+    while True:
+        line = f.readline()
+        if not line:
+            break
+        if line.strip():
+            f.seek(pos)
+            break
+        pos = f.tell()
+    return f, csv.DictReader(f)
+
+
 def load_events_for_date(events_path: Path, target_date: date) -> list[dict]:
     """Load red-folder events for a specific date."""
     if not events_path.exists():
         return []
     ds = target_date.isoformat()
     events = []
-    with open(events_path) as f:
-        reader = csv.DictReader(f)
+    f, reader = _open_events_dictreader(events_path)
+    try:
         for row in reader:
             if row.get('date', '').strip() == ds:
                 events.append(row)
+    finally:
+        f.close()
     return events
 
 
@@ -316,8 +337,8 @@ def is_fomc_week(events_path: Path, target_date: date) -> bool:
     if not events_path.exists():
         return False
     target_year, target_week, _ = target_date.isocalendar()
-    with open(events_path) as f:
-        reader = csv.DictReader(f)
+    f, reader = _open_events_dictreader(events_path)
+    try:
         for row in reader:
             if 'FOMC' in row.get('event_type', ''):
                 try:
@@ -327,6 +348,8 @@ def is_fomc_week(events_path: Path, target_date: date) -> bool:
                         return True
                 except ValueError:
                     pass
+    finally:
+        f.close()
     return False
 
 
@@ -710,6 +733,101 @@ def fmt_pct(v: float | None) -> str:
 
 
 # ======================================================================
+# Data freshness audit
+# ======================================================================
+
+def _last_date_in_csv(path: Path, date_col: str = 'date') -> date | None:
+    """Walk a CSV, return the largest YYYY-MM-DD value in `date_col` (or
+    a column whose name contains 'date'/'ts'). None if unreadable.
+    """
+    if not path.exists():
+        return None
+    try:
+        with path.open() as f:
+            reader = csv.reader(f)
+            # Skip blank lines until we find the header row.
+            header = None
+            for row in reader:
+                if row and any(c.strip() for c in row):
+                    header = row
+                    break
+            if not header:
+                return None
+            # Pick the date column.
+            if date_col in header:
+                idx = header.index(date_col)
+            else:
+                idx = next(
+                    (i for i, h in enumerate(header)
+                     if 'date' in h.lower() or h.lower().startswith('ts')),
+                    None,
+                )
+            if idx is None:
+                return None
+            latest: date | None = None
+            for row in reader:
+                if idx >= len(row):
+                    continue
+                cell = row[idx][:10]
+                try:
+                    d = date.fromisoformat(cell)
+                except ValueError:
+                    continue
+                if latest is None or d > latest:
+                    latest = d
+            return latest
+    except Exception:
+        return None
+
+
+def audit_data_freshness(config: dict, target_date: date) -> list[dict]:
+    """Return one dict per critical data source with last_date / days_stale /
+    impact. Caller prints a freshness banner.
+    """
+    sources = config.get('sources', {})
+    checks = [
+        ('events_csv',           'Calendar / red folder / FOMC week'),
+        ('trading_days_csv',     'Pre-open factors (gap, overnight, ATR, NR4/7)'),
+        ('liquidity_levels_csv', 'Liquidity-level draws'),
+        ('htf_fvgs_active_csv',  'HTF FVG draws'),
+    ]
+    out = []
+    for key, impact in checks:
+        rel = sources.get(key)
+        if not rel:
+            continue
+        path = REPO / rel
+        last = _last_date_in_csv(path)
+        if last is None:
+            out.append({'label': key, 'impact': impact,
+                        'last_date': None, 'days_stale': None,
+                        'is_stale': True, 'status': 'unreadable'})
+            continue
+        days_stale = (target_date - last).days
+        out.append({
+            'label': key, 'impact': impact,
+            'last_date': last, 'days_stale': days_stale,
+            'is_stale': days_stale > 1,  # weekend grace
+            'status': 'ok' if days_stale <= 1 else 'stale',
+        })
+    return out
+
+
+def print_freshness_banner(audit: list[dict]) -> None:
+    stale = [a for a in audit if a['is_stale']]
+    if not stale:
+        return
+    print('⚠ DATA FRESHNESS WARNING')
+    for a in stale:
+        last = a['last_date'].isoformat() if a['last_date'] else 'unreadable'
+        days = f'{a["days_stale"]}d back' if a['days_stale'] is not None else '?'
+        print(f'    {a["label"]:22s}  last={last:12s}  ({days}) — {a["impact"]}')
+    print('    → Section [1] calendar / FOMC / red-folder flags may be WRONG.')
+    print('    → Re-run the data pipeline or treat those flags as unknown.')
+    print()
+
+
+# ======================================================================
 # OR-width forecast (studies/or_width_predictor)
 # ======================================================================
 
@@ -1025,6 +1143,12 @@ def print_briefing(
     print('=' * W)
     print()
 
+    # Freshness audit — print at the top so the trader knows which sections
+    # are reading from stale CSVs.
+    audit = audit_data_freshness(config, target_date)
+    print_freshness_banner(audit)
+    audit_by_label = {a['label']: a for a in audit}
+
     # [0] OR-WIDTH FORECAST — sizing tier (drives every other read below)
     forecast = load_or_forecast(target_date, ctx=ctx)
     print_or_forecast(forecast, target_date)
@@ -1035,13 +1159,22 @@ def print_briefing(
     dow_note = dow_notes.get(dow, '')
     print(f'    Day of week: {dow} — "{dow_note}"')
 
-    if events:
-        event_names = [e.get('event', e.get('event_type', '?')) for e in events]
-        print(f'    Red folder events: {", ".join(event_names)}')
+    events_audit = audit_by_label.get('events_csv', {})
+    events_stale = events_audit.get('is_stale')
+    events_last = events_audit.get('last_date')
+    if events_stale and events_last and target_date > events_last:
+        print(f'    ⚠ Events file ends {events_last.isoformat()} '
+              f'({events_audit["days_stale"]}d back) — red folder / FOMC '
+              f'flags below are UNKNOWN, not confirmed False.')
+        print(f'    Red folder events: UNKNOWN (no calendar data)')
+        print(f'    FOMC week: UNKNOWN (no calendar data)')
     else:
-        print(f'    Red folder events: None')
-
-    print(f'    FOMC week: {"Yes" if today_factors.get("is_fomc_week") else "No"}')
+        if events:
+            event_names = [e.get('event', e.get('event_type', '?')) for e in events]
+            print(f'    Red folder events: {", ".join(event_names)}')
+        else:
+            print(f'    Red folder events: None')
+        print(f'    FOMC week: {"Yes" if today_factors.get("is_fomc_week") else "No"}')
     print()
 
     # [2] PRE-OPEN STATE
@@ -1119,21 +1252,45 @@ def print_briefing(
 
     # [4] FACTOR SNAPSHOT
     print(f'[4] FACTOR SNAPSHOT')
-    active_f = sorted([f for f, v in today_factors.items() if v])
-    inactive_f = sorted([f for f, v in today_factors.items() if not v])
+    # When the events file is stale, suppress the calendar-derived "absent"
+    # factors so we don't emit false negatives (no_red_folder, no_pre_rth_news,
+    # not_fomc_week) that propagate into [5] ARMED EDGES.
+    cal_unknown_factors = set()
+    if events_stale and events_last and target_date > events_last:
+        cal_unknown_factors = {
+            'no_red_folder', 'has_red_folder',
+            'no_pre_rth_news', 'has_pre_rth_news',
+            'not_fomc_week', 'is_fomc_week',
+        }
+    visible_factors = {f: v for f, v in today_factors.items()
+                       if f not in cal_unknown_factors}
+    active_f = sorted([f for f, v in visible_factors.items() if v])
+    inactive_f = sorted([f for f, v in visible_factors.items() if not v])
     print(f'    Active today: {", ".join(active_f) if active_f else "none"}')
     print(f'    Not active: {", ".join(inactive_f) if inactive_f else "none"}')
+    if cal_unknown_factors:
+        print(f'    UNKNOWN (stale calendar): {", ".join(sorted(cal_unknown_factors))}')
     print()
 
     # [5] ARMED EDGES
     factor_config = config.get('factors', {})
 
+    # If the calendar is stale, strip the calendar-derived factors from the
+    # match input so we don't falsely arm setups that require no_red_folder
+    # / no_pre_rth_news / not_fomc_week. Those combos will appear in WATCH
+    # (still need confirmation) rather than ARMED.
+    if cal_unknown_factors:
+        match_factors = {f: v for f, v in today_factors.items()
+                         if f not in cal_unknown_factors}
+    else:
+        match_factors = today_factors
+
     # Use the robust sample (n>=50) for armed/watch
     top_combos = combo_sections.get('top_wr_robust', [])
     avoid_combos = combo_sections.get('avoid', [])
 
-    matched_top = match_combos(top_combos, today_factors, factor_config)
-    matched_avoid = match_combos(avoid_combos, today_factors, factor_config)
+    matched_top = match_combos(top_combos, match_factors, factor_config)
+    matched_avoid = match_combos(avoid_combos, match_factors, factor_config)
 
     armed = [m for m in matched_top if m.status == 'armed']
     watch = [m for m in matched_top if m.status == 'watch']
