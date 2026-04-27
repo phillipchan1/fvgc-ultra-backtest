@@ -396,3 +396,52 @@ def _tf_label(minutes: int) -> str:
     if minutes % 60 == 0:
         return f'{minutes // 60}H'
     return f'{minutes}m'
+
+
+# ======================================================================
+# Daily RTH H/L from intraday bars
+# ======================================================================
+
+def fetch_rth_daily_ranges(symbol: str = 'NQ=F',
+                           range_: str = '60d',
+                           interval: str = '5m') -> list[dict]:
+    """Return one record per RTH day with high/low/range/close.
+
+    Aggregates 5-minute Yahoo bars filtered to 9:30–16:00 ET. Skips today's
+    incomplete session. Used by the OR predictor to live-compute ATR_N,
+    NR4/7, pdr_pctile_20d when trading_days.csv is stale.
+    """
+    bars = fetch_yahoo_1m(symbol=symbol, range_=range_, interval=interval)
+    by_date: dict[date, dict] = {}
+    for b in bars:
+        ts = b['ts_ny']
+        t = ts.time()
+        if t < RTH_START or t >= RTH_END:
+            continue
+        d = ts.date()
+        rec = by_date.get(d)
+        if rec is None:
+            by_date[d] = {
+                'date': d,
+                'high': b['high'],
+                'low': b['low'],
+                'close': b['close'],
+                'last_ts': ts,
+            }
+        else:
+            rec['high'] = max(rec['high'], b['high'])
+            rec['low'] = min(rec['low'], b['low'])
+            if ts > rec['last_ts']:
+                rec['close'] = b['close']
+                rec['last_ts'] = ts
+    out = []
+    for d in sorted(by_date):
+        r = by_date[d]
+        out.append({
+            'date': d,
+            'high': r['high'],
+            'low': r['low'],
+            'close': r['close'],
+            'range': r['high'] - r['low'],
+        })
+    return out

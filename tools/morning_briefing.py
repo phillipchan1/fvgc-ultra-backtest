@@ -816,34 +816,15 @@ def audit_data_freshness(config: dict, target_date: date) -> list[dict]:
     """Return one dict per critical data source with last_date / days_stale /
     impact. Caller prints a freshness banner.
     """
-    sources = config.get('sources', {})
-    # events_csv is no longer audited — calendar comes live from Forex Factory
-    # (tools/live_calendar.py). The CSV is only a last-ditch fallback.
-    checks = [
-        ('trading_days_csv',     'Pre-open factors (gap, overnight, ATR, NR4/7)'),
-        ('liquidity_levels_csv', 'Liquidity-level draws'),
-        ('htf_fvgs_active_csv',  'HTF FVG draws'),
-    ]
-    out = []
-    for key, impact in checks:
-        rel = sources.get(key)
-        if not rel:
-            continue
-        path = REPO / rel
-        last = _last_date_in_csv(path)
-        if last is None:
-            out.append({'label': key, 'impact': impact,
-                        'last_date': None, 'days_stale': None,
-                        'is_stale': True, 'status': 'unreadable'})
-            continue
-        days_stale = (target_date - last).days
-        out.append({
-            'label': key, 'impact': impact,
-            'last_date': last, 'days_stale': days_stale,
-            'is_stale': days_stale > 1,  # weekend grace
-            'status': 'ok' if days_stale <= 1 else 'stale',
-        })
-    return out
+    # All data the briefing actually uses is now live:
+    #   - calendar / FOMC / red folder → live_calendar.py (Forex Factory)
+    #   - session levels (Asia/London/Overnight/PrevDay) → live_market.py
+    #   - HTF FVGs → find_unfilled_fvgs on live 1m bars
+    #   - VIX features + ATR_N + NR4/7 + pdr_pctile → live overrides
+    # trading_days.csv is now used only for *calibration percentiles*
+    # (overnight_range p20/p80, vixy p25/p50). Those are stable across
+    # months — staleness is harmless. Skip the audit entirely.
+    return []
 
 
 def print_freshness_banner(audit: list[dict]) -> None:
@@ -863,6 +844,65 @@ def print_freshness_banner(audit: list[dict]) -> None:
 # ======================================================================
 # OR-width forecast (studies/or_width_predictor)
 # ======================================================================
+
+def fetch_daily_features_live(target_date: date) -> dict | None:
+    """Compute live atr_5d/10d/20d, atr_ratio_5_20, nr4/nr7_flag,
+    pdr_pctile_20d from RTH daily ranges fetched off Yahoo.
+
+    These mirror the formulas in studies/or_width_predictor/features.py
+    (add_rolling_atr + add_compression_flags) but operate on the most
+    recent N RTH days *before* target_date — exactly what the cold-start
+    forecast at 9:29 ET sees.
+
+    Returns None on any failure — caller falls back to features.csv.
+    """
+    try:
+        from live_market import fetch_rth_daily_ranges
+    except ImportError:
+        return None
+    try:
+        days = fetch_rth_daily_ranges(symbol='NQ=F', range_='60d', interval='5m')
+    except Exception:
+        return None
+    # Use only days strictly before target_date.
+    prior = [d for d in days if d['date'] < target_date]
+    if len(prior) < 20:
+        return None
+
+    # prior_day_range series: today's "prior_day_range" feature value is
+    # yesterday's RTH range. So the feature value FOR target_date equals
+    # prior[-1]['range']. ATR_N at target_date = mean of last N pdr values
+    # (i.e., the last N daily ranges ending yesterday).
+    ranges = [d['range'] for d in prior]
+    today_pdr = ranges[-1]
+
+    def mean(xs): return sum(xs) / len(xs)
+
+    atr_5 = mean(ranges[-5:])
+    atr_10 = mean(ranges[-10:])
+    atr_20 = mean(ranges[-20:])
+    atr_ratio = atr_5 / atr_20 if atr_20 > 0 else 1.0
+
+    last4 = ranges[-4:]
+    last7 = ranges[-7:]
+    last20 = ranges[-20:]
+    nr4 = 1.0 if today_pdr == min(last4) else 0.0
+    nr7 = 1.0 if today_pdr == min(last7) else 0.0
+    # pct rank (pandas-style) within last 20
+    sorted_20 = sorted(last20)
+    rank = sum(1 for v in sorted_20 if v <= today_pdr)
+    pdr_pctile_20d = rank / len(sorted_20)
+
+    return {
+        'atr_5d': atr_5,
+        'atr_10d': atr_10,
+        'atr_20d': atr_20,
+        'atr_ratio_5_20': atr_ratio,
+        'nr4_flag': nr4,
+        'nr7_flag': nr7,
+        'pdr_pctile_20d': pdr_pctile_20d,
+    }
+
 
 def fetch_vix_features_live() -> dict | None:
     """Fetch VIXY daily closes from Yahoo and compute the 4 VIX features
@@ -961,6 +1001,7 @@ def load_or_forecast(target_date: date, ctx=None) -> dict | None:
                 if v is not None:
                     overrides[k] = float(v)
 
+
     # Today's pre-open observables from ctx — these are more accurate than
     # whatever features.csv has stamped on the stale row.
     if ctx is not None:
@@ -988,6 +1029,18 @@ def load_or_forecast(target_date: date, ctx=None) -> dict | None:
         pr_l = getattr(ctx, 'prior_rth_low', None)
         if pr_h is not None and pr_l is not None:
             overrides['prior_day_range'] = float(pr_h) - float(pr_l)
+
+    # Live daily-feature backfill if features.csv is stale — atr_Nd /
+    # atr_ratio / nr4-7 / pdr_pctile_20d. Runs *after* ctx so we can
+    # recompute gap_atr_ratio with the live atr_20d.
+    if feat_date < target_date:
+        daily_live = fetch_daily_features_live(target_date)
+        if daily_live:
+            for k, v in daily_live.items():
+                if v is not None:
+                    overrides[k] = float(v)
+            if 'atr_20d' in overrides and 'gap_abs' in overrides and overrides['atr_20d'] > 0:
+                overrides['gap_atr_ratio'] = overrides['gap_abs'] / overrides['atr_20d']
 
     # Build feature vector. If any required feature is missing/NaN, bail.
     x = []
@@ -1113,13 +1166,12 @@ def print_or_forecast(forecast: dict | None, target_date: date) -> None:
         print()
         return
 
-    if forecast['is_stale']:
-        days_back = (target_date - forecast['feature_date']).days
-        print(f'    ⚠ features.csv stamped {forecast["feature_date"]} '
-              f'({days_back}d back) — re-run studies/or_width_predictor/run.py '
-              f'for slow-moving features (ATR, NR4/7)')
     if forecast.get('overrides'):
         print(f'    Live overrides: {", ".join(forecast["overrides"])}')
+    if forecast['is_stale']:
+        days_back = (target_date - forecast['feature_date']).days
+        print(f'    (model trained on data through {forecast["feature_date"]}, '
+              f'{days_back}d back — coefficients fixed; run.py to retrain)')
 
     pt, lo, hi = forecast['point'], forecast['lo80'], forecast['hi80']
     print(f'    Predicted 45-min OR:  {pt:.0f} pts  '
