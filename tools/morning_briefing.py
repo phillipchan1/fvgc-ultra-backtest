@@ -354,8 +354,13 @@ def is_fomc_week(events_path: Path, target_date: date) -> bool:
 
 
 def determine_factors_from_context(ctx, config: dict, csv_path: Path,
-                                   events_path: Path, target_date: date) -> dict[str, bool]:
-    """Determine which factors are TRUE today from a SessionContext."""
+                                   events_path: Path, target_date: date,
+                                   live_events=None) -> dict[str, bool]:
+    """Determine which factors are TRUE today from a SessionContext.
+
+    `live_events` is the list of CalendarEvent from live_calendar.fetch_for_target,
+    or None to fall back to the (often stale) events CSV.
+    """
     factors: dict[str, bool] = {}
 
     # Gap
@@ -388,15 +393,27 @@ def determine_factors_from_context(ctx, config: dict, csv_path: Path,
         factors['prior_day_down'] = False
         factors['prior_day_up'] = False
 
-    # Calendar / news
-    events = load_events_for_date(events_path, target_date)
-    factors['has_red_folder'] = len(events) > 0
-    factors['no_red_folder'] = len(events) == 0
-    pre_rth = [e for e in events if e.get('event_type', '') in ('NFP', 'CPI', 'PPI', 'Retail Sales')]
-    factors['has_pre_rth_news'] = len(pre_rth) > 0
-    factors['no_pre_rth_news'] = len(pre_rth) == 0
-
-    fomc = is_fomc_week(events_path, target_date)
+    # Calendar / news — prefer live calendar over the (often stale) CSV
+    if live_events is not None:
+        from live_calendar import (
+            filter_us_high as _lc_us_high,
+            is_fomc_week as _lc_is_fomc,
+            is_pre_rth_news as _lc_pre_rth,
+        )
+        red = _lc_us_high(live_events, target_date)
+        factors['has_red_folder'] = len(red) > 0
+        factors['no_red_folder'] = len(red) == 0
+        factors['has_pre_rth_news'] = _lc_pre_rth(live_events, target_date)
+        factors['no_pre_rth_news'] = not factors['has_pre_rth_news']
+        fomc = _lc_is_fomc(live_events, target_date)
+    else:
+        events = load_events_for_date(events_path, target_date)
+        factors['has_red_folder'] = len(events) > 0
+        factors['no_red_folder'] = len(events) == 0
+        pre_rth = [e for e in events if e.get('event_type', '') in ('NFP', 'CPI', 'PPI', 'Retail Sales')]
+        factors['has_pre_rth_news'] = len(pre_rth) > 0
+        factors['no_pre_rth_news'] = len(pre_rth) == 0
+        fomc = is_fomc_week(events_path, target_date)
     factors['is_fomc_week'] = fomc
     factors['not_fomc_week'] = not fomc
 
@@ -439,7 +456,8 @@ def determine_factors_from_context(ctx, config: dict, csv_path: Path,
 
 
 def determine_factors_from_csv(csv_path: Path, events_path: Path,
-                               target_date: date) -> dict[str, bool] | None:
+                               target_date: date,
+                               live_events=None) -> dict[str, bool] | None:
     """Determine factors purely from trading_days.csv (offline / historical)."""
     row = load_trading_day_row(csv_path, target_date)
     if row is None:
@@ -471,13 +489,27 @@ def determine_factors_from_csv(csv_path: Path, events_path: Path,
     factors['prior_day_down'] = pcp is not None and pcp < 0.25
     factors['prior_day_up'] = pcp is not None and pcp > 0.75
 
-    # News / calendar from CSV columns
-    factors['has_red_folder'] = row.get('has_red_folder_news', '').lower() == 'true'
-    factors['no_red_folder'] = not factors['has_red_folder']
-    factors['has_pre_rth_news'] = row.get('has_pre_rth_news', '').lower() == 'true'
-    factors['no_pre_rth_news'] = not factors['has_pre_rth_news']
-    factors['is_fomc_week'] = row.get('is_fomc_week', '').lower() == 'true'
-    factors['not_fomc_week'] = not factors['is_fomc_week']
+    # News / calendar — prefer live, fall back to CSV columns
+    if live_events is not None:
+        from live_calendar import (
+            filter_us_high as _lc_us_high,
+            is_fomc_week as _lc_is_fomc,
+            is_pre_rth_news as _lc_pre_rth,
+        )
+        red = _lc_us_high(live_events, target_date)
+        factors['has_red_folder'] = len(red) > 0
+        factors['no_red_folder'] = len(red) == 0
+        factors['has_pre_rth_news'] = _lc_pre_rth(live_events, target_date)
+        factors['no_pre_rth_news'] = not factors['has_pre_rth_news']
+        factors['is_fomc_week'] = _lc_is_fomc(live_events, target_date)
+        factors['not_fomc_week'] = not factors['is_fomc_week']
+    else:
+        factors['has_red_folder'] = row.get('has_red_folder_news', '').lower() == 'true'
+        factors['no_red_folder'] = not factors['has_red_folder']
+        factors['has_pre_rth_news'] = row.get('has_pre_rth_news', '').lower() == 'true'
+        factors['no_pre_rth_news'] = not factors['has_pre_rth_news']
+        factors['is_fomc_week'] = row.get('is_fomc_week', '').lower() == 'true'
+        factors['not_fomc_week'] = not factors['is_fomc_week']
 
     # Day of week (parse from timestamp or day_of_week column if available)
     dow_str = row.get('day_of_week_name', '') or row.get('day_of_week', '')
@@ -785,8 +817,9 @@ def audit_data_freshness(config: dict, target_date: date) -> list[dict]:
     impact. Caller prints a freshness banner.
     """
     sources = config.get('sources', {})
+    # events_csv is no longer audited — calendar comes live from Forex Factory
+    # (tools/live_calendar.py). The CSV is only a last-ditch fallback.
     checks = [
-        ('events_csv',           'Calendar / red folder / FOMC week'),
         ('trading_days_csv',     'Pre-open factors (gap, overnight, ATR, NR4/7)'),
         ('liquidity_levels_csv', 'Liquidity-level draws'),
         ('htf_fvgs_active_csv',  'HTF FVG draws'),
@@ -822,8 +855,8 @@ def print_freshness_banner(audit: list[dict]) -> None:
         last = a['last_date'].isoformat() if a['last_date'] else 'unreadable'
         days = f'{a["days_stale"]}d back' if a['days_stale'] is not None else '?'
         print(f'    {a["label"]:22s}  last={last:12s}  ({days}) — {a["impact"]}')
-    print('    → Section [1] calendar / FOMC / red-folder flags may be WRONG.')
-    print('    → Re-run the data pipeline or treat those flags as unknown.')
+    print('    → Pre-open factors may use stale ATR/NR4-7/VIX; calendar is live.')
+    print('    → Re-run studies/or_width_predictor/run.py to refresh slow features.')
     print()
 
 
@@ -1126,6 +1159,7 @@ def print_briefing(
     levels: list[LiquidityLevel],
     gap_pts: float | None,
     events: list[dict],
+    cal_unknown: bool = False,
 ):
     W = 70
     dow = target_date.strftime('%A')
@@ -1159,13 +1193,9 @@ def print_briefing(
     dow_note = dow_notes.get(dow, '')
     print(f'    Day of week: {dow} — "{dow_note}"')
 
-    events_audit = audit_by_label.get('events_csv', {})
-    events_stale = events_audit.get('is_stale')
-    events_last = events_audit.get('last_date')
-    if events_stale and events_last and target_date > events_last:
-        print(f'    ⚠ Events file ends {events_last.isoformat()} '
-              f'({events_audit["days_stale"]}d back) — red folder / FOMC '
-              f'flags below are UNKNOWN, not confirmed False.')
+    if cal_unknown:
+        print(f'    ⚠ Live calendar fetch failed and CSV is stale — '
+              f'red folder / FOMC flags below are UNKNOWN, not confirmed False.')
         print(f'    Red folder events: UNKNOWN (no calendar data)')
         print(f'    FOMC week: UNKNOWN (no calendar data)')
     else:
@@ -1256,7 +1286,7 @@ def print_briefing(
     # factors so we don't emit false negatives (no_red_folder, no_pre_rth_news,
     # not_fomc_week) that propagate into [5] ARMED EDGES.
     cal_unknown_factors = set()
-    if events_stale and events_last and target_date > events_last:
+    if cal_unknown:
         cal_unknown_factors = {
             'no_red_folder', 'has_red_folder',
             'no_pre_rth_news', 'has_pre_rth_news',
@@ -1556,18 +1586,38 @@ def main():
         else:
             ctx.notes.append('no CSV data available for this date')
 
+    # Live calendar (Forex Factory) — replaces the static events CSV.
+    live_events = None
+    cal_unknown = False
+    if not args.offline:
+        try:
+            from live_calendar import fetch_for_target, CalendarError
+            live_events = fetch_for_target(target_date)
+            print(f'[live] Calendar: {len(live_events)} events from Forex Factory')
+        except Exception as e:
+            print(f'[live] Calendar fetch failed: {e}')
+            print(f'[live] Falling back to events CSV (may be stale)')
+            live_events = None
+    if live_events is None:
+        # CSV fallback — flag UNKNOWN when CSV is itself stale.
+        last = _last_date_in_csv(events_path)
+        if last is None or (target_date - last).days > 1:
+            cal_unknown = True
+
     # Determine today's factors
     if not args.offline and not is_historical and hasattr(ctx, 'symbol'):
         today_factors = determine_factors_from_context(
-            ctx, config, csv_path, events_path, target_date)
+            ctx, config, csv_path, events_path, target_date,
+            live_events=live_events)
     else:
-        csv_factors = determine_factors_from_csv(csv_path, events_path, target_date)
+        csv_factors = determine_factors_from_csv(
+            csv_path, events_path, target_date, live_events=live_events)
         if csv_factors:
             today_factors = csv_factors
         else:
-            # Derive what we can from the context
             today_factors = determine_factors_from_context(
-                ctx, config, csv_path, events_path, target_date)
+                ctx, config, csv_path, events_path, target_date,
+                live_events=live_events)
 
     if gap_pts is None:
         gap_pts = ctx.gap_pts
@@ -1582,8 +1632,15 @@ def main():
         }, indent=2, default=str))
         return
 
-    # Events for display
-    events = load_events_for_date(events_path, target_date)
+    # Events for display — prefer live calendar.
+    if live_events is not None:
+        from live_calendar import filter_us_high
+        # Show all USD high-impact + Medium events for context
+        events = [e.to_briefing_row() for e in live_events
+                  if e.date == target_date and e.country == 'USD'
+                  and e.impact in ('High', 'Medium')]
+    else:
+        events = load_events_for_date(events_path, target_date)
 
     # Build levels
     levels = build_levels(ctx, config, fvgs)
@@ -1602,6 +1659,7 @@ def main():
         levels=levels,
         gap_pts=gap_pts,
         events=events,
+        cal_unknown=cal_unknown,
     )
 
 

@@ -27,7 +27,7 @@
     "enabled": true,
     "source": "yahoo",
     "symbol": "NQ=F",
-    "range": "2d",
+    "range": "7d",
     "interval": "1m",
     "note": "Uses the public Yahoo Finance v8/chart endpoint — no auth, no dependency outside stdlib. NQ=F returns continuous front-month NQ with 1-minute bars including pre/post market. Works for the overnight → pre-open window we need."
   },
