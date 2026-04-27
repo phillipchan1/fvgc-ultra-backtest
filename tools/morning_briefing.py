@@ -713,13 +713,58 @@ def fmt_pct(v: float | None) -> str:
 # OR-width forecast (studies/or_width_predictor)
 # ======================================================================
 
-def load_or_forecast(target_date: date) -> dict | None:
+def fetch_vix_features_live() -> dict | None:
+    """Fetch VIXY daily closes from Yahoo and compute the 4 VIX features
+    used by the cold-start OR model. Returns None on any failure — caller
+    should fall back to features.csv.
+
+    trading_days.csv has been gappy on VIXY since Dec 2025; this lets the
+    pre-bell forecast still resolve.
+    """
+    try:
+        from live_market import fetch_yahoo_1m
+    except ImportError:
+        return None
+    try:
+        # 3 months daily covers the 20d z-score lookback comfortably.
+        bars = fetch_yahoo_1m(symbol='VIXY', range_='3mo', interval='1d')
+    except Exception:
+        return None
+    closes = [b['close'] for b in bars if b.get('close') is not None]
+    if len(closes) < 21:
+        return None
+    import statistics
+    prior_close = closes[-1]
+    chg_1d = closes[-1] - closes[-2]
+    chg_5d = closes[-1] - closes[-6] if len(closes) >= 6 else None
+    window = closes[-21:-1]  # 20d, excluding current
+    mu = statistics.fmean(window)
+    sigma = statistics.pstdev(window) or 1.0
+    z = (closes[-1] - mu) / sigma
+    return {
+        'vixy_prior_close': prior_close,
+        'vix_1d_chg': chg_1d,
+        'vix_5d_chg': chg_5d,
+        'vix_zscore_20d': z,
+    }
+
+
+def load_or_forecast(target_date: date, ctx=None) -> dict | None:
     """Load the cold-start OR-width forecast for target_date.
 
-    Reads model_cold_start.json + features.csv. Returns dict with point /
-    lo80 / hi80 / quintile / drivers / feature_date (date the features
-    are stamped with — may be < target_date if predictor hasn't been
-    re-run yet today). None if model files are missing.
+    Reads model_cold_start.json + features.csv. Live-backfills VIX
+    features (vixy_prior_close, vix_1d_chg, vix_5d_chg, vix_zscore_20d)
+    from Yahoo when the most recent features.csv row is missing them —
+    trading_days.csv has had VIXY gaps since late 2025.
+
+    If `ctx` is supplied with live observables, overrides the ctx-derivable
+    features (overnight_range, gap_abs, gap_atr_ratio, prior_day_range,
+    prior_day_close_position) so today's forecast reflects today's
+    overnight session, not the most recent stale row.
+
+    Returns dict with point / lo80 / hi80 / quintile / drivers /
+    feature_date / overrides (list of feature names that were
+    live-backfilled). None if model files are missing.
     """
     pred_dir = REPO / 'studies' / 'or_width_predictor' / 'results'
     model_path = pred_dir / 'model_cold_start.json'
@@ -753,21 +798,69 @@ def load_or_forecast(target_date: date) -> dict | None:
     rows.sort(key=lambda x: x[0])
     feat_date, row = rows[-1]
 
+    # Build live-override map. Anything in here wins over features.csv.
+    overrides: dict[str, float] = {}
+
+    # Live VIX backfill if any VIX feature is missing on the chosen row.
+    vix_keys = ('vixy_prior_close', 'vix_1d_chg', 'vix_5d_chg', 'vix_zscore_20d')
+    if any(row.get(k, '') in ('', None) for k in vix_keys):
+        vix_live = fetch_vix_features_live()
+        if vix_live:
+            for k, v in vix_live.items():
+                if v is not None:
+                    overrides[k] = float(v)
+
+    # Today's pre-open observables from ctx — these are more accurate than
+    # whatever features.csv has stamped on the stale row.
+    if ctx is not None:
+        on_range = getattr(ctx, 'overnight_range', None)
+        if on_range is not None:
+            overrides['overnight_range'] = float(on_range)
+        gap = getattr(ctx, 'gap_pts', None)
+        if gap is not None:
+            gap_abs_live = abs(float(gap))
+            overrides['gap_abs'] = gap_abs_live
+            # gap_atr_ratio = gap_abs / atr_20d — recompute with live gap
+            atr_20d_csv = row.get('atr_20d', '')
+            try:
+                atr20 = float(atr_20d_csv)
+                if atr20 > 0:
+                    overrides['gap_atr_ratio'] = gap_abs_live / atr20
+            except (ValueError, TypeError):
+                pass
+        # prior_day_close_position (0–1): rank of close inside prior RTH range
+        pdcp = getattr(ctx, 'prior_day_close_position', None)
+        if pdcp is not None:
+            overrides['prior_day_close_position'] = float(pdcp)
+        # prior_day_range from ctx prior RTH H/L if available
+        pr_h = getattr(ctx, 'prior_rth_high', None)
+        pr_l = getattr(ctx, 'prior_rth_low', None)
+        if pr_h is not None and pr_l is not None:
+            overrides['prior_day_range'] = float(pr_h) - float(pr_l)
+
     # Build feature vector. If any required feature is missing/NaN, bail.
     x = []
+    used_overrides = []
     for f in feats:
+        if f in overrides:
+            x.append(overrides[f])
+            used_overrides.append(f)
+            continue
         v = row.get(f, '')
         if v == '' or v is None:
-            return {'error': f'missing feature: {f}', 'feature_date': feat_date}
+            return {'error': f'missing feature: {f}', 'feature_date': feat_date,
+                    'overrides': used_overrides}
         # Coerce booleans (NR4/NR7/FOMC/OPEX flags arrive as 'True'/'False').
         if isinstance(v, str) and v.strip().lower() in ('true', 'false'):
             v = 1.0 if v.strip().lower() == 'true' else 0.0
         try:
             v = float(v)
         except ValueError:
-            return {'error': f'non-numeric feature: {f}', 'feature_date': feat_date}
+            return {'error': f'non-numeric feature: {f}', 'feature_date': feat_date,
+                    'overrides': used_overrides}
         if math.isnan(v):
-            return {'error': f'NaN feature: {f}', 'feature_date': feat_date}
+            return {'error': f'NaN feature: {f}', 'feature_date': feat_date,
+                    'overrides': used_overrides}
         x.append(v)
 
     # Standardize, predict log, exponentiate.
@@ -852,6 +945,7 @@ def load_or_forecast(target_date: date) -> dict | None:
         'tier': tier,
         'drivers': drivers,
         'perf': perf.get('cold_start', {}),
+        'overrides': used_overrides,
     }
 
 
@@ -870,8 +964,11 @@ def print_or_forecast(forecast: dict | None, target_date: date) -> None:
 
     if forecast['is_stale']:
         days_back = (target_date - forecast['feature_date']).days
-        print(f'    ⚠ Features stamped {forecast["feature_date"]} '
-              f'({days_back}d back) — re-run studies/or_width_predictor/run.py')
+        print(f'    ⚠ features.csv stamped {forecast["feature_date"]} '
+              f'({days_back}d back) — re-run studies/or_width_predictor/run.py '
+              f'for slow-moving features (ATR, NR4/7)')
+    if forecast.get('overrides'):
+        print(f'    Live overrides: {", ".join(forecast["overrides"])}')
 
     pt, lo, hi = forecast['point'], forecast['lo80'], forecast['hi80']
     print(f'    Predicted 45-min OR:  {pt:.0f} pts  '
@@ -929,7 +1026,7 @@ def print_briefing(
     print()
 
     # [0] OR-WIDTH FORECAST — sizing tier (drives every other read below)
-    forecast = load_or_forecast(target_date)
+    forecast = load_or_forecast(target_date, ctx=ctx)
     print_or_forecast(forecast, target_date)
 
     # [1] CALENDAR
