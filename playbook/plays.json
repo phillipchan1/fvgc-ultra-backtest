@@ -7,32 +7,74 @@
     "direction": "short",
     "macro": "9:30-9:45",
     "sample_size": 229,
-    "wr_base": "60.7%",
-    "pf_1r": 1.54,
-    "pf_2r": 2.67,
-    "pf_3r": 3.10,
-    "avg_mfe_r": 6.5,
-    "pre_market_factors": ["gap_down", "overnight_down", "prior_day_down"],
+    "wr_base": "59.8%",
+    "pf_1r": 1.49,
+    "avg_mfe_r": 5.0,
+    "pre_market_factors": ["gap_down", "overnight_down", "prior_day_down", "no_red_folder_news"],
     "bonus_factors": {
       "large_gap": {
         "condition": "gap_pts <= -100",
-        "desc": "Gap down 100+ pts counts as bonus confluence on top of gap_down",
-        "standalone_wr": "75.0%"
+        "desc": "Gap down 100+ pts counts as bonus confluence on top of gap_down"
       }
     },
     "intraday_triggers": ["bearish_930"],
     "confluence_model": {
       "enabled": true,
+      "factors": ["gap_down", "large_gap (bonus)", "overnight_down", "prior_day_weak", "bearish_930", "no_red_folder_news"],
       "tiers": [
-        {"min": 0, "max": 1, "action": "Skip", "wr": "54.1%", "pf_1r": 1.18, "target": null},
-        {"min": 2, "max": 2, "action": "Trade", "wr": "66.9%", "pf_1r": 2.03, "target": "1R"},
-        {"min": 3, "max": 3, "action": "Trade + Hold", "wr": "70.0%", "pf_1r": 2.33, "target": "2R (trail stop)"},
-        {"min": 4, "max": 5, "action": "Full Send", "wr": "83.3%", "pf_1r": 5.00, "target": "3R+ (trail aggressively)"}
+        {"min": 0, "max": 1, "n": 36, "wr": "52.8%", "pf_1r": 1.12, "pf_2r": 1.27, "action": "Skip", "target": null},
+        {"min": 2, "max": 2, "n": 88, "wr": "54.5%", "pf_1r": 1.20, "pf_2r": 1.09, "action": "Trade", "target": "1R"},
+        {"min": 3, "max": 3, "n": 40, "wr": "62.5%", "pf_1r": 1.67, "pf_2r": 1.33, "action": "Trade + Hold", "target": "2R, BE@1R"},
+        {"min": 4, "max": 6, "n": 65, "wr": "72.3%", "pf_1r": 2.61, "pf_2r": 3.20, "action": "Full Send", "target": "2R primary, trail for 3R+"}
       ],
-      "note": "Count: gap_down, large_gap (bonus), overnight_down, prior_day_down, bearish_930. More confluences = bigger target."
+      "note": "Count: gap_down, large_gap (bonus), overnight_down, prior_day_weak (bottom 1/3), bear_930, no_red_folder. Pure pre-market + 9:30 candle play \u2014 no intraday FVG analysis required. For an additional bonus signal, see the 'W1 Short \u2014 Post-Sweep Continuation' play which layers on top of this model."
     },
-    "description": "The master W1 short playbook. Count your pre-market confluences plus the 9:30 candle. Scale TP from 1R to 3R+ as confluences stack.",
-    "action_plan": "Night before: count pre-market confluences (gap down, large gap 100+, overnight down, prior day weak). At 9:30:30: did the candle close bearish? Final count \u2192 look up tier \u2192 size and TP accordingly."
+    "description": "The original W1 short playbook. Pure confluence count from pre-market + 9:30 candle. Scale TP from 1R to 3R+ as confluences stack. 4+ conf is the sweet spot: 72% WR, PF 3.2 at 2R target.",
+    "action_plan": "Night before: no_news? prior_day_weak? At 9:25: gap_down? large_gap 100+? overnight_down? At 9:30:30: bear_930? Count \u2192 look up tier \u2192 size and TP.",
+    "trade_lists": {
+      "all_trades": "studies/mfe_multi_r/results/w1_short_setups/01_all_w1_shorts.csv"
+    }
+  },
+  {
+    "name": "W1 Short \u2014 Post-Sweep Continuation",
+    "notion_url": "https://www.notion.so/351e2f0e77608114b4fef8eb95750312",
+    "status": "verified",
+    "confidence": "high",
+    "direction": "short",
+    "macro": "9:30-9:45",
+    "sample_size": 53,
+    "wr_base": "94.3%",
+    "pf_1r": 16.67,
+    "pf_2r": 15.67,
+    "pf_3r": 9.23,
+    "pf_5r": 8.95,
+    "avg_mfe_r": 9.11,
+    "median_mfe_r": 8.36,
+    "ev_by_target": {"1R": "+0.89R", "2R": "+1.66R", "3R": "+2.02R", "5R": "+2.85R"},
+    "frequency_per_month": 1.8,
+    "setup": {
+      "trigger": "FVGC short in 9:30-9:45 RTH",
+      "gate": "htf_fvg_15m_swept == 'in_session' \u2014 the nearest unswept bullish 15m FVG below entry has ALREADY been touched by price between 9:30 and your entry timestamp",
+      "narrative": "The 15m FVG below acts as a magnet/reaction zone. When price taps it before your entry, the reactive zone is consumed. Your entry then has clean path down with no near-term bounce point. Sequence: 9:30 RTH opens \u2192 price dips into 15m FVG below (the liquidity grab) \u2192 price retraces up \u2192 FVGC short fires on the bounce \u2192 you enter \u2192 price runs freely (median MFE 8.4R)."
+    },
+    "exit_strategy": {
+      "primary": "BE@1R then hold for 3R+ (EV +2.02R/trade)",
+      "aggressive_runner": "BE@1R, scale out 1/3 at 3R, trail rest for 5R+ (EV +2.85R/trade with high variance)",
+      "do_not": "Do NOT cap at 1R. 89% of these trades hit 2R, 76% hit 3R, 64% hit 5R. The old playbook capped at 1R and left ~+1.0R/trade on the table."
+    },
+    "size_multiplier": {
+      "rule": "Combine with W1 confluence count. At 4+ conf AND in_session sweep: 24/24 winners in sample \u2014 max position size."
+    },
+    "description": "When the 15m FVG below your W1 short entry has already been swept by price between 9:30 and entry, you have an A++ setup. 94% WR, median MFE 8.4R, PF 16+ at 1R. ~1.8 trades/month. The highest-EV cell in the entire playbook for shorts.",
+    "action_plan": "1) Confirm W1 short trigger (FVGC short 9:30-9:45). 2) Pull up 15m chart, identify nearest unswept bullish 15m FVG below current price. 3) Has price touched it between 9:30 and now? If YES \u2192 take with full size + extended target. If NO \u2192 fall back to standard W1 confluence model. 4) BE@1R then ride for 3R+, aggressive trail for 5R+.",
+    "caveats": [
+      "Sample n=53 is robust but smaller than parent W1 play. Forward-track for OOS validation.",
+      "Confluence count and sweep state are correlated (more bearish setup = price moves faster = more likely to sweep before entry). 37% of 4+ conf trades have in_session sweep vs 8% at 0-1 conf.",
+      "Sweep label uses 30s bars from 9:30 \u2192 entry timestamp inclusive only \u2014 no look-ahead bias confirmed in data/levels/enrich_trades_with_levels.py."
+    ],
+    "trade_lists": {
+      "regime_tagged": "studies/mfe_multi_r/results/w1_short_setups/w1_shorts_by_regime.csv (filter regime == 'A (already swept)')"
+    }
   },
   {
     "name": "FVGC Off of 930 Candle",
