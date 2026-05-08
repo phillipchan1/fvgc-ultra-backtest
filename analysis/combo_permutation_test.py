@@ -96,6 +96,14 @@ def build_factor_masks(df: pd.DataFrame) -> dict[str, np.ndarray]:
     masks['large_930_candle'] = (df['candle_930_range'] >= c930_q80).values
     masks['small_930_candle'] = (df['candle_930_range'] <= c930_q20).values
 
+    # Prior day character (added by Day-After-Trend-Day study)
+    if 'prior_day_type' in df.columns:
+        masks['prior_trend_up'] = (df['prior_day_type'] == 'trend_up').values
+        masks['prior_trend_down'] = (df['prior_day_type'] == 'trend_down').values
+        masks['prior_range'] = (df['prior_day_type'] == 'range').values
+        masks['prior_reversal_up'] = (df['prior_day_type'] == 'reversal_up').values
+        masks['prior_reversal_down'] = (df['prior_day_type'] == 'reversal_down').values
+
     return masks
 
 
@@ -113,6 +121,8 @@ EXCLUSION_GROUPS = [
     {'no_red_folder', 'has_red_folder'},
     {'not_fomc_week', 'is_fomc_week'},
     {'macro_w1', 'macro_w2', 'macro_w3'},
+    {'prior_trend_up', 'prior_trend_down', 'prior_range',
+     'prior_reversal_up', 'prior_reversal_down'},
 ]
 
 
