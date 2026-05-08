@@ -1,0 +1,143 @@
+{
+  "top_by_pf_wr": [
+    {
+      "condition": "level_swept_before_entry=True AND direction=long AND magnet_valid=True",
+      "k": 3,
+      "test_n": 124,
+      "test_wr": 57.2581,
+      "test_pf": 1.3344155844155845,
+      "early_pf": 1.196629213483146,
+      "late_pf": 1.523076923076923,
+      "train_n": 271,
+      "train_wr": 50.5535,
+      "train_pf": 1.0511756569847857,
+      "composite": 4.403337888846868
+    },
+    {
+      "condition": "level_swept_before_entry=True AND direction=long AND magnet_within_3R=True",
+      "k": 3,
+      "test_n": 124,
+      "test_wr": 57.2581,
+      "test_pf": 1.3344155844155845,
+      "early_pf": 1.196629213483146,
+      "late_pf": 1.523076923076923,
+      "train_n": 271,
+      "train_wr": 50.5535,
+      "train_pf": 1.0511756569847857,
+      "composite": 4.403337888846868
+    },
+    {
+      "condition": "direction=long AND magnet_valid=True AND magnet_within_3R=True",
+      "k": 3,
+      "test_n": 124,
+      "test_wr": 57.2581,
+      "test_pf": 1.3344155844155845,
+      "early_pf": 1.196629213483146,
+      "late_pf": 1.523076923076923,
+      "train_n": 271,
+      "train_wr": 50.5535,
+      "train_pf": 1.0511756569847857,
+      "composite": 4.403337888846868
+    },
+    {
+      "condition": "path_clear=True AND level_swept_before_entry=True AND variant=bos",
+      "k": 3,
+      "test_n": 76,
+      "test_wr": 57.8947,
+      "test_pf": 1.3967391304347827,
+      "early_pf": 1.5977011494252873,
+      "late_pf": 1.2164948453608246,
+      "train_n": 234,
+      "train_wr": 49.5726,
+      "train_pf": 1.0285261489698891,
+      "composite": 4.3981246428413465
+    },
+    {
+      "condition": "level_swept_before_entry=True AND direction=long AND variant=no_fvg",
+      "k": 3,
+      "test_n": 99,
+      "test_wr": 55.5556,
+      "test_pf": 1.3106382978723403,
+      "early_pf": 1.53125,
+      "late_pf": 1.0467289719626167,
+      "train_n": 232,
+      "train_wr": 54.3103,
+      "train_pf": 1.1942857142857144,
+      "composite": 3.9073723920049437
+    },
+    {
+      "condition": "level_swept_before_entry=True AND direction=short AND magnet_valid=True",
+      "k": 3,
+      "test_n": 106,
+      "test_wr": 53.7736,
+      "test_pf": 1.2802768166089966,
+      "early_pf": 1.4866666666666666,
+      "late_pf": 1.0575539568345325,
+      "train_n": 305,
+      "train_wr": 52.1311,
+      "train_pf": 1.1684460260972716,
+      "composite": 3.6380659746110027
+    },
+    {
+      "condition": "level_swept_before_entry=True AND direction=short AND magnet_within_3R=True",
+      "k": 3,
+      "test_n": 106,
+      "test_wr": 53.7736,
+      "test_pf": 1.2802768166089966,
+      "early_pf": 1.4866666666666666,
+      "late_pf": 1.0575539568345325,
+      "train_n": 305,
+      "train_wr": 52.1311,
+      "train_pf": 1.1684460260972716,
+      "composite": 3.6380659746110027
+    },
+    {
+      "condition": "direction=short AND magnet_valid=True AND magnet_within_3R=True",
+      "k": 3,
+      "test_n": 106,
+      "test_wr": 53.7736,
+      "test_pf": 1.2802768166089966,
+      "early_pf": 1.4866666666666666,
+      "late_pf": 1.0575539568345325,
+      "train_n": 305,
+      "train_wr": 52.1311,
+      "train_pf": 1.1684460260972716,
+      "composite": 3.6380659746110027
+    },
+    {
+      "condition": "level_swept_before_entry=True AND magnet_valid=True AND variant=no_fvg",
+      "k": 3,
+      "test_n": 101,
+      "test_wr": 52.4752,
+      "test_pf": 1.2037037037037037,
+      "early_pf": 1.4485294117647058,
+      "late_pf": 0.9552238805970149,
+      "train_n": 267,
+      "train_wr": 52.4345,
+      "train_pf": 1.070054945054945,
+      "composite": 3.090959401561559
+    },
+    {
+      "condition": "level_swept_before_entry=True AND magnet_within_3R=True AND variant=no_fvg",
+      "k": 3,
+      "test_n": 101,
+      "test_wr": 52.4752,
+      "test_pf": 1.2037037037037037,
+      "early_pf": 1.4485294117647058,
+      "late_pf": 0.9552238805970149,
+      "train_n": 267,
+      "train_wr": 52.4345,
+      "train_pf": 1.070054945054945,
+      "composite": 3.090959401561559
+    }
+  ],
+  "constraints": {
+    "MIN_PF_TEST_SINGLE": 1.05,
+    "MIN_N_TEST_SINGLE": 12,
+    "MIN_PF_COMBO": 1.1,
+    "PF_COLLAPSE_MIN": 0.8,
+    "MIN_N_TRAIN_COMBO": 220,
+    "MIN_N_TEST_COMBO": 20,
+    "MAX_EVALS": 90000
+  }
+}

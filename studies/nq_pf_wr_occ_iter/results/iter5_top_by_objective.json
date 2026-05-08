@@ -1,0 +1,311 @@
+{
+  "split": {
+    "train": "first 70% dates",
+    "test": "last 30% dates",
+    "late_test": "last 50% of test dates"
+  },
+  "constraints": {
+    "MIN_N_TRAIN": 140,
+    "MIN_N_TEST": 18,
+    "MIN_N_TRAIN_COMBO": 180,
+    "MIN_N_TEST_COMBO": 20,
+    "MAX_EVALS": 120000,
+    "late_pf_threshold": 0.85,
+    "eligible_pool_cap": 45
+  },
+  "picked_by_objective": {
+    "high_pf": [
+      {
+        "condition": "path_clear=True AND level_swept_before_entry=True AND variant=bos",
+        "k": 3,
+        "test_n": 76,
+        "test_wr": 57.8947,
+        "test_pf": 1.3967391304347827,
+        "late_n": 36,
+        "late_wr": 55.5556,
+        "late_pf": 1.2164948453608246,
+        "test_total_pnl": 365.0,
+        "composite": 3.5125658218176232
+      },
+      {
+        "condition": "level_swept_before_entry=True AND direction=long AND magnet_within_2R=True",
+        "k": 3,
+        "test_n": 86,
+        "test_wr": 59.3023,
+        "test_pf": 1.3733333333333333,
+        "late_n": 41,
+        "late_wr": 58.5366,
+        "late_pf": 1.3185840707964602,
+        "test_total_pnl": 420.0,
+        "composite": 3.6371170895418192
+      },
+      {
+        "condition": "direction=long AND magnet_valid=True AND magnet_within_2R=True",
+        "k": 3,
+        "test_n": 86,
+        "test_wr": 59.3023,
+        "test_pf": 1.3733333333333333,
+        "late_n": 41,
+        "late_wr": 58.5366,
+        "late_pf": 1.3185840707964602,
+        "test_total_pnl": 420.0,
+        "composite": 3.6371170895418192
+      },
+      {
+        "condition": "level_swept_before_entry=True AND direction=long AND magnet_valid=True AND magnet_within_2R=True",
+        "k": 4,
+        "test_n": 86,
+        "test_wr": 59.3023,
+        "test_pf": 1.3733333333333333,
+        "late_n": 41,
+        "late_wr": 58.5366,
+        "late_pf": 1.3185840707964602,
+        "test_total_pnl": 420.0,
+        "composite": 3.6371170895418192
+      },
+      {
+        "condition": "level_swept_before_entry=True AND direction=long AND magnet_within_3R=True AND magnet_within_2R=True",
+        "k": 4,
+        "test_n": 86,
+        "test_wr": 59.3023,
+        "test_pf": 1.3733333333333333,
+        "late_n": 41,
+        "late_wr": 58.5366,
+        "late_pf": 1.3185840707964602,
+        "test_total_pnl": 420.0,
+        "composite": 3.6371170895418192
+      },
+      {
+        "condition": "direction=long AND magnet_valid=True AND magnet_within_3R=True AND magnet_within_2R=True",
+        "k": 4,
+        "test_n": 86,
+        "test_wr": 59.3023,
+        "test_pf": 1.3733333333333333,
+        "late_n": 41,
+        "late_wr": 58.5366,
+        "late_pf": 1.3185840707964602,
+        "test_total_pnl": 420.0,
+        "composite": 3.6371170895418192
+      },
+      {
+        "condition": "level_swept_before_entry=True AND direction=long AND magnet_valid=True",
+        "k": 3,
+        "test_n": 124,
+        "test_wr": 57.2581,
+        "test_pf": 1.3344155844155845,
+        "late_n": 54,
+        "late_wr": 61.1111,
+        "late_pf": 1.523076923076923,
+        "test_total_pnl": 515.0,
+        "composite": 3.689126269465964
+      },
+      {
+        "condition": "level_swept_before_entry=True AND direction=long AND magnet_within_3R=True",
+        "k": 3,
+        "test_n": 124,
+        "test_wr": 57.2581,
+        "test_pf": 1.3344155844155845,
+        "late_n": 54,
+        "late_wr": 61.1111,
+        "late_pf": 1.523076923076923,
+        "test_total_pnl": 515.0,
+        "composite": 3.689126269465964
+      },
+      {
+        "condition": "direction=long AND magnet_valid=True AND magnet_within_3R=True",
+        "k": 3,
+        "test_n": 124,
+        "test_wr": 57.2581,
+        "test_pf": 1.3344155844155845,
+        "late_n": 54,
+        "late_wr": 61.1111,
+        "late_pf": 1.523076923076923,
+        "test_total_pnl": 515.0,
+        "composite": 3.689126269465964
+      },
+      {
+        "condition": "level_swept_before_entry=True AND direction=long AND magnet_valid=True AND magnet_within_3R=True",
+        "k": 4,
+        "test_n": 124,
+        "test_wr": 57.2581,
+        "test_pf": 1.3344155844155845,
+        "late_n": 54,
+        "late_wr": 61.1111,
+        "late_pf": 1.523076923076923,
+        "test_total_pnl": 515.0,
+        "composite": 3.689126269465964
+      },
+      {
+        "condition": "level_swept_before_entry=True AND direction=long AND variant=no_fvg",
+        "k": 3,
+        "test_n": 99,
+        "test_wr": 55.5556,
+        "test_pf": 1.3106382978723403,
+        "late_n": 36,
+        "late_wr": 50.0,
+        "late_pf": 1.0467289719626167,
+        "test_total_pnl": 365.0,
+        "composite": 3.3531762458587844
+      },
+      {
+        "condition": "level_swept_before_entry=True AND magnet_valid=True AND magnet_within_3R=True",
+        "k": 3,
+        "test_n": 230,
+        "test_wr": 55.6522,
+        "test_pf": 1.3082077051926297,
+        "late_n": 100,
+        "late_wr": 55.0,
+        "late_pf": 1.2825278810408922,
+        "test_total_pnl": 920.0,
+        "composite": 3.962332450055615
+      }
+    ],
+    "high_wr": [],
+    "high_occ": [
+      {
+        "condition": "level_swept_before_entry=True AND magnet_valid=True AND magnet_within_3R=True",
+        "k": 3,
+        "test_n": 230,
+        "test_wr": 55.6522,
+        "test_pf": 1.3082077051926297,
+        "late_n": 100,
+        "late_wr": 55.0,
+        "late_pf": 1.2825278810408922,
+        "test_total_pnl": 920.0,
+        "composite": 3.962332450055615
+      },
+      {
+        "condition": "path_clear=True AND level_swept_before_entry=True AND direction=short",
+        "k": 3,
+        "test_n": 178,
+        "test_wr": 50.5618,
+        "test_pf": 1.1140939597315436,
+        "late_n": 86,
+        "late_wr": 45.3488,
+        "late_pf": 0.8991935483870968,
+        "test_total_pnl": 255.0,
+        "composite": 2.9220853398569133
+      },
+      {
+        "condition": "path_clear=True AND level_swept_before_entry=True AND direction=long",
+        "k": 3,
+        "test_n": 166,
+        "test_wr": 53.012,
+        "test_pf": 1.0911330049261083,
+        "late_n": 70,
+        "late_wr": 55.7143,
+        "late_pf": 1.065217391304348,
+        "test_total_pnl": 185.0,
+        "composite": 2.960408472335956
+      },
+      {
+        "condition": "level_swept_before_entry=True AND magnet_valid=True AND magnet_within_2R=True",
+        "k": 3,
+        "test_n": 162,
+        "test_wr": 56.1728,
+        "test_pf": 1.25,
+        "late_n": 72,
+        "late_wr": 52.7778,
+        "late_pf": 1.130232558139535,
+        "test_total_pnl": 565.0,
+        "composite": 3.5766276409984763
+      },
+      {
+        "condition": "level_swept_before_entry=True AND magnet_within_3R=True AND magnet_within_2R=True",
+        "k": 3,
+        "test_n": 162,
+        "test_wr": 56.1728,
+        "test_pf": 1.25,
+        "late_n": 72,
+        "late_wr": 52.7778,
+        "late_pf": 1.130232558139535,
+        "test_total_pnl": 565.0,
+        "composite": 3.5766276409984763
+      },
+      {
+        "condition": "magnet_valid=True AND magnet_within_3R=True AND magnet_within_2R=True",
+        "k": 3,
+        "test_n": 162,
+        "test_wr": 56.1728,
+        "test_pf": 1.25,
+        "late_n": 72,
+        "late_wr": 52.7778,
+        "late_pf": 1.130232558139535,
+        "test_total_pnl": 565.0,
+        "composite": 3.5766276409984763
+      },
+      {
+        "condition": "level_swept_before_entry=True AND magnet_valid=True AND magnet_within_3R=True AND magnet_within_2R=True",
+        "k": 4,
+        "test_n": 162,
+        "test_wr": 56.1728,
+        "test_pf": 1.25,
+        "late_n": 72,
+        "late_wr": 52.7778,
+        "late_pf": 1.130232558139535,
+        "test_total_pnl": 565.0,
+        "composite": 3.5766276409984763
+      },
+      {
+        "condition": "path_clear=True AND level_swept_before_entry=True AND magnet_within_3R=True",
+        "k": 3,
+        "test_n": 162,
+        "test_wr": 52.4691,
+        "test_pf": 1.164319248826291,
+        "late_n": 75,
+        "late_wr": 52.0,
+        "late_pf": 1.0368663594470047,
+        "test_total_pnl": 350.0,
+        "composite": 3.1118118867589306
+      },
+      {
+        "condition": "path_clear=True AND magnet_valid=True AND magnet_within_3R=True",
+        "k": 3,
+        "test_n": 162,
+        "test_wr": 52.4691,
+        "test_pf": 1.164319248826291,
+        "late_n": 75,
+        "late_wr": 52.0,
+        "late_pf": 1.0368663594470047,
+        "test_total_pnl": 350.0,
+        "composite": 3.1118118867589306
+      },
+      {
+        "condition": "path_clear=True AND level_swept_before_entry=True AND magnet_valid=True AND magnet_within_3R=True",
+        "k": 4,
+        "test_n": 162,
+        "test_wr": 52.4691,
+        "test_pf": 1.164319248826291,
+        "late_n": 75,
+        "late_wr": 52.0,
+        "late_pf": 1.0368663594470047,
+        "test_total_pnl": 350.0,
+        "composite": 3.1118118867589306
+      },
+      {
+        "condition": "path_clear=True AND level_swept_before_entry=True AND variant=no_fvg",
+        "k": 3,
+        "test_n": 158,
+        "test_wr": 50.6329,
+        "test_pf": 1.052757793764988,
+        "late_n": 60,
+        "late_wr": 48.3333,
+        "late_pf": 0.8924731182795699,
+        "test_total_pnl": 110.0,
+        "composite": 2.7019378248412944
+      },
+      {
+        "condition": "level_swept_before_entry=True AND direction=long AND magnet_valid=True",
+        "k": 3,
+        "test_n": 124,
+        "test_wr": 57.2581,
+        "test_pf": 1.3344155844155845,
+        "late_n": 54,
+        "late_wr": 61.1111,
+        "late_pf": 1.523076923076923,
+        "test_total_pnl": 515.0,
+        "composite": 3.689126269465964
+      }
+    ]
+  }
+}

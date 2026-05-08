@@ -1,0 +1,96 @@
+{
+  "best_by_objective": {
+    "high_pf": [
+      {
+        "condition": "(path_clear=True) AND (nearest_magnet_group=htf_fvg_15m)",
+        "test_n": 38,
+        "test_wr": 63.1579,
+        "test_pf": 1.8974358974358974,
+        "train_n": 101,
+        "train_wr": 62.3762,
+        "train_pf": 1.6717948717948719
+      },
+      {
+        "condition": "(nearest_magnet_group=htf_fvg_15m) AND (path_clear=True)",
+        "test_n": 38,
+        "test_wr": 63.1579,
+        "test_pf": 1.8974358974358974,
+        "train_n": 101,
+        "train_wr": 62.3762,
+        "train_pf": 1.6717948717948719
+      },
+      {
+        "condition": "(nearest_magnet_group=htf_fvg_15m) AND (level_swept_before_entry=True)",
+        "test_n": 47,
+        "test_wr": 61.7021,
+        "test_pf": 1.688073394495413,
+        "train_n": 126,
+        "train_wr": 61.9048,
+        "train_pf": 1.622568093385214
+      }
+    ],
+    "high_wr": [
+      {
+        "condition": "(direction=long) AND (magnet_within_1R=True)",
+        "test_n": 39,
+        "test_wr": 64.1026,
+        "test_pf": 1.5576923076923077,
+        "train_n": 84,
+        "train_wr": 50.0,
+        "train_pf": 1.0427350427350428
+      },
+      {
+        "condition": "(magnet_within_3R=True) AND (magnet_within_1R=True)",
+        "test_n": 68,
+        "test_wr": 63.2353,
+        "test_pf": 1.6666666666666667,
+        "train_n": 174,
+        "train_wr": 49.4253,
+        "train_pf": 0.9847036328871893
+      },
+      {
+        "condition": "(magnet_valid=True) AND (magnet_within_1R=True)",
+        "test_n": 68,
+        "test_wr": 63.2353,
+        "test_pf": 1.6666666666666667,
+        "train_n": 174,
+        "train_wr": 49.4253,
+        "train_pf": 0.9847036328871893
+      }
+    ],
+    "high_occ": [
+      {
+        "condition": "(path_clear=True) AND (level_swept_before_entry=True)",
+        "test_n": 344,
+        "test_wr": 51.7442,
+        "test_pf": 1.1031652989449003,
+        "train_n": 870,
+        "train_wr": 51.0345,
+        "train_pf": 1.0867158671586716
+      },
+      {
+        "condition": "(level_swept_before_entry=True) AND (path_clear=True)",
+        "test_n": 344,
+        "test_wr": 51.7442,
+        "test_pf": 1.1031652989449003,
+        "train_n": 870,
+        "train_wr": 51.0345,
+        "train_pf": 1.0867158671586716
+      },
+      {
+        "condition": "(magnet_valid=True) AND (level_swept_before_entry=True)",
+        "test_n": 230,
+        "test_wr": 55.6522,
+        "test_pf": 1.3082077051926297,
+        "train_n": 576,
+        "train_wr": 51.3889,
+        "train_pf": 1.1143039591315453
+      }
+    ]
+  },
+  "notes": {
+    "objective_selection": "ranked on test split for robustness",
+    "combos": "2-condition AND only",
+    "data": "/Users/philchan/Work/fvgc-backtest/data/levels/trades_with_levels.csv"
+  }
+}

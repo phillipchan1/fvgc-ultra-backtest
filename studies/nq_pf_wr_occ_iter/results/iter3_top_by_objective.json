@@ -1,0 +1,283 @@
+{
+  "split": "train/test by date (70/30)",
+  "singles_chosen": 18,
+  "combo_evals": 576,
+  "picked_by_objective": {
+    "high_pf": [
+      {
+        "condition": "level_swept_before_entry=True AND path_clear=True AND nearest_magnet_group=overnight",
+        "train_n": 133,
+        "train_wr": 42.8571,
+        "train_pf": 0.7064676616915423,
+        "test_n": 28,
+        "test_wr": 64.2857,
+        "test_pf": 2.022222222222222,
+        "test_total_pnl": 230.0
+      },
+      {
+        "condition": "path_clear=True AND magnet_valid=True AND variant=bos",
+        "train_n": 119,
+        "train_wr": 47.8992,
+        "train_pf": 1.0202312138728324,
+        "test_n": 44,
+        "test_wr": 65.9091,
+        "test_pf": 1.956989247311828,
+        "test_total_pnl": 445.0
+      },
+      {
+        "condition": "path_clear=True AND magnet_within_3R=True AND variant=bos",
+        "train_n": 119,
+        "train_wr": 47.8992,
+        "train_pf": 1.0202312138728324,
+        "test_n": 44,
+        "test_wr": 65.9091,
+        "test_pf": 1.956989247311828,
+        "test_total_pnl": 445.0
+      },
+      {
+        "condition": "level_swept_before_entry=True AND path_clear=True AND nearest_magnet_group=htf_fvg_15m",
+        "train_n": 101,
+        "train_wr": 62.3762,
+        "train_pf": 1.6717948717948719,
+        "test_n": 38,
+        "test_wr": 63.1579,
+        "test_pf": 1.8974358974358974,
+        "test_total_pnl": 350.0
+      },
+      {
+        "condition": "level_swept_before_entry=True AND magnet_valid=True AND variant=bos",
+        "train_n": 178,
+        "train_wr": 46.6292,
+        "train_pf": 0.9616087751371115,
+        "test_n": 72,
+        "test_wr": 62.5,
+        "test_pf": 1.5769230769230769,
+        "test_total_pnl": 525.0
+      },
+      {
+        "condition": "level_swept_before_entry=True AND magnet_within_3R=True AND variant=bos",
+        "train_n": 178,
+        "train_wr": 46.6292,
+        "train_pf": 0.9616087751371115,
+        "test_n": 72,
+        "test_wr": 62.5,
+        "test_pf": 1.5769230769230769,
+        "test_total_pnl": 525.0
+      },
+      {
+        "condition": "magnet_valid=True AND magnet_within_3R=True AND variant=bos",
+        "train_n": 178,
+        "train_wr": 46.6292,
+        "train_pf": 0.9616087751371115,
+        "test_n": 72,
+        "test_wr": 62.5,
+        "test_pf": 1.5769230769230769,
+        "test_total_pnl": 525.0
+      },
+      {
+        "condition": "magnet_valid=True AND direction=long AND variant=no_fvg",
+        "train_n": 126,
+        "train_wr": 57.9365,
+        "train_pf": 1.3541666666666667,
+        "test_n": 60,
+        "test_wr": 58.3333,
+        "test_pf": 1.553030303030303,
+        "test_total_pnl": 365.0
+      },
+      {
+        "condition": "magnet_within_3R=True AND direction=long AND variant=no_fvg",
+        "train_n": 126,
+        "train_wr": 57.9365,
+        "train_pf": 1.3541666666666667,
+        "test_n": 60,
+        "test_wr": 58.3333,
+        "test_pf": 1.553030303030303,
+        "test_total_pnl": 365.0
+      },
+      {
+        "condition": "level_swept_before_entry=True AND direction=short AND variant=bos",
+        "train_n": 141,
+        "train_wr": 51.773,
+        "train_pf": 1.2105263157894737,
+        "test_n": 58,
+        "test_wr": 56.8966,
+        "test_pf": 1.429530201342282,
+        "test_total_pnl": 320.0
+      }
+    ],
+    "high_wr": [
+      {
+        "condition": "path_clear=True AND magnet_valid=True AND variant=bos",
+        "train_n": 119,
+        "train_wr": 47.8992,
+        "train_pf": 1.0202312138728324,
+        "test_n": 44,
+        "test_wr": 65.9091,
+        "test_pf": 1.956989247311828,
+        "test_total_pnl": 445.0
+      },
+      {
+        "condition": "path_clear=True AND magnet_within_3R=True AND variant=bos",
+        "train_n": 119,
+        "train_wr": 47.8992,
+        "train_pf": 1.0202312138728324,
+        "test_n": 44,
+        "test_wr": 65.9091,
+        "test_pf": 1.956989247311828,
+        "test_total_pnl": 445.0
+      },
+      {
+        "condition": "level_swept_before_entry=True AND path_clear=True AND nearest_magnet_group=overnight",
+        "train_n": 133,
+        "train_wr": 42.8571,
+        "train_pf": 0.7064676616915423,
+        "test_n": 28,
+        "test_wr": 64.2857,
+        "test_pf": 2.022222222222222,
+        "test_total_pnl": 230.0
+      },
+      {
+        "condition": "level_swept_before_entry=True AND path_clear=True AND nearest_magnet_group=htf_fvg_15m",
+        "train_n": 101,
+        "train_wr": 62.3762,
+        "train_pf": 1.6717948717948719,
+        "test_n": 38,
+        "test_wr": 63.1579,
+        "test_pf": 1.8974358974358974,
+        "test_total_pnl": 350.0
+      },
+      {
+        "condition": "level_swept_before_entry=True AND magnet_valid=True AND variant=bos",
+        "train_n": 178,
+        "train_wr": 46.6292,
+        "train_pf": 0.9616087751371115,
+        "test_n": 72,
+        "test_wr": 62.5,
+        "test_pf": 1.5769230769230769,
+        "test_total_pnl": 525.0
+      },
+      {
+        "condition": "level_swept_before_entry=True AND magnet_within_3R=True AND variant=bos",
+        "train_n": 178,
+        "train_wr": 46.6292,
+        "train_pf": 0.9616087751371115,
+        "test_n": 72,
+        "test_wr": 62.5,
+        "test_pf": 1.5769230769230769,
+        "test_total_pnl": 525.0
+      },
+      {
+        "condition": "magnet_valid=True AND magnet_within_3R=True AND variant=bos",
+        "train_n": 178,
+        "train_wr": 46.6292,
+        "train_pf": 0.9616087751371115,
+        "test_n": 72,
+        "test_wr": 62.5,
+        "test_pf": 1.5769230769230769,
+        "test_total_pnl": 525.0
+      }
+    ],
+    "high_occ": [
+      {
+        "condition": "level_swept_before_entry=True AND path_clear=True AND direction=short",
+        "train_n": 433,
+        "train_wr": 51.963,
+        "train_pf": 1.1753731343283582,
+        "test_n": 178,
+        "test_wr": 50.5618,
+        "test_pf": 1.1140939597315436,
+        "test_total_pnl": 255.0
+      },
+      {
+        "condition": "level_swept_before_entry=True AND path_clear=True AND direction=long",
+        "train_n": 437,
+        "train_wr": 50.1144,
+        "train_pf": 1.0,
+        "test_n": 166,
+        "test_wr": 53.012,
+        "test_pf": 1.0911330049261083,
+        "test_total_pnl": 185.0
+      },
+      {
+        "condition": "level_swept_before_entry=True AND path_clear=True AND variant=no_fvg",
+        "train_n": 377,
+        "train_wr": 52.5199,
+        "train_pf": 1.1171960569550932,
+        "test_n": 158,
+        "test_wr": 50.6329,
+        "test_pf": 1.052757793764988,
+        "test_total_pnl": 110.0
+      },
+      {
+        "condition": "level_swept_before_entry=True AND magnet_valid=True AND direction=long",
+        "train_n": 271,
+        "train_wr": 50.5535,
+        "train_pf": 1.0511756569847857,
+        "test_n": 124,
+        "test_wr": 57.2581,
+        "test_pf": 1.3344155844155845,
+        "test_total_pnl": 515.0
+      },
+      {
+        "condition": "level_swept_before_entry=True AND magnet_within_3R=True AND direction=long",
+        "train_n": 271,
+        "train_wr": 50.5535,
+        "train_pf": 1.0511756569847857,
+        "test_n": 124,
+        "test_wr": 57.2581,
+        "test_pf": 1.3344155844155845,
+        "test_total_pnl": 515.0
+      },
+      {
+        "condition": "magnet_valid=True AND magnet_within_3R=True AND direction=long",
+        "train_n": 271,
+        "train_wr": 50.5535,
+        "train_pf": 1.0511756569847857,
+        "test_n": 124,
+        "test_wr": 57.2581,
+        "test_pf": 1.3344155844155845,
+        "test_total_pnl": 515.0
+      },
+      {
+        "condition": "path_clear=True AND direction=long AND variant=no_fvg",
+        "train_n": 196,
+        "train_wr": 55.6122,
+        "train_pf": 1.276283618581907,
+        "test_n": 109,
+        "test_wr": 50.4587,
+        "test_pf": 0.9348534201954397,
+        "test_total_pnl": -100.0
+      },
+      {
+        "condition": "level_swept_before_entry=True AND magnet_valid=True AND direction=short",
+        "train_n": 305,
+        "train_wr": 52.1311,
+        "train_pf": 1.1684460260972716,
+        "test_n": 106,
+        "test_wr": 53.7736,
+        "test_pf": 1.2802768166089966,
+        "test_total_pnl": 405.0
+      },
+      {
+        "condition": "level_swept_before_entry=True AND magnet_within_3R=True AND direction=short",
+        "train_n": 305,
+        "train_wr": 52.1311,
+        "train_pf": 1.1684460260972716,
+        "test_n": 106,
+        "test_wr": 53.7736,
+        "test_pf": 1.2802768166089966,
+        "test_total_pnl": 405.0
+      },
+      {
+        "condition": "magnet_valid=True AND magnet_within_3R=True AND direction=short",
+        "train_n": 305,
+        "train_wr": 52.1311,
+        "train_pf": 1.1684460260972716,
+        "test_n": 106,
+        "test_wr": 53.7736,
+        "test_pf": 1.2802768166089966,
+        "test_total_pnl": 405.0
+      }
+    ]
+  }
+}
