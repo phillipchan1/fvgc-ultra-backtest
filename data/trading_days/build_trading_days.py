@@ -148,6 +148,40 @@ def count_fvgs_in_slice(bars: pd.DataFrame) -> dict:
     return {'bullish': bullish, 'bearish': bearish, 'total': bullish + bearish}
 
 
+def directional_changes_30m(rth_bars: pd.DataFrame) -> int:
+    """Aggregate RTH 1-min bars into 30-min closes and count sign flips of close-to-close moves."""
+    if rth_bars.empty:
+        return 0
+    bars = rth_bars.copy()
+    bars = bars.set_index('ts_ny').sort_index()
+    closes_30m = bars['close'].resample('30min').last().dropna()
+    if len(closes_30m) < 3:
+        return 0
+    diffs = closes_30m.diff().dropna()
+    signs = np.sign(diffs.values)
+    flips = 0
+    prev = 0.0
+    for s in signs:
+        if s == 0:
+            continue
+        if prev != 0 and s != prev:
+            flips += 1
+        prev = s
+    return int(flips)
+
+
+def max_drawdown_drawup_from_open(rth_bars: pd.DataFrame, rth_open: float) -> tuple[float, float]:
+    """Return (max_drawdown_from_open, max_drawup_from_open) measured against the RTH open.
+
+    drawdown is min(low - open) (negative number); drawup is max(high - open) (positive number).
+    """
+    if rth_bars.empty:
+        return 0.0, 0.0
+    drawdown = float((rth_bars['low'] - rth_open).min())
+    drawup = float((rth_bars['high'] - rth_open).max())
+    return drawdown, drawup
+
+
 # ===================================================================
 # Per-day computation
 # ===================================================================
@@ -171,6 +205,12 @@ def compute_day_properties(day_bars: pd.DataFrame, prior_day: dict | None,
     row['rth_high'] = rth['high'].max()
     row['rth_low'] = rth['low'].min()
     row['rth_range'] = row['rth_high'] - row['rth_low']
+
+    # --- Session-character support features (used by prior_day_type classifier) ---
+    row['directional_changes_30m'] = directional_changes_30m(rth)
+    drawdown, drawup = max_drawdown_drawup_from_open(rth, row['rth_open'])
+    row['max_drawdown_from_open'] = drawdown
+    row['max_drawup_from_open'] = drawup
 
     # --- Opening ranges ---
     for label, end_time in [('5min', dtime(9, 35)), ('15min', dtime(9, 45)), ('45min', dtime(10, 15))]:
@@ -376,6 +416,136 @@ def add_news_flags(df: pd.DataFrame, events: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+# ===================================================================
+# Prior-day session character classifier
+# ===================================================================
+
+# Classifier thresholds. The Notion plan's strict v1 thresholds put ~77% of NQ
+# RTH sessions in 'other'; the plan instructs us to loosen until 'other' <= 40%.
+# These v2 values are the smallest adjustments that bring 'other' under that
+# ceiling while preserving the qualitative meaning of each category. Documented
+# in studies/prior_day_type/analysis.md.
+TREND_RANGE_RATIO_MIN = 1.1
+TREND_BODY_RATIO_MIN = 0.5
+TREND_DIR_CHANGES_MAX = 8
+
+RANGE_RANGE_RATIO_MAX = 1.0
+RANGE_BODY_RATIO_MAX = 0.45
+RANGE_CLOSE_POSITION_MIN = 0.25
+RANGE_CLOSE_POSITION_MAX = 0.75
+
+REVERSAL_DRAW_RATIO_MIN = 0.3
+
+
+def classify_prior_day_type(prior_row: dict, rolling_20d_avg_range: float) -> str:
+    """Classify the prior RTH session into one of six character categories.
+
+    Rules apply in order; first match wins. All inputs reference the *prior* day
+    (the day that has fully closed before the current session opens), so the
+    classification is look-ahead clean by construction.
+    """
+    rth_range = prior_row.get('rth_range')
+    if (rth_range is None or pd.isna(rth_range) or rth_range <= 0
+            or rolling_20d_avg_range is None or pd.isna(rolling_20d_avg_range)
+            or rolling_20d_avg_range <= 0):
+        return 'other'
+
+    open_ = prior_row.get('rth_open')
+    close = prior_row.get('rth_close')
+    high = prior_row.get('rth_high')
+    low = prior_row.get('rth_low')
+    dir_changes = prior_row.get('directional_changes_30m')
+    drawdown = prior_row.get('max_drawdown_from_open')
+    drawup = prior_row.get('max_drawup_from_open')
+
+    if any(pd.isna(v) for v in (open_, close, high, low, dir_changes, drawdown, drawup)):
+        return 'other'
+
+    range_ratio = rth_range / rolling_20d_avg_range
+    body_ratio = abs(close - open_) / rth_range
+    midpoint = (high + low) / 2.0
+    drawdown_ratio = abs(drawdown) / rth_range
+    drawup_ratio = drawup / rth_range
+    close_position = (close - low) / (high - low) if (high - low) > 0 else 0.5
+
+    if (range_ratio > TREND_RANGE_RATIO_MIN
+            and (close - open_) / rth_range > TREND_BODY_RATIO_MIN
+            and dir_changes <= TREND_DIR_CHANGES_MAX
+            and close > open_):
+        return 'trend_up'
+
+    if (range_ratio > TREND_RANGE_RATIO_MIN
+            and (open_ - close) / rth_range > TREND_BODY_RATIO_MIN
+            and dir_changes <= TREND_DIR_CHANGES_MAX
+            and close < open_):
+        return 'trend_down'
+
+    if (range_ratio < RANGE_RANGE_RATIO_MAX
+            and body_ratio < RANGE_BODY_RATIO_MAX
+            and RANGE_CLOSE_POSITION_MIN <= close_position <= RANGE_CLOSE_POSITION_MAX):
+        return 'range'
+
+    if (drawdown_ratio > REVERSAL_DRAW_RATIO_MIN
+            and close > midpoint
+            and close > open_):
+        return 'reversal_up'
+
+    if (drawup_ratio > REVERSAL_DRAW_RATIO_MIN
+            and close < midpoint
+            and close < open_):
+        return 'reversal_down'
+
+    return 'other'
+
+
+def add_prior_day_type(df: pd.DataFrame) -> pd.DataFrame:
+    """Add prior_day_type plus supporting prior-day columns to each row.
+
+    Uses a 20-day rolling average of rth_range computed strictly on prior history
+    (shifted by one) so the classification is causal.
+    """
+    df = df.sort_values('date').reset_index(drop=True).copy()
+
+    rolling_avg = df['rth_range'].shift(1).rolling(window=20, min_periods=10).mean()
+    df['prior_day_range_atr_ratio'] = df['prior_day_range'] / rolling_avg
+
+    prior_columns = [
+        'rth_open', 'rth_close', 'rth_high', 'rth_low', 'rth_range',
+        'directional_changes_30m', 'max_drawdown_from_open', 'max_drawup_from_open',
+    ]
+    prior = df[prior_columns].shift(1)
+    prior.columns = [f'_prior_{c}' for c in prior_columns]
+    df = pd.concat([df, prior], axis=1)
+
+    df['prior_day_directional_changes'] = df['_prior_directional_changes_30m']
+    df['prior_day_close_vs_open_pct'] = np.where(
+        df['_prior_rth_open'] > 0,
+        (df['_prior_rth_close'] - df['_prior_rth_open']) / df['_prior_rth_open'] * 100.0,
+        np.nan,
+    )
+
+    types = []
+    for i in range(len(df)):
+        if pd.isna(df.loc[i, '_prior_rth_range']):
+            types.append('other')
+            continue
+        prior_row = {
+            'rth_open': df.loc[i, '_prior_rth_open'],
+            'rth_close': df.loc[i, '_prior_rth_close'],
+            'rth_high': df.loc[i, '_prior_rth_high'],
+            'rth_low': df.loc[i, '_prior_rth_low'],
+            'rth_range': df.loc[i, '_prior_rth_range'],
+            'directional_changes_30m': df.loc[i, '_prior_directional_changes_30m'],
+            'max_drawdown_from_open': df.loc[i, '_prior_max_drawdown_from_open'],
+            'max_drawup_from_open': df.loc[i, '_prior_max_drawup_from_open'],
+        }
+        types.append(classify_prior_day_type(prior_row, rolling_avg.iloc[i]))
+    df['prior_day_type'] = types
+
+    df = df.drop(columns=[c for c in df.columns if c.startswith('_prior_')])
+    return df
+
+
 def add_vixy_regime(df: pd.DataFrame, vixy: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     vixy = vixy.copy()
@@ -476,6 +646,8 @@ def main():
     df = add_news_flags(df, events)
     print("Adding VIXY regime...")
     df = add_vixy_regime(df, vixy)
+    print("Adding prior_day_type classifier...")
+    df = add_prior_day_type(df)
 
     # Sort and write
     df = df.sort_values('date').reset_index(drop=True)
@@ -490,6 +662,8 @@ def main():
     print(f"FOMC weeks: {df['is_fomc_week'].sum()}")
     vixy_coverage = df['vixy_prior_close'].notna().sum()
     print(f"VIXY coverage: {vixy_coverage}/{len(df)} days")
+    print("\nprior_day_type distribution:")
+    print(df['prior_day_type'].value_counts(dropna=False).to_string())
 
 
 if __name__ == '__main__':
