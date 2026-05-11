@@ -228,12 +228,14 @@ def filter_us_high(events: Iterable[CalendarEvent], target_date: date,
     ]
 
 
+_FOMC_DECISION_KEYWORDS = ('FOMC Statement', 'Federal Funds Rate', 'FOMC Economic Projections', 'FOMC Press Conference')
+
 def is_fomc_week(events: Iterable[CalendarEvent], target_date: date) -> bool:
     ty, tw, _ = target_date.isocalendar()
     for e in events:
         if e.country != 'USD':
             continue
-        if 'FOMC' not in e.title:
+        if not any(kw in e.title for kw in _FOMC_DECISION_KEYWORDS):
             continue
         ey, ew, _ = e.date.isocalendar()
         if ey == ty and ew == tw:
