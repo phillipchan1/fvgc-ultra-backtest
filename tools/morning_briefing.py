@@ -1257,29 +1257,34 @@ MATRIX_PLAYS = {
         'notion_url': 'https://www.notion.so/361e2f0e776081e69d5dfc696dbd5726',
     },
     'M3 Long': {
+        # NOTE: M3 Long is a *mean-reversion* play (compressed open + washout),
+        # NOT a momentum continuation like M2 Long. Factors are the inverse:
+        # M2 wants bull_930 / gap_up / regime_bull; M3 wants compressed_930 /
+        # compressed_5m_OR / no_bear_FVG / prior_day_weak / Friday / not_FOMC.
+        # Source: studies/multi_cell_confluence/results/cell_configs.json.
         'direction': 'long',
         'window': '10:00-10:15',
         'pros': [
-            ('bull_930',           '9:31',    'Bullish 9:30 1-min candle',                     12.0),
-            ('no_5m_bear_fvg',     '9:35',    'NO bearish FVG in first 5min',                  13.0),
-            ('macro_1_2plus_fvgs', '9:45',    '>=2 FVGs printed in 9:30-9:45 macro',            9.0),
-            ('dow_friday',         'preopen', 'Day is Friday',                                 11.5),
-            ('regime_bull',        'preopen', '60d NQ return > +5% (bull macro)',               9.4),
-            ('has_pre_rth_news',   'preopen', 'Pre-RTH news scheduled',                         9.0),
-            ('gap_up',             'preopen', 'Gap > +10 pts',                                   7.0),
+            ('c930_range_bot_q',   '9:31',    '9:30 candle RANGE in bottom quartile (<=22 pts; compressed open)', 16.7),
+            ('or_5m_bot_q',        '9:35',    '5-min OR range in bottom quartile (<=42 pts; compressed)',         13.5),
+            ('no_5m_bear_fvg',     '9:35',    'NO bearish FVG in first 5min',                                     13.0),
+            ('dow_friday',         'preopen', 'Day is Friday',                                                    11.5),
+            ('not_fomc_week',      'preopen', 'NOT FOMC week',                                                    11.4),
+            ('prior_day_weak',     'preopen', 'Prior day close in bottom 1/3 of range',                           11.2),
+            ('variant_no_fvg',     'signal',  'FVGC variant is no_fvg (cleanest signal at entry)',                10.6),
         ],
         'vetos': [
-            ('regime_bear',        'preopen', '60d NQ return < -5% (bear macro)',             -17.0),
-            ('dow_tuesday',        'preopen', 'Day is Tuesday',                               -20.9),
-            ('is_opex_week',       'preopen', 'Opex week',                                    -12.5),
+            ('dow_tuesday',        'preopen', 'Day is Tuesday',                                                   -20.9),
+            ('or_5m_top_q',        '9:35',    '5-min OR range in TOP quartile (>=72 pts; momentum, not washout)', -18.3),
+            ('prior_day_mid',      'preopen', 'Prior day close in middle 1/3 (no narrative)',                     -14.8),
         ],
         'tiers': [
-            (0, 2,  'SKIP',                                                   'edge too thin'),
-            (3, 3,  'TAKE Tier B size, BE@1R -> 2R (magnet required)',        '~50-60% WR generic'),
+            (0, 2,  'SKIP',                                                   'no compression-washout setup'),
+            (3, 3,  'TAKE Tier B size, BE@1R -> 2R (magnet required)',        '~51% WR generic'),
             (4, 99, 'TAKE Tier B size, BE@1R -> 2.5R (magnet required)',      '~72% IS / OOS uncertain'),
         ],
         'notion_url': 'https://www.notion.so/361e2f0e7760819bbbc7ca78b9faa8f9',
-        'extra_note': 'REQUIRES MAGNET GATE at 10:00 (unswept liquidity level above entry). No magnet = no trade. Tier B sizing until OOS confirms.',
+        'extra_note': 'REQUIRES MAGNET GATE at 10:00 (unswept liquidity level above entry). No magnet = no trade. Tier B sizing until OOS confirms. This is a MEAN-REVERSION play (compressed/washout), not a momentum continuation.',
     },
 }
 
@@ -1354,10 +1359,11 @@ def _compute_matrix_factors(ctx, today_factors: dict[str, bool],
     for i, name in enumerate(dow_names):
         f[f'dow_{name}'] = (i == today_dow_idx)
 
-    # Prior day weak/strong on 1/3 splits (briefing uses 1/4 splits)
+    # Prior day weak/strong/mid on 1/3 splits (briefing uses 1/4 splits)
     pcp = ctx.prior_day_close_position if ctx and hasattr(ctx, 'prior_day_close_position') else None
     f['prior_day_weak'] = (pcp is not None and pcp < (1.0 / 3))
     f['prior_day_strong'] = (pcp is not None and pcp > (2.0 / 3))
+    f['prior_day_mid'] = (pcp is not None and (1.0 / 3) <= pcp <= (2.0 / 3))
 
     # VIXY high/low at top/bottom quartile (briefing's elevated/low use p50/p25)
     prior_row = load_prior_trading_day_row(csv_path, target_date) if csv_path.exists() else None
@@ -1384,10 +1390,14 @@ def _compute_matrix_factors(ctx, today_factors: dict[str, bool],
     f['is_opex_week'] = _is_opex_week(target_date)
     f['not_opex_week'] = not f['is_opex_week']
 
-    # Post-open factors: leave as None (not knowable pre-open)
-    for k in ('bear_930', 'bull_930', 'c930_body_top_q',
+    # Post-open factors: leave as None (not knowable pre-open). Includes the
+    # compression / 9:30-candle / 5min OR / macro / signal-time factors needed
+    # by the matrix play stacks.
+    for k in ('bear_930', 'bull_930', 'c930_body_top_q', 'c930_range_bot_q',
               'has_5m_bear_fvg', 'no_5m_bear_fvg',
-              'macro_1_2plus_fvgs'):
+              'or_5m_bot_q', 'or_5m_top_q',
+              'macro_1_2plus_fvgs',
+              'variant_no_fvg'):
         if k not in f:
             f[k] = None
 
