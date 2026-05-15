@@ -1,0 +1,14 @@
+{
+  "overnight_range_q25": 127.0,
+  "overnight_range_q75": 239.75,
+  "candle_930_range_q25": 22.5,
+  "candle_930_range_q75": 36.5,
+  "candle_930_body_q25": 6.0,
+  "candle_930_body_q75": 23.25,
+  "or_5min_range_q25": 42.25,
+  "or_5min_range_q75": 71.75,
+  "or_15min_range_q25": 61.625,
+  "or_15min_range_q75": 111.4375,
+  "or_45min_range_q25": 97.5,
+  "or_45min_range_q75": 170.25
+}

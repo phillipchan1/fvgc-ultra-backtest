@@ -1199,6 +1199,280 @@ def print_or_forecast(forecast: dict | None, target_date: date) -> None:
     print()
 
 
+# ======================================================================
+# Matrix Play Scorecards
+# ----------------------------------------------------------------------
+# Source: studies/multi_cell_confluence/ (2026-05-15)
+# Per-play factor stack with pre-open vs post-open knowability tags.
+# Used in section [5c] of the briefing.
+# ======================================================================
+
+MATRIX_PLAYS = {
+    'M1 Short': {
+        'direction': 'short',
+        'window': '9:30-9:45',
+        'pros': [
+            ('bear_930',         '9:31',    'Bearish 9:30 1-min candle',                      21.3),
+            ('gap_large_down',   'preopen', 'Gap < -100 pts',                                  19.0),
+            ('c930_body_top_q',  '9:31',    '9:30 candle body in top quartile (>=23 pts)',    15.6),
+            ('prior_day_weak',   'preopen', 'Prior day close in bottom 1/3 of range',         13.7),
+            ('is_fomc_week',     'preopen', 'FOMC week (counter-intuitive but consistent)',   11.8),
+            ('vixy_high',        'preopen', 'VIXY in top quartile of last 90d',               10.1),
+            ('dow_friday',       'preopen', 'Day is Friday',                                   9.7),
+        ],
+        'vetos': [
+            ('vixy_low',         'preopen', 'VIXY in bottom quartile',                        -15.7),
+            ('dow_monday',       'preopen', 'Day is Monday',                                  -12.5),
+        ],
+        'tiers': [
+            (0, 1,  'SKIP',                                  'no edge'),
+            (2, 2,  'TAKE full size, runner mode',           '~57% WR, PF 1.60'),
+            (3, 3,  'TAKE full size, runner mode',           '~73% WR, PF 2.71'),
+            (4, 99, 'TAKE MAX size, runner mode',            '~87% WR, PF 6.00 (premium)'),
+        ],
+        'notion_url': 'https://www.notion.so/33de2f0e776081889879c4dcbd495996',
+    },
+    'M2 Long': {
+        'direction': 'long',
+        'window': '9:45-10:00',
+        'pros': [
+            ('bull_930',           '9:31',    'Bullish 9:30 1-min candle',                     20.6),
+            ('dow_thursday',       'preopen', 'Day is Thursday',                               10.0),
+            ('has_pre_rth_news',   'preopen', 'Pre-RTH news scheduled (counter-intuitive)',     9.6),
+            ('macro_1_2plus_fvgs', '9:45',    '>=2 FVGs printed in 9:30-9:45 macro',            9.4),
+            ('regime_bull',        'preopen', '60d NQ return > +5% (bull macro)',               9.4),
+            ('has_5m_bear_fvg',    '9:35',    'Bearish FVG in first 5min (counter-intuitive)',  7.6),
+            ('gap_up',             'preopen', 'Gap > +10 pts',                                   7.0),
+        ],
+        'vetos': [
+            ('is_opex_week',       'preopen', 'Opex week (3rd Friday week)',                  -25.2),
+            ('dow_wednesday',      'preopen', 'Day is Wednesday',                             -23.7),
+            ('regime_bear',        'preopen', '60d NQ return < -5% (bear macro)',             -20.9),
+        ],
+        'tiers': [
+            (0, 2,  'SKIP',                                                   'edge too thin'),
+            (3, 3,  'TAKE full size, BE@1R -> 2R',                            '~56-61% WR, PF 1.33-1.50'),
+            (4, 99, 'TAKE MAX size, BE@1R -> 3R',                             '~74-83% WR, PF 2.06-2.61'),
+        ],
+        'notion_url': 'https://www.notion.so/361e2f0e776081e69d5dfc696dbd5726',
+    },
+    'M3 Long': {
+        'direction': 'long',
+        'window': '10:00-10:15',
+        'pros': [
+            ('bull_930',           '9:31',    'Bullish 9:30 1-min candle',                     12.0),
+            ('no_5m_bear_fvg',     '9:35',    'NO bearish FVG in first 5min',                  13.0),
+            ('macro_1_2plus_fvgs', '9:45',    '>=2 FVGs printed in 9:30-9:45 macro',            9.0),
+            ('dow_friday',         'preopen', 'Day is Friday',                                 11.5),
+            ('regime_bull',        'preopen', '60d NQ return > +5% (bull macro)',               9.4),
+            ('has_pre_rth_news',   'preopen', 'Pre-RTH news scheduled',                         9.0),
+            ('gap_up',             'preopen', 'Gap > +10 pts',                                   7.0),
+        ],
+        'vetos': [
+            ('regime_bear',        'preopen', '60d NQ return < -5% (bear macro)',             -17.0),
+            ('dow_tuesday',        'preopen', 'Day is Tuesday',                               -20.9),
+            ('is_opex_week',       'preopen', 'Opex week',                                    -12.5),
+        ],
+        'tiers': [
+            (0, 2,  'SKIP',                                                   'edge too thin'),
+            (3, 3,  'TAKE Tier B size, BE@1R -> 2R (magnet required)',        '~50-60% WR generic'),
+            (4, 99, 'TAKE Tier B size, BE@1R -> 2.5R (magnet required)',      '~72% IS / OOS uncertain'),
+        ],
+        'notion_url': 'https://www.notion.so/361e2f0e7760819bbbc7ca78b9faa8f9',
+        'extra_note': 'REQUIRES MAGNET GATE at 10:00 (unswept liquidity level above entry). No magnet = no trade. Tier B sizing until OOS confirms.',
+    },
+}
+
+
+def _compute_60d_regime(csv_path: Path, target_date: date) -> tuple[bool, bool]:
+    """Return (is_bull, is_bear) from 60-trading-day NQ return.
+
+    Reads rth_close from trading_days.csv. Bull: ret > +5%. Bear: ret < -5%.
+    Returns (False, False) if data is insufficient.
+    """
+    if not csv_path.exists():
+        return False, False
+    rows: list[tuple[date, float]] = []
+    with open(csv_path) as fh:
+        reader = csv.DictReader(fh)
+        for row in reader:
+            try:
+                d = date.fromisoformat(row['date'])
+                c = float(row['rth_close']) if row.get('rth_close') else None
+                if c is not None:
+                    rows.append((d, c))
+            except (ValueError, KeyError):
+                continue
+    rows.sort()
+    # Find index of target_date (or latest row <= target_date)
+    idx = None
+    for i, (d, _) in enumerate(rows):
+        if d <= target_date:
+            idx = i
+        else:
+            break
+    if idx is None or idx < 60:
+        return False, False
+    today_close = rows[idx][1]
+    past_close = rows[idx - 60][1]
+    if past_close <= 0:
+        return False, False
+    ret = today_close / past_close - 1
+    return (ret > 0.05, ret < -0.05)
+
+
+def _is_opex_week(target_date: date) -> bool:
+    """True if target_date is in the calendar week (Mon-Fri) of the month's 3rd Friday."""
+    import calendar as _cal
+    cal = _cal.monthcalendar(target_date.year, target_date.month)
+    fridays = [week[4] for week in cal if week[4] != 0]
+    if len(fridays) < 3:
+        return False
+    third_friday = date(target_date.year, target_date.month, fridays[2])
+    return -4 <= (target_date - third_friday).days <= 0
+
+
+def _compute_matrix_factors(ctx, today_factors: dict[str, bool],
+                            target_date: date, csv_path: Path) -> dict[str, bool | None]:
+    """Compute the additional/renamed factors needed by matrix plays.
+
+    Factors knowable only post-open (bear_930, bull_930, c930_body_top_q,
+    has_5m_bear_fvg, no_5m_bear_fvg, macro_1_2plus_fvgs) are set to None so
+    callers can render them as 'check at HH:MM' rather than 'False'.
+    """
+    f: dict[str, bool | None] = dict(today_factors)  # carry existing
+
+    # Gap-magnitude buckets
+    gap = ctx.gap_pts if ctx and hasattr(ctx, 'gap_pts') else None
+    f['gap_large_down'] = (gap is not None and gap < -100)
+    f['gap_large_up'] = (gap is not None and gap > 100)
+    # gap_up already in today_factors
+
+    # Day of week with dow_ prefix (briefing uses bare names)
+    dow_names = ('monday', 'tuesday', 'wednesday', 'thursday', 'friday')
+    today_dow_idx = target_date.weekday()
+    for i, name in enumerate(dow_names):
+        f[f'dow_{name}'] = (i == today_dow_idx)
+
+    # Prior day weak/strong on 1/3 splits (briefing uses 1/4 splits)
+    pcp = ctx.prior_day_close_position if ctx and hasattr(ctx, 'prior_day_close_position') else None
+    f['prior_day_weak'] = (pcp is not None and pcp < (1.0 / 3))
+    f['prior_day_strong'] = (pcp is not None and pcp > (2.0 / 3))
+
+    # VIXY high/low at top/bottom quartile (briefing's elevated/low use p50/p25)
+    prior_row = load_prior_trading_day_row(csv_path, target_date) if csv_path.exists() else None
+    f['vixy_high'] = False
+    f['vixy_low'] = False
+    if prior_row and prior_row.get('vixy_prior_close'):
+        try:
+            vixy = float(prior_row['vixy_prior_close'])
+            vp25 = compute_percentile(csv_path, 'vixy_prior_close', 0.25)
+            vp75 = compute_percentile(csv_path, 'vixy_prior_close', 0.75)
+            if vp25 is not None:
+                f['vixy_low'] = vixy <= vp25
+            if vp75 is not None:
+                f['vixy_high'] = vixy >= vp75
+        except ValueError:
+            pass
+
+    # 60d NQ regime
+    is_bull, is_bear = _compute_60d_regime(csv_path, target_date)
+    f['regime_bull'] = is_bull
+    f['regime_bear'] = is_bear
+
+    # Opex week
+    f['is_opex_week'] = _is_opex_week(target_date)
+    f['not_opex_week'] = not f['is_opex_week']
+
+    # Post-open factors: leave as None (not knowable pre-open)
+    for k in ('bear_930', 'bull_930', 'c930_body_top_q',
+              'has_5m_bear_fvg', 'no_5m_bear_fvg',
+              'macro_1_2plus_fvgs'):
+        if k not in f:
+            f[k] = None
+
+    return f
+
+
+def _tier_for(count: int, tiers: list) -> tuple:
+    for t_min, t_max, action, note in tiers:
+        if t_min <= count <= t_max:
+            return (t_min, t_max, action, note)
+    return tiers[-1]
+
+
+def print_matrix_play_scorecards(ctx, today_factors: dict[str, bool],
+                                 target_date: date, csv_path: Path) -> None:
+    """[5c] Print pre-open scorecards for M1 Short / M2 Long / M3 Long.
+
+    For each play, shows:
+    - Active vetoes (if any veto active -> SKIP regardless of count)
+    - Pre-open confluence count (X of Y_preopen)
+    - Remaining factors to verify at 9:31 / 9:35 / 9:45
+    - Projected tier if all post-open factors hit / if none hit
+    """
+    f = _compute_matrix_factors(ctx, today_factors, target_date, csv_path)
+
+    print(f'[5c] MATRIX PLAY SCORECARDS  (source: studies/multi_cell_confluence/)')
+    print()
+
+    for name, play in MATRIX_PLAYS.items():
+        # Score
+        preopen_active = []
+        post_pending = []
+        max_preopen = 0
+        for fid, when, desc, lift in play['pros']:
+            if when == 'preopen':
+                max_preopen += 1
+                if f.get(fid):
+                    preopen_active.append((fid, desc, lift))
+            else:
+                post_pending.append((fid, when, desc, lift))
+
+        active_vetoes = []
+        for vid, _w, vdesc, vlift in play['vetos']:
+            if f.get(vid):
+                active_vetoes.append((vid, vdesc, vlift))
+
+        preopen_count = len(preopen_active)
+        max_possible = preopen_count + len(post_pending)
+        min_possible = preopen_count
+
+        veto_label = '🚫 VETO ACTIVE — SKIP' if active_vetoes else '✅ no veto'
+        print(f'  ▶ {name}  ({play["direction"]}, {play["window"]})  [{veto_label}]')
+
+        if active_vetoes:
+            for vid, vdesc, vlift in active_vetoes:
+                print(f'      🚫 {vid}: {vdesc}  ({vlift:+.1f}pp WR drag)')
+            print(f'      → Skip {name} today regardless of confluence count.')
+            print(f'      Playbook: {play["notion_url"]}')
+            print()
+            continue
+
+        print(f'      Pre-open confluences: {preopen_count} / {max_preopen} possible')
+        for fid, fdesc, flift in preopen_active:
+            print(f'         ✓ {fid:25s} (+{flift:.1f}pp)  — {fdesc}')
+
+        if post_pending:
+            print(f'      Still to check (up to +{len(post_pending)}):')
+            for fid, when, fdesc, flift in post_pending:
+                print(f'         [ ] {when:5s}  {fid:25s} (+{flift:.1f}pp)  — {fdesc}')
+
+        # Projection: min (no more fire) and max (all post-open fire)
+        min_tier = _tier_for(min_possible, play['tiers'])
+        max_tier = _tier_for(max_possible, play['tiers'])
+        if min_possible == max_possible:
+            print(f'      → Final count {min_possible}: {min_tier[2]}  ({min_tier[3]})')
+        else:
+            print(f'      → If none of the post-open factors fire (count {min_possible}): {min_tier[2]}')
+            print(f'      → If all of them fire (count up to {max_possible}): {max_tier[2]}  ({max_tier[3]})')
+
+        if 'extra_note' in play:
+            print(f'      ⚠ {play["extra_note"]}')
+        print(f'      Playbook: {play["notion_url"]}')
+        print()
+
+
 def print_briefing(
     target_date: date,
     now_et: datetime | None,
@@ -1212,6 +1486,7 @@ def print_briefing(
     gap_pts: float | None,
     events: list[dict],
     cal_unknown: bool = False,
+    csv_path: Path | None = None,
 ):
     W = 70
     dow = target_date.strftime('%A')
@@ -1403,6 +1678,10 @@ def print_briefing(
                   f'PF {tier.get("pf_1r", "?")}, target {tier.get("target", "?")}')
         print(f'        → At 9:30:30: if bearish candle, add +1 → final tier')
         print()
+
+    # [5c] MATRIX PLAY SCORECARDS — refined M1 Short / M2 Long / M3 Long stacks
+    if csv_path is not None:
+        print_matrix_play_scorecards(ctx, today_factors, target_date, csv_path)
 
     # [6] WATCH LIST
     print(f'[6] WATCH LIST (need 9:30 confirmation)')
@@ -1712,6 +1991,7 @@ def main():
         gap_pts=gap_pts,
         events=events,
         cal_unknown=cal_unknown,
+        csv_path=csv_path,
     )
 
 
