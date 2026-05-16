@@ -1,0 +1,71 @@
+{
+  "M1 Short": {
+    "tradeable_threshold": 2,
+    "window": "9:30-9:45",
+    "direction": "short",
+    "days_total": 616,
+    "veto_days": 236,
+    "veto_pct": 38.3,
+    "setup_days_at_threshold": 222,
+    "setup_pct_of_all_days": 36.0,
+    "fired_days_at_threshold": 51,
+    "fire_rate_pct": 23.0,
+    "no_fire_days": 171,
+    "avg_trades_per_fired_day": 1.43,
+    "ev_per_trade_R": 0.77,
+    "ev_per_setup_day_R": 0.253,
+    "fire_rate_by_tier_pct": {
+      "0": 19.5,
+      "1": 21.1,
+      "2": 23.0,
+      "3": 20.2,
+      "4": 26.3
+    }
+  },
+  "M2 Long": {
+    "tradeable_threshold": 3,
+    "window": "9:45-10:00",
+    "direction": "long",
+    "days_total": 616,
+    "veto_days": 272,
+    "veto_pct": 44.2,
+    "setup_days_at_threshold": 193,
+    "setup_pct_of_all_days": 31.3,
+    "fired_days_at_threshold": 58,
+    "fire_rate_pct": 30.1,
+    "no_fire_days": 135,
+    "avg_trades_per_fired_day": 1.59,
+    "ev_per_trade_R": 0.58,
+    "ev_per_setup_day_R": 0.277,
+    "fire_rate_by_tier_pct": {
+      "0": 29.1,
+      "1": 29.6,
+      "2": 30.7,
+      "3": 30.1,
+      "4": 36.6
+    }
+  },
+  "M3 Long": {
+    "tradeable_threshold": 3,
+    "window": "10:00-10:15",
+    "direction": "long",
+    "days_total": 616,
+    "veto_days": 361,
+    "veto_pct": 58.6,
+    "setup_days_at_threshold": 173,
+    "setup_pct_of_all_days": 28.1,
+    "fired_days_at_threshold": 55,
+    "fire_rate_pct": 31.8,
+    "no_fire_days": 118,
+    "avg_trades_per_fired_day": 1.36,
+    "ev_per_trade_R": 0.2,
+    "ev_per_setup_day_R": 0.087,
+    "fire_rate_by_tier_pct": {
+      "0": 30.6,
+      "1": 30.7,
+      "2": 31.2,
+      "3": 31.8,
+      "4": 30.1
+    }
+  }
+}

@@ -1411,6 +1411,19 @@ def _tier_for(count: int, tiers: list) -> tuple:
     return tiers[-1]
 
 
+def _load_expectancy_stats() -> dict:
+    """Load expectancy_per_play.json if available; return empty dict otherwise."""
+    expectancy_path = (REPO / 'studies' / 'multi_cell_confluence' / 'results'
+                       / 'expectancy_per_play.json')
+    if not expectancy_path.exists():
+        return {}
+    try:
+        with open(expectancy_path) as fh:
+            return json.load(fh)
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
 def print_matrix_play_scorecards(ctx, today_factors: dict[str, bool],
                                  target_date: date, csv_path: Path) -> None:
     """[5c] Print pre-open scorecards for M1 Short / M2 Long / M3 Long.
@@ -1420,8 +1433,11 @@ def print_matrix_play_scorecards(ctx, today_factors: dict[str, bool],
     - Pre-open confluence count (X of Y_preopen)
     - Remaining factors to verify at 9:31 / 9:35 / 9:45
     - Projected tier if all post-open factors hit / if none hit
+    - Setup frequency + fire rate + per-setup-day expectancy (from
+      studies/multi_cell_confluence/condition_vs_entry.py)
     """
     f = _compute_matrix_factors(ctx, today_factors, target_date, csv_path)
+    expectancy = _load_expectancy_stats()
 
     print(f'[5c] MATRIX PLAY SCORECARDS  (source: studies/multi_cell_confluence/)')
     print()
@@ -1476,6 +1492,34 @@ def print_matrix_play_scorecards(ctx, today_factors: dict[str, bool],
         else:
             print(f'      → If none of the post-open factors fire (count {min_possible}): {min_tier[2]}')
             print(f'      → If all of them fire (count up to {max_possible}): {max_tier[2]}  ({max_tier[3]})')
+
+        # Expectancy block (if we know what tier today projects to)
+        exp = expectancy.get(name)
+        if exp:
+            tier_thr = exp['tradeable_threshold']
+            fire_by_tier = exp.get('fire_rate_by_tier_pct', {})
+
+            def _fire_rate_at(tier: int) -> float | None:
+                # JSON keys come back as strings; if requested tier exceeds the
+                # data we have, fall back to the highest tier we measured.
+                v = fire_by_tier.get(str(tier), fire_by_tier.get(tier))
+                if v is not None:
+                    return v
+                int_keys = sorted(int(k) for k in fire_by_tier.keys())
+                return fire_by_tier.get(str(int_keys[-1])) if int_keys else None
+
+            fire_rate_now = _fire_rate_at(min_possible)
+            fire_rate_max = _fire_rate_at(max_possible)
+            print(f'      📊 Setup frequency baseline (no veto + conf>={tier_thr}): '
+                  f'{exp["setup_pct_of_all_days"]}% of days · fire rate {exp["fire_rate_pct"]}% · '
+                  f'EV +{exp["ev_per_setup_day_R"]}R/setup-day')
+            if fire_rate_now is not None:
+                rng = (f'{fire_rate_now}%' if min_possible == max_possible or fire_rate_max is None
+                       else f'{fire_rate_now}-{fire_rate_max}%')
+                proj_label = (f'{min_possible}' if min_possible == max_possible
+                              else f'{min_possible}-{max_possible}')
+                print(f'         At today\'s projected count ({proj_label}): '
+                      f'FVGC fires ~{rng} of the time')
 
         if 'extra_note' in play:
             print(f'      ⚠ {play["extra_note"]}')
