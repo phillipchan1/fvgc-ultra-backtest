@@ -1,0 +1,38 @@
+{
+  "study": "m1_short_factor_remine",
+  "date_run": "2026-05-18 16:32:37",
+  "data_range": "2018-03-27 \u2192 2026-05-15",
+  "train_range": "2018-01-01 \u2192 2024-12-31",
+  "oos_range": "2025-01-01 \u2192 2026-05-15",
+  "cohort_n_total": 246,
+  "cohort_n_is": 197,
+  "cohort_n_oos": 49,
+  "final_stack": [
+    "f_prior_3d_neg",
+    "f_prior_day_weak",
+    "f_near_20d_low",
+    "f_made_new_5d_low_yday"
+  ],
+  "stack_size": 4,
+  "tier_2plus_is_n": 92,
+  "tier_2plus_is_wr_pct": 60.9,
+  "tier_2plus_oos_n": 17,
+  "tier_2plus_oos_wr_pct": 58.8,
+  "vetoes": [
+    "vixy_low",
+    "dow_monday"
+  ],
+  "config": {
+    "min_lift_pp": 5.0,
+    "min_n_present": 30,
+    "min_n_absent": 30,
+    "p_value_max": 0.1,
+    "fdr_q_max": 0.1,
+    "base_rate_range": [
+      0.05,
+      0.5
+    ],
+    "corr_max": 0.7,
+    "max_stack_size": 6
+  }
+}
