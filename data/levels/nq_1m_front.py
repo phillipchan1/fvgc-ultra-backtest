@@ -19,7 +19,11 @@ import pandas as pd
 import pytz
 
 NY_TZ = pytz.timezone('America/New_York')
-PRICE_FLOOR = 10_000
+# Lowered from 10_000 to 1_000 to cover 2018-2020 history (NQ ~6500 in 2018,
+# dipped to ~6900 at the 2020 COVID low). The consolidated CSV is already
+# cleaned by tools/consolidate_data.py so this is a safety belt, not the
+# primary filter.
+PRICE_FLOOR = 1_000
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 CONSOLIDATED_NQ_PATH = ROOT / 'data' / 'consolidated' / 'nq-front-month.ohlcv-30s.csv'

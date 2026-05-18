@@ -1,204 +1,279 @@
 #!/usr/bin/env python3
 """
-Consolidate multiple Databento NQ OHLCV-1s CSV files into clean
-front-month 15s and 30s candle files.
+Consolidate Databento NQ OHLCV-1s CSVs into clean front-month candle files at
+multiple timeframes. Designed to handle multi-GB inputs via polars streaming.
 
 Steps:
-  1. Load all raw ohlcv-1s CSVs from data/raw/
+  1. Scan all `data/raw/glbx-mdp3-*.ohlcv-1s.csv` files
   2. Drop calendar-spread rows (symbol contains '-')
-  3. Keep only the front-month contract per calendar date (by volume)
-  4. Apply price floor + outlier filters (same logic as backtest)
-  5. Aggregate to 15s and 30s OHLCV candles
-  6. Write compact output files
+  3. Pick the front-month contract per calendar date (max daily volume) with a
+     1-day jitter smoother so rolls happen once per day, cleanly
+  4. Apply price floor + dynamic outlier filter (>100pt from 30s median)
+  5. Aggregate to 15s / 30s / 1m / 2m / 3m / 5m / 15m candles in a single pass
+  6. Write each timeframe to both Parquet (fast, compact) and CSV
+     (backwards-compatible with existing studies)
 
 Run:
-  python consolidate_data.py
+  python tools/consolidate_data.py
 """
 
-import pandas as pd
-import pytz
+from __future__ import annotations
+
+import time
 from pathlib import Path
 
-DATA_DIR = Path('data/raw')
-OUTPUT_DIR = Path('data/consolidated')
+import polars as pl
 
-NQ_QUARTERLY_ORDER = ['H', 'M', 'U', 'Z']
-NY_TZ = pytz.timezone('America/New_York')
-PRICE_FLOOR = 10_000
-OUTLIER_THRESHOLD = 100
+# --- Paths --------------------------------------------------------------------
+
+DATA_DIR = Path("data/raw")
+OUTPUT_DIR = Path("data/consolidated")
+
+# --- Filters ------------------------------------------------------------------
+
+# NQ traded ~6500 in 2018 and dipped to ~6900 in March 2020. A 1000-pt floor
+# catches zero-pad / corrupt rows without killing historical data. The dynamic
+# outlier filter below does the real work.
+PRICE_FLOOR = 1_000
+OUTLIER_THRESHOLD = 100  # points away from 30s median
+
+# Timeframes to emit. Each will produce both .parquet and .csv outputs.
+TIMEFRAMES = ["15s", "30s", "1m", "2m", "3m", "5m", "15m"]
+
+# Polars truncate-interval aliases
+TF_TO_EVERY = {
+    "15s": "15s",
+    "30s": "30s",
+    "1m":  "1m",
+    "2m":  "2m",
+    "3m":  "3m",
+    "5m":  "5m",
+    "15m": "15m",
+}
+
+NY_TZ = "America/New_York"
 
 
-def contract_sort_key(symbol: str) -> tuple:
-    """Parse NQ contract symbol (e.g. NQH6) into (year, quarter_idx) for ordering."""
-    if not isinstance(symbol, str) or len(symbol) < 4 or not symbol.startswith('NQ'):
-        return (9999, 9)
-    month_code = symbol[2]
-    year_suffix = symbol[3:]
-    try:
-        year = int(year_suffix)
-    except ValueError:
-        return (9999, 9)
-    q_idx = NQ_QUARTERLY_ORDER.index(month_code) if month_code in NQ_QUARTERLY_ORDER else 9
-    return (year, q_idx)
+# --- Helpers ------------------------------------------------------------------
+
+def _t(msg: str, t0: float) -> None:
+    print(f"[{time.time() - t0:7.1f}s] {msg}", flush=True)
 
 
-def load_raw_files() -> pd.DataFrame:
-    files = sorted(DATA_DIR.glob('glbx-mdp3-*.ohlcv-1s.csv'))
+def discover_raw_files() -> list[Path]:
+    files = sorted(DATA_DIR.glob("glbx-mdp3-*.ohlcv-1s.csv"))
     if not files:
         raise FileNotFoundError(f"No ohlcv-1s CSVs found in {DATA_DIR}")
-
-    print(f"Found {len(files)} raw OHLCV-1s files:")
-    frames = []
+    print("Raw input files:")
     for f in files:
-        print(f"  {f.name}  ({f.stat().st_size / 1e6:.1f} MB)")
-        df = pd.read_csv(f, dtype={'symbol': str})
-        frames.append(df)
-        print(f"    rows: {len(df):,}")
+        # Follow symlink for size if needed
+        try:
+            size = f.stat().st_size
+        except OSError:
+            size = f.resolve().stat().st_size
+        print(f"  {f.name}  ({size / 1e9:.2f} GB)")
+    return files
 
-    combined = pd.concat(frames, ignore_index=True)
-    print(f"\nCombined raw rows: {len(combined):,}")
-    return combined
 
-
-def determine_front_month_schedule(df: pd.DataFrame) -> pd.DataFrame:
+def build_front_month_schedule(files: list[Path], t0: float) -> pl.DataFrame:
     """
-    Build a per-date front-month contract map based on daily volume dominance.
-    The contract with the most volume on a given calendar date is front month
-    for that entire date, giving a clean once-per-day roll.
+    Streaming pass: compute total volume per (date, symbol), then per date pick
+    the symbol with max volume as the front month. Apply a 1-day jitter smoother
+    so a single anomalous day doesn't fragment the roll schedule.
     """
-    df['_date'] = df['ts_event'].dt.date
-    daily_vol = (
-        df.groupby(['_date', 'symbol'])['volume']
-        .sum()
-        .reset_index()
-        .sort_values(['_date', 'volume'], ascending=[True, False])
-    )
-    front_month = daily_vol.drop_duplicates(subset='_date', keep='first')[['_date', 'symbol']]
-    front_month = front_month.rename(columns={'symbol': 'front_month'})
+    _t("Pass 1/2: scanning raw for daily volume by symbol...", t0)
 
-    fm = front_month.sort_values('_date').reset_index(drop=True)
-    for i in range(1, len(fm) - 1):
-        if fm.loc[i - 1, 'front_month'] == fm.loc[i + 1, 'front_month'] and \
-           fm.loc[i, 'front_month'] != fm.loc[i - 1, 'front_month']:
-            fm.loc[i, 'front_month'] = fm.loc[i - 1, 'front_month']
-
-    print("\nFront-month schedule (by daily volume):")
-    prev_sym = None
-    for _, row in fm.iterrows():
-        if row['front_month'] != prev_sym:
-            print(f"  {row['_date']}  ->  {row['front_month']}")
-            prev_sym = row['front_month']
-
-    return fm
-
-
-def clean_front_month(df: pd.DataFrame) -> pd.DataFrame:
-    before = len(df)
-
-    spread_mask = df['symbol'].str.contains('-', na=False)
-    n_spreads = spread_mask.sum()
-    df = df[~spread_mask].copy()
-    print(f"\nDropped {n_spreads:,} spread rows")
-
-    df['ts_event'] = pd.to_datetime(df['ts_event'], utc=True)
-
-    fm_schedule = determine_front_month_schedule(df)
-    df['_date'] = df['ts_event'].dt.date
-    df = df.merge(fm_schedule, on='_date', how='left')
-    non_front = df['symbol'] != df['front_month']
-    n_back = non_front.sum()
-    df = df[~non_front].copy()
-    print(f"Dropped {n_back:,} back-month rows")
-    df = df.drop(columns=['_date', 'front_month'])
-
-    df = df.sort_values('ts_event')
-    dupes = df.duplicated(subset='ts_event', keep='first').sum()
-    if dupes:
-        df = df.drop_duplicates(subset='ts_event', keep='first')
-        print(f"Dropped {dupes:,} duplicate-timestamp rows")
-
-    df = df.reset_index(drop=True)
-    print(f"Clean 1s rows: {len(df):,}  (from {before:,} raw)")
-    return df
-
-
-def apply_filters(df: pd.DataFrame) -> pd.DataFrame:
-    """Apply price floor and outlier filters (mirrors backtest logic)."""
-    before = len(df)
-
-    floor_mask = (
-        (df['open'] >= PRICE_FLOOR) & (df['close'] >= PRICE_FLOOR) &
-        (df['low'] >= PRICE_FLOOR) & (df['high'] >= PRICE_FLOOR)
-    )
-    df = df[floor_mask].copy()
-    n_floor = before - len(df)
-    if n_floor:
-        print(f"Dropped {n_floor:,} sub-floor rows (OHLC < {PRICE_FLOOR})")
-
-    df['_ts_30s'] = df['ts_event'].dt.floor('30s')
-    df['_mid'] = (df['open'] + df['close']) / 2
-    group_median = df.groupby('_ts_30s')['_mid'].transform('median')
-    outlier_mask = (df['_mid'] - group_median).abs() > OUTLIER_THRESHOLD
-    n_outliers = outlier_mask.sum()
-    if n_outliers:
-        print(f"Dropped {n_outliers:,} outlier rows (>{OUTLIER_THRESHOLD} pts from 30s median)")
-    df = df[~outlier_mask].copy()
-    df = df.drop(columns=['_ts_30s', '_mid'])
-
-    print(f"After filters: {len(df):,} clean 1s rows")
-    return df
-
-
-def aggregate(df: pd.DataFrame, interval: str) -> pd.DataFrame:
-    """Aggregate 1s bars into OHLCV candles at the given interval."""
-    ts_col = f'_ts_{interval}'
-    df[ts_col] = df['ts_event'].dt.floor(interval)
-
-    candles = (
-        df.groupby(ts_col)
-        .agg(
-            open=('open', 'first'),
-            high=('high', 'max'),
-            low=('low', 'min'),
-            close=('close', 'last'),
-            volume=('volume', 'sum'),
+    scans = [
+        pl.scan_csv(
+            str(f),
+            schema_overrides={"symbol": pl.String},
+            # ts_event is RFC3339 with nanoseconds; let polars try-parse later
         )
-        .reset_index()
-        .rename(columns={ts_col: 'timestamp_utc'})
+        for f in files
+    ]
+    lf = pl.concat(scans, how="vertical")
+
+    daily = (
+        lf
+        .filter(~pl.col("symbol").str.contains("-"))   # drop spreads
+        .with_columns(
+            pl.col("ts_event").str.to_datetime(time_unit="ns", time_zone="UTC")
+        )
+        .with_columns(pl.col("ts_event").dt.date().alias("_date"))
+        .group_by(["_date", "symbol"])
+        .agg(pl.col("volume").sum().alias("daily_vol"))
+        .sort(["_date", "daily_vol"], descending=[False, True])
+        .collect(engine="streaming")
     )
-    candles['timestamp_ny'] = candles['timestamp_utc'].dt.tz_convert(NY_TZ)
-    candles = candles.sort_values('timestamp_utc').reset_index(drop=True)
-    return candles
+
+    _t(f"  daily (date, symbol) rows: {len(daily):,}", t0)
+
+    front = (
+        daily
+        .group_by("_date", maintain_order=True)
+        .agg(pl.col("symbol").first().alias("front_month"))
+        .sort("_date")
+    )
+
+    # 1-day jitter smoother: if today's symbol differs from both yesterday and
+    # tomorrow (and those two agree), today was a glitch — overwrite with the
+    # surrounding symbol. Matches the original consolidate_data.py behavior.
+    syms = front["front_month"].to_list()
+    smoothed = syms.copy()
+    for i in range(1, len(syms) - 1):
+        if syms[i - 1] == syms[i + 1] and syms[i] != syms[i - 1]:
+            smoothed[i] = syms[i - 1]
+    front = front.with_columns(pl.Series("front_month", smoothed))
+
+    # Print the roll schedule (one line per contract change)
+    print("\nFront-month roll schedule:")
+    prev = None
+    for d, sym in zip(front["_date"].to_list(), front["front_month"].to_list()):
+        if sym != prev:
+            print(f"  {d}  ->  {sym}")
+            prev = sym
+    print()
+
+    return front
 
 
-def report(candles: pd.DataFrame, label: str):
-    print(f"\n--- {label} ---")
-    print(f"  Candles: {len(candles):,}")
-    print(f"  Range:   {candles['timestamp_utc'].min()} -> {candles['timestamp_utc'].max()}")
+def consolidate_to_timeframes(
+    files: list[Path],
+    front: pl.DataFrame,
+    t0: float,
+) -> dict[str, pl.DataFrame]:
+    """
+    Streaming pass 2: join to front-month schedule, apply filters, then collect
+    a clean front-month-only 1s frame. From that one in-memory frame, aggregate
+    to all requested timeframes (cheap once data is filtered).
+    """
+    _t("Pass 2/2: filtering to front month + applying outlier filter...", t0)
 
+    scans = [
+        pl.scan_csv(
+            str(f),
+            schema_overrides={"symbol": pl.String},
+        )
+        for f in files
+    ]
+    lf = pl.concat(scans, how="vertical")
 
-def main():
-    print("=" * 60)
-    print("NQ Front-Month Data Consolidation")
-    print("=" * 60)
+    front_lf = front.lazy()
 
-    df = load_raw_files()
-    df = clean_front_month(df)
-    df = apply_filters(df)
+    # Filter steps:
+    #  - drop spreads
+    #  - parse ts_event
+    #  - tag _date, join front-month, keep only rows where symbol == front_month
+    #  - apply price floor on all four OHLC columns
+    cleaned = (
+        lf
+        .filter(~pl.col("symbol").str.contains("-"))
+        .with_columns(
+            pl.col("ts_event").str.to_datetime(time_unit="ns", time_zone="UTC")
+        )
+        .with_columns(pl.col("ts_event").dt.date().alias("_date"))
+        .join(front_lf, on="_date", how="inner")
+        .filter(pl.col("symbol") == pl.col("front_month"))
+        .filter(
+            (pl.col("open") >= PRICE_FLOOR)
+            & (pl.col("high") >= PRICE_FLOOR)
+            & (pl.col("low") >= PRICE_FLOOR)
+            & (pl.col("close") >= PRICE_FLOOR)
+        )
+        .select(["ts_event", "open", "high", "low", "close", "volume", "symbol"])
+        .unique(subset=["ts_event"], keep="first")
+        .sort("ts_event")
+        .collect(engine="streaming")
+    )
 
+    _t(f"  clean 1s rows (pre-outlier): {len(cleaned):,}", t0)
+
+    # Dynamic outlier filter: drop rows whose (open+close)/2 deviates >100pt
+    # from the median mid within the same 30s bucket.
+    _t("Applying outlier filter (>100pt from 30s median)...", t0)
+    with_mid = cleaned.with_columns(
+        ((pl.col("open") + pl.col("close")) / 2.0).alias("_mid"),
+        pl.col("ts_event").dt.truncate("30s").alias("_bucket"),
+    )
+    with_med = with_mid.with_columns(
+        pl.col("_mid").median().over("_bucket").alias("_med")
+    )
+    n_before = len(with_med)
+    cleaned = (
+        with_med
+        .filter((pl.col("_mid") - pl.col("_med")).abs() <= OUTLIER_THRESHOLD)
+        .drop(["_mid", "_bucket", "_med"])
+    )
+    _t(f"  dropped {n_before - len(cleaned):,} outliers; final 1s rows: {len(cleaned):,}", t0)
+
+    # Optionally write the cleaned 1s frame too (handy for any sub-minute work)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    one_s_parquet = OUTPUT_DIR / "nq-front-month.ohlcv-1s.parquet"
+    cleaned.write_parquet(one_s_parquet, compression="zstd")
+    _t(f"  wrote cleaned 1s parquet -> {one_s_parquet} "
+       f"({one_s_parquet.stat().st_size / 1e9:.2f} GB)", t0)
 
-    for interval, suffix in [('15s', '15s'), ('30s', '30s')]:
-        candles = aggregate(df, interval)
-        report(candles, f"{interval} candles")
+    # Aggregate to each timeframe
+    out: dict[str, pl.DataFrame] = {}
+    for tf in TIMEFRAMES:
+        every = TF_TO_EVERY[tf]
+        _t(f"Aggregating {tf}...", t0)
+        agg = (
+            cleaned
+            .with_columns(pl.col("ts_event").dt.truncate(every).alias("timestamp_utc"))
+            .group_by("timestamp_utc", maintain_order=False)
+            .agg(
+                pl.col("open").first().alias("open"),
+                pl.col("high").max().alias("high"),
+                pl.col("low").min().alias("low"),
+                pl.col("close").last().alias("close"),
+                pl.col("volume").sum().alias("volume"),
+            )
+            .sort("timestamp_utc")
+            .with_columns(
+                pl.col("timestamp_utc").dt.convert_time_zone(NY_TZ).alias("timestamp_ny")
+            )
+            .select(["timestamp_utc", "timestamp_ny", "open", "high", "low", "close", "volume"])
+        )
+        out[tf] = agg
+        _t(f"  {tf}: {len(agg):,} candles  "
+           f"({agg['timestamp_utc'].min()} .. {agg['timestamp_utc'].max()})", t0)
 
-        out_path = OUTPUT_DIR / f'nq-front-month.ohlcv-{suffix}.csv'
-        candles.to_csv(out_path, index=False)
-        size_mb = out_path.stat().st_size / 1e6
-        print(f"  Wrote: {out_path}  ({size_mb:.1f} MB)")
-
-    print("\nDone.")
+    return out
 
 
-if __name__ == '__main__':
+def write_outputs(by_tf: dict[str, pl.DataFrame], t0: float) -> None:
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    for tf, df in by_tf.items():
+        parquet_path = OUTPUT_DIR / f"nq-front-month.ohlcv-{tf}.parquet"
+        csv_path = OUTPUT_DIR / f"nq-front-month.ohlcv-{tf}.csv"
+
+        df.write_parquet(parquet_path, compression="zstd")
+        df.write_csv(csv_path)
+
+        _t(
+            f"  wrote {tf}: "
+            f"{parquet_path.name} ({parquet_path.stat().st_size / 1e6:.1f} MB) + "
+            f"{csv_path.name} ({csv_path.stat().st_size / 1e6:.1f} MB)",
+            t0,
+        )
+
+
+def main() -> None:
+    t0 = time.time()
+    print("=" * 70)
+    print("NQ front-month consolidation  (polars streaming, multi-TF)")
+    print("=" * 70)
+
+    files = discover_raw_files()
+    front = build_front_month_schedule(files, t0)
+    by_tf = consolidate_to_timeframes(files, front, t0)
+
+    _t("Writing outputs...", t0)
+    write_outputs(by_tf, t0)
+
+    _t("Done.", t0)
+
+
+if __name__ == "__main__":
     main()

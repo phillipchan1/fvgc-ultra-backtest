@@ -3,3 +3,5 @@ pytz
 matplotlib
 seaborn
 numpy
+polars>=1.0
+pyarrow

@@ -20,8 +20,12 @@ from datetime import time as dtime, timedelta
 
 NY_TZ = pytz.timezone('America/New_York')
 
-NQ_1M_PATH = ROOT / 'data' / 'raw' / 'glbx-mdp3-20200927-20260221.ohlcv-1m.csv'
-VIXY_PATH = ROOT / 'data' / 'raw' / 'xnas-itch-20201203-20251203.ohlcv-1m.csv'
+# Read NQ 1m from the cleaned, front-month-filtered consolidated parquet
+# produced by tools/consolidate_data.py. That file already drops spreads,
+# back-month rows, sub-floor prints, and >100pt outliers, so the inline
+# select_front_month / PRICE_FLOOR logic below is redundant for it.
+NQ_1M_PATH = ROOT / 'data' / 'consolidated' / 'nq-front-month.ohlcv-1m.parquet'
+VIXY_PATH = ROOT / 'data' / 'raw' / 'xnas-itch-20180501-20260515.ohlcv-1h.csv'
 EVENTS_PATH = ROOT / 'data' / 'raw' / 'market_high_volume_events_2020_2025.csv'
 OUTPUT_PATH = ROOT / 'data' / 'trading_days' / 'trading_days.csv'
 
@@ -31,7 +35,9 @@ OVERNIGHT_START = dtime(18, 0)
 MIN_FVG_SIZE = 3.0
 
 NQ_QUARTERLY_ORDER = ['H', 'M', 'U', 'Z']
-PRICE_FLOOR = 10_000
+# Belt-only floor; consolidate_data.py is the real cleaning pass. Lowered
+# from 10_000 so 2018-2020 data (NQ ~6500-12000) is preserved.
+PRICE_FLOOR = 1_000
 
 # Known event times (ET) for pre-RTH / during-session classification
 EVENT_TIMES = {
@@ -49,28 +55,33 @@ EVENT_TIMES = {
 # ===================================================================
 
 def load_nq_1m() -> pd.DataFrame:
-    print("Loading NQ 1-minute bars...")
-    df = pd.read_csv(NQ_1M_PATH, dtype={'symbol': str})
-    print(f"  {len(df):,} raw rows")
+    """
+    Load cleaned, front-month-filtered NQ 1-minute bars from the consolidated
+    parquet produced by tools/consolidate_data.py. The parquet's schema is
+    (timestamp_utc, timestamp_ny, open, high, low, close, volume); this
+    function maps it to the (ts_ny, date_ny, OHLCV) shape downstream code
+    expects, matching the prior CSV-based pipeline byte-for-byte except for
+    the broader date range.
+    """
+    print(f"Loading NQ 1-minute bars from {NQ_1M_PATH.name}...")
+    df = pd.read_parquet(NQ_1M_PATH)
+    print(f"  {len(df):,} bars in parquet")
 
-    df = df[~df['symbol'].str.contains('-', na=False)].copy()
-    print(f"  {len(df):,} after dropping spreads")
-
-    df['ts_event'] = pd.to_datetime(df['ts_event'], utc=True)
-    df['ts_ny'] = df['ts_event'].dt.tz_convert(NY_TZ)
+    # ts_ny / date_ny in America/New_York (already wall-clock NY in parquet)
+    df['ts_ny'] = pd.to_datetime(df['timestamp_ny'], utc=True).dt.tz_convert(NY_TZ)
     df['date_ny'] = df['ts_ny'].dt.date
 
-    df = select_front_month(df)
-
+    # Safety belt only — consolidate_data.py is the real filter
     mask = (df['open'] >= PRICE_FLOOR) & (df['close'] >= PRICE_FLOOR) & \
            (df['low'] >= PRICE_FLOOR) & (df['high'] >= PRICE_FLOOR)
     n_dropped = (~mask).sum()
     if n_dropped:
-        print(f"  Dropped {n_dropped:,} sub-floor rows")
+        print(f"  Dropped {n_dropped:,} sub-floor rows (belt-only)")
     df = df[mask].copy()
 
     df = df.sort_values('ts_ny').reset_index(drop=True)
     print(f"  {len(df):,} clean 1-min bars, {df['date_ny'].nunique()} calendar dates")
+    print(f"  Range: {df['ts_ny'].iloc[0]} .. {df['ts_ny'].iloc[-1]}")
     return df
 
 

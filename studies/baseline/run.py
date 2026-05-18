@@ -14,14 +14,15 @@ from fvgc.engine import (
 )
 
 DATA_PATH = Path('data/consolidated/nq-front-month.ohlcv-30s.csv')
-LOGS_DIR = Path('logs')
+STUDY_DIR = Path(__file__).resolve().parent
+RESULTS_DIR = STUDY_DIR / 'results'
 
 
 def main():
     print("=" * 60)
     print(f"FVGC v{__version__} — Indicator baseline (full history)")
     print("=" * 60)
-    LOGS_DIR.mkdir(exist_ok=True)
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
     candles = load_candles(DATA_PATH)
     tmin = candles['timestamp_ny'].min()
@@ -42,8 +43,8 @@ def main():
     print("\n--- Full-history summary ---")
     print_summary(stats)
 
-    out_trades = LOGS_DIR / 'baseline_trades.csv'
-    out_fvgs = LOGS_DIR / 'baseline_fvgs.csv'
+    out_trades = RESULTS_DIR / 'trades.csv'
+    out_fvgs = RESULTS_DIR / 'fvgs.csv'
     log_signals(results, path=out_trades)
     log_fvgs(fvgs, path=out_fvgs)
     print(f"\nBaseline artifacts: {out_trades}, {out_fvgs}")
