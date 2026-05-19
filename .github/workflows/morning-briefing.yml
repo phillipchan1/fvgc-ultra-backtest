@@ -4,10 +4,17 @@ name: Morning Briefing
 # routine entirely. Order:
 #   1. Sync the FVGC Playbook from Notion → playbook/plays.json
 #   2. Run morning_briefing.py to fetch live market data + write
-#      briefing.json + data.js
-#   3. Fill AI narratives via GPT-5 Nano (same morning_briefing.py call)
-#   4. Commit + push the artifacts. The GitHub Pages deploy workflow will
-#      pick the new artifacts up and refresh the deployed dashboard.
+#      briefing.json + data.js (with AI narratives via GPT-5 Nano)
+#   3. Commit + push the artifacts to master
+#   4. Deploy the dashboard to GitHub Pages directly from this run.
+#
+# Why the deploy lives here instead of in pages.yml:
+# GitHub Actions silently blocks workflows from being triggered by the
+# default GITHUB_TOKEN — an anti-infinite-loop guardrail. So when this
+# workflow pushes a commit, the standalone pages.yml workflow does NOT
+# auto-trigger. We fold the deploy in-line to avoid the dependency. The
+# separate pages.yml still handles deploys for human pushes that don't
+# go through this cron.
 #
 # Cron: 13:10 UTC weekdays. During DST that's 6:10 AM PT (matches the old
 # Claude routine); during standard time it runs 1h earlier — still pre-open.
@@ -24,6 +31,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: morning-briefing
@@ -33,6 +42,9 @@ jobs:
   briefing:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout master
         uses: actions/checkout@v4
@@ -69,17 +81,25 @@ jobs:
           git add playbook/plays.json tools/briefing/briefing.json tools/briefing/data.js
           if git diff --staged --quiet; then
             echo "No changes to commit."
-            exit 0
+          else
+            git commit -m "briefing: daily run $(TZ=America/New_York date +%Y-%m-%d)"
+            for i in 1 2 3; do
+              if git push origin HEAD:master; then
+                echo "Pushed successfully."
+                break
+              fi
+              git pull --rebase origin master
+            done
           fi
-          git commit -m "briefing: daily run $(TZ=America/New_York date +%Y-%m-%d)"
-          # Retry-on-fast-forward in case the GitHub Pages deploy workflow
-          # somehow raced (it shouldn't — different paths — but be safe).
-          for i in 1 2 3; do
-            if git push origin HEAD:master; then
-              echo "Pushed successfully."
-              exit 0
-            fi
-            git pull --rebase origin master
-          done
-          echo "Push failed after 3 attempts."
-          exit 1
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload dashboard artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: tools/briefing
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
