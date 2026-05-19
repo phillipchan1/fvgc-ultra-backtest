@@ -1650,6 +1650,53 @@
   .target-row .t-px { color: var(--text); }
   .target-row .t-dist { color: var(--text-dim); margin-left: auto; }
 
+  /* ===== Unknown factors warning (maintainer strip, footer area) ===== */
+  .unknown-factors-warn {
+    margin-top: 24px;
+    padding: 12px 16px;
+    background: linear-gradient(90deg, var(--amber-dim), transparent 70%);
+    border: 1px solid var(--amber);
+    border-radius: 4px;
+    position: relative;
+  }
+  .unknown-factors-warn::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--amber); border-radius: 3px 0 0 3px;
+    box-shadow: 0 0 10px var(--amber);
+  }
+  .unknown-factors-warn .ufw-h {
+    color: var(--amber); font-size: 10px; letter-spacing: 2px; font-weight: 700;
+    font-family: var(--mono); margin-bottom: 6px;
+  }
+  .unknown-factors-warn .ufw-count {
+    color: var(--amber); padding: 1px 6px; border: 1px solid var(--amber);
+    border-radius: 2px; background: rgba(255,194,77,0.12);
+    font-size: 9px; margin-left: 4px;
+  }
+  .unknown-factors-warn .ufw-body {
+    font-size: 11px; color: #e3b366; line-height: 1.6; margin-bottom: 8px;
+  }
+  .unknown-factors-warn .ufw-list {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .unknown-factors-warn .ufw-row {
+    display: grid; grid-template-columns: minmax(150px, auto) 16px 1fr;
+    gap: 8px; align-items: baseline;
+    padding: 4px 8px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 3px;
+    font-size: 11px;
+  }
+  .unknown-factors-warn .ufw-factor {
+    color: var(--amber); font-weight: 700;
+  }
+  .unknown-factors-warn .ufw-arrow {
+    color: var(--text-mute); text-align: center;
+  }
+  .unknown-factors-warn .ufw-plays {
+    color: var(--text); font-size: 11px;
+  }
+
   /* ===== Misc ===== */
   .empty { color: var(--text-mute); font-style: italic; font-size: 11px; padding: 10px 0; letter-spacing: 0.3px; }
   .freshness {
@@ -2113,6 +2160,30 @@
     bottom.appendChild(renderLevelsTable(d.levels || {}));
     bottom.appendChild(renderGamePlan(d.game_plan || {}));
     app.appendChild(bottom);
+
+    // Unknown-factor warning (maintainer signal — plays in Notion that
+    // reference factor IDs not computed in morning_briefing.py). Silent
+    // failure mode by default; this strip makes it visible.
+    const unknownFactors = d.unknown_factors || [];
+    if (unknownFactors.length) {
+      const warn = h('div', {class:'unknown-factors-warn'},
+        h('div', {class:'ufw-h'}, '⚠ UNKNOWN PRE-MARKET FACTORS · ',
+          h('span', {class:'ufw-count'}, `${unknownFactors.length}`)),
+        h('div', {class:'ufw-body'},
+          'These factors are referenced by plays in Notion but are not ',
+          'computed in ',
+          h('span', {class:'mono'}, 'morning_briefing.py'),
+          '. The plays needing them will silently never fire. Either add ',
+          'the factor to the briefing code or remove the reference from ',
+          'the play in Notion.'),
+        h('div', {class:'ufw-list'},
+          unknownFactors.map(uf => h('div', {class:'ufw-row'},
+            h('span', {class:'ufw-factor mono'}, uf.factor),
+            h('span', {class:'ufw-arrow'}, '→'),
+            h('span', {class:'ufw-plays'},
+              (uf.plays || []).join(', '))))));
+      app.appendChild(warn);
+    }
 
     // Footer
     app.appendChild(h('div', {class:'mute mono', style:'text-align:center;font-size:9px;margin-top:28px;letter-spacing:2px;'},

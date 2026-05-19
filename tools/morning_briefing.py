@@ -1939,6 +1939,41 @@ def build_briefing_dict(
         'narrative': None,
     }
 
+    # ---- Unknown-factor detection ----
+    # Scan every play's pre_market_factors for IDs that don't exist in the
+    # computed today_factors dict. Silent misses are how Notion-added plays
+    # fail right now — surface them so the maintainer knows code work is
+    # required. Pre-existing matrix-play factors (MATRIX_PLAYS) are also
+    # included as a sanity backstop.
+    known_factor_ids: set[str] = set(today_factors.keys())
+    # Add matrix-play factor IDs to the "known" set; some of them are
+    # post-open and only computed in _compute_matrix_factors at scorecard
+    # time, but they are NOT unknown in the system sense.
+    for mp_play in MATRIX_PLAYS.values():
+        for fid, _when, _desc, _lift in mp_play.get('pros', []):
+            known_factor_ids.add(fid)
+        for vid, _when, _desc, _lift in mp_play.get('vetos', []):
+            known_factor_ids.add(vid)
+    unknown_factors: dict[str, list[str]] = {}
+    for play in plays:
+        if play.get('status') == 'rejected':
+            continue
+        for fid in play.get('pre_market_factors', []) or []:
+            if fid not in known_factor_ids:
+                unknown_factors.setdefault(fid, []).append(
+                    play.get('name') or '(unnamed)')
+    if unknown_factors:
+        print()
+        print('⚠ UNKNOWN PRE-MARKET FACTORS')
+        for fid, names in sorted(unknown_factors.items()):
+            print(f'    {fid!r} referenced by:')
+            for n in names:
+                print(f'      - {n}')
+        print('    → These factors are not computed in morning_briefing.py;')
+        print('      the plays that need them will never fire. Either add the')
+        print('      factor to determine_factors_from_context() or remove the')
+        print('      factor reference from the play in Notion.')
+
     # ---- Playbook plays ----
     matched_plays = match_plays(plays, today_factors)
 
@@ -2037,6 +2072,10 @@ def build_briefing_dict(
         'active_plays': active_plays_d,
         'partial_plays': partial_plays_d,
         'game_plan': game_plan_d,
+        'unknown_factors': [
+            {'factor': fid, 'plays': names}
+            for fid, names in sorted(unknown_factors.items())
+        ],
     }
 
 
