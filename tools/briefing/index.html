@@ -120,7 +120,280 @@
     50% { opacity: 0.5; box-shadow: 0 0 0 6px transparent; }
   }
 
-  /* ===== PRIMARY READ HERO ===== */
+  /* ===== DECISION FLOW (3 cols) ===== */
+  .flow {
+    position: relative;
+    display: grid;
+    grid-template-columns: 0.9fr 1fr 1.35fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 1180px) { .flow { grid-template-columns: 1fr; } }
+  .flow-col {
+    position: relative;
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 14px 14px 16px;
+  }
+  .flow-col::before {
+    content: ""; position: absolute; top: 0; left: 12px; right: 12px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--line-2), transparent);
+  }
+  .flow-step {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--text-mute); font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .flow-step .n {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px;
+    background: var(--cyan-dim); color: var(--cyan);
+    border: 1px solid var(--cyan); border-radius: 2px;
+    font-size: 10px; font-weight: 700;
+    box-shadow: 0 0 8px var(--cyan-dim);
+  }
+  .flow-step .t { color: var(--cyan); }
+  .flow-step::after {
+    content: ""; flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--line) 0%, transparent 80%);
+  }
+  .flow::before, .flow::after {
+    content: "▶";
+    position: absolute; top: 50%; transform: translateY(-50%);
+    color: var(--cyan); font-family: var(--mono); font-size: 14px;
+    background: var(--bg-0); padding: 4px 2px; z-index: 2;
+    text-shadow: 0 0 10px var(--cyan);
+  }
+  .flow::before { left: calc(30.5% - 6px); }
+  .flow::after  { left: calc(58% - 6px); }
+  @media (max-width: 1180px) { .flow::before, .flow::after { display: none; } }
+
+  .cond-headline {
+    background: linear-gradient(135deg, var(--cyan-dim), transparent 70%);
+    border-left: 2px solid var(--cyan);
+    padding: 10px 12px;
+    border-radius: 0 3px 3px 0;
+    margin-bottom: 10px;
+  }
+  .cond-headline.bad  { background: linear-gradient(135deg, var(--red-dim), transparent 70%); border-color: var(--red); }
+  .cond-headline.warn { background: linear-gradient(135deg, var(--amber-dim), transparent 70%); border-color: var(--amber); }
+  .cond-headline.good { background: linear-gradient(135deg, var(--green-dim), transparent 70%); border-color: var(--green); }
+  .cond-headline .l {
+    font-size: 9px; letter-spacing: 2px; color: var(--text-mute);
+    font-family: var(--mono); font-weight: 700; margin-bottom: 4px;
+  }
+  .cond-headline .v {
+    font-family: var(--mono); font-size: 20px; font-weight: 700; line-height: 1;
+  }
+  .cond-headline.good .v { color: var(--green); }
+  .cond-headline.warn .v { color: var(--amber); }
+  .cond-headline.bad  .v { color: var(--red); }
+  .cond-headline.cool .v { color: var(--cyan); }
+  .cond-headline .s {
+    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
+    margin-top: 5px; letter-spacing: 0.5px;
+  }
+
+  .cond-row {
+    display: grid; grid-template-columns: 80px 1fr;
+    gap: 8px; align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--line-soft);
+  }
+  .cond-row:last-child { border-bottom: 0; }
+  .cond-row .l {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--text-mute); font-weight: 700;
+  }
+  .cond-row .v {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    color: var(--text); text-align: right;
+  }
+  .cond-row .v.up   { color: var(--green); }
+  .cond-row .v.down { color: var(--red); }
+  .cond-row .v.warn { color: var(--amber); }
+  .cond-row .v.cool { color: var(--cyan); }
+  .cond-row .v .sub {
+    font-family: var(--mono); font-size: 9px; color: var(--text-mute);
+    margin-left: 4px; letter-spacing: 0.3px;
+  }
+
+  /* Col 2: candidate plays */
+  .play-card {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 10px 12px;
+    position: relative;
+    margin-bottom: 8px;
+    transition: opacity 0.15s;
+  }
+  .play-card:last-child { margin-bottom: 0; }
+  .play-card::before {
+    content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 3px;
+    background: var(--line-2);
+  }
+  .play-card.primary {
+    border-color: var(--cyan);
+    background: linear-gradient(180deg, var(--cyan-dim), var(--bg-2) 70%);
+    box-shadow: 0 0 0 1px var(--cyan-dim), 0 0 22px -8px var(--cyan-glow);
+  }
+  .play-card.primary::before { background: var(--cyan); box-shadow: 0 0 12px var(--cyan); }
+  .play-card.wait::before { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .play-card.veto {
+    opacity: 0.42;
+    background: var(--bg-2);
+  }
+  .play-card.veto::before { background: var(--red); }
+  .play-card.veto:hover { opacity: 0.9; }
+  .play-card .ph {
+    display: flex; align-items: center; gap: 8px; justify-content: space-between;
+  }
+  .play-card .pname {
+    font-size: 13px; font-weight: 700; letter-spacing: 0.3px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .play-card .pnum {
+    font-family: var(--mono); font-size: 9px;
+    color: var(--text-mute); background: var(--bg-3); border: 1px solid var(--line);
+    padding: 1px 5px; border-radius: 2px; font-weight: 700; letter-spacing: 1px;
+  }
+  .play-card.primary .pnum { color: var(--cyan); border-color: var(--cyan); background: var(--cyan-dim); }
+  .play-card.veto .pnum { color: var(--red); border-color: var(--red); background: var(--red-dim); }
+  .play-card .pstate {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px;
+    font-weight: 700; padding: 2px 7px; border-radius: 2px; border: 1px solid;
+  }
+  .play-card .pstate.live { color: var(--cyan); border-color: var(--cyan); background: var(--cyan-dim); }
+  .play-card .pstate.wait { color: var(--amber); border-color: var(--amber); background: var(--amber-dim); }
+  .play-card .pstate.veto { color: var(--red); border-color: var(--red); background: var(--red-dim); }
+  .play-card .pbody {
+    margin-top: 8px;
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
+  }
+  .conf-mini { display: flex; gap: 3px; }
+  .conf-mini .dd {
+    width: 9px; height: 9px; border-radius: 50%;
+    border: 1.5px solid var(--line-2); background: transparent;
+  }
+  .conf-mini .dd.on {
+    background: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 5px var(--cyan);
+  }
+  .play-card.veto .conf-mini .dd.on {
+    background: var(--text-mute); border-color: var(--text-mute); box-shadow: none;
+  }
+  .conf-mini .dd.maybe { border-style: dashed; border-color: var(--cyan); }
+  .play-card .pstats {
+    display: flex; gap: 8px; margin-left: auto;
+    font-family: var(--mono); font-size: 10px;
+  }
+  .play-card .pstats b { color: var(--text); font-weight: 700; }
+  .play-card.primary .pstats b { color: var(--cyan); }
+  .play-card .pveto-line {
+    margin-top: 6px;
+    font-family: var(--mono); font-size: 10px; color: var(--red);
+    letter-spacing: 0.3px;
+  }
+  .play-card .pveto-line::before { content: "⊘  "; }
+  .play-card .pwait-line {
+    margin-top: 6px;
+    font-family: var(--mono); font-size: 10px; color: var(--amber);
+    letter-spacing: 0.3px;
+  }
+  .play-card .pwait-line::before { content: "◷  "; }
+
+  /* Col 3: execution */
+  .exec {
+    position: relative;
+    height: 100%;
+    display: flex; flex-direction: column;
+  }
+  .exec-frame {
+    position: absolute; inset: -2px; pointer-events: none;
+  }
+  .exec-frame i {
+    position: absolute; width: 14px; height: 14px;
+    border-color: var(--cyan); border-style: solid; border-width: 0;
+    box-shadow: 0 0 6px var(--cyan-glow);
+  }
+  .exec.stand .exec-frame i { border-color: var(--red); box-shadow: 0 0 6px var(--red); }
+  .exec.wait  .exec-frame i { border-color: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .exec-frame .tl { top: 0; left: 0; border-top-width: 2px; border-left-width: 2px; }
+  .exec-frame .tr { top: 0; right: 0; border-top-width: 2px; border-right-width: 2px; }
+  .exec-frame .bl { bottom: 0; left: 0; border-bottom-width: 2px; border-left-width: 2px; }
+  .exec-frame .br { bottom: 0; right: 0; border-bottom-width: 2px; border-right-width: 2px; }
+  .exec-action {
+    font-family: var(--mono); font-size: 34px; font-weight: 700; line-height: 1.05;
+    background: linear-gradient(180deg, var(--cyan), #38b3c9);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    letter-spacing: 0.5px;
+  }
+  .exec.stand .exec-action { background: linear-gradient(180deg, var(--red), #b03c4e); -webkit-background-clip: text; background-clip: text; }
+  .exec.wait  .exec-action { background: linear-gradient(180deg, var(--amber), #b8851c); -webkit-background-clip: text; background-clip: text; }
+  .exec-sub {
+    font-family: var(--mono); font-size: 11px; color: var(--text-dim);
+    margin-top: 4px; letter-spacing: 1.5px; text-transform: uppercase;
+  }
+  .exec-summary {
+    font-size: 12px; color: var(--text-dim); margin-top: 10px; line-height: 1.6;
+  }
+  .exec-summary b { color: var(--text); font-weight: 600; }
+  .exec-block { margin-top: 14px; }
+  .exec-block .label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 2px;
+    color: var(--text-mute); font-weight: 700; margin-bottom: 8px;
+  }
+  .exec-block .label::before { content: "▸ "; color: var(--cyan); }
+  .trig-row {
+    display: grid; grid-template-columns: 22px 50px 1fr auto;
+    gap: 10px; align-items: baseline;
+    padding: 6px 0;
+    font-size: 12px;
+    border-bottom: 1px dashed var(--line-soft);
+  }
+  .trig-row:last-child { border-bottom: 0; }
+  .trig-row .step {
+    font-family: var(--mono); font-size: 10px; color: var(--cyan); font-weight: 700;
+    background: var(--cyan-dim); border: 1px solid var(--cyan);
+    border-radius: 2px; padding: 1px 0; text-align: center;
+  }
+  .trig-row .time {
+    font-family: var(--mono); font-size: 10px; color: var(--cyan);
+    padding: 2px 6px; background: var(--cyan-dim);
+    border-radius: 2px; text-align: center;
+  }
+  .trig-row .desc { color: var(--text); }
+  .trig-row .lift { font-family: var(--mono); font-size: 10px; color: var(--green); font-weight: 700; }
+  .exec-tiles {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+    margin-top: 4px;
+  }
+  .exec-tile {
+    background: var(--bg-3); border: 1px solid var(--line);
+    border-radius: 3px; padding: 9px 10px;
+  }
+  .exec-tile.good { border-color: var(--green); background: linear-gradient(180deg, var(--green-dim), var(--bg-3)); }
+  .exec-tile.bad  { border-color: var(--red);   background: linear-gradient(180deg, var(--red-dim), var(--bg-3)); }
+  .exec-tile.warn { border-color: var(--amber); background: linear-gradient(180deg, var(--amber-dim), var(--bg-3)); }
+  .exec-tile.cool { border-color: var(--cyan);  background: linear-gradient(180deg, var(--cyan-dim), var(--bg-3)); }
+  .exec-tile .tl {
+    font-size: 8px; letter-spacing: 1.5px; color: var(--text-mute);
+    font-family: var(--mono); font-weight: 700;
+  }
+  .exec-tile .tv {
+    font-family: var(--mono); font-size: 13px; font-weight: 700;
+    color: var(--text); margin-top: 4px; line-height: 1.1;
+  }
+  .exec-tile.good .tv { color: var(--green); }
+  .exec-tile.bad  .tv { color: var(--red); }
+  .exec-tile.warn .tv { color: var(--amber); }
+  .exec-tile.cool .tv { color: var(--cyan); }
+
+  /* ===== PRIMARY READ HERO (legacy) ===== */
   .primary {
     position: relative;
     padding: 22px 26px;
@@ -282,6 +555,118 @@
     font-family: var(--mono); color: var(--cyan);
     padding: 2px 7px; background: var(--cyan-dim);
     border-radius: 2px; letter-spacing: 1.5px; font-size: 10px;
+  }
+
+  /* ===== Collapsible details/summary cards ===== */
+  details.card { padding: 0; }
+  details.card > summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 12px 16px;
+    margin: 0;
+    border-bottom: 1px solid transparent;
+    user-select: none;
+    transition: background 0.12s;
+  }
+  details.card > summary::-webkit-details-marker { display: none; }
+  details.card > summary::after {
+    content: "▾";
+    font-family: var(--mono); color: var(--text-mute);
+    margin-left: 8px; font-size: 11px;
+    transition: transform 0.18s;
+    display: inline-block;
+  }
+  details.card[open] > summary::after { transform: rotate(180deg); color: var(--cyan); }
+  details.card[open] > summary { border-bottom-color: var(--line-soft); }
+  details.card > summary:hover { background: rgba(94,227,247,0.04); }
+  details.card > summary .card-h {
+    margin-bottom: 0; padding: 0; border: 0;
+  }
+  details.card > *:not(summary) {
+    padding: 14px 16px;
+  }
+  details.card > .narrative,
+  details.card > .narrative-empty {
+    margin: 0 16px 14px;
+    padding: 9px 12px;
+  }
+  details.card .summary-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; flex: 1;
+  }
+
+  /* Play card expansion */
+  .play-card { cursor: pointer; }
+  .play-card.veto { cursor: default; }
+  .play-detail {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line-soft);
+    display: none;
+  }
+  .play-card.expanded .play-detail { display: block; }
+  .play-card.expanded {
+    background: linear-gradient(180deg, var(--cyan-dim), var(--bg-2) 80%);
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 1px var(--cyan-dim), 0 0 24px -8px var(--cyan-glow);
+  }
+  .play-detail .pd-section {
+    margin-top: 10px;
+  }
+  .play-detail .pd-section:first-child { margin-top: 0; }
+  .play-detail .pd-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px;
+    color: var(--text-mute); font-weight: 700; margin-bottom: 5px;
+  }
+  .play-detail .pd-fline {
+    display: grid; grid-template-columns: 16px 50px 1fr;
+    gap: 8px; align-items: baseline;
+    padding: 4px 0;
+    font-size: 11px;
+    border-bottom: 1px dashed var(--line-soft);
+  }
+  .play-detail .pd-fline:last-child { border-bottom: 0; }
+  .play-detail .pd-fline .m { font-family: var(--mono); color: var(--green); }
+  .play-detail .pd-fline .l { font-family: var(--mono); color: var(--green); font-weight: 600; }
+  .play-detail .pd-fline.pend .m { color: var(--text-mute); }
+  .play-detail .pd-fline.pend .l { color: var(--text-dim); }
+  .play-detail .pd-fline .desc { color: var(--text); }
+  .play-detail .pd-fline .when {
+    font-family: var(--mono); font-size: 9px;
+    color: var(--cyan); background: var(--cyan-dim);
+    padding: 0 4px; border-radius: 2px;
+    margin-right: 4px;
+  }
+  .play-detail .pd-exp {
+    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
+    line-height: 1.6; padding: 8px 10px; background: var(--bg-3); border-radius: 3px;
+  }
+  .play-detail .pd-exp b { color: var(--text); font-weight: 700; }
+  .play-detail .pd-narr {
+    margin-top: 10px;
+    padding: 9px 11px;
+    background: linear-gradient(90deg, var(--violet-dim), transparent 80%);
+    border-left: 2px solid var(--violet);
+    border-radius: 0 3px 3px 0;
+    font-size: 11px;
+    color: #d5cbf3;
+    line-height: 1.55;
+  }
+  .play-detail .pd-narr::before {
+    content: "AI"; display: inline-block;
+    font-size: 8px; font-family: var(--mono); font-weight: 700;
+    letter-spacing: 1.5px; color: var(--violet);
+    padding: 1px 4px; border: 1px solid var(--violet);
+    border-radius: 2px; margin-right: 6px; vertical-align: middle;
+  }
+  .play-detail .pd-narr b { color: var(--violet); font-weight: 600; }
+  .play-card.expanded .pname::after {
+    content: " ◢";
+    color: var(--cyan); font-size: 10px;
+  }
+  .pd-hint {
+    font-family: var(--mono); font-size: 9px; color: var(--text-mute);
+    letter-spacing: 1px; margin-top: 4px;
   }
 
   /* ===== Card ===== */
@@ -975,121 +1360,18 @@
       h('span', {class: 'pulse ' + pulseClass}, pulseText),
     ));
 
-    // ============ PRIMARY READ HERO ============
+    // ============ DECISION FLOW (3 cols) ============
     const primary = computePrimary();
-    const primaryEl = h('div', {class: 'primary ' + primary.mode},
-      h('div', {class:'corner tl'}), h('div', {class:'corner tr'}),
-      h('div', {class:'corner bl'}), h('div', {class:'corner br'}));
-
-    // Column 1: the action
-    const col1 = h('div', null,
-      h('div', {class:'pr-label'}, "TODAY'S PRIMARY READ"),
-      h('div', {class:'pr-action'}, primary.label),
-      h('div', {class:'pr-window'},
-        primary.play
-          ? `${(primary.direction || '').toUpperCase()}  ·  ${primary.window}`
-          : primary.window),
-      primary.play
-        ? h('div', {class:'pr-summary'},
-            'Currently ',
-            h('b', null, `${primary.play.preopen_count}/${primary.play.max_preopen}`),
-            ' confluence pre-open. Watch the ',
-            h('b', null, '9:30 candle'),
-            ' for confirmation — full play unlocks at projected count ',
-            h('b', null, `${primary.play.projection.max_count}`),
-            primary.backup ? h('span', null, '. Backup: ', h('b', null, primary.backup.name), '.') : '.',
-          )
-        : h('div', {class:'pr-summary'}, primary.reason),
-    );
-
-    // Column 2: triggers
-    let col2;
-    if (primary.play && primary.triggers.length) {
-      col2 = h('div', {class:'pr-trigger'},
-        h('div', {class:'pr-label'}, 'TRIGGERS @ 9:30+'),
-        ...primary.triggers.map(t => h('div', {class:'pr-trig-row'},
-          h('span', {class:'when'}, t.when),
-          h('span', {class:'desc'}, t.desc),
-          h('span', {class:'lift'}, `+${t.lift_pp}pp`))));
-    } else {
-      col2 = h('div', null,
-        h('div', {class:'pr-label'}, 'STATUS'),
-        h('div', {style:'color:var(--text-dim);font-size:13px;line-height:1.7;'},
-          primary.mode === 'stand' ? 'OR forecast says TIGHT regime — historical WR collapses. Stand down for the session.' :
-          primary.mode === 'wait'  ? 'All eligible matrix plays at low confluence or vetoed. Wait for 9:30 confirmations before engaging.' :
-          'See triggers below.'));
-    }
-
-    // Column 3: meta tiles (size / target / OR / kill)
-    const fcReady = fc.available;
-    const gp = d.game_plan || {};
-    const firstTarget = (gp.best_targets || [])
-      .filter(t => primary.direction === 'short' ? t.direction === 'below' : t.direction === 'above')[0]
-      || (gp.best_targets || [])[0];
-
-    const col3 = h('div', null,
-      h('div', {class:'pr-label'}, 'SIZE · TARGET · KILL'),
-      h('div', {class:'pr-meta'},
-        h('div', {class: 'pr-meta-tile ' + (
-          tierLevel === 'wide' || tierLevel === 'wide_max' ? 'good' :
-          tierLevel === 'normal' ? 'cool' :
-          tierLevel === 'below' ? 'warn' :
-          tierLevel === 'stand_down' ? 'bad' : '')},
-          h('div', {class:'l'}, 'TIER'),
-          h('div', {class:'v'}, fcReady ? (qLabel || '—') + ' ' + (fc.tier_level || '').replace('_', ' ').toUpperCase() : '—')),
-        h('div', {class: 'pr-meta-tile cool'},
-          h('div', {class:'l'}, 'OR PTS'),
-          h('div', {class:'v'}, fcReady ? Math.round(fc.point_pts) : '—')),
-        firstTarget
-          ? h('div', {class: 'pr-meta-tile ' + (firstTarget.direction === 'above' ? 'good' : 'bad')},
-              h('div', {class:'l'}, 'TGT-01'),
-              h('div', {class:'v'}, `${firstTarget.label} ${fmtPts(firstTarget.distance_pts)}`))
-          : h('div', {class:'pr-meta-tile'},
-              h('div', {class:'l'}, 'TGT'),
-              h('div', {class:'v'}, '—')),
-        h('div', {class: 'pr-meta-tile ' + (primary.avoidHot ? 'bad' : '')},
-          h('div', {class:'l'}, 'KILL'),
-          h('div', {class:'v'}, primary.avoidHot ? 'AVOID HOT' : 'CLEAR'))),
-    );
-
-    primaryEl.appendChild(h('div', {class:'primary-grid'}, col1, col2, col3));
-    app.appendChild(primaryEl);
-
-    // ============ KPI STRIP ============
     const po = d.pre_open || {};
     const cal = d.calendar || {};
     const mp = d.matrix_plays || [];
     const factors = d.factors || {};
+    const gp = d.game_plan || {};
 
-    const activeCount = mp.filter(p => !p.veto_active && (p.projection?.max_tier?.action || '').toUpperCase().includes('TAKE')).length;
-    const vetoCount   = mp.filter(p => p.veto_active).length;
-
-    const gap = po.gap || {};
-    const ovr = po.overnight || {};
-    const kpis = [
-      {label: 'Current', value: fmtPrice(po.current_price), sub: po.current_price_ts || '—', cls: 'cool'},
-      {label: 'Gap', value: gap.pts != null ? fmtPts(gap.pts) : '—',
-        sub: gap.pct != null ? fmtPts(gap.pct) + '%' : '',
-        cls: gap.pts == null ? '' : (gap.pts >= 0 ? 'up' : 'down')},
-      {label: 'Overnight', value: ovr.range != null ? Number(ovr.range).toFixed(0) + ' pts' : '—',
-        sub: ovr.direction || '—',
-        cls: ovr.wide ? 'warn' : ovr.tight ? 'warn' : ''},
-      {label: 'OR Forecast', value: fc.available ? Math.round(fc.point_pts) + ' pts' : '—',
-        sub: fc.available ? (fc.quintile || '') : '',
-        cls: fc.tier_level === 'wide' || fc.tier_level === 'wide_max' ? 'up' :
-             fc.tier_level === 'stand_down' ? 'down' : 'cool'},
-      {label: 'Calendar', value: cal.unknown ? '?' : (cal.events || []).length + ' EVT',
-        sub: cal.is_fomc_week ? 'FOMC WEEK' : 'CLEAR',
-        cls: cal.is_fomc_week || (cal.events||[]).some(e => (e.impact||'').toLowerCase()==='high') ? 'warn' : ''},
-      {label: 'Plays', value: `${activeCount}/${mp.length}`,
-        sub: vetoCount ? `${vetoCount} VETOED` : 'CLEAR',
-        cls: activeCount ? 'up' : ''},
-    ];
-    app.appendChild(h('div', {class:'grid grid-6'},
-      kpis.map(k => h('div', {class:'kpi ' + (k.cls || '')},
-        h('div', {class:'k-l'}, k.label),
-        h('div', {class:'k-v'}, k.value),
-        k.sub ? h('div', {class:'k-s'}, k.sub) : null))));
+    app.appendChild(h('div', {class:'flow'},
+      renderConditions(po, cal, fc, factors, mp),
+      renderCandidates(mp, primary),
+      renderExecution(primary, fc, gp)));
 
     // ============ FRESHNESS / AVOID ============
     const stale = (d.freshness || []).filter(f => f.is_stale);
@@ -1114,13 +1396,6 @@
         narrative(av.narrative)));
     }
 
-    // ============ MATRIX PLAYS ============
-    if (mp.length) {
-      app.appendChild(h('div', {class:'section-h'},
-        'Matrix Play Scorecards', h('span', {class:'count'}, `${mp.length}`)));
-      mp.forEach((p, i) => app.appendChild(renderMatrixPlay(p, i)));
-    }
-
     // ============ EDGES + PRE-OPEN ============
     app.appendChild(h('div', {class:'section-h'}, 'Edges & Market State'));
     const main = h('div', {class:'grid grid-2'});
@@ -1128,8 +1403,8 @@
     const leftCol = h('div', {class:'grid', style:'gap:12px;'});
 
     const armed = d.armed_edges || [];
-    leftCol.appendChild(h('div', {class:'card'},
-      h('div', {class:'card-h'},
+    leftCol.appendChild(h('details', {class:'card'},
+      h('summary', {class:'card-h'},
         h('span', {class:'card-t'}, 'Armed Edges'),
         h('span', {class:'mono', style:'color:var(--green);font-size:11px;'}, `${armed.length} ACTIVE`)),
       armed.length
@@ -1139,45 +1414,48 @@
     if (d.w1_short_confluence) {
       const w1 = d.w1_short_confluence;
       const tier = w1.tier || {};
-      leftCol.appendChild(h('div', {class:'card'},
-        h('div', {class:'card-h'},
+      leftCol.appendChild(h('details', {class:'card'},
+        h('summary', {class:'card-h'},
           h('span', {class:'card-t'}, 'W1 Short Confluence'),
           h('span', {class:'mono', style:'color:var(--cyan);font-size:11px;'},
             `${w1.preopen_count} PRE-MARKET`)),
-        h('div', {style:'display:flex;flex-wrap:wrap;gap:3px;'},
-          (w1.active_factors || []).map(f => h('span', {class:'chip on'}, f))),
-        tier.action ? h('div', {style:'margin-top:10px;'},
-          h('div', {class:'mono', style:'color:var(--cyan);font-size:12px;font-weight:700;'}, tier.action),
-          h('div', {class:'mono dim', style:'font-size:10px;margin-top:4px;letter-spacing:0.5px;'},
-            `WR ${tier.wr || '?'} · PF ${tier.pf_1r || '?'} · target ${tier.target || '?'}`)) : null,
-        h('div', {class:'mute mono', style:'font-size:10px;margin-top:8px;letter-spacing:0.5px;'},
-          '↳ 9:30:30 bearish candle = +1 tier')));
+        h('div', null,
+          h('div', {style:'display:flex;flex-wrap:wrap;gap:3px;'},
+            (w1.active_factors || []).map(f => h('span', {class:'chip on'}, f))),
+          tier.action ? h('div', {style:'margin-top:10px;'},
+            h('div', {class:'mono', style:'color:var(--cyan);font-size:12px;font-weight:700;'}, tier.action),
+            h('div', {class:'mono dim', style:'font-size:10px;margin-top:4px;letter-spacing:0.5px;'},
+              `WR ${tier.wr || '?'} · PF ${tier.pf_1r || '?'} · target ${tier.target || '?'}`)) : null,
+          h('div', {class:'mute mono', style:'font-size:10px;margin-top:8px;letter-spacing:0.5px;'},
+            '↳ 9:30:30 bearish candle = +1 tier'))));
     }
 
     const watch = d.watch_list || [];
     if (watch.length) {
-      leftCol.appendChild(h('div', {class:'card'},
-        h('div', {class:'card-h'},
+      leftCol.appendChild(h('details', {class:'card'},
+        h('summary', {class:'card-h'},
           h('span', {class:'card-t'}, 'Watch List'),
-          h('span', {class:'mute mono', style:'font-size:10px;'}, 'NEED 9:30 CONFIRM')),
+          h('span', {class:'mute mono', style:'font-size:10px;'},
+            `${watch.length} · NEED 9:30 CONFIRM`)),
         h('div', {class:'edge-list'}, watch.map(e => renderEdge(e, false)))));
     }
 
     const ap = d.active_plays || [];
     if (ap.length) {
-      leftCol.appendChild(h('div', {class:'card'},
-        h('div', {class:'card-h'},
+      leftCol.appendChild(h('details', {class:'card'},
+        h('summary', {class:'card-h'},
           h('span', {class:'card-t'}, 'Playbook Plays Active'),
           h('span', {class:'mono', style:'color:var(--cyan);font-size:11px;'}, `${ap.length}`)),
-        ap.map(p => h('div', {style:'padding:7px 0;border-bottom:1px dashed var(--line-soft);'},
-          h('div', {style:'display:flex;justify-content:space-between;gap:8px;align-items:baseline;'},
-            h('div', null,
-              h('span', {class: 'badge-dir ' + (p.direction || 'both'), style:'margin-right:8px;'},
-                (p.direction || '?').toUpperCase()),
-              h('span', {style:'font-size:12px;font-weight:600;'}, p.name || '?')),
-            h('span', {class:'mono dim', style:'font-size:10px;'},
-              `WR ${p.wr_base || '?'} · n=${p.sample_size || '?'}`)),
-          p.action_plan ? h('div', {class:'dim', style:'font-size:11px;margin-top:4px;line-height:1.55;'}, p.action_plan) : null))));
+        h('div', null,
+          ap.map(p => h('div', {style:'padding:7px 0;border-bottom:1px dashed var(--line-soft);'},
+            h('div', {style:'display:flex;justify-content:space-between;gap:8px;align-items:baseline;'},
+              h('div', null,
+                h('span', {class: 'badge-dir ' + (p.direction || 'both'), style:'margin-right:8px;'},
+                  (p.direction || '?').toUpperCase()),
+                h('span', {style:'font-size:12px;font-weight:600;'}, p.name || '?')),
+              h('span', {class:'mono dim', style:'font-size:10px;'},
+                `WR ${p.wr_base || '?'} · n=${p.sample_size || '?'}`)),
+            p.action_plan ? h('div', {class:'dim', style:'font-size:11px;margin-top:4px;line-height:1.55;'}, p.action_plan) : null)))));
     }
 
     main.appendChild(leftCol);
@@ -1203,6 +1481,331 @@
     // ========================================================
     // Renderers
     // ========================================================
+
+    // ====== Decision flow: column renderers ======
+
+    function renderConditions(po, cal, fc, factors, mp) {
+      const col = h('div', {class:'flow-col'});
+      col.appendChild(h('div', {class:'flow-step'},
+        h('span', {class:'n'}, '1'),
+        h('span', {class:'t'}, 'PRE-MARKET'),
+        h('span', null, 'CONDITIONS')));
+
+      // Headline: sizing tier
+      if (fc.available) {
+        const tlevel = fc.tier_level;
+        const headlineCls = tlevel === 'wide' || tlevel === 'wide_max' ? 'good'
+                          : tlevel === 'stand_down' ? 'bad'
+                          : tlevel === 'below' ? 'warn'
+                          : 'cool';
+        col.appendChild(h('div', {class: 'cond-headline ' + headlineCls},
+          h('div', {class:'l'}, 'SIZING TIER'),
+          h('div', {class:'v'}, fc.quintile || ''),
+          h('div', {class:'s'}, `${Math.round(fc.point_pts)} pts forecast · ${fc.lo80_pts}–${fc.hi80_pts}`)));
+      }
+
+      const gap = po.gap || {};
+      const ovr = po.overnight || {};
+      const pr = po.prior_rth || {};
+
+      const rows = [];
+      if (po.current_price != null) {
+        rows.push(['Price', fmtPrice(po.current_price), '', po.current_price_ts || '']);
+      }
+      if (gap.pts != null) {
+        rows.push(['Gap', fmtPts(gap.pts), gap.pts >= 0 ? 'up' : 'down',
+                   gap.pct != null ? fmtPts(gap.pct) + '%' : '']);
+      }
+      if (ovr.range != null) {
+        const tag = ovr.tight ? 'TIGHT' : ovr.wide ? 'WIDE' : '';
+        rows.push(['Overnight', `${Math.round(ovr.range)}p ${(ovr.direction || '').toLowerCase()}`,
+                   ovr.tight || ovr.wide ? 'warn' : '', tag]);
+      }
+      if (pr.close_position != null) {
+        const pcp = pr.close_position;
+        const pcpStr = `close@${(pcp * 100).toFixed(0)}%`;
+        const cls = pcp < 0.33 ? 'down' : pcp > 0.66 ? 'up' : '';
+        rows.push(['Prior RTH', pcpStr, cls,
+                   pcp < 0.33 ? 'WEAK' : pcp > 0.66 ? 'STRONG' : 'MID']);
+      }
+      if (cal && !cal.unknown) {
+        const evts = (cal.events || []).filter(e => (e.impact||'').toLowerCase() === 'high');
+        rows.push(['Calendar',
+                   evts.length ? `${evts.length} HIGH` : 'CLEAR',
+                   evts.length ? 'warn' : '',
+                   evts.length ? evts.map(e => e.time_et).filter(Boolean).join(' ') : '']);
+        rows.push(['FOMC', cal.is_fomc_week ? 'YES' : 'no',
+                   cal.is_fomc_week ? 'bad' : '', '']);
+      }
+      // Day type
+      rows.push(['Day', cal.day_of_week || '—', '', '']);
+      // Regime + opex
+      const active = factors.active || [];
+      const regimeBull = active.includes('regime_bull');
+      const regimeBear = active.includes('regime_bear');
+      if (regimeBull || regimeBear) {
+        rows.push(['Regime', regimeBull ? 'BULL 60d' : 'BEAR 60d',
+                   regimeBull ? 'up' : 'down', '']);
+      }
+      const opex = active.includes('is_opex_week');
+      if (opex) rows.push(['Opex Week', 'YES', 'warn', '']);
+
+      // Avoid kill
+      const av = d.avoid || {};
+      const hot = (av.factor_signals || []).length + (av.combo_signals || []).length;
+      rows.push(['Kill Switch', hot ? 'AVOID HOT' : 'CLEAR', hot ? 'down' : 'up', '']);
+
+      rows.forEach(([l, v, cls, sub]) =>
+        col.appendChild(h('div', {class:'cond-row'},
+          h('span', {class:'l'}, l),
+          h('span', {class:'v ' + (cls || '')},
+            v, sub ? h('span', {class:'sub'}, sub) : null))));
+
+      return col;
+    }
+
+    function renderCandidates(mp, primary) {
+      const col = h('div', {class:'flow-col'});
+      col.appendChild(h('div', {class:'flow-step'},
+        h('span', {class:'n'}, '2'),
+        h('span', {class:'t'}, 'PLAY'),
+        h('span', null, 'CANDIDATES')));
+
+      if (!mp.length) {
+        col.appendChild(h('div', {class:'empty'}, 'No matrix plays configured.'));
+        return col;
+      }
+
+      const primaryName = primary?.play?.name;
+
+      // Sort: primary first, then non-vetoed, then vetoed
+      const sorted = mp.slice().sort((a, b) => {
+        if (a.name === primaryName) return -1;
+        if (b.name === primaryName) return 1;
+        if (a.veto_active && !b.veto_active) return 1;
+        if (b.veto_active && !a.veto_active) return -1;
+        return 0;
+      });
+
+      sorted.forEach((p, idx) => {
+        col.appendChild(renderPlayCard(p, idx, p.name === primaryName));
+      });
+
+      return col;
+    }
+
+    function renderPlayCard(p, idx, isPrimary) {
+      const isVeto = !!p.veto_active;
+      const proj = p.projection || {};
+      const maxAction = (proj.max_tier?.action || '').toUpperCase();
+      const isTakeable = !isVeto && maxAction.includes('TAKE');
+
+      let stateClass, stateLabel;
+      if (isVeto) { stateClass = 'veto'; stateLabel = 'VETO'; }
+      else if (isPrimary) { stateClass = 'live'; stateLabel = 'PRIMARY'; }
+      else if (isTakeable) { stateClass = 'live'; stateLabel = 'LIVE'; }
+      else { stateClass = 'wait'; stateLabel = 'WAIT'; }
+
+      const cardCls = 'play-card ' + (isPrimary ? 'primary' : isVeto ? 'veto' : isTakeable ? '' : 'wait');
+
+      const dots = [];
+      for (let i = 0; i < p.max_preopen; i++) {
+        dots.push(h('div', {class: 'dd' + (i < p.preopen_count ? ' on' : '')}));
+      }
+      for (let i = 0; i < (p.post_pending || []).length; i++) {
+        dots.push(h('div', {class:'dd maybe'}));
+      }
+
+      const noteMax = proj.max_tier?.note || '';
+      const wrMatch = noteMax.match(/~?(\d+(?:[-–]\d+)?)\s*%\s*WR/i);
+      const pfMatch = noteMax.match(/PF\s*(\d+(?:\.\d+)?(?:[-–]\d+(?:\.\d+)?)?)/i);
+
+      const card = h('div', {class: cardCls});
+
+      card.appendChild(h('div', {class:'ph'},
+        h('div', {class:'pname'},
+          h('span', {class:'pnum'}, String(idx + 1).padStart(2, '0')),
+          h('span', null, p.name),
+          h('span', {class: 'badge-dir ' + p.direction, style:'font-size:8px;'}, p.direction.toUpperCase())),
+        h('span', {class: 'pstate ' + stateClass}, stateLabel)));
+
+      if (isVeto) {
+        const reasons = (p.active_vetoes || []).map(v => v.id).join(', ') || 'veto';
+        card.appendChild(h('div', {class:'pveto-line'}, reasons + ' · skip regardless'));
+        return card;
+      }
+
+      card.appendChild(h('div', {class:'pbody'},
+        h('div', {class:'conf-mini'}, dots),
+        h('span', null,
+          `${p.preopen_count}/${p.max_preopen} confluence`,
+          (p.post_pending || []).length ? ` · +${p.post_pending.length}` : ''),
+        h('div', {class:'pstats'},
+          wrMatch ? h('span', null, 'WR ', h('b', null, wrMatch[1] + '%')) : null,
+          pfMatch ? h('span', null, 'PF ', h('b', null, pfMatch[1])) : null),
+        h('span', {class:'pwin'}, p.window)));
+
+      if (!isTakeable && !isPrimary) {
+        card.appendChild(h('div', {class:'pwait-line'}, `Need ${proj.max_count}+ confluence to unlock`));
+      }
+
+      // ===== Hidden detail panel (revealed on click) =====
+      const detail = h('div', {class:'play-detail'});
+
+      // Active factors
+      if ((p.preopen_active || []).length) {
+        const sec = h('div', {class:'pd-section'},
+          h('div', {class:'pd-label'}, `ACTIVE PRE-OPEN · ${p.preopen_active.length}`));
+        p.preopen_active.forEach(f => sec.appendChild(h('div', {class:'pd-fline'},
+          h('span', {class:'m'}, '✓'),
+          h('span', {class:'l'}, `+${f.lift_pp}pp`),
+          h('span', {class:'desc'}, f.desc))));
+        detail.appendChild(sec);
+      }
+
+      // Pending factors
+      if ((p.post_pending || []).length) {
+        const sec = h('div', {class:'pd-section'},
+          h('div', {class:'pd-label'}, `PENDING POST-OPEN · ${p.post_pending.length}`));
+        p.post_pending.forEach(f => sec.appendChild(h('div', {class:'pd-fline pend'},
+          h('span', {class:'m'}, '○'),
+          h('span', {class:'l'}, `+${f.lift_pp}pp`),
+          h('span', {class:'desc'},
+            h('span', {class:'when'}, f.when), f.desc))));
+        detail.appendChild(sec);
+      }
+
+      // Projection scenarios
+      detail.appendChild(h('div', {class:'pd-section'},
+        h('div', {class:'pd-label'}, 'PROJECTION'),
+        h('div', {class:'projection-strip'},
+          proj.locked
+            ? h('div', {class:'proj-card active take'},
+                h('div', {class:'pl'}, `COUNT ${proj.min_count}`),
+                h('div', {class:'pa'}, proj.min_tier.action),
+                h('div', {class:'pn'}, proj.min_tier.note || ''))
+            : [
+                h('div', {class:'proj-card skip'},
+                  h('div', {class:'pl'}, `IF ${proj.min_count}`),
+                  h('div', {class:'pa'}, proj.min_tier.action),
+                  h('div', {class:'pn'}, proj.min_tier.note || '')),
+                h('div', {class:'proj-card take active'},
+                  h('div', {class:'pl'}, `IF ${proj.max_count}`),
+                  h('div', {class:'pa'}, proj.max_tier.action),
+                  h('div', {class:'pn'}, proj.max_tier.note || ''))
+              ]
+        )));
+
+      // Expectancy
+      if (p.expectancy) {
+        const e = p.expectancy;
+        detail.appendChild(h('div', {class:'pd-section'},
+          h('div', {class:'pd-label'}, 'EXPECTANCY'),
+          h('div', {class:'pd-exp'},
+            'Baseline (no veto, conf≥', h('b', null, e.tradeable_threshold), '): ',
+            h('b', null, `${e.setup_pct_of_all_days}%`), ' of days · fires ',
+            h('b', null, `${e.fire_rate_pct}%`), ' · EV ',
+            h('b', null, `+${e.ev_per_setup_day_R}R/setup-day`),
+            e.fire_rate_now_pct != null
+              ? [' · today fires ~', h('b', null,
+                  e.fire_rate_now_pct === e.fire_rate_max_pct || e.fire_rate_max_pct == null
+                    ? `${e.fire_rate_now_pct}%`
+                    : `${e.fire_rate_now_pct}-${e.fire_rate_max_pct}%`)]
+              : null)));
+      }
+
+      // Extra note + Notion link
+      if (p.extra_note) detail.appendChild(h('div', {class:'extra-note'}, p.extra_note));
+      if (p.notion_url) detail.appendChild(h('a', {class:'play-link', href: p.notion_url, target:'_blank',
+        onclick: (e) => e.stopPropagation()}, '→ PLAYBOOK'));
+
+      // AI narrative
+      if (p.narrative) {
+        detail.appendChild(h('div', {class:'pd-narr', html: p.narrative}));
+      }
+
+      card.appendChild(detail);
+      card.appendChild(h('div', {class:'pd-hint'},
+        isPrimary ? '▼ click to collapse' : '▼ click for detail'));
+
+      card.addEventListener('click', () => card.classList.toggle('expanded'));
+
+      // Primary play starts expanded so user sees the detail without clicking
+      if (isPrimary) card.classList.add('expanded');
+
+      return card;
+    }
+
+    function renderExecution(primary, fc, gp) {
+      const wrap = h('div', {class: 'flow-col exec ' + primary.mode},
+        h('div', {class:'exec-frame'},
+          h('i', {class:'tl'}), h('i', {class:'tr'}),
+          h('i', {class:'bl'}), h('i', {class:'br'})));
+
+      wrap.appendChild(h('div', {class:'flow-step'},
+        h('span', {class:'n'}, '3'),
+        h('span', {class:'t'}, "TODAY'S"), h('span', null, 'READ')));
+
+      wrap.appendChild(h('div', {class:'exec-action'}, primary.label));
+      wrap.appendChild(h('div', {class:'exec-sub'},
+        primary.play
+          ? `${(primary.direction || '').toUpperCase()}  ·  ${primary.window}`
+          : primary.window));
+
+      if (primary.play) {
+        wrap.appendChild(h('div', {class:'exec-summary'},
+          'Currently ', h('b', null, `${primary.play.preopen_count}/${primary.play.max_preopen}`),
+          ' confluence pre-open. Unlocks at projected count ',
+          h('b', null, `${primary.play.projection.max_count}`),
+          primary.backup ? h('span', null, '. Backup: ', h('b', null, primary.backup.name), '.') : '.'));
+      } else {
+        wrap.appendChild(h('div', {class:'exec-summary'}, primary.reason));
+      }
+
+      // Triggers
+      if (primary.triggers && primary.triggers.length) {
+        const trigBlock = h('div', {class:'exec-block'},
+          h('div', {class:'label'}, 'TRIGGERS @ 9:30+'));
+        primary.triggers.forEach((t, i) => {
+          trigBlock.appendChild(h('div', {class:'trig-row'},
+            h('span', {class:'step'}, String(i + 1).padStart(2, '0')),
+            h('span', {class:'time'}, t.when),
+            h('span', {class:'desc'}, t.desc),
+            h('span', {class:'lift'}, `+${t.lift_pp}pp`)));
+        });
+        wrap.appendChild(trigBlock);
+      }
+
+      // Size · Target · Kill tiles
+      const fcReady = fc.available;
+      const qLab = (fc.quintile || '').split(' ', 1)[0];
+      const firstTarget = (gp.best_targets || [])
+        .filter(t => primary.direction === 'short' ? t.direction === 'below' : t.direction === 'above')[0]
+        || (gp.best_targets || [])[0];
+
+      wrap.appendChild(h('div', {class:'exec-block'},
+        h('div', {class:'label'}, 'SIZE · TARGET · KILL'),
+        h('div', {class:'exec-tiles'},
+          h('div', {class: 'exec-tile ' + (
+            fc.tier_level === 'wide' || fc.tier_level === 'wide_max' ? 'good' :
+            fc.tier_level === 'normal' ? 'cool' :
+            fc.tier_level === 'below' ? 'warn' :
+            fc.tier_level === 'stand_down' ? 'bad' : '')},
+            h('div', {class:'tl'}, 'TIER'),
+            h('div', {class:'tv'}, fcReady ? qLab : '—')),
+          firstTarget
+            ? h('div', {class: 'exec-tile ' + (firstTarget.direction === 'above' ? 'good' : 'bad')},
+                h('div', {class:'tl'}, 'TGT-01'),
+                h('div', {class:'tv'}, `${firstTarget.label} ${fmtPts(firstTarget.distance_pts)}`))
+            : h('div', {class:'exec-tile'},
+                h('div', {class:'tl'}, 'TGT'),
+                h('div', {class:'tv'}, '—')),
+          h('div', {class: 'exec-tile ' + (primary.avoidHot ? 'bad' : 'good')},
+            h('div', {class:'tl'}, 'KILL'),
+            h('div', {class:'tv'}, primary.avoidHot ? 'HOT' : 'CLEAR')))));
+
+      return wrap;
+    }
 
     function renderMatrixPlay(p, idx) {
       const isVeto = !!p.veto_active;
@@ -1352,22 +1955,26 @@
       const lon = po.london || {};
       const pr = po.prior_rth || {};
 
-      const card = h('div', {class:'card'},
-        h('div', {class:'card-h'},
+      const card = h('details', {class:'card'},
+        h('summary', {class:'card-h'},
           h('span', {class:'card-t'}, 'Pre-Open Structure'),
-          po.current_price_ts ? h('span', {class:'mute mono', style:'font-size:10px;letter-spacing:1px;'},
-            po.current_price_ts) : null),
+          h('span', {class:'mute mono', style:'font-size:10px;letter-spacing:1px;'},
+            'PRICE LADDER · LEVELS')));
+
+      const inner = h('div', null,
         h('div', {class:'preopen-head'},
           h('div', null,
-            h('div', {class:'mute mono', style:'font-size:9px;letter-spacing:2px;'}, 'CURRENT'),
+            h('div', {class:'mute mono', style:'font-size:9px;letter-spacing:2px;'},
+              'CURRENT', po.current_price_ts ? ' · ' + po.current_price_ts : ''),
             h('div', {class:'price-current'}, fmtPrice(cur))),
           po.gap?.pts != null
             ? h('div', {class:'gap-pill ' + (po.gap.pts >= 0 ? 'up' : 'down')},
                 `${fmtPts(po.gap.pts)}`,
                 po.gap.pct != null ? ` (${fmtPts(po.gap.pct)}%)` : '')
             : null));
+      card.appendChild(inner);
 
-      card.appendChild(buildPriceLadder(po, lv));
+      inner.appendChild(buildPriceLadder(po, lv));
 
       const sessions = h('div', {class:'session-grid'});
       if (pr.high != null) {
@@ -1395,13 +2002,13 @@
           h('div', {class:'s-label'}, 'LONDON'),
           h('div', {class:'s-val'}, `${fmtPrice(lon.high)} / ${fmtPrice(lon.low)}`)));
       }
-      card.appendChild(sessions);
+      inner.appendChild(sessions);
 
       if ((po.data_notes || []).length) {
-        card.appendChild(h('div', {class:'mute', style:'font-size:10px;margin-top:6px;'},
+        inner.appendChild(h('div', {class:'mute', style:'font-size:10px;margin-top:6px;'},
           po.data_notes.map(n => h('div', null, '· ', n))));
       }
-      card.appendChild(narrative(po.narrative));
+      inner.appendChild(narrative(po.narrative));
       return card;
     }
 
@@ -1524,14 +2131,16 @@
     }
 
     function renderFactors(fs) {
-      const card = h('div', {class:'card'},
-        h('div', {class:'card-h'},
+      const card = h('details', {class:'card'},
+        h('summary', {class:'card-h'},
           h('span', {class:'card-t'}, 'Factor Snapshot'),
           h('span', {class:'mute mono', style:'font-size:10px;'},
             `${(fs.active||[]).length} ON · ${(fs.inactive||[]).length} OFF`)));
+      const body = h('div', null);
+      card.appendChild(body);
       const sec = (title, list, cls) => {
         if (!list || !list.length) return;
-        card.appendChild(h('div', {style:'margin-top:6px;'},
+        body.appendChild(h('div', {style:'margin-top:6px;'},
           h('div', {class:'mute mono', style:'font-size:9px;letter-spacing:2px;margin-bottom:5px;'},
             `${title} · ${list.length}`),
           h('div', null, list.map(f => h('span', {class:'chip ' + cls}, f)))));
@@ -1539,21 +2148,23 @@
       sec('ACTIVE', fs.active, 'on');
       sec('UNKNOWN', fs.unknown, 'unk');
       sec('INACTIVE', fs.inactive, 'off');
-      card.appendChild(narrative(fs.narrative));
+      body.appendChild(narrative(fs.narrative));
       return card;
     }
 
     function renderLevelsTable(lv) {
-      const card = h('div', {class:'card'},
-        h('div', {class:'card-h'},
+      const above = lv.above || [], below = lv.below || [];
+      const card = h('details', {class:'card'},
+        h('summary', {class:'card-h'},
           h('span', {class:'card-t'}, 'Liquidity Levels'),
           h('span', {class:'mute mono', style:'font-size:10px;'},
-            `WITHIN ${lv.scope_pts || 100} PTS`)));
+            `${above.length + below.length} · WITHIN ${lv.scope_pts || 100}P`)));
+      const body = h('div', null);
+      card.appendChild(body);
 
-      const above = lv.above || [], below = lv.below || [];
       if (!above.length && !below.length) {
-        card.appendChild(h('div', {class:'empty'}, 'No levels available — needs live price.'));
-        card.appendChild(narrative(lv.narrative));
+        body.appendChild(h('div', {class:'empty'}, 'No levels available — needs live price.'));
+        body.appendChild(narrative(lv.narrative));
         return card;
       }
       const tbl = h('table', {class:'levels'},
@@ -1574,40 +2185,45 @@
       above.forEach(l => tb.appendChild(fmtRow(l, 'above')));
       below.forEach(l => tb.appendChild(fmtRow(l, 'below')));
       tbl.appendChild(tb);
-      card.appendChild(tbl);
-      card.appendChild(h('div', {class:'mute mono', style:'font-size:10px;margin-top:10px;line-height:1.6;'},
+      body.appendChild(tbl);
+      body.appendChild(h('div', {class:'mute mono', style:'font-size:10px;margin-top:10px;line-height:1.6;'},
         '1–2 levels in trade direction = sweet spot (55% WR, PF 1.30) ',
         '· 1 obstruction between entry/target = positive (58.5% WR) ',
         '· 3+ stacked = contested, reduce size'));
-      card.appendChild(narrative(lv.narrative));
+      body.appendChild(narrative(lv.narrative));
       return card;
     }
 
     function renderGamePlan(gp) {
-      const card = h('div', {class:'card'},
-        h('div', {class:'card-h'}, h('span', {class:'card-t'}, "Today's Game Plan")));
+      const card = h('details', {class:'card'},
+        h('summary', {class:'card-h'},
+          h('span', {class:'card-t'}, "Today's Game Plan"),
+          h('span', {class:'mute mono', style:'font-size:10px;'},
+            `${(gp.checklist||[]).length} CHECKS · ${(gp.best_targets||[]).length} TGTS`)));
+      const body = h('div', null);
+      card.appendChild(body);
 
       (gp.one_liners || []).forEach(o =>
-        card.appendChild(h('div', {class:'one-liner'}, '"', o, '"')));
+        body.appendChild(h('div', {class:'one-liner'}, '"', o, '"')));
 
       if ((gp.checklist || []).length) {
-        card.appendChild(h('div', {class:'mute mono', style:'font-size:9px;letter-spacing:2px;margin:12px 0 4px;'},
+        body.appendChild(h('div', {class:'mute mono', style:'font-size:9px;letter-spacing:2px;margin:12px 0 4px;'},
           '9:30 CHECKLIST'));
-        card.appendChild(h('ul', {class:'checklist'},
+        body.appendChild(h('ul', {class:'checklist'},
           gp.checklist.map(t => h('li', null, t))));
       }
 
       if ((gp.best_targets || []).length) {
-        card.appendChild(h('div', {class:'mute mono', style:'font-size:9px;letter-spacing:2px;margin:14px 0 4px;'},
+        body.appendChild(h('div', {class:'mute mono', style:'font-size:9px;letter-spacing:2px;margin:14px 0 4px;'},
           'BEST DRAW TARGETS'));
         gp.best_targets.forEach(t =>
-          card.appendChild(h('div', {class: 'target-row ' + (t.direction === 'above' ? 'up' : 'down')},
+          body.appendChild(h('div', {class: 'target-row ' + (t.direction === 'above' ? 'up' : 'down')},
             h('span', null, t.direction === 'above' ? '↑' : '↓'),
             h('span', {class:'t-label'}, t.label),
             h('span', {class:'t-px'}, fmtPrice(t.price)),
             h('span', {class:'t-dist'}, fmtPts(t.distance_pts), ' pts'))));
       }
-      card.appendChild(narrative(gp.narrative));
+      body.appendChild(narrative(gp.narrative));
       return card;
     }
   })();
