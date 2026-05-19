@@ -1,0 +1,844 @@
+{
+  "schema_version": 1,
+  "meta": {
+    "date": "2026-05-15",
+    "day_of_week": "Friday",
+    "generated_at_et": null,
+    "generated_at_pt": null,
+    "mode": "offline"
+  },
+  "freshness": [],
+  "or_forecast": {
+    "available": true,
+    "point_pts": 257.9,
+    "lo80_pts": 167.9,
+    "hi80_pts": 391.6,
+    "baseline_pts": 117.6,
+    "quintile": "Q4 (77th pct)",
+    "tier_label": "Wide \u2014 favor full size on confluence setups",
+    "tier_level": "wide",
+    "feature_date": "2026-02-20",
+    "is_stale": true,
+    "overrides": [
+      "overnight_range",
+      "gap_abs",
+      "gap_atr_ratio",
+      "prior_day_range",
+      "prior_day_close_position",
+      "atr_5d",
+      "atr_20d",
+      "atr_ratio_5_20",
+      "pdr_pctile_20d",
+      "nr4_flag",
+      "nr7_flag",
+      "vixy_prior_close",
+      "vix_5d_chg"
+    ],
+    "drivers": [
+      {
+        "factor": "overnight_range",
+        "value": 591.5,
+        "z": 4.0,
+        "delta_pts": 131.2
+      },
+      {
+        "factor": "gap_abs",
+        "value": 408.75,
+        "z": 3.22,
+        "delta_pts": -25.7
+      },
+      {
+        "factor": "atr_20d",
+        "value": 335.938,
+        "z": 0.97,
+        "delta_pts": 22.0
+      },
+      {
+        "factor": "atr_ratio_5_20",
+        "value": 1.24,
+        "z": 0.96,
+        "delta_pts": 9.5
+      },
+      {
+        "factor": "atr_5d",
+        "value": 416.55,
+        "z": 1.42,
+        "delta_pts": -9.3
+      },
+      {
+        "factor": "gap_atr_ratio",
+        "value": 1.217,
+        "z": 2.4,
+        "delta_pts": 8.7
+      }
+    ],
+    "perf": {
+      "n": "712",
+      "mae_pts": "43.77574530141055",
+      "mape_pct": "32.486884988393626",
+      "r2": "0.11249480347027607",
+      "spearman_rho": "0.5988155638556552",
+      "interval_coverage_80": "0.7415730337078652",
+      "model": "cold_start",
+      "n_features": "17"
+    },
+    "narrative": null
+  },
+  "calendar": {
+    "day_of_week": "Friday",
+    "dow_note": "Friday is average (WR ~51.9%). Watch for OpEx and witching weeks.",
+    "unknown": true,
+    "is_fomc_week": false,
+    "events": [],
+    "narrative": null
+  },
+  "pre_open": {
+    "current_price": 29278.0,
+    "current_price_ts": null,
+    "prior_rth": {
+      "close": 29231.25,
+      "open": 29278.0,
+      "high": 29486.75,
+      "low": 29089.75,
+      "close_position": 0.705564142194745,
+      "label": null
+    },
+    "overnight": {
+      "high": 29734.0,
+      "low": 29142.5,
+      "range": 591.5,
+      "direction": "down",
+      "tight": false,
+      "wide": true
+    },
+    "asia": {
+      "high": null,
+      "low": null
+    },
+    "london": {
+      "high": null,
+      "low": null
+    },
+    "gap": {
+      "pts": -408.75,
+      "pct": -1.3768768895214194,
+      "direction": "gap_down"
+    },
+    "data_notes": [],
+    "narrative": null
+  },
+  "levels": {
+    "scope_pts": 100,
+    "above": [],
+    "below": [],
+    "narrative": null
+  },
+  "factors": {
+    "active": [
+      "elevated_vixy",
+      "friday",
+      "gap_down",
+      "overnight_down",
+      "wide_overnight"
+    ],
+    "inactive": [
+      "entry_inside_prior_day_value_area",
+      "gap_up",
+      "low_vixy",
+      "monday",
+      "normal_vixy",
+      "overnight_up",
+      "prior_day_down",
+      "prior_day_up",
+      "thursday",
+      "tight_overnight",
+      "tuesday",
+      "wednesday"
+    ],
+    "unknown": [
+      "has_pre_rth_news",
+      "has_red_folder",
+      "is_fomc_week",
+      "no_pre_rth_news",
+      "no_red_folder",
+      "not_fomc_week"
+    ],
+    "narrative": null
+  },
+  "armed_edges": [],
+  "watch_list": [
+    {
+      "stars": "\u2605\u2605",
+      "factors": [
+        "macro_w1",
+        "short_only",
+        "wide_45min_or"
+      ],
+      "n": 51,
+      "wr_pct": 74.5,
+      "pf": 3.07,
+      "p_wr": 0.0,
+      "pre_matched": [],
+      "post_needed": [
+        {
+          "factor": "wide_45min_or",
+          "desc": "45-min OR (9:30\u201310:15) in top 20% \u2014 KEY confirmation"
+        }
+      ]
+    },
+    {
+      "stars": "\u2605\u2605",
+      "factors": [
+        "macro_w1",
+        "wide_45min_or"
+      ],
+      "n": 77,
+      "wr_pct": 72.7,
+      "pf": 2.84,
+      "p_wr": 0.0,
+      "pre_matched": [],
+      "post_needed": [
+        {
+          "factor": "wide_45min_or",
+          "desc": "45-min OR (9:30\u201310:15) in top 20% \u2014 KEY confirmation"
+        }
+      ]
+    },
+    {
+      "stars": "\u2605\u2605",
+      "factors": [
+        "bearish_930",
+        "macro_w1",
+        "overnight_down"
+      ],
+      "n": 64,
+      "wr_pct": 68.8,
+      "pf": 2.3,
+      "p_wr": 0.003,
+      "pre_matched": [
+        "overnight_down"
+      ],
+      "post_needed": [
+        {
+          "factor": "bearish_930",
+          "desc": "9:30 candle closed bearish"
+        }
+      ]
+    },
+    {
+      "stars": "\u2605\u2605",
+      "factors": [
+        "gap_down",
+        "short_only",
+        "wide_45min_or"
+      ],
+      "n": 92,
+      "wr_pct": 67.4,
+      "pf": 2.18,
+      "p_wr": 0.0,
+      "pre_matched": [
+        "gap_down"
+      ],
+      "post_needed": [
+        {
+          "factor": "wide_45min_or",
+          "desc": "45-min OR (9:30\u201310:15) in top 20% \u2014 KEY confirmation"
+        }
+      ]
+    },
+    {
+      "stars": "\u2605\u2605",
+      "factors": [
+        "bearish_930",
+        "large_930_candle",
+        "wide_overnight"
+      ],
+      "n": 61,
+      "wr_pct": 67.2,
+      "pf": 2.24,
+      "p_wr": 0.01,
+      "pre_matched": [
+        "wide_overnight"
+      ],
+      "post_needed": [
+        {
+          "factor": "bearish_930",
+          "desc": "9:30 candle closed bearish"
+        },
+        {
+          "factor": "large_930_candle",
+          "desc": "9:30 candle range in top 20%"
+        }
+      ]
+    },
+    {
+      "stars": "\u2605\u2605",
+      "factors": [
+        "elevated_vixy",
+        "short_only",
+        "wide_45min_or"
+      ],
+      "n": 111,
+      "wr_pct": 66.7,
+      "pf": 2.26,
+      "p_wr": 0.003,
+      "pre_matched": [
+        "elevated_vixy"
+      ],
+      "post_needed": [
+        {
+          "factor": "wide_45min_or",
+          "desc": "45-min OR (9:30\u201310:15) in top 20% \u2014 KEY confirmation"
+        }
+      ]
+    },
+    {
+      "stars": "\u2605\u2605",
+      "factors": [
+        "bullish_930",
+        "long_only",
+        "macro_w2"
+      ],
+      "n": 135,
+      "wr_pct": 66.7,
+      "pf": 1.63,
+      "p_wr": 0.0,
+      "pre_matched": [],
+      "post_needed": [
+        {
+          "factor": "bullish_930",
+          "desc": "9:30 candle closed bullish"
+        }
+      ]
+    },
+    {
+      "stars": "\u2605\u2605",
+      "factors": [
+        "bullish_930",
+        "overnight_down",
+        "wide_45min_or"
+      ],
+      "n": 77,
+      "wr_pct": 66.2,
+      "pf": 1.98,
+      "p_wr": 0.003,
+      "pre_matched": [
+        "overnight_down"
+      ],
+      "post_needed": [
+        {
+          "factor": "bullish_930",
+          "desc": "9:30 candle closed bullish"
+        },
+        {
+          "factor": "wide_45min_or",
+          "desc": "45-min OR (9:30\u201310:15) in top 20% \u2014 KEY confirmation"
+        }
+      ]
+    }
+  ],
+  "w1_short_confluence": {
+    "preopen_count": 3,
+    "active_factors": [
+      "gap_down",
+      "large_gap",
+      "overnight_down"
+    ],
+    "tier": null
+  },
+  "matrix_plays": [
+    {
+      "name": "M1 Short",
+      "direction": "short",
+      "window": "9:30-9:45",
+      "veto_active": false,
+      "active_vetoes": [],
+      "preopen_count": 2,
+      "max_preopen": 5,
+      "preopen_active": [
+        {
+          "id": "gap_large_down",
+          "desc": "Gap < -100 pts",
+          "lift_pp": 19.0
+        },
+        {
+          "id": "dow_friday",
+          "desc": "Day is Friday",
+          "lift_pp": 9.7
+        }
+      ],
+      "post_pending": [
+        {
+          "id": "bear_930",
+          "when": "9:31",
+          "desc": "Bearish 9:30 1-min candle",
+          "lift_pp": 21.3
+        },
+        {
+          "id": "c930_body_top_q",
+          "when": "9:31",
+          "desc": "9:30 candle body in top quartile (>=23 pts)",
+          "lift_pp": 15.6
+        }
+      ],
+      "projection": {
+        "min_count": 2,
+        "max_count": 4,
+        "min_tier": {
+          "action": "TAKE full size, runner mode (TP@5R no-BE)",
+          "note": "~57% WR, PF 2.0+ via runner"
+        },
+        "max_tier": {
+          "action": "TAKE MAX size, runner mode",
+          "note": "premium tier (m1_short_factor_remine)"
+        },
+        "locked": false
+      },
+      "expectancy": {
+        "tradeable_threshold": 2,
+        "setup_pct_of_all_days": 36.0,
+        "fire_rate_pct": 23.0,
+        "ev_per_setup_day_R": 0.253,
+        "fire_rate_now_pct": 23.0,
+        "fire_rate_max_pct": 26.3
+      },
+      "extra_note": "RUNNER EXIT DOCTRINE: TP@5R no-BE is the optimal exit (PF 3+). BE management caps the edge. Do not apply M2/M3 long-style BE@1R here.",
+      "notion_url": "https://www.notion.so/33de2f0e776081889879c4dcbd495996",
+      "narrative": null
+    },
+    {
+      "name": "M1 Long",
+      "direction": "long",
+      "window": "9:30-9:45",
+      "veto_active": false,
+      "active_vetoes": [],
+      "preopen_count": 2,
+      "max_preopen": 6,
+      "preopen_active": [
+        {
+          "id": "no_pre_rth_news",
+          "desc": "NO pre-RTH news scheduled (strongest factor)",
+          "lift_pp": 21.1
+        },
+        {
+          "id": "gap_large_down",
+          "desc": "Gap < -100 pts",
+          "lift_pp": 5.5
+        }
+      ],
+      "post_pending": [
+        {
+          "id": "variant_no_fvg",
+          "when": "signal",
+          "desc": "FVGC variant is no_fvg (cleanest signal)",
+          "lift_pp": 8.0
+        }
+      ],
+      "projection": {
+        "min_count": 2,
+        "max_count": 3,
+        "min_tier": {
+          "action": "SKIP",
+          "note": "no setup"
+        },
+        "max_tier": {
+          "action": "TAKE full size, BE@1R -> 3R fixed",
+          "note": "~59% WR, PF 2.31, EV +0.54R (operating tier)"
+        },
+        "locked": false
+      },
+      "expectancy": null,
+      "extra_note": "8yr-validated (n=117): IS 59.8% / OOS 55.0% @ 3+, regime spread 9.4pp, year-floor 50%. Gap-down quiet bounce: when sellers gap it large-down without fresh catalyst, vol normal, prior close non-committal \u2014 fade the gap-down via no_fvg long in M1.",
+      "notion_url": "https://www.notion.so/365e2f0e77608154b4caca8dcc0a7c70",
+      "narrative": null
+    },
+    {
+      "name": "M2 Long",
+      "direction": "long",
+      "window": "9:45-10:00",
+      "veto_active": true,
+      "active_vetoes": [
+        {
+          "id": "is_opex_week",
+          "desc": "Opex week (3rd Friday week)",
+          "lift_pp": -25.2
+        }
+      ],
+      "preopen_count": 1,
+      "max_preopen": 4,
+      "preopen_active": [
+        {
+          "id": "regime_bull",
+          "desc": "60d NQ return > +5% (bull macro)",
+          "lift_pp": 9.4
+        }
+      ],
+      "post_pending": [
+        {
+          "id": "bull_930",
+          "when": "9:31",
+          "desc": "Bullish 9:30 1-min candle",
+          "lift_pp": 20.6
+        },
+        {
+          "id": "macro_1_2plus_fvgs",
+          "when": "9:45",
+          "desc": ">=2 FVGs printed in 9:30-9:45 macro",
+          "lift_pp": 9.4
+        },
+        {
+          "id": "has_5m_bear_fvg",
+          "when": "9:35",
+          "desc": "Bearish FVG in first 5min (counter-intuitive)",
+          "lift_pp": 7.6
+        }
+      ],
+      "projection": {
+        "min_count": 1,
+        "max_count": 4,
+        "min_tier": {
+          "action": "SKIP",
+          "note": "3+ tier no longer viable on 8yr"
+        },
+        "max_tier": {
+          "action": "TAKE Tier B size (capped), BE@1R -> 3R fixed",
+          "note": "~64.5% WR, PF 2.62 \u2014 but regime-fragile"
+        },
+        "locked": false
+      },
+      "expectancy": {
+        "tradeable_threshold": 3,
+        "setup_pct_of_all_days": 31.3,
+        "fire_rate_pct": 30.1,
+        "ev_per_setup_day_R": 0.277,
+        "fire_rate_now_pct": 29.6,
+        "fire_rate_max_pct": 36.6
+      },
+      "extra_note": "TIER B / CONFIDENCE LOW. 8yr re-val: year-floor 26.7% (2021), 16.7% (2023). Trade 4+ tier ONLY, capped size. Stand aside in melt-up (NQ >+15% 60d AND VIX<15) or chop years. No robust replacement stack found in re-mining.",
+      "notion_url": "https://www.notion.so/361e2f0e776081e69d5dfc696dbd5726",
+      "narrative": null
+    },
+    {
+      "name": "M3 Long",
+      "direction": "long",
+      "window": "10:00-10:15",
+      "veto_active": true,
+      "active_vetoes": [
+        {
+          "id": "is_opex_week",
+          "desc": "Opex week (3rd Friday week)",
+          "lift_pp": -12.5
+        }
+      ],
+      "preopen_count": 2,
+      "max_preopen": 4,
+      "preopen_active": [
+        {
+          "id": "not_fomc_week",
+          "desc": "NOT FOMC week",
+          "lift_pp": 7.4
+        },
+        {
+          "id": "dow_friday",
+          "desc": "Day is Friday",
+          "lift_pp": 5.9
+        }
+      ],
+      "post_pending": [
+        {
+          "id": "no_5m_bull_fvg",
+          "when": "9:35",
+          "desc": "NO bullish FVG in first 5min (bulls not committed)",
+          "lift_pp": 8.1
+        },
+        {
+          "id": "has_5m_bear_fvg",
+          "when": "9:35",
+          "desc": "Bearish FVG in first 5min (seller liquidation)",
+          "lift_pp": 6.8
+        },
+        {
+          "id": "variant_no_fvg",
+          "when": "signal",
+          "desc": "FVGC variant is no_fvg (cleanest signal)",
+          "lift_pp": 6.2
+        }
+      ],
+      "projection": {
+        "min_count": 2,
+        "max_count": 5,
+        "min_tier": {
+          "action": "SKIP",
+          "note": "no setup"
+        },
+        "max_tier": {
+          "action": "TAKE same size \u2014 do NOT scale up",
+          "note": "4+/5+ OOS collapses (\u0394 -17pp at 4+, -23pp at 5+)"
+        },
+        "locked": false
+      },
+      "expectancy": {
+        "tradeable_threshold": 3,
+        "setup_pct_of_all_days": 28.1,
+        "fire_rate_pct": 31.8,
+        "ev_per_setup_day_R": 0.087,
+        "fire_rate_now_pct": 31.2,
+        "fire_rate_max_pct": 30.1
+      },
+      "extra_note": "8yr-validated Tier A (n=264, 5/5 gates): IS 65.4% / OOS 61.6% @ 3+, year-floor 47.8%, regime spread 1.8pp \u2014 most regime-robust cell in the matrix. Thesis: Mon/Fri prior-weak no-bull-FVG mean-reversion. Magnet gate no longer required (8yr re-mine confirmed edge holds without it).",
+      "notion_url": "https://www.notion.so/361e2f0e7760819bbbc7ca78b9faa8f9",
+      "narrative": null
+    }
+  ],
+  "avoid": {
+    "factor_signals": [],
+    "combo_signals": [
+      {
+        "status": "watch",
+        "factors": [
+          "overnight_down",
+          "short_only",
+          "tight_45min_or"
+        ],
+        "n": 31,
+        "wr_pct": 22.6,
+        "pf": 0.32,
+        "post_needed": [
+          {
+            "factor": "tight_45min_or",
+            "desc": "45-min OR in bottom 20% \u2014 HARD stand-down signal"
+          }
+        ]
+      },
+      {
+        "status": "watch",
+        "factors": [
+          "gap_down",
+          "short_only",
+          "tight_45min_or"
+        ],
+        "n": 44,
+        "wr_pct": 25.0,
+        "pf": 0.36,
+        "post_needed": [
+          {
+            "factor": "tight_45min_or",
+            "desc": "45-min OR in bottom 20% \u2014 HARD stand-down signal"
+          }
+        ]
+      },
+      {
+        "status": "watch",
+        "factors": [
+          "gap_down",
+          "macro_w1",
+          "tight_45min_or"
+        ],
+        "n": 35,
+        "wr_pct": 25.7,
+        "pf": 0.4,
+        "post_needed": [
+          {
+            "factor": "tight_45min_or",
+            "desc": "45-min OR in bottom 20% \u2014 HARD stand-down signal"
+          }
+        ]
+      },
+      {
+        "status": "watch",
+        "factors": [
+          "long_only",
+          "macro_w1",
+          "tight_45min_or"
+        ],
+        "n": 57,
+        "wr_pct": 26.3,
+        "pf": 0.35,
+        "post_needed": [
+          {
+            "factor": "tight_45min_or",
+            "desc": "45-min OR in bottom 20% \u2014 HARD stand-down signal"
+          }
+        ]
+      },
+      {
+        "status": "watch",
+        "factors": [
+          "bullish_930",
+          "overnight_down",
+          "tight_45min_or"
+        ],
+        "n": 45,
+        "wr_pct": 26.7,
+        "pf": 0.33,
+        "post_needed": [
+          {
+            "factor": "bullish_930",
+            "desc": "9:30 candle closed bullish"
+          },
+          {
+            "factor": "tight_45min_or",
+            "desc": "45-min OR in bottom 20% \u2014 HARD stand-down signal"
+          }
+        ]
+      },
+      {
+        "status": "watch",
+        "factors": [
+          "bearish_930",
+          "gap_down",
+          "tight_45min_or"
+        ],
+        "n": 46,
+        "wr_pct": 28.3,
+        "pf": 0.43,
+        "post_needed": [
+          {
+            "factor": "bearish_930",
+            "desc": "9:30 candle closed bearish"
+          },
+          {
+            "factor": "tight_45min_or",
+            "desc": "45-min OR in bottom 20% \u2014 HARD stand-down signal"
+          }
+        ]
+      }
+    ],
+    "narrative": null
+  },
+  "active_plays": [
+    {
+      "name": "M1 Short \u2014 Confluence Model (8yr re-validated)",
+      "direction": "short",
+      "status": "verified",
+      "wr_base": "51.2% (no filter post-veto), 60.6% (at 2+ confluences)",
+      "sample_size": 246,
+      "action_plan": "See Notion Morning Routine for the complete timeline. Quick version: vetoes off + FVGC short fires 9:30-9:45 \u2192 SL-adaptive TP + bias x 9:30-FVG sizing matrix + NO BE move + don't touch.",
+      "pre_met": [],
+      "pre_missing": [],
+      "match_status": "always"
+    },
+    {
+      "name": "M1 Long \u2014 Confluence Model (NEW 8yr)",
+      "direction": "long",
+      "status": "verified",
+      "wr_base": null,
+      "sample_size": 117,
+      "action_plan": null,
+      "pre_met": [],
+      "pre_missing": [],
+      "match_status": "always"
+    },
+    {
+      "name": "M2 Long \u2014 Confluence Model (8yr DOWNGRADED Tier B)",
+      "direction": "long",
+      "status": "verified",
+      "wr_base": null,
+      "sample_size": 110,
+      "action_plan": null,
+      "pre_met": [],
+      "pre_missing": [],
+      "match_status": "always"
+    },
+    {
+      "name": "M3 Long \u2014 Confluence Model (8yr re-validated)",
+      "direction": "long",
+      "status": "verified",
+      "wr_base": null,
+      "sample_size": 264,
+      "action_plan": null,
+      "pre_met": [],
+      "pre_missing": [],
+      "match_status": "always"
+    },
+    {
+      "name": "W1 Short \u2014 Post-Sweep Continuation",
+      "direction": "short",
+      "status": "under_review",
+      "wr_base": null,
+      "sample_size": null,
+      "action_plan": "1) Confirm W1 short trigger (FVGC short 9:30-9:45). 2) Pull up 15m chart, identify nearest unswept bullish 15m FVG below current price. 3) Has price touched it between 9:30 and now? If YES \u2192 take with full size + extended target. If NO \u2192 fall back to standard W1 confluence model. 4) BE@1R then ride for 3R+, aggressive trail for 5R+.",
+      "pre_met": [],
+      "pre_missing": [],
+      "match_status": "always"
+    },
+    {
+      "name": "FVGC Off of 930 Candle (9:30 Candle FVG Premium Sub-Tier)",
+      "direction": "short",
+      "status": "verified",
+      "wr_base": "66.7%",
+      "sample_size": 33,
+      "action_plan": "When FVGC short signal fires in 9:30-9:45, look at the FVG's creation timestamp. If between 9:29:30 and 9:31:00 \u2192 premium sub-tier, size up. Otherwise standard M1 Short sizing.",
+      "pre_met": [],
+      "pre_missing": [],
+      "match_status": "always"
+    },
+    {
+      "name": "No News + Macro 1 Short",
+      "direction": "short",
+      "status": "idea",
+      "wr_base": "60.0%",
+      "sample_size": 185,
+      "action_plan": "Check economic calendar. If clean day (no red folder), shorts in macro 1 have a structural edge. Combine with wide OR for 75% WR.",
+      "pre_met": [
+        "no_red_folder"
+      ],
+      "pre_missing": [],
+      "match_status": "active"
+    },
+    {
+      "name": "FVGC To Opening Range H/L",
+      "direction": "both",
+      "status": "backtesting",
+      "wr_base": "61.7%",
+      "sample_size": 60,
+      "action_plan": "At 9:45: note OR high and OR low. Check OR close bias (top 40% = short toward OR_L, bottom 40% = long toward OR_H, middle = skip). Take FVGC entries where R-to-OR < 1.0 and neither OR side has been swept. Hold original SL, target 1R. Play is dead once any OR level is breached.",
+      "pre_met": [],
+      "pre_missing": [],
+      "match_status": "always"
+    },
+    {
+      "name": "Reversal-Confirmed FVG Continuation (HTF 15m Sweep)",
+      "direction": "both",
+      "status": "backtesting",
+      "wr_base": "68.0%",
+      "sample_size": 100,
+      "action_plan": "Identify unmitigated 15m FVGs pre-market. If one gets swept (non-reclaiming) and an opposing FVG inverts, take the FVGC reversal signal.",
+      "pre_met": [],
+      "pre_missing": [],
+      "match_status": "always"
+    },
+    {
+      "name": "15m FVG Breakout Continuation",
+      "direction": "both",
+      "status": "rejected",
+      "wr_base": "31.9% (re-run actual)",
+      "sample_size": 47,
+      "action_plan": "DO NOT TRADE. Pending further investigation if any salvage path is found.",
+      "pre_met": [],
+      "pre_missing": [],
+      "match_status": "always"
+    },
+    {
+      "name": "W3 Long \u2014 Confluence Model",
+      "direction": "long",
+      "status": "backtesting",
+      "wr_base": "53.8%",
+      "sample_size": 238,
+      "action_plan": "Pre-10am: identify unswept 15m and 1H FVGs above current price. Note distances in R-multiples (pts / expected SL). At 10:00+: if a long FVGC entry forms (not BOS), check tier. A+ (15m FVG \u22643R): set TP at the 15m FVG price, avg ~1.9R. A (both 15m + 1H ahead): target 1.5\u20132R. B (one draw): target 1R. C (no draw): skip.",
+      "pre_met": [],
+      "pre_missing": [],
+      "match_status": "always"
+    }
+  ],
+  "partial_plays": [],
+  "game_plan": {
+    "one_liners": [],
+    "checklist": [
+      "9:30 candle direction \u2014 bearish confirms most high-edge combos",
+      "Watch 45-min OR width by 10:15 \u2014 WIDE = green light, TIGHT = stand down"
+    ],
+    "best_targets": [],
+    "narrative": null
+  }
+}

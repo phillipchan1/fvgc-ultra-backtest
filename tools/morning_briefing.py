@@ -1559,6 +1559,521 @@ def print_matrix_play_scorecards(ctx, today_factors: dict[str, bool],
         print()
 
 
+def _tier_level_from_quintile(q_label: str) -> str:
+    """Map OR quintile label to a UI severity bucket."""
+    q = q_label.split(' ', 1)[0] if q_label else ''
+    return {
+        'Q1': 'stand_down',
+        'Q2': 'below',
+        'Q3': 'normal',
+        'Q4': 'wide',
+        'Q5': 'wide_max',
+    }.get(q, 'unknown')
+
+
+def build_briefing_dict(
+    target_date: date,
+    now_et: datetime | None,
+    ctx,
+    today_factors: dict[str, bool],
+    config: dict,
+    combo_sections: dict[str, list[ComboEdge]],
+    factor_data: dict[str, list[FactorEdge]],
+    plays: list[dict],
+    levels: list[LiquidityLevel],
+    gap_pts: float | None,
+    events: list[dict],
+    cal_unknown: bool = False,
+    csv_path: Path | None = None,
+) -> dict:
+    """Build a JSON-serializable dict mirroring the print_briefing sections.
+
+    Used by --export-dashboard to drive the HTML dashboard. Each top-level
+    section includes a `narrative` slot (None by default) that the Claude
+    Code routine can populate with an AI-written read of the section.
+    """
+    dow = target_date.strftime('%A')
+    factor_config = config.get('factors', {})
+
+    def _fdesc(fid: str) -> str:
+        return factor_config.get(fid, {}).get('desc', '')
+
+    # ---- OR forecast ----
+    forecast = load_or_forecast(target_date, ctx=ctx)
+    or_forecast_d: dict = {'available': False, 'narrative': None}
+    if forecast and 'error' not in forecast:
+        feat_date = forecast['feature_date']
+        or_forecast_d = {
+            'available': True,
+            'point_pts': round(forecast['point'], 1),
+            'lo80_pts': round(forecast['lo80'], 1),
+            'hi80_pts': round(forecast['hi80'], 1),
+            'baseline_pts': round(forecast['baseline'], 1),
+            'quintile': forecast['quintile'],
+            'tier_label': forecast['tier'],
+            'tier_level': _tier_level_from_quintile(forecast['quintile']),
+            'feature_date': feat_date.isoformat() if hasattr(feat_date, 'isoformat') else str(feat_date),
+            'is_stale': bool(forecast.get('is_stale')),
+            'overrides': list(forecast.get('overrides', [])),
+            'drivers': [
+                {
+                    'factor': fname,
+                    'value': round(float(val), 3),
+                    'z': round(float(zi), 2),
+                    'delta_pts': round(float(delta), 1),
+                }
+                for fname, val, zi, delta in (forecast.get('drivers') or [])[:6]
+            ],
+            'perf': forecast.get('perf') or {},
+            'narrative': None,
+        }
+    elif forecast and 'error' in forecast:
+        or_forecast_d = {
+            'available': False,
+            'error': forecast['error'],
+            'narrative': None,
+        }
+
+    # ---- Calendar ----
+    dow_notes = config.get('day_of_week_notes', {})
+    calendar_d = {
+        'day_of_week': dow,
+        'dow_note': dow_notes.get(dow, ''),
+        'unknown': bool(cal_unknown),
+        'is_fomc_week': bool(today_factors.get('is_fomc_week')),
+        'events': [
+            {
+                'event': e.get('event', e.get('event_type', '?')),
+                'time_et': e.get('time_et', e.get('time', '')),
+                'impact': e.get('impact', ''),
+                'currency': e.get('country', e.get('currency', '')),
+            }
+            for e in (events or [])
+        ],
+        'narrative': None,
+    }
+
+    # ---- Pre-open state ----
+    def _g(name):
+        return getattr(ctx, name, None)
+
+    pcp = _g('prior_day_close_position')
+    pcp_label = None
+    if pcp is not None:
+        if pcp < 0.25:
+            pcp_label = 'prior_day_down'
+        elif pcp > 0.75:
+            pcp_label = 'prior_day_up'
+
+    gap = _g('gap_pts')
+    gap_dir = None
+    if gap is not None:
+        gap_dir = 'gap_down' if gap < 0 else 'gap_up'
+
+    current_ts = _g('current_ts')
+    current_ts_str = current_ts.strftime('%H:%M ET') if current_ts else None
+
+    pre_open_d = {
+        'current_price': _g('current_price'),
+        'current_price_ts': current_ts_str,
+        'prior_rth': {
+            'close': _g('prior_rth_close'),
+            'open': _g('prior_rth_open'),
+            'high': _g('prior_rth_high'),
+            'low': _g('prior_rth_low'),
+            'close_position': pcp,
+            'label': pcp_label,
+        },
+        'overnight': {
+            'high': _g('overnight_high'),
+            'low': _g('overnight_low'),
+            'range': _g('overnight_range'),
+            'direction': _g('overnight_direction') or None,
+            'tight': bool(today_factors.get('tight_overnight')),
+            'wide': bool(today_factors.get('wide_overnight')),
+        },
+        'asia': {'high': _g('asia_high'), 'low': _g('asia_low')},
+        'london': {'high': _g('london_high'), 'low': _g('london_low')},
+        'gap': {
+            'pts': gap,
+            'pct': _g('gap_pct'),
+            'direction': gap_dir,
+        },
+        'data_notes': list(getattr(ctx, 'notes', []) or []),
+        'narrative': None,
+    }
+
+    # ---- Liquidity levels ----
+    def _level_dict(l: LiquidityLevel) -> dict:
+        return {
+            'group': l.group,
+            'label': l.label,
+            'price': l.price,
+            'distance_pts': l.distance_pts,
+            'direction': l.direction,
+            'tier': l.tier,
+            'hit_rate_45m_pct': l.hit_rate_45m,
+            'wr_as_magnet_pct': l.wr_as_magnet,
+            'pf_as_magnet': l.pf_as_magnet,
+            'below_baseline': l.wr_as_magnet < 51.5,
+        }
+
+    levels_d = {
+        'scope_pts': config.get('tuning', {}).get('level_scope_pts', 100),
+        'above': [_level_dict(l) for l in levels if l.direction == 'above'],
+        'below': [_level_dict(l) for l in levels if l.direction == 'below'],
+        'narrative': None,
+    }
+
+    # ---- Factor snapshot ----
+    cal_unknown_factors = set()
+    if cal_unknown:
+        cal_unknown_factors = {
+            'no_red_folder', 'has_red_folder',
+            'no_pre_rth_news', 'has_pre_rth_news',
+            'not_fomc_week', 'is_fomc_week',
+        }
+    visible = {f: v for f, v in today_factors.items() if f not in cal_unknown_factors}
+    factors_d = {
+        'active': sorted(f for f, v in visible.items() if v),
+        'inactive': sorted(f for f, v in visible.items() if not v),
+        'unknown': sorted(cal_unknown_factors),
+        'narrative': None,
+    }
+
+    # ---- Armed / watch combos (robust sample n>=50) ----
+    if cal_unknown_factors:
+        match_factors = {f: v for f, v in today_factors.items()
+                         if f not in cal_unknown_factors}
+    else:
+        match_factors = today_factors
+
+    top_combos = combo_sections.get('top_wr_robust', [])
+    avoid_combos = combo_sections.get('avoid', [])
+    matched_top = match_combos(top_combos, match_factors, factor_config)
+    matched_avoid = match_combos(avoid_combos, match_factors, factor_config)
+
+    def _stars(wr: float) -> str:
+        return '★★★' if wr >= 75 else '★★' if wr >= 65 else '★'
+
+    armed_d = []
+    watch_d = []
+    for m in matched_top:
+        if m.status == 'armed':
+            armed_d.append({
+                'stars': _stars(m.combo.wr),
+                'factors': list(m.combo.factors),
+                'n': m.combo.n,
+                'wr_pct': round(m.combo.wr, 1),
+                'pf': round(m.combo.pf, 2),
+                'p_wr': m.combo.p_wr,
+            })
+        elif m.status == 'watch':
+            watch_d.append({
+                'stars': _stars(m.combo.wr),
+                'factors': list(m.combo.factors),
+                'n': m.combo.n,
+                'wr_pct': round(m.combo.wr, 1),
+                'pf': round(m.combo.pf, 2),
+                'p_wr': m.combo.p_wr,
+                'pre_matched': list(m.pre_matched),
+                'post_needed': [
+                    {'factor': f, 'desc': _fdesc(f)} for f in m.post_needed
+                ],
+            })
+
+    max_show = config.get('tuning', {}).get('top_watches_to_show', 8)
+    watch_d = watch_d[:max_show]
+
+    # ---- W1 short confluence ----
+    w1_count, w1_active = count_w1_confluences(today_factors, gap_pts)
+    w1_play = next((p for p in plays if 'W1 Short' in p.get('name', '')), None)
+    w1_d = None
+    if w1_play and w1_count > 0:
+        cm = w1_play.get('confluence_model', {}) or {}
+        tiers = cm.get('tiers', []) or []
+        tier = next((t for t in tiers if t['min'] <= w1_count <= t['max']), None)
+        w1_d = {
+            'preopen_count': w1_count,
+            'active_factors': list(w1_active),
+            'tier': tier,
+        }
+
+    # ---- Matrix play scorecards ----
+    matrix_d = []
+    if csv_path is not None:
+        f = _compute_matrix_factors(ctx, today_factors, target_date, csv_path)
+        expectancy = _load_expectancy_stats()
+        for name, play in MATRIX_PLAYS.items():
+            preopen_active = []
+            post_pending = []
+            max_preopen = 0
+            for fid, when, desc, lift in play['pros']:
+                if when == 'preopen':
+                    max_preopen += 1
+                    if f.get(fid):
+                        preopen_active.append({
+                            'id': fid, 'desc': desc, 'lift_pp': lift,
+                        })
+                else:
+                    post_pending.append({
+                        'id': fid, 'when': when, 'desc': desc, 'lift_pp': lift,
+                    })
+            active_vetoes = []
+            for vid, _w, vdesc, vlift in play['vetos']:
+                if f.get(vid):
+                    active_vetoes.append({
+                        'id': vid, 'desc': vdesc, 'lift_pp': vlift,
+                    })
+
+            preopen_count = len(preopen_active)
+            min_possible = preopen_count
+            max_possible = preopen_count + len(post_pending)
+
+            min_tier = _tier_for(min_possible, play['tiers'])
+            max_tier = _tier_for(max_possible, play['tiers'])
+
+            exp = expectancy.get(name) if expectancy else None
+            exp_block = None
+            if exp:
+                tier_thr = exp['tradeable_threshold']
+                fire_by_tier = exp.get('fire_rate_by_tier_pct', {}) or {}
+
+                def _fr(tier_count: int):
+                    v = fire_by_tier.get(str(tier_count), fire_by_tier.get(tier_count))
+                    if v is not None:
+                        return v
+                    int_keys = sorted(int(k) for k in fire_by_tier.keys())
+                    return fire_by_tier.get(str(int_keys[-1])) if int_keys else None
+
+                exp_block = {
+                    'tradeable_threshold': tier_thr,
+                    'setup_pct_of_all_days': exp.get('setup_pct_of_all_days'),
+                    'fire_rate_pct': exp.get('fire_rate_pct'),
+                    'ev_per_setup_day_R': exp.get('ev_per_setup_day_R'),
+                    'fire_rate_now_pct': _fr(min_possible),
+                    'fire_rate_max_pct': _fr(max_possible),
+                }
+
+            matrix_d.append({
+                'name': name,
+                'direction': play['direction'],
+                'window': play['window'],
+                'veto_active': bool(active_vetoes),
+                'active_vetoes': active_vetoes,
+                'preopen_count': preopen_count,
+                'max_preopen': max_preopen,
+                'preopen_active': preopen_active,
+                'post_pending': post_pending,
+                'projection': {
+                    'min_count': min_possible,
+                    'max_count': max_possible,
+                    'min_tier': {'action': min_tier[2], 'note': min_tier[3]},
+                    'max_tier': {'action': max_tier[2], 'note': max_tier[3]},
+                    'locked': min_possible == max_possible,
+                },
+                'expectancy': exp_block,
+                'extra_note': play.get('extra_note'),
+                'notion_url': play.get('notion_url'),
+                'narrative': None,
+            })
+
+    # ---- Avoid signals ----
+    factor_avoid = factor_data.get('avoid', []) or []
+    avoid_factor_signals = []
+    for fa in factor_avoid:
+        if today_factors.get(fa.factor, False):
+            avoid_factor_signals.append({
+                'factor': fa.factor,
+                'wr_pct': round(fa.wr, 1),
+                'lift_pp': round(fa.lift, 1),
+                'pf': round(fa.pf, 2),
+                'p_wr': fa.p_wr,
+            })
+
+    avoid_max = config.get('tuning', {}).get('avoid_to_show', 6)
+    avoid_combo_signals = []
+    for m in [mm for mm in matched_avoid if mm.status in ('armed', 'watch')][:avoid_max]:
+        avoid_combo_signals.append({
+            'status': m.status,
+            'factors': list(m.combo.factors),
+            'n': m.combo.n,
+            'wr_pct': round(m.combo.wr, 1),
+            'pf': round(m.combo.pf, 2),
+            'post_needed': [{'factor': f, 'desc': _fdesc(f)} for f in m.post_needed],
+        })
+
+    avoid_d = {
+        'factor_signals': avoid_factor_signals,
+        'combo_signals': avoid_combo_signals,
+        'narrative': None,
+    }
+
+    # ---- Playbook plays ----
+    matched_plays = match_plays(plays, today_factors)
+
+    def _play_to_dict(mp) -> dict:
+        p = mp.play
+        return {
+            'name': p.get('name'),
+            'direction': p.get('direction'),
+            'status': p.get('status'),
+            'wr_base': p.get('wr_base'),
+            'sample_size': p.get('sample_size'),
+            'action_plan': p.get('action_plan'),
+            'pre_met': list(mp.pre_met),
+            'pre_missing': list(mp.pre_missing),
+            'match_status': mp.status,
+        }
+
+    active_plays_d = [_play_to_dict(mp) for mp in matched_plays
+                      if mp.status in ('active', 'always')]
+    partial_plays_d = [_play_to_dict(mp) for mp in matched_plays
+                       if mp.status == 'partial']
+
+    # ---- Game plan ----
+    one_liners = []
+    for ol in config.get('manual_one_liners', []) or []:
+        when_all = ol.get('when_all', [])
+        if when_all and all(today_factors.get(f, False) for f in when_all):
+            one_liners.append(ol.get('say', ''))
+
+    best_targets = []
+    for l in [x for x in levels if x.direction == 'below'][:2]:
+        best_targets.append({
+            'label': l.label, 'price': l.price,
+            'distance_pts': l.distance_pts, 'direction': 'below',
+        })
+    for l in [x for x in levels if x.direction == 'above'][:2]:
+        best_targets.append({
+            'label': l.label, 'price': l.price,
+            'distance_pts': l.distance_pts, 'direction': 'above',
+        })
+
+    game_plan_d = {
+        'one_liners': one_liners,
+        'checklist': [
+            '9:30 candle direction — bearish confirms most high-edge combos',
+            'Watch 45-min OR width by 10:15 — WIDE = green light, TIGHT = stand down',
+        ],
+        'best_targets': best_targets,
+        'narrative': None,
+    }
+
+    # ---- Meta + freshness ----
+    meta_d = {
+        'date': target_date.isoformat(),
+        'day_of_week': dow,
+        'generated_at_et': now_et.isoformat() if now_et else None,
+        'generated_at_pt': now_et.astimezone(PT_TZ).isoformat() if now_et else None,
+        'mode': 'live' if now_et else 'offline',
+    }
+
+    audit = audit_data_freshness(config, target_date) or []
+    freshness_d = [
+        {
+            'label': a['label'],
+            'last_date': a['last_date'].isoformat() if a.get('last_date') else None,
+            'days_stale': a.get('days_stale'),
+            'is_stale': a.get('is_stale'),
+            'impact': a.get('impact'),
+        }
+        for a in audit
+    ]
+
+    return {
+        'schema_version': 1,
+        'meta': meta_d,
+        'freshness': freshness_d,
+        'or_forecast': or_forecast_d,
+        'calendar': calendar_d,
+        'pre_open': pre_open_d,
+        'levels': levels_d,
+        'factors': factors_d,
+        'armed_edges': armed_d,
+        'watch_list': watch_d,
+        'w1_short_confluence': w1_d,
+        'matrix_plays': matrix_d,
+        'avoid': avoid_d,
+        'active_plays': active_plays_d,
+        'partial_plays': partial_plays_d,
+        'game_plan': game_plan_d,
+    }
+
+
+def _json_default(o):
+    if isinstance(o, (date, datetime)):
+        return o.isoformat()
+    if isinstance(o, Path):
+        return str(o)
+    raise TypeError(f'not serializable: {type(o).__name__}')
+
+
+def _merge_narratives(new_data: dict, old_data: dict) -> dict:
+    """Carry narrative fields from old_data into new_data, section by section.
+
+    Lets the Claude Code routine write narratives once; subsequent
+    `morning_briefing.py --export-dashboard` runs preserve them as long as the
+    underlying section still exists. The matrix_plays narrative is matched by
+    play name.
+    """
+    if not old_data:
+        return new_data
+
+    SECTIONS = ('or_forecast', 'calendar', 'pre_open', 'levels', 'factors',
+                'avoid', 'game_plan')
+    for s in SECTIONS:
+        old_sec = old_data.get(s)
+        new_sec = new_data.get(s)
+        if isinstance(old_sec, dict) and isinstance(new_sec, dict):
+            if old_sec.get('narrative') and not new_sec.get('narrative'):
+                new_sec['narrative'] = old_sec['narrative']
+
+    # Match matrix_plays by name
+    old_by_name = {p.get('name'): p for p in (old_data.get('matrix_plays') or [])}
+    for p in new_data.get('matrix_plays') or []:
+        old_p = old_by_name.get(p.get('name'))
+        if old_p and old_p.get('narrative') and not p.get('narrative'):
+            p['narrative'] = old_p['narrative']
+
+    return new_data
+
+
+def export_dashboard(data: dict, out_dir: Path) -> tuple[Path, Path]:
+    """Write briefing.json and data.js to out_dir.
+
+    data.js sets `window.BRIEFING_DATA = {...};` so the HTML can load it via
+    `<script src="data.js">` — works from file:// without CORS issues.
+    Preserves narrative fields from an existing briefing.json so the Claude
+    Code routine can write them once and re-runs don't blow them away.
+    """
+    out_dir.mkdir(parents=True, exist_ok=True)
+    json_path = out_dir / 'briefing.json'
+    js_path = out_dir / 'data.js'
+
+    # Preserve narratives from a prior run on the same target date.
+    old = None
+    if json_path.exists():
+        try:
+            old = json.loads(json_path.read_text())
+            if old.get('meta', {}).get('date') != data.get('meta', {}).get('date'):
+                old = None  # different day, don't carry over
+        except (json.JSONDecodeError, OSError):
+            old = None
+    if old:
+        data = _merge_narratives(data, old)
+
+    json_str = json.dumps(data, indent=2, default=_json_default)
+    json_path.write_text(json_str + '\n')
+    js_path.write_text(
+        '// Auto-generated by tools/morning_briefing.py --export-dashboard.\n'
+        '// Edit tools/briefing/briefing.json (e.g. to add narratives) then\n'
+        '// rerun the briefing or use --rewrite-js-from-json.\n'
+        f'window.BRIEFING_DATA = {json_str};\n'
+    )
+    return json_path, js_path
+
+
 def print_briefing(
     target_date: date,
     now_et: datetime | None,
@@ -1896,7 +2411,37 @@ def main():
                         help='Run for a historical date (YYYY-MM-DD)')
     parser.add_argument('--json', action='store_true',
                         help='Output raw factor data as JSON (for debugging)')
+    parser.add_argument('--export-dashboard', nargs='?',
+                        const='tools/briefing',
+                        default=None,
+                        metavar='OUT_DIR',
+                        help='Write briefing.json + data.js for the HTML dashboard '
+                             '(default dir: tools/briefing). Preserves narrative '
+                             'fields in an existing briefing.json on the same date.')
+    parser.add_argument('--rewrite-js-from-json', nargs='?',
+                        const='tools/briefing',
+                        default=None,
+                        metavar='OUT_DIR',
+                        help='Read briefing.json from OUT_DIR and regenerate data.js. '
+                             'Use after editing narratives by hand.')
     args = parser.parse_args()
+
+    # Standalone: regenerate data.js from an existing briefing.json. Skips
+    # all live fetches — useful right after Claude Code writes narratives.
+    if args.rewrite_js_from_json is not None:
+        out_dir = REPO / args.rewrite_js_from_json
+        json_path = out_dir / 'briefing.json'
+        if not json_path.exists():
+            print(f'[error] {json_path} not found', file=sys.stderr)
+            sys.exit(1)
+        data = json.loads(json_path.read_text())
+        json_str = json.dumps(data, indent=2, default=_json_default)
+        (out_dir / 'data.js').write_text(
+            '// Auto-generated by tools/morning_briefing.py --rewrite-js-from-json.\n'
+            f'window.BRIEFING_DATA = {json_str};\n'
+        )
+        print(f'Wrote {out_dir / "data.js"}')
+        return
 
     # Determine target date
     now_ny = datetime.now(tz=NY_TZ)
@@ -2079,6 +2624,30 @@ def main():
         cal_unknown=cal_unknown,
         csv_path=csv_path,
     )
+
+    # Export dashboard JSON + data.js if requested.
+    if args.export_dashboard is not None:
+        data = build_briefing_dict(
+            target_date=target_date,
+            now_et=now_et if not is_historical else None,
+            ctx=ctx,
+            today_factors=today_factors,
+            config=config,
+            combo_sections=combo_sections,
+            factor_data=factor_data,
+            plays=plays,
+            levels=levels,
+            gap_pts=gap_pts,
+            events=events,
+            cal_unknown=cal_unknown,
+            csv_path=csv_path,
+        )
+        out_dir = REPO / args.export_dashboard
+        json_path, js_path = export_dashboard(data, out_dir)
+        print()
+        print(f'[dashboard] Wrote {json_path.relative_to(REPO)}')
+        print(f'[dashboard] Wrote {js_path.relative_to(REPO)}')
+        print(f'[dashboard] Open {(out_dir / "index.html").relative_to(REPO)} in a browser.')
 
 
 if __name__ == '__main__':
