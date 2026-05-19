@@ -4,3 +4,8 @@ __pycache__/
 *.pyc
 logs/
 .DS_Store
+
+# Local secrets. Use .env.example as the template. GitHub Actions
+# stores the same keys as repo secrets so CI keeps working.
+.env
+.env.local

@@ -43,6 +43,32 @@ PLAYBOOK = REPO / 'playbook'
 sys.path.insert(0, str(TOOLS))
 
 
+def _load_dotenv() -> None:
+    """Load KEY=value pairs from .env in the repo root into os.environ.
+    Existing env vars take precedence — so a GitHub Actions secret never
+    gets clobbered by a stale local .env. Stdlib only."""
+    import os
+    env_path = REPO / '.env'
+    if not env_path.exists():
+        return
+    for raw in env_path.read_text().splitlines():
+        line = raw.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+        key, _, val = line.partition('=')
+        key = key.strip()
+        # Strip surrounding quotes if present
+        val = val.strip()
+        if (val.startswith('"') and val.endswith('"')) or \
+           (val.startswith("'") and val.endswith("'")):
+            val = val[1:-1]
+        if key and key not in os.environ:
+            os.environ[key] = val
+
+
+_load_dotenv()
+
+
 # ======================================================================
 # Data classes
 # ======================================================================

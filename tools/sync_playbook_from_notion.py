@@ -49,6 +49,31 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 PLAYS_JSON = REPO / 'playbook' / 'plays.json'
 
+
+def _load_dotenv() -> None:
+    """Load KEY=value pairs from .env in the repo root into os.environ.
+    Existing env vars take precedence so GitHub Actions secrets aren't
+    overridden. Stdlib only."""
+    import os
+    env_path = REPO / '.env'
+    if not env_path.exists():
+        return
+    for raw in env_path.read_text().splitlines():
+        line = raw.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+        key, _, val = line.partition('=')
+        key = key.strip()
+        val = val.strip()
+        if (val.startswith('"') and val.endswith('"')) or \
+           (val.startswith("'") and val.endswith("'")):
+            val = val[1:-1]
+        if key and key not in os.environ:
+            os.environ[key] = val
+
+
+_load_dotenv()
+
 STATUS_MAP = {
     'Verified & Active Play': 'verified',
     'Backtesting': 'backtesting',
