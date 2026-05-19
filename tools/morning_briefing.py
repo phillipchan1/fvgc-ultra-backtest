@@ -637,6 +637,10 @@ class MatchedPlay:
 def match_plays(plays: list[dict], today_factors: dict[str, bool]) -> list[MatchedPlay]:
     results = []
     for play in plays:
+        # Skip rejected plays — they're kept in plays.json as Notion source-of-truth
+        # but shouldn't show up in active/partial lists.
+        if play.get('status') == 'rejected':
+            continue
         pre_factors = play.get('pre_market_factors', [])
         if not pre_factors:
             results.append(MatchedPlay(
