@@ -1,54 +1,98 @@
 [
   {
-    "name": "W1 Short \u2014 Confluence Model",
+    "name": "M1 Short \u2014 Confluence Model (8yr re-validated)",
     "notion_url": "https://www.notion.so/33de2f0e776081889879c4dcbd495996",
     "status": "verified",
     "confidence": "high",
     "direction": "short",
     "macro": "9:30-9:45",
-    "sample_size": 229,
-    "wr_base": "60.7%",
-    "pf_1r": 1.54,
-    "pf_2r": 2.67,
-    "pf_3r": 3.10,
-    "avg_mfe_r": 6.5,
-    "pre_market_factors": ["gap_down", "overnight_down", "prior_day_down"],
-    "bonus_factors": {
-      "large_gap": {
-        "condition": "gap_pts <= -100",
-        "desc": "Gap down 100+ pts counts as bonus confluence on top of gap_down",
-        "standalone_wr": "75.0%"
-      }
+    "validated_on": "2026-05-18 (8yr: 2018-01 to 2026-05)",
+    "sample_size": 246,
+    "wr_base": "51.2% (no filter post-veto), 60.6% (at 2+ confluences)",
+    "ev_per_trade_pts": {
+      "no_filter_TP5R_noBE": "+0.78R",
+      "2plus_conf_TP5R_noBE": "+1.26R",
+      "9_30_FVG_premium_TP5R_noBE": "+1.55R"
     },
-    "intraday_triggers": ["bearish_930"],
-    "confluence_model": {
-      "enabled": true,
-      "tiers": [
-        {"min": 0, "max": 1, "action": "Skip", "wr": "54.1%", "pf_1r": 1.18, "target": null},
-        {"min": 2, "max": 2, "action": "Trade", "wr": "66.9%", "pf_1r": 2.03, "target": "1R"},
-        {"min": 3, "max": 3, "action": "Trade + Hold", "wr": "70.0%", "pf_1r": 2.33, "target": "2R (trail stop)"},
-        {"min": 4, "max": 5, "action": "Full Send", "wr": "83.3%", "pf_1r": 5.00, "target": "3R+ (trail aggressively)"}
-      ],
-      "note": "Count: gap_down, large_gap (bonus), overnight_down, prior_day_down, bearish_930. More confluences = bigger target."
+    "pf_at_tp5r": {
+      "no_filter": 2.11,
+      "2plus_conf": 3.01,
+      "9_30_FVG_premium": 3.68
     },
-    "description": "The master W1 short playbook. Count your pre-market confluences plus the 9:30 candle. Scale TP from 1R to 3R+ as confluences stack.",
-    "action_plan": "Night before: count pre-market confluences (gap down, large gap 100+, overnight down, prior day weak). At 9:30:30: did the candle close bearish? Final count \u2192 look up tier \u2192 size and TP accordingly."
+    "frequency_per_month": {
+      "all_post_veto": 4.17,
+      "2plus_conf": 1.85,
+      "4plus_conf": 0.49,
+      "9_30_FVG_premium_subset": 0.55
+    },
+    "sl_distribution_pts": {"min": 15, "p25": 20, "median": 28, "mean": 29.4, "p75": 35, "p90": 45, "max": 60},
+    "hard_vetoes": ["vixy_low (90d bottom quartile)", "dow_monday", "protected_swing variant", "entry after 9:45"],
+    "bias_factors_4factor": ["prior_3d_neg", "prior_day_weak (bottom 1/3)", "near_20d_low (within 2%)", "made_new_5d_low_yday"],
+    "premium_sub_tier": {
+      "name": "9:30 Candle FVG",
+      "notion_url": "https://www.notion.so/33de2f0e776081aa9c6bdc297e5fb68b",
+      "condition": "FVG was born in 9:29:30-9:31:00 NY (the 9:30 1-min candle itself)",
+      "n_8yr": 33,
+      "wr": "66.7%",
+      "pf_at_tp5r": 3.68,
+      "ev_per_trade": "+1.55R",
+      "frequency": "~0.55/month"
+    },
+    "sl_adaptive_exit": {
+      "<=25pt SL": "TP @ 5R (~90pts), EV +0.59R",
+      "25-35pt SL": "TP @ 5R (~138pts), EV +0.97R (sweet spot)",
+      "35-50pt SL": "TP @ 3R (~115pts), EV +0.71R",
+      ">50pt SL": "TP @ 2R (~106pts), EV +0.57R - runner edge dies past 2R here"
+    },
+    "sizing_by_bias_x_premium": {
+      "0-1 bias, no 9:30-FVG": "0.5x base",
+      "0-1 bias, 9:30-FVG yes": "1.0x base",
+      "2+ bias, no 9:30-FVG": "1.0x base",
+      "2+ bias AND 9:30-FVG": "1.5-2x base (max conviction)"
+    },
+    "screen_time_gate": "or_5min_top_q (9:30-9:35 OR range in top quartile of last 90 days). Fire rate jumps from 22% to 35%. Not an entry filter \u2014 use to allocate attention.",
+    "timeframe": "30-second FVGC only. Cross-TF audit on 8yr confirms 1m/2m/3m have WORSE WR (1m at 47% on 2+ conf vs 30s at 58%). 30s is the only viable bar size.",
+    "regime_robustness": {
+      "bear": "56.7% WR (n=67)",
+      "bull": "56.2% WR (n=64)",
+      "neutral": "54.0% WR (n=50)",
+      "verdict": "regime-robust at ~55-57% (2.7pp spread)"
+    },
+    "year_by_year_2plus": {"2018":"62.5%","2020":"50.0%","2021":"66.7%","2022":"53.3%","2023":"84.6%","2024":"57.1%","2025":"61.5%","2026":"50.0%"},
+    "weakest_year": "2020 (COVID dislocations, 33-50% WR) \u2014 known regime weakness",
+    "description": "Master M1 short play. The edge is the RUNNER, not the WR. ~4 trades/month after vetoes. Use confluence count as a SIZING input (not take/skip gate). Default exit TP@5R no-BE on tight SLs, scale to TP@3R/2R as SL widens. Premium 9:30-candle FVG sub-tier (PF 3.68) when applicable.",
+    "action_plan": "See Notion Morning Routine for the complete timeline. Quick version: vetoes off + FVGC short fires 9:30-9:45 \u2192 SL-adaptive TP + bias x 9:30-FVG sizing matrix + NO BE move + don't touch.",
+    "studies": [
+      "studies/m1_short_factor_remine/REPORT.md",
+      "studies/m1_short_factor_remine/exit_analysis.py",
+      "studies/m1_short_factor_remine/three_questions.py",
+      "studies/m1_short_factor_remine/sl_analysis.py",
+      "studies/m1_short_8yr_validation/REPORT.md"
+    ]
   },
   {
-    "name": "FVGC Off of 930 Candle",
+    "name": "FVGC Off of 930 Candle (9:30 Candle FVG Premium Sub-Tier)",
     "notion_url": "https://www.notion.so/33de2f0e776081aa9c6bdc297e5fb68b",
-    "status": "backtesting",
+    "status": "verified",
     "confidence": "high",
     "direction": "short",
     "macro": "9:30-9:45",
-    "sample_size": 54,
-    "wr_base": "74.1%",
-    "pf_1r": null,
-    "pre_market_factors": [],
-    "intraday_triggers": ["fvg_in_930_window"],
-    "confluence_model": null,
-    "description": "FVG created in the first 90 seconds of RTH (9:29:30\u20139:31:00). Take the short FVGC entry. 74% WR standalone \u2014 structural edge from the opening burst.",
-    "action_plan": "Watch for FVG formation in 9:29:30\u20139:31:00 window on 30s bars. Take the short. If 2+ W1 confluences also present, hold for higher R."
+    "reactivated_on": "2026-05-18 (was archived 2026-04 based on look-ahead-biased 15m FVG gate, since fixed)",
+    "sample_size": 33,
+    "wr_base": "66.7%",
+    "pf_at_tp5r_noBE": 3.68,
+    "ev_per_trade": "+1.55R",
+    "avg_mfe_r": 5.7,
+    "frequency_per_month": 0.55,
+    "parent_play": "M1 Short \u2014 Confluence Model",
+    "trigger": "FVGC short in 9:30-9:45 where the FVG was BORN in the 9:30 candle (9:29:30-9:31:00 NY)",
+    "lift_vs_other_fvg": "+17pp WR, +13pp hit_5R, PF nearly doubles (2.02 \u2192 3.68)",
+    "hard_vetoes": ["inherits from parent M1 Short: vixy_low, dow_monday, protected_swing"],
+    "exit_strategy": "TP @ 5R, NO BE move (same as parent, with SL-adaptive scaling)",
+    "year_by_year_recent": {"2023": "60% (n=5)", "2024": "83% (n=6)", "2025": "87.5% (n=8)", "2026": "100% (n=3)"},
+    "weakest_year": "2020 (0% WR, n=3) \u2014 COVID weakness shared with parent",
+    "description": "Premium sub-tier of M1 Short Confluence Model. When the FVGC short's underlying FVG was created in the 9:30 candle itself, the trade is at the highest-PF cell in the entire 8-year study. Size up 1.5-2x when this fires alongside 2+ bias confluences.",
+    "action_plan": "When FVGC short signal fires in 9:30-9:45, look at the FVG's creation timestamp. If between 9:29:30 and 9:31:00 \u2192 premium sub-tier, size up. Otherwise standard M1 Short sizing."
   },
   {
     "name": "No News + Macro 1 Short",
