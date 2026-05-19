@@ -1823,10 +1823,27 @@
     }
   };
 
-  (function () {
+  (async function () {
     const app = document.getElementById('app');
-    let d = window.BRIEFING_DATA;
+
+    // ===== Data loading: prefer a fresh fetch of briefing.json over the
+    // script-tag-loaded data.js so a normal browser refresh always shows
+    // current data. Fallback chain:
+    //   1. fetch('briefing.json', {cache: 'no-store'}) — works on http(s),
+    //      bypasses the GitHub Pages 10-min cache-control on data.js.
+    //   2. window.BRIEFING_DATA from <script src="data.js"> — needed for
+    //      file:// local opens where fetch() is blocked by the browser.
+    //   3. window.BRIEFING_DEMO inline fallback — when nothing else works.
+    let d = null;
     let isDemo = false;
+    try {
+      const url = 'briefing.json?t=' + Date.now();
+      const resp = await fetch(url, {cache: 'no-store'});
+      if (resp.ok) d = await resp.json();
+    } catch (e) {
+      // fetch unavailable (file://) or network failed — fall through
+    }
+    if (!d) d = window.BRIEFING_DATA;
     if (!d) { d = window.BRIEFING_DEMO; isDemo = true; }
     if (!d) return;
 
@@ -1930,9 +1947,11 @@
     const pulseText  = isDemo ? 'Demo' : (meta.mode || 'idle').toUpperCase();
 
     // Generated-at timestamp shown as "DATA: HH:MM" — distinct from the live clock.
+    // Force ET so the label matches the value regardless of viewer's browser TZ.
     const generatedLabel = meta.generated_at_et
       ? 'DATA  ' + new Date(meta.generated_at_et).toLocaleTimeString('en-US',
-          {hour:'2-digit', minute:'2-digit', hour12:false}) + ' ET'
+          {hour:'2-digit', minute:'2-digit', hour12:false,
+           timeZone: 'America/New_York'}) + ' ET'
       : 'HISTORICAL';
     // Compute data age (minutes since generated) so stale data is visible at a glance.
     function dataAgeText() {
