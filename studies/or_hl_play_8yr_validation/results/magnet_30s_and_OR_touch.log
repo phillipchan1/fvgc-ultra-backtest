@@ -1,0 +1,75 @@
+====================================================================================================
+  MAGNET-ALIGNED OR PLAY — cross-TF + OR-touch behavior
+====================================================================================================
+
+
+####################################################################################################
+  TIMEFRAME: 30s
+####################################################################################################
+  1816 post-9:45 OR-inside entries
+
+  ── Magnet alignment (the headline) ──
+  ALIGNED (toward unswept side)               IS  n= 441  WR= 49.1%  PF= 1.93  EV=+0.440R    OOS  n= 935  WR= 46.7%  PF= 1.75  EV=+0.373R    ALL  n=1376  WR= 47.5%  PF= 1.81  EV=+0.395R
+  AGAINST (toward already-swept side)         IS  n= 108  WR= 38.5%  PF= 1.25  EV=+0.139R    OOS  n= 251  WR= 44.2%  PF= 1.58  EV=+0.299R    ALL  n= 359  WR= 42.5%  PF= 1.48  EV=+0.251R
+  OFF-THESIS (both swept)                     IS  n=  33  WR= 41.9%  PF= 1.44  EV=+0.242R    OOS  n=  48  WR= 58.1%  PF= 2.78  EV=+0.667R    ALL  n=  81  WR= 51.4%  PF= 2.11  EV=+0.494R
+  ALL post-9:45 (baseline)                    IS  n= 582  WR= 46.8%  PF= 1.76  EV=+0.373R    OOS  n=1234  WR= 46.6%  PF= 1.75  EV=+0.370R    ALL  n=1816  WR= 46.7%  PF= 1.75  EV=+0.371R
+
+  ── By sweep state × magnet ──
+  neither × aligned                           IS  n= 208  WR= 49.2%  PF= 1.94  EV=+0.442R    OOS  n= 461  WR= 42.8%  PF= 1.50  EV=+0.265R    ALL  n= 669  WR= 44.8%  PF= 1.62  EV=+0.320R
+  only_H_swept × aligned                      IS  n=  83  WR= 32.5%  PF= 0.96  EV=-0.024R    OOS  n= 243  WR= 49.6%  PF= 1.97  EV=+0.461R    ALL  n= 326  WR= 45.2%  PF= 1.65  EV=+0.337R
+  only_H_swept × against                      IS  n=  50  WR= 41.9%  PF= 1.44  EV=+0.220R    OOS  n= 121  WR= 50.0%  PF= 2.00  EV=+0.463R    ALL  n= 171  WR= 47.7%  PF= 1.83  EV=+0.392R
+  only_L_swept × aligned                      IS  n= 150  WR= 58.8%  PF= 2.86  EV=+0.693R    OOS  n= 231  WR= 51.4%  PF= 2.12  EV=+0.498R    ALL  n= 381  WR= 54.3%  PF= 2.38  EV=+0.575R
+  only_L_swept × against                      IS  n=  58  WR= 35.8%  PF= 1.12  EV=+0.069R    OOS  n= 130  WR= 38.7%  PF= 1.26  EV=+0.146R    ALL  n= 188  WR= 37.8%  PF= 1.21  EV=+0.122R
+  both_swept × off_thesis                     IS  n=  33  WR= 41.9%  PF= 1.44  EV=+0.242R    OOS  n=  48  WR= 58.1%  PF= 2.78  EV=+0.667R    ALL  n=  81  WR= 51.4%  PF= 2.11  EV=+0.494R
+
+  ── OR-touch behavior — magnet-aligned only ──
+  Total: n=1376
+  Reached OR target: 666 (48.4%)
+  Did NOT reach OR:  710 (51.6%)
+
+  Of trades that REACHED OR (n=666):
+    Continued past OR to 2R:         552 ( 82.9%)
+    Hit OR but didn't make 2R:       114 ( 17.1%)
+      ↳ reversed and got stopped:     62 (  9.3%)
+      ↳ closed at EOD partial:          0 (  0.0%)
+    Avg MFE beyond OR (cont cases): +6.09R
+
+  Exit-strategy comparison:
+    Exit at OR target:  PF 1.66  EV +0.323R/trade  (n=1376)
+    Hold to 2R:         PF 1.81  EV +0.395R/trade
+
+
+####################################################################################################
+  TIMEFRAME: 1m
+####################################################################################################
+  945 post-9:45 OR-inside entries
+
+  ── Magnet alignment (the headline) ──
+  ALIGNED (toward unswept side)               IS  n= 201  WR= 50.3%  PF= 2.02  EV=+0.483R    OOS  n= 503  WR= 46.3%  PF= 1.72  EV=+0.352R    ALL  n= 704  WR= 47.4%  PF= 1.81  EV=+0.389R
+  AGAINST (toward already-swept side)         IS  n=  55  WR= 35.3%  PF= 1.09  EV=+0.055R    OOS  n= 139  WR= 45.2%  PF= 1.65  EV=+0.317R    ALL  n= 194  WR= 42.3%  PF= 1.47  EV=+0.242R
+  OFF-THESIS (both swept)                     IS  n=  17  WR= 43.8%  PF= 1.56  EV=+0.294R    OOS  n=  30  WR= 34.6%  PF= 1.06  EV=+0.033R    ALL  n=  47  WR= 38.1%  PF= 1.23  EV=+0.128R
+  ALL post-9:45 (baseline)                    IS  n= 273  WR= 46.9%  PF= 1.77  EV=+0.385R    OOS  n= 672  WR= 45.5%  PF= 1.67  EV=+0.330R    ALL  n= 945  WR= 45.9%  PF= 1.70  EV=+0.346R
+
+  ── By sweep state × magnet ──
+  neither × aligned                           IS  n= 105  WR= 46.9%  PF= 1.77  EV=+0.381R    OOS  n= 300  WR= 47.6%  PF= 1.82  EV=+0.390R    ALL  n= 405  WR= 47.4%  PF= 1.81  EV=+0.388R
+  only_H_swept × aligned                      IS  n=  36  WR= 54.3%  PF= 2.38  EV=+0.611R    OOS  n= 100  WR= 50.5%  PF= 2.04  EV=+0.470R    ALL  n= 136  WR= 51.6%  PF= 2.13  EV=+0.507R
+  only_H_swept × against                      IS  n=  24  WR= 22.7%  PF= 0.59  EV=-0.292R    OOS  n=  72  WR= 50.7%  PF= 2.06  EV=+0.486R    ALL  n=  96  WR= 43.8%  PF= 1.56  EV=+0.292R
+  only_L_swept × aligned                      IS  n=  60  WR= 53.4%  PF= 2.30  EV=+0.583R    OOS  n= 103  WR= 38.0%  PF= 1.23  EV=+0.126R    ALL  n= 163  WR= 44.0%  PF= 1.57  EV=+0.294R
+  only_L_swept × against                      IS  n=  31  WR= 44.8%  PF= 1.62  EV=+0.323R    OOS  n=  67  WR= 38.6%  PF= 1.26  EV=+0.134R    ALL  n=  98  WR= 40.7%  PF= 1.37  EV=+0.194R
+  both_swept × off_thesis                     IS  n=  17  WR= 43.8%  PF= 1.56  EV=+0.294R    OOS  n=  30  WR= 34.6%  PF= 1.06  EV=+0.033R    ALL  n=  47  WR= 38.1%  PF= 1.23  EV=+0.128R
+
+  ── OR-touch behavior — magnet-aligned only ──
+  Total: n=704
+  Reached OR target: 402 (57.1%)
+  Did NOT reach OR:  302 (42.9%)
+
+  Of trades that REACHED OR (n=402):
+    Continued past OR to 2R:         289 ( 71.9%)
+    Hit OR but didn't make 2R:       113 ( 28.1%)
+      ↳ reversed and got stopped:     64 ( 15.9%)
+      ↳ closed at EOD partial:          0 (  0.0%)
+    Avg MFE beyond OR (cont cases): +6.06R
+
+  Exit-strategy comparison:
+    Exit at OR target:  PF 1.18  EV +0.085R/trade  (n=704)
+    Hold to 2R:         PF 1.81  EV +0.389R/trade

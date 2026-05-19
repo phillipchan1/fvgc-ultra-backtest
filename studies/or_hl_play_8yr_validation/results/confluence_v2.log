@@ -1,0 +1,222 @@
+
+
+====================================================================================================
+  TIMEFRAME: 30s    magnet-aligned universe n=1376
+====================================================================================================
+
+  Baseline: n=1376  WR= 47.5%  PF= 1.81  EV=+0.395R
+  IS:  n= 441  WR= 49.1%  PF= 1.93  EV=+0.440R
+  OOS: n= 935  WR= 46.7%  PF= 1.75  EV=+0.373R
+
+  ════════════════════════════════════════ FACTOR TESTS ════════════════════════════════════════
+
+  ── OR range 30-100pt ──
+    IN  IS: n= 269  WR= 50.6%  PF= 2.05  EV=+0.480R   OOS: n= 550  WR= 47.1%  PF= 1.78  EV=+0.382R   ALL: n= 819  WR= 48.3%  PF= 1.87  EV=+0.414R
+    OUT IS: n= 172  WR= 46.9%  PF= 1.76  EV=+0.378R   OOS: n= 385  WR= 46.0%  PF= 1.71  EV=+0.361R   ALL: n= 557  WR= 46.3%  PF= 1.72  EV=+0.366R
+    PF lift: +0.14   ≈ flat
+
+  ── OR range 60-100pt (tighter) ──
+    IN  IS: n= 182  WR= 53.6%  PF= 2.31  EV=+0.555R   OOS: n= 390  WR= 49.0%  PF= 1.92  EV=+0.438R   ALL: n= 572  WR= 50.5%  PF= 2.04  EV=+0.476R
+    OUT IS: n= 259  WR= 46.1%  PF= 1.71  EV=+0.359R   OOS: n= 545  WR= 45.0%  PF= 1.64  EV=+0.327R   ALL: n= 804  WR= 45.3%  PF= 1.66  EV=+0.337R
+    PF lift: +0.38   ✓ HELPS
+
+  ── OR range > 150pt (should HURT) ──
+    IN  IS: n=  62  WR= 44.8%  PF= 1.62  EV=+0.323R   OOS: n= 120  WR= 49.1%  PF= 1.93  EV=+0.458R   ALL: n= 182  WR= 47.7%  PF= 1.82  EV=+0.412R
+    OUT IS: n= 379  WR= 49.9%  PF= 1.99  EV=+0.459R   OOS: n= 815  WR= 46.3%  PF= 1.72  EV=+0.361R   ALL: n=1194  WR= 47.4%  PF= 1.80  EV=+0.392R
+    PF lift: +0.02   ≈ flat
+
+  ── R-to-OR 0.25-1.0 ──
+    IN  IS: n= 121  WR= 54.1%  PF= 2.36  EV=+0.562R   OOS: n= 237  WR= 46.5%  PF= 1.74  EV=+0.354R   ALL: n= 358  WR= 49.1%  PF= 1.93  EV=+0.425R
+    OUT IS: n= 320  WR= 47.3%  PF= 1.80  EV=+0.394R   OOS: n= 698  WR= 46.7%  PF= 1.75  EV=+0.380R   ALL: n=1018  WR= 46.9%  PF= 1.77  EV=+0.384R
+    PF lift: +0.16   ≈ flat
+
+  ── R-to-OR 0.5-0.75 (tighter sweet spot) ──
+    IN  IS: n=  42  WR= 54.1%  PF= 2.35  EV=+0.548R   OOS: n=  80  WR= 48.0%  PF= 1.85  EV=+0.412R   ALL: n= 122  WR= 50.0%  PF= 2.00  EV=+0.459R
+    OUT IS: n= 399  WR= 48.7%  PF= 1.90  EV=+0.429R   OOS: n= 855  WR= 46.5%  PF= 1.74  EV=+0.370R   ALL: n=1254  WR= 47.2%  PF= 1.79  EV=+0.388R
+    PF lift: +0.21   ✓ HELPS
+
+  ── variant == ifvg (should HURT) ──
+    IN  IS: n=  82  WR= 57.5%  PF= 2.71  EV=+0.646R   OOS: n= 148  WR= 41.9%  PF= 1.44  EV=+0.236R   ALL: n= 230  WR= 47.4%  PF= 1.80  EV=+0.383R
+    OUT IS: n= 359  WR= 47.3%  PF= 1.80  EV=+0.393R   OOS: n= 787  WR= 47.6%  PF= 1.81  EV=+0.399R   ALL: n=1146  WR= 47.5%  PF= 1.81  EV=+0.397R
+    PF lift: -0.01   ≈ flat
+
+  ── variant in (no_fvg, protected_swing) ──
+    IN  IS: n= 258  WR= 46.5%  PF= 1.74  EV=+0.372R   OOS: n= 556  WR= 47.3%  PF= 1.80  EV=+0.397R   ALL: n= 814  WR= 47.1%  PF= 1.78  EV=+0.389R
+    OUT IS: n= 183  WR= 53.0%  PF= 2.26  EV=+0.536R   OOS: n= 379  WR= 45.7%  PF= 1.68  EV=+0.338R   ALL: n= 562  WR= 48.0%  PF= 1.85  EV=+0.402R
+    PF lift: -0.07   ≈ flat
+
+  ── variant == no_fvg ──
+    IN  IS: n= 183  WR= 48.8%  PF= 1.91  EV=+0.432R   OOS: n= 390  WR= 46.0%  PF= 1.70  EV=+0.351R   ALL: n= 573  WR= 46.9%  PF= 1.77  EV=+0.377R
+    OUT IS: n= 258  WR= 49.4%  PF= 1.95  EV=+0.446R   OOS: n= 545  WR= 47.2%  PF= 1.79  EV=+0.389R   ALL: n= 803  WR= 47.9%  PF= 1.84  EV=+0.407R
+    PF lift: -0.07   ≈ flat
+
+  ── direction == long ──
+    IN  IS: n= 263  WR= 54.0%  PF= 2.35  EV=+0.563R   OOS: n= 441  WR= 46.8%  PF= 1.76  EV=+0.372R   ALL: n= 704  WR= 49.5%  PF= 1.96  EV=+0.443R
+    OUT IS: n= 178  WR= 42.4%  PF= 1.47  EV=+0.258R   OOS: n= 494  WR= 46.6%  PF= 1.74  EV=+0.374R   ALL: n= 672  WR= 45.4%  PF= 1.67  EV=+0.344R
+    PF lift: +0.29   ✓ HELPS
+
+  ── direction == short ──
+    IN  IS: n= 178  WR= 42.4%  PF= 1.47  EV=+0.258R   OOS: n= 494  WR= 46.6%  PF= 1.74  EV=+0.374R   ALL: n= 672  WR= 45.4%  PF= 1.67  EV=+0.344R
+    OUT IS: n= 263  WR= 54.0%  PF= 2.35  EV=+0.563R   OOS: n= 441  WR= 46.8%  PF= 1.76  EV=+0.372R   ALL: n= 704  WR= 49.5%  PF= 1.96  EV=+0.443R
+    PF lift: -0.29   ✗ HURTS
+
+  ── Setup B (one side swept = sweep reversal) ──
+    IN  IS: n= 233  WR= 49.1%  PF= 1.93  EV=+0.438R   OOS: n= 474  WR= 50.5%  PF= 2.04  EV=+0.479R   ALL: n= 707  WR= 50.0%  PF= 2.00  EV=+0.465R
+    OUT IS: n= 208  WR= 49.2%  PF= 1.94  EV=+0.442R   OOS: n= 461  WR= 42.8%  PF= 1.50  EV=+0.265R   ALL: n= 669  WR= 44.8%  PF= 1.62  EV=+0.320R
+    PF lift: +0.38   ✗ HURTS
+
+  ── Setup A (neither swept = continuation) ──
+    IN  IS: n= 208  WR= 49.2%  PF= 1.94  EV=+0.442R   OOS: n= 461  WR= 42.8%  PF= 1.50  EV=+0.265R   ALL: n= 669  WR= 44.8%  PF= 1.62  EV=+0.320R
+    OUT IS: n= 233  WR= 49.1%  PF= 1.93  EV=+0.438R   OOS: n= 474  WR= 50.5%  PF= 2.04  EV=+0.479R   ALL: n= 707  WR= 50.0%  PF= 2.00  EV=+0.465R
+    PF lift: -0.38   ✗ HURTS
+
+  ── Entry before 10:00 ET ──
+    IN  IS: n= 257  WR= 51.9%  PF= 2.16  EV=+0.518R   OOS: n= 527  WR= 44.4%  PF= 1.60  EV=+0.311R   ALL: n= 784  WR= 46.9%  PF= 1.76  EV=+0.379R
+    OUT IS: n= 184  WR= 45.3%  PF= 1.66  EV=+0.332R   OOS: n= 408  WR= 49.6%  PF= 1.97  EV=+0.453R   ALL: n= 592  WR= 48.3%  PF= 1.87  EV=+0.416R
+    PF lift: -0.10   ≈ flat
+
+  ── Entry 10:00+ ET ──
+    IN  IS: n= 184  WR= 45.3%  PF= 1.66  EV=+0.332R   OOS: n= 408  WR= 49.6%  PF= 1.97  EV=+0.453R   ALL: n= 592  WR= 48.3%  PF= 1.87  EV=+0.416R
+    OUT IS: n= 257  WR= 51.9%  PF= 2.16  EV=+0.518R   OOS: n= 527  WR= 44.4%  PF= 1.60  EV=+0.311R   ALL: n= 784  WR= 46.9%  PF= 1.76  EV=+0.379R
+    PF lift: +0.10   ≈ flat
+
+
+  ════════════════════════════════════════ CONFLUENCE TIERS (3 factors) ════════════════════════════════════════
+  Confluence = OR 30-100pt + R-to-OR 0.25-1.0 + variant in (no_fvg, protected_swing)
+
+  Conf=0  (n=157)
+    IS:  n=  52  WR= 50.0%  PF= 2.00  EV=+0.442R
+    OOS: n= 105  WR= 43.6%  PF= 1.54  EV=+0.295R
+    ALL: n= 157  WR= 45.6%  PF= 1.68  EV=+0.344R
+
+  Conf=1  (n=568)
+    IS:  n= 172  WR= 48.5%  PF= 1.88  EV=+0.430R
+    OOS: n= 396  WR= 46.0%  PF= 1.71  EV=+0.354R
+    ALL: n= 568  WR= 46.8%  PF= 1.76  EV=+0.377R
+
+  Conf=2  (n=530)
+    IS:  n= 175  WR= 48.1%  PF= 1.86  EV=+0.411R
+    OOS: n= 355  WR= 49.2%  PF= 1.94  EV=+0.448R
+    ALL: n= 530  WR= 48.9%  PF= 1.91  EV=+0.436R
+
+  Conf=3  (n=121)
+    IS:  n=  42  WR= 55.3%  PF= 2.47  EV=+0.595R
+    OOS: n=  79  WR= 42.3%  PF= 1.46  EV=+0.241R
+    ALL: n= 121  WR= 46.8%  PF= 1.76  EV=+0.364R
+
+  Trades/year by tier:
+    Conf=0: 18.7/yr
+    Conf=1: 67.6/yr
+    Conf=2: 63.1/yr
+    Conf=3: 14.4/yr
+
+
+====================================================================================================
+  TIMEFRAME: 1m    magnet-aligned universe n=704
+====================================================================================================
+
+  Baseline: n= 704  WR= 47.4%  PF= 1.81  EV=+0.389R
+  IS:  n= 201  WR= 50.3%  PF= 2.02  EV=+0.483R
+  OOS: n= 503  WR= 46.3%  PF= 1.72  EV=+0.352R
+
+  ════════════════════════════════════════ FACTOR TESTS ════════════════════════════════════════
+
+  ── OR range 30-100pt ──
+    IN  IS: n= 124  WR= 51.7%  PF= 2.14  EV=+0.532R   OOS: n= 312  WR= 50.3%  PF= 2.03  EV=+0.468R   ALL: n= 436  WR= 50.7%  PF= 2.06  EV=+0.486R
+    OUT IS: n=  77  WR= 47.9%  PF= 1.84  EV=+0.403R   OOS: n= 191  WR= 39.4%  PF= 1.30  EV=+0.162R   ALL: n= 268  WR= 41.9%  PF= 1.44  EV=+0.231R
+    PF lift: +0.62   ✓ HELPS
+
+  ── OR range 60-100pt (tighter) ──
+    IN  IS: n=  85  WR= 53.7%  PF= 2.32  EV=+0.588R   OOS: n= 193  WR= 51.9%  PF= 2.16  EV=+0.523R   ALL: n= 278  WR= 52.5%  PF= 2.21  EV=+0.543R
+    OUT IS: n= 116  WR= 47.7%  PF= 1.82  EV=+0.405R   OOS: n= 310  WR= 42.5%  PF= 1.48  EV=+0.245R   ALL: n= 426  WR= 44.0%  PF= 1.57  EV=+0.289R
+    PF lift: +0.64   ✓ HELPS
+
+  ── OR range > 150pt (should HURT) ──
+    IN  IS: n=  19  WR= 50.0%  PF= 2.00  EV=+0.474R   OOS: n=  44  WR= 40.5%  PF= 1.36  EV=+0.205R   ALL: n=  63  WR= 43.3%  PF= 1.53  EV=+0.286R
+    OUT IS: n= 182  WR= 50.3%  PF= 2.02  EV=+0.484R   OOS: n= 459  WR= 46.9%  PF= 1.76  EV=+0.366R   ALL: n= 641  WR= 47.9%  PF= 1.84  EV=+0.399R
+    PF lift: -0.31   ✗ HURTS
+
+  ── R-to-OR 0.25-1.0 ──
+    IN  IS: n=  72  WR= 59.7%  PF= 2.96  EV=+0.736R   OOS: n= 211  WR= 48.1%  PF= 1.85  EV=+0.379R   ALL: n= 283  WR= 51.2%  PF= 2.10  EV=+0.470R
+    OUT IS: n= 129  WR= 45.2%  PF= 1.65  EV=+0.341R   OOS: n= 292  WR= 45.1%  PF= 1.64  EV=+0.332R   ALL: n= 421  WR= 45.1%  PF= 1.64  EV=+0.335R
+    PF lift: +0.46   ✓ HELPS
+
+  ── R-to-OR 0.5-0.75 (tighter sweet spot) ──
+    IN  IS: n=  28  WR= 77.8%  PF= 7.00  EV=+1.286R   OOS: n=  68  WR= 50.0%  PF= 2.00  EV=+0.441R   ALL: n=  96  WR= 58.6%  PF= 2.83  EV=+0.688R
+    OUT IS: n= 173  WR= 45.7%  PF= 1.69  EV=+0.353R   OOS: n= 435  WR= 45.7%  PF= 1.68  EV=+0.338R   ALL: n= 608  WR= 45.7%  PF= 1.68  EV=+0.342R
+    PF lift: +1.15   ✓ HELPS
+
+  ── variant == ifvg (should HURT) ──
+    IN  IS: n=  28  WR= 33.3%  PF= 1.00  EV=+0.000R   OOS: n=  81  WR= 47.2%  PF= 1.79  EV=+0.370R   ALL: n= 109  WR= 43.4%  PF= 1.54  EV=+0.275R
+    OUT IS: n= 173  WR= 53.0%  PF= 2.26  EV=+0.561R   OOS: n= 422  WR= 46.1%  PF= 1.71  EV=+0.348R   ALL: n= 595  WR= 48.2%  PF= 1.86  EV=+0.410R
+    PF lift: -0.32   ✗ HURTS
+
+  ── variant in (no_fvg, protected_swing) ──
+    IN  IS: n= 135  WR= 54.3%  PF= 2.37  EV=+0.600R   OOS: n= 315  WR= 45.4%  PF= 1.66  EV=+0.333R   ALL: n= 450  WR= 48.1%  PF= 1.85  EV=+0.413R
+    OUT IS: n=  66  WR= 41.9%  PF= 1.44  EV=+0.242R   OOS: n= 188  WR= 47.9%  PF= 1.84  EV=+0.383R   ALL: n= 254  WR= 46.3%  PF= 1.72  EV=+0.346R
+    PF lift: +0.13   ≈ flat
+
+  ── variant == no_fvg ──
+    IN  IS: n=  88  WR= 58.1%  PF= 2.78  EV=+0.727R   OOS: n= 208  WR= 42.9%  PF= 1.50  EV=+0.264R   ALL: n= 296  WR= 47.7%  PF= 1.82  EV=+0.402R
+    OUT IS: n= 113  WR= 43.8%  PF= 1.56  EV=+0.292R   OOS: n= 295  WR= 48.7%  PF= 1.90  EV=+0.414R   ALL: n= 408  WR= 47.3%  PF= 1.79  EV=+0.380R
+    PF lift: +0.03   ≈ flat
+
+  ── direction == long ──
+    IN  IS: n= 108  WR= 50.5%  PF= 2.04  EV=+0.491R   OOS: n= 263  WR= 46.2%  PF= 1.72  EV=+0.354R   ALL: n= 371  WR= 47.5%  PF= 1.81  EV=+0.394R
+    OUT IS: n=  93  WR= 50.0%  PF= 2.00  EV=+0.473R   OOS: n= 240  WR= 46.3%  PF= 1.72  EV=+0.350R   ALL: n= 333  WR= 47.4%  PF= 1.80  EV=+0.384R
+    PF lift: +0.01   ≈ flat
+
+  ── direction == short ──
+    IN  IS: n=  93  WR= 50.0%  PF= 2.00  EV=+0.473R   OOS: n= 240  WR= 46.3%  PF= 1.72  EV=+0.350R   ALL: n= 333  WR= 47.4%  PF= 1.80  EV=+0.384R
+    OUT IS: n= 108  WR= 50.5%  PF= 2.04  EV=+0.491R   OOS: n= 263  WR= 46.2%  PF= 1.72  EV=+0.354R   ALL: n= 371  WR= 47.5%  PF= 1.81  EV=+0.394R
+    PF lift: -0.01   ≈ flat
+
+  ── Setup B (one side swept = sweep reversal) ──
+    IN  IS: n=  96  WR= 53.8%  PF= 2.33  EV=+0.594R   OOS: n= 203  WR= 44.3%  PF= 1.59  EV=+0.296R   ALL: n= 299  WR= 47.5%  PF= 1.81  EV=+0.391R
+    OUT IS: n= 105  WR= 46.9%  PF= 1.77  EV=+0.381R   OOS: n= 300  WR= 47.6%  PF= 1.82  EV=+0.390R   ALL: n= 405  WR= 47.4%  PF= 1.81  EV=+0.388R
+    PF lift: +0.00   ≈ flat
+
+  ── Setup A (neither swept = continuation) ──
+    IN  IS: n= 105  WR= 46.9%  PF= 1.77  EV=+0.381R   OOS: n= 300  WR= 47.6%  PF= 1.82  EV=+0.390R   ALL: n= 405  WR= 47.4%  PF= 1.81  EV=+0.388R
+    OUT IS: n=  96  WR= 53.8%  PF= 2.33  EV=+0.594R   OOS: n= 203  WR= 44.3%  PF= 1.59  EV=+0.296R   ALL: n= 299  WR= 47.5%  PF= 1.81  EV=+0.391R
+    PF lift: -0.00   ≈ flat
+
+  ── Entry before 10:00 ET ──
+    IN  IS: n= 122  WR= 47.0%  PF= 1.77  EV=+0.385R   OOS: n= 300  WR= 47.8%  PF= 1.83  EV=+0.390R   ALL: n= 422  WR= 47.5%  PF= 1.81  EV=+0.389R
+    OUT IS: n=  79  WR= 55.3%  PF= 2.47  EV=+0.633R   OOS: n= 203  WR= 44.1%  PF= 1.58  EV=+0.296R   ALL: n= 282  WR= 47.3%  PF= 1.80  EV=+0.390R
+    PF lift: +0.01   ≈ flat
+
+  ── Entry 10:00+ ET ──
+    IN  IS: n=  79  WR= 55.3%  PF= 2.47  EV=+0.633R   OOS: n= 203  WR= 44.1%  PF= 1.58  EV=+0.296R   ALL: n= 282  WR= 47.3%  PF= 1.80  EV=+0.390R
+    OUT IS: n= 122  WR= 47.0%  PF= 1.77  EV=+0.385R   OOS: n= 300  WR= 47.8%  PF= 1.83  EV=+0.390R   ALL: n= 422  WR= 47.5%  PF= 1.81  EV=+0.389R
+    PF lift: -0.01   ≈ flat
+
+
+  ════════════════════════════════════════ CONFLUENCE TIERS (3 factors) ════════════════════════════════════════
+  Confluence = OR 30-100pt + R-to-OR 0.25-1.0 + variant in (no_fvg, protected_swing)
+
+  Conf=0  (n=49)
+    IS:  n=  17  WR= 50.0%  PF= 2.00  EV=+0.471R
+    OOS: n=  32  WR= 53.6%  PF= 2.31  EV=+0.531R
+    ALL: n=  49  WR= 52.3%  PF= 2.19  EV=+0.510R
+
+  Conf=1  (n=246)
+    IS:  n=  62  WR= 36.2%  PF= 1.14  EV=+0.081R
+    OOS: n= 184  WR= 39.5%  PF= 1.31  EV=+0.168R
+    ALL: n= 246  WR= 38.7%  PF= 1.26  EV=+0.146R
+
+  Conf=2  (n=304)
+    IS:  n=  97  WR= 53.8%  PF= 2.33  EV=+0.588R
+    OOS: n= 207  WR= 48.4%  PF= 1.88  EV=+0.420R
+    ALL: n= 304  WR= 50.2%  PF= 2.01  EV=+0.474R
+
+  Conf=3  (n=105)
+    IS:  n=  25  WR= 70.8%  PF= 4.86  EV=+1.080R
+    OOS: n=  80  WR= 53.6%  PF= 2.31  EV=+0.525R
+    ALL: n= 105  WR= 58.1%  PF= 2.77  EV=+0.657R
+
+  Trades/year by tier:
+    Conf=0: 5.8/yr
+    Conf=1: 29.3/yr
+    Conf=2: 36.2/yr
+    Conf=3: 12.5/yr

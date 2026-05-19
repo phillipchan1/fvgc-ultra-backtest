@@ -1,0 +1,94 @@
+========================================================================
+  FVGC -> OR H/L  —  Notion play 8-year IS/OOS validation
+  IS: 2023-10-01 .. 2025-10-31   (Notion training window)
+  Stack: bias [<= 0.4 | >= 0.6]  +  R-to-OR < 1.0  +  SL 25-35pts  +  neither swept
+  Target: 2.0R, hold SL  |  PARTIAL = MFE<2.0R and SL not hit (count as 0R)
+========================================================================
+
+########################################################################
+  TIMEFRAME: 30s
+########################################################################
+  Trades CSV: trades.csv
+  Loaded 6,614 trade rows
+  Candles: nq-front-month.ohlcv-30s.parquet
+  Loaded 5,875,787 bars  2018-01-01 18:00:00-05:00 -> 2026-05-17 19:59:30-04:00
+  OR table: 2157 trading days
+  Qualifying play trades: 22
+  Wrote /Users/philchan/Work/fvgc-backtest/.claude/worktrees/quizzical-mayer-dee91d/studies/or_hl_play_8yr_validation/results/play_trades_30s.csv
+
+  ──────────────────────────────────────────────────────────────────────
+  IS  (2023-10-01 .. 2025-10-31):  n=   6  W=  4 L=  1 P=  1  WR= 80.0%  PF= 8.00  EV=+1.167R  sumR=  +7.0
+  OOS (rest of 8yr)         :  n=  16  W=  5 L= 10 P=  1  WR= 33.3%  PF= 1.00  EV=+0.000R  sumR=  +0.0
+  ALL 8yr                   :  n=  22  W=  9 L= 11 P=  2  WR= 45.0%  PF= 1.64  EV=+0.318R  sumR=  +7.0
+  ──────────────────────────────────────────────────────────────────────
+
+  --- Direction (ALL 8yr) ---
+  long    n=  11  W=  4 L=  7 P=  0  WR= 36.4%  PF= 1.14  EV=+0.091R  sumR=  +1.0
+  short   n=  11  W=  5 L=  4 P=  2  WR= 55.6%  PF= 2.50  EV=+0.545R  sumR=  +6.0
+
+  --- Variant (ALL 8yr) ---
+  bos                 n=   8  W=  4 L=  3 P=  1  WR= 57.1%  PF= 2.67  EV=+0.625R  sumR=  +5.0
+  ifvg                n=   6  W=  2 L=  3 P=  1  WR= 40.0%  PF= 1.33  EV=+0.167R  sumR=  +1.0
+  no_fvg              n=   8  W=  3 L=  5 P=  0  WR= 37.5%  PF= 1.20  EV=+0.125R  sumR=  +1.0
+
+  --- OOS yearly ---
+  2020  n=   2  W=  1 L=  1 P=  0  WR= 50.0%  PF= 2.00  EV=+0.500R  sumR=  +1.0
+  2021  n=   5  W=  1 L=  3 P=  1  WR= 25.0%  PF= 0.67  EV=-0.200R  sumR=  -1.0
+  2022  n=   8  W=  3 L=  5 P=  0  WR= 37.5%  PF= 1.20  EV=+0.125R  sumR=  +1.0
+  2023  n=   1  W=  0 L=  1 P=  0  WR=  0.0%  PF= 0.00  EV=-1.000R  sumR=  -1.0
+
+  --- IS yearly (sanity) ---
+  2023  n=   2  W=  1 L=  1 P=  0  WR= 50.0%  PF= 2.00  EV=+0.500R  sumR=  +1.0
+  2024  n=   1  W=  1 L=  0 P=  0  WR=100.0%  PF=  inf  EV=+2.000R  sumR=  +2.0
+  2025  n=   3  W=  2 L=  0 P=  1  WR=100.0%  PF=  inf  EV=+1.333R  sumR=  +4.0
+/Users/philchan/Work/fvgc-backtest/.claude/worktrees/quizzical-mayer-dee91d/studies/or_hl_play_8yr_validation/run.py:260: FutureWarning: DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
+  monthly = (m.groupby('month').apply(stats).apply(pd.Series))
+
+  Wrote monthly_30s.csv  (16 months)
+
+########################################################################
+  TIMEFRAME: 1m
+########################################################################
+  Trades CSV: trades.csv
+  Loaded 3,339 trade rows
+  Candles: nq-front-month.ohlcv-1m.parquet
+  Loaded 2,948,118 bars  2018-01-01 18:00:00-05:00 -> 2026-05-17 19:59:00-04:00
+  OR table: 2157 trading days
+  Qualifying play trades: 19
+  Wrote /Users/philchan/Work/fvgc-backtest/.claude/worktrees/quizzical-mayer-dee91d/studies/or_hl_play_8yr_validation/results/play_trades_1m.csv
+
+  ──────────────────────────────────────────────────────────────────────
+  IS  (2023-10-01 .. 2025-10-31):  n=   3  W=  1 L=  1 P=  1  WR= 50.0%  PF= 2.00  EV=+0.333R  sumR=  +1.0
+  OOS (rest of 8yr)         :  n=  16  W=  6 L=  8 P=  2  WR= 42.9%  PF= 1.50  EV=+0.250R  sumR=  +4.0
+  ALL 8yr                   :  n=  19  W=  7 L=  9 P=  3  WR= 43.8%  PF= 1.56  EV=+0.263R  sumR=  +5.0
+  ──────────────────────────────────────────────────────────────────────
+
+  --- Direction (ALL 8yr) ---
+  long    n=   7  W=  1 L=  4 P=  2  WR= 20.0%  PF= 0.50  EV=-0.286R  sumR=  -2.0
+  short   n=  12  W=  6 L=  5 P=  1  WR= 54.5%  PF= 2.40  EV=+0.583R  sumR=  +7.0
+
+  --- Variant (ALL 8yr) ---
+  bos                 n=   6  W=  4 L=  2 P=  0  WR= 66.7%  PF= 4.00  EV=+1.000R  sumR=  +6.0
+  ifvg                n=   6  W=  0 L=  4 P=  2  WR=  0.0%  PF= 0.00  EV=-0.667R  sumR=  -4.0
+  no_fvg              n=   5  W=  1 L=  3 P=  1  WR= 25.0%  PF= 0.67  EV=-0.200R  sumR=  -1.0
+  protected_swing     n=   2  W=  2 L=  0 P=  0  WR=100.0%  PF=  inf  EV=+2.000R  sumR=  +4.0
+
+  --- OOS yearly ---
+  2018  n=   1  W=  0 L=  1 P=  0  WR=  0.0%  PF= 0.00  EV=-1.000R  sumR=  -1.0
+  2020  n=   2  W=  2 L=  0 P=  0  WR=100.0%  PF=  inf  EV=+2.000R  sumR=  +4.0
+  2021  n=   5  W=  2 L=  2 P=  1  WR= 50.0%  PF= 2.00  EV=+0.400R  sumR=  +2.0
+  2022  n=   5  W=  2 L=  3 P=  0  WR= 40.0%  PF= 1.33  EV=+0.200R  sumR=  +1.0
+  2023  n=   1  W=  0 L=  0 P=  1  WR=  nan%  PF=  inf  EV=+0.000R  sumR=  +0.0
+  2025  n=   1  W=  0 L=  1 P=  0  WR=  0.0%  PF= 0.00  EV=-1.000R  sumR=  -1.0
+  2026  n=   1  W=  0 L=  1 P=  0  WR=  0.0%  PF= 0.00  EV=-1.000R  sumR=  -1.0
+
+  --- IS yearly (sanity) ---
+  2023  n=   1  W=  0 L=  1 P=  0  WR=  0.0%  PF= 0.00  EV=-1.000R  sumR=  -1.0
+  2024  n=   1  W=  0 L=  0 P=  1  WR=  nan%  PF=  inf  EV=+0.000R  sumR=  +0.0
+  2025  n=   1  W=  1 L=  0 P=  0  WR=100.0%  PF=  inf  EV=+2.000R  sumR=  +2.0
+/Users/philchan/Work/fvgc-backtest/.claude/worktrees/quizzical-mayer-dee91d/studies/or_hl_play_8yr_validation/run.py:260: FutureWarning: DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
+  monthly = (m.groupby('month').apply(stats).apply(pd.Series))
+
+  Wrote monthly_1m.csv  (18 months)
+
+Done.

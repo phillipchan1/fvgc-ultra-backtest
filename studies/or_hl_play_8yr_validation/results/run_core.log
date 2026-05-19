@@ -1,0 +1,93 @@
+========================================================================
+  FVGC -> OR H/L  —  CORE play (Phil's spec), 8-year IS/OOS
+  Filter: entry >= 9:45 AND neither OR side swept yet at entry
+  IS: 2023-10-01 .. 2025-10-31
+========================================================================
+
+########################################################################
+  TIMEFRAME: 30s
+########################################################################
+  Loaded 6,614 trades (trades.csv)
+  OR table: 2157 days
+  Qualifying trades: 669
+  Wrote /Users/philchan/Work/fvgc-backtest/.claude/worktrees/quizzical-mayer-dee91d/studies/or_hl_play_8yr_validation/results/core_play_30s.csv
+
+  ── 1R target ──
+  IS  n= 208  W=110 L= 98 EOD=  0  WR= 52.9%  PF= 1.12  EV=+0.058R  sumR= +12.0
+  OOS n= 461  W=215 L=246 EOD=  0  WR= 46.6%  PF= 0.87  EV=-0.067R  sumR= -31.0
+  ALL n= 669  W=325 L=344 EOD=  0  WR= 48.6%  PF= 0.94  EV=-0.028R  sumR= -19.0
+
+  ── 2R target (hold SL) ──
+  IS  n= 208  W= 95 L= 98 P= 15  WR= 49.2%  PF= 1.94  EV=+0.442R  sumR= +92.0
+  OOS n= 461  W=184 L=246 P= 31  WR= 42.8%  PF= 1.50  EV=+0.265R  sumR=+122.0
+  ALL n= 669  W=279 L=344 P= 46  WR= 44.8%  PF= 1.62  EV=+0.320R  sumR=+214.0
+
+  ── Direction (ALL 8yr) ──
+  1R long    n= 323  W=156 L=167 EOD=  0  WR= 48.3%  PF= 0.93  EV=-0.034R  sumR= -11.0
+  2R long    n= 323  W=130 L=167 P= 26  WR= 43.8%  PF= 1.56  EV=+0.288R  sumR= +93.0
+  1R short   n= 346  W=169 L=177 EOD=  0  WR= 48.8%  PF= 0.95  EV=-0.023R  sumR=  -8.0
+  2R short   n= 346  W=149 L=177 P= 20  WR= 45.7%  PF= 1.68  EV=+0.350R  sumR=+121.0
+
+  ── Variant (ALL 8yr, 1R) ──
+  bos                 n= 139  W= 77 L= 62 EOD=  0  WR= 55.4%  PF= 1.24  EV=+0.108R  sumR= +15.0
+  ifvg                n= 117  W= 57 L= 60 EOD=  0  WR= 48.7%  PF= 0.95  EV=-0.026R  sumR=  -3.0
+  no_fvg              n= 282  W=132 L=150 EOD=  0  WR= 46.8%  PF= 0.88  EV=-0.064R  sumR= -18.0
+  protected_swing     n= 131  W= 59 L= 72 EOD=  0  WR= 45.0%  PF= 0.82  EV=-0.099R  sumR= -13.0
+
+  ── Yearly (1R) ──
+  2018 OOS  n=  26  W= 15 L= 11 EOD=  0  WR= 57.7%  PF= 1.36  EV=+0.154R  sumR=  +4.0
+  2019 OOS  n=  10  W=  4 L=  6 EOD=  0  WR= 40.0%  PF= 0.67  EV=-0.200R  sumR=  -2.0
+  2020 OOS  n= 118  W= 57 L= 61 EOD=  0  WR= 48.3%  PF= 0.93  EV=-0.034R  sumR=  -4.0
+  2021 OOS  n=  99  W= 40 L= 59 EOD=  0  WR= 40.4%  PF= 0.68  EV=-0.192R  sumR= -19.0
+  2022 OOS  n= 120  W= 59 L= 61 EOD=  0  WR= 49.2%  PF= 0.97  EV=-0.017R  sumR=  -2.0
+  2023 IS   n=  17  W=  8 L=  9 EOD=  0  WR= 47.1%  PF= 0.89  EV=-0.059R  sumR=  -1.0
+  2023 OOS  n=  39  W= 17 L= 22 EOD=  0  WR= 43.6%  PF= 0.77  EV=-0.128R  sumR=  -5.0
+  2024 IS   n= 102  W= 44 L= 58 EOD=  0  WR= 43.1%  PF= 0.76  EV=-0.137R  sumR= -14.0
+  2025 IS   n=  89  W= 58 L= 31 EOD=  0  WR= 65.2%  PF= 1.87  EV=+0.303R  sumR= +27.0
+  2025 OOS  n=  18  W= 10 L=  8 EOD=  0  WR= 55.6%  PF= 1.25  EV=+0.111R  sumR=  +2.0
+  2026 OOS  n=  31  W= 13 L= 18 EOD=  0  WR= 41.9%  PF= 0.72  EV=-0.161R  sumR=  -5.0
+
+########################################################################
+  TIMEFRAME: 1m
+########################################################################
+  Loaded 3,339 trades (trades.csv)
+  OR table: 2157 days
+  Qualifying trades: 405
+  Wrote /Users/philchan/Work/fvgc-backtest/.claude/worktrees/quizzical-mayer-dee91d/studies/or_hl_play_8yr_validation/results/core_play_1m.csv
+
+  ── 1R target ──
+  IS  n= 105  W= 53 L= 52 EOD=  0  WR= 50.5%  PF= 1.02  EV=+0.010R  sumR=  +1.0
+  OOS n= 300  W=157 L=143 EOD=  0  WR= 52.3%  PF= 1.10  EV=+0.047R  sumR= +14.0
+  ALL n= 405  W=210 L=195 EOD=  0  WR= 51.9%  PF= 1.08  EV=+0.037R  sumR= +15.0
+
+  ── 2R target (hold SL) ──
+  IS  n= 105  W= 46 L= 52 P=  7  WR= 46.9%  PF= 1.77  EV=+0.381R  sumR= +40.0
+  OOS n= 300  W=130 L=143 P= 27  WR= 47.6%  PF= 1.82  EV=+0.390R  sumR=+117.0
+  ALL n= 405  W=176 L=195 P= 34  WR= 47.4%  PF= 1.81  EV=+0.388R  sumR=+157.0
+
+  ── Direction (ALL 8yr) ──
+  1R long    n= 208  W=112 L= 96 EOD=  0  WR= 53.8%  PF= 1.17  EV=+0.077R  sumR= +16.0
+  2R long    n= 208  W= 97 L= 96 P= 15  WR= 50.3%  PF= 2.02  EV=+0.471R  sumR= +98.0
+  1R short   n= 197  W= 98 L= 99 EOD=  0  WR= 49.7%  PF= 0.99  EV=-0.005R  sumR=  -1.0
+  2R short   n= 197  W= 79 L= 99 P= 19  WR= 44.4%  PF= 1.60  EV=+0.299R  sumR= +59.0
+
+  ── Variant (ALL 8yr, 1R) ──
+  bos                 n=  67  W= 36 L= 31 EOD=  0  WR= 53.7%  PF= 1.16  EV=+0.075R  sumR=  +5.0
+  ifvg                n=  53  W= 28 L= 25 EOD=  0  WR= 52.8%  PF= 1.12  EV=+0.057R  sumR=  +3.0
+  no_fvg              n= 186  W= 96 L= 90 EOD=  0  WR= 51.6%  PF= 1.07  EV=+0.032R  sumR=  +6.0
+  protected_swing     n=  99  W= 50 L= 49 EOD=  0  WR= 50.5%  PF= 1.02  EV=+0.010R  sumR=  +1.0
+
+  ── Yearly (1R) ──
+  2018 OOS  n=  26  W= 17 L=  9 EOD=  0  WR= 65.4%  PF= 1.89  EV=+0.308R  sumR=  +8.0
+  2019 OOS  n=  19  W= 11 L=  8 EOD=  0  WR= 57.9%  PF= 1.38  EV=+0.158R  sumR=  +3.0
+  2020 OOS  n=  69  W= 36 L= 33 EOD=  0  WR= 52.2%  PF= 1.09  EV=+0.043R  sumR=  +3.0
+  2021 OOS  n=  66  W= 31 L= 35 EOD=  0  WR= 47.0%  PF= 0.89  EV=-0.061R  sumR=  -4.0
+  2022 OOS  n=  68  W= 36 L= 32 EOD=  0  WR= 52.9%  PF= 1.12  EV=+0.059R  sumR=  +4.0
+  2023 IS   n=  11  W=  6 L=  5 EOD=  0  WR= 54.5%  PF= 1.20  EV=+0.091R  sumR=  +1.0
+  2023 OOS  n=  24  W= 15 L=  9 EOD=  0  WR= 62.5%  PF= 1.67  EV=+0.250R  sumR=  +6.0
+  2024 IS   n=  56  W= 30 L= 26 EOD=  0  WR= 53.6%  PF= 1.15  EV=+0.071R  sumR=  +4.0
+  2025 IS   n=  38  W= 17 L= 21 EOD=  0  WR= 44.7%  PF= 0.81  EV=-0.105R  sumR=  -4.0
+  2025 OOS  n=  11  W=  4 L=  7 EOD=  0  WR= 36.4%  PF= 0.57  EV=-0.273R  sumR=  -3.0
+  2026 OOS  n=  17  W=  7 L= 10 EOD=  0  WR= 41.2%  PF= 0.70  EV=-0.176R  sumR=  -3.0
+
+Done.

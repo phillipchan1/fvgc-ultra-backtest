@@ -1,0 +1,74 @@
+{
+  "FVGC To Opening Range H/L": {
+    "n": 405,
+    "date_min": "2018-02-01",
+    "date_max": "2026-05-11",
+    "span_yrs": 8.3,
+    "trades_per_yr": 49.0,
+    "trades_per_month": 4.08,
+    "median_gap_days": 5.0,
+    "mean_gap_days": 7.5,
+    "p90_gap_days": 20.0,
+    "max_gap_days": 127
+  },
+  "15m FVG Breakout Continuation": {
+    "n": 47,
+    "date_min": "2024-01-02",
+    "date_max": "2026-01-14",
+    "span_yrs": 2.0,
+    "trades_per_yr": 23.1,
+    "trades_per_month": 1.93,
+    "median_gap_days": 9.5,
+    "mean_gap_days": 16.1,
+    "p90_gap_days": 38.5,
+    "max_gap_days": 92
+  },
+  "Thursday Inside Value Area": {
+    "n": 76,
+    "date_min": "2023-10-05",
+    "date_max": "2025-10-23",
+    "span_yrs": 2.1,
+    "trades_per_yr": 37.1,
+    "trades_per_month": 3.09,
+    "median_gap_days": 0.0,
+    "mean_gap_days": 10.0,
+    "p90_gap_days": 28.0,
+    "max_gap_days": 83
+  },
+  "Small-Gap Fade Long (9:31 Entry, Half-Gap Target, Gap>=25pts)": {
+    "n": 46,
+    "date_min": "2023-11-16",
+    "date_max": "2026-02-01",
+    "span_yrs": 2.2,
+    "trades_per_yr": 20.8,
+    "trades_per_month": 1.73,
+    "median_gap_days": 13.0,
+    "mean_gap_days": 17.9,
+    "p90_gap_days": 40.600000000000016,
+    "max_gap_days": 112
+  },
+  "OR H/L base (1m)": {
+    "n": 196,
+    "date_min": "2018-03-01",
+    "date_max": "2026-04-02",
+    "span_yrs": 8.1,
+    "trades_per_yr": 24.2,
+    "trades_per_month": 2.02,
+    "median_gap_days": 9.0,
+    "mean_gap_days": 15.1,
+    "p90_gap_days": 36.0,
+    "max_gap_days": 131
+  },
+  "OR H/L Tier A (1m)": {
+    "n": 67,
+    "date_min": "2018-02-01",
+    "date_max": "2026-05-04",
+    "span_yrs": 8.2,
+    "trades_per_yr": 8.1,
+    "trades_per_month": 0.68,
+    "median_gap_days": 25.5,
+    "mean_gap_days": 45.5,
+    "p90_gap_days": 109.5,
+    "max_gap_days": 229
+  }
+}

@@ -2602,6 +2602,8 @@ def print_briefing(
             status_icon = '🟢' if p.get('status') == 'verified' else '🟡'
             print(f'    {status_icon} {p["name"]} [{p.get("direction", "?")}] '
                   f'— WR {p.get("wr_base", "?")} (n={p.get("sample_size", "?")})')
+            if p.get('cadence'):
+                print(f'        Cadence: {p["cadence"]}')
             if p.get('action_plan'):
                 # Wrap action plan text
                 plan = p['action_plan']
@@ -2615,6 +2617,8 @@ def print_briefing(
             print(f'    🔍 {p["name"]} [{p.get("direction", "?")}] '
                   f'— WR {p.get("wr_base", "?")} (n={p.get("sample_size", "?")}) '
                   f'| needs manual check: {missing}')
+            if p.get('cadence'):
+                print(f'        Cadence: {p["cadence"]}')
         print()
 
     # [9] TODAY'S GAME PLAN

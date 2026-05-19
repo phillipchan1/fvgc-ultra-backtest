@@ -1,0 +1,57 @@
+====================================================================================
+  Steps 1 + 2 — Validate base play + cross-TF stability
+  IS: 2023-10-01 .. 2025-10-31
+====================================================================================
+  Loading 15s ...
+    SKIP 15s: 'mfe_r missing — re-run baseline to get MFE columns'
+  Loading 30s ...
+    1,816 post-9:45 trades  (669 core-play)
+  Loading 1m ...
+    945 post-9:45 trades  (405 core-play)
+  Loading 2m ...
+    392 post-9:45 trades  (188 core-play)
+  Loading 3m ...
+    251 post-9:45 trades  (131 core-play)
+
+====================================================================================
+  STEP 1 — Bootstrap + permutation validation (1m core play)
+====================================================================================
+
+  Core play (neither swept):  n= 405  W=176 L=195 P= 34  WR= 47.4%  PF= 1.81  EV=+0.388R
+  Full universe (post-9:45):  n= 945  W=397 L=467 P= 81  WR= 45.9%  PF= 1.70  EV=+0.346R
+
+  Bootstrap 10,000 resamples on core play ...
+
+  PF 95% CI: [1.47, 2.21]  median=1.80
+  EV 95% CI: [+0.249, +0.528]R  median=+0.388R
+  P(EV <= 0): 0.0000    P(PF <= 1): 0.0000
+
+  Permutation null vs full post-9:45 universe ...
+
+  Observed core EV=+0.388R  PF=1.81
+  Null EV (mean)  =+0.345R  null median PF=1.70
+  P(null EV >= observed) = 0.2207
+  P(null PF >= observed) = 0.2191
+
+  Bootstrap verdict:    REAL EDGE
+  Permutation verdict:  FILTER ≈ NOISE
+
+====================================================================================
+  STEP 2 — Cross-timeframe stability of the core play (2R)
+====================================================================================
+
+    TF  ALL                                                 IS                                                  OOS                                               
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   30s  n= 669  W=279 L=344 P= 46  WR= 44.8%  PF= 1.62  EV=+0.320R  n= 208  W= 95 L= 98 P= 15  WR= 49.2%  PF= 1.94  EV=+0.442R  n= 461  W=184 L=246 P= 31  WR= 42.8%  PF= 1.50  EV=+0.265R
+    1m  n= 405  W=176 L=195 P= 34  WR= 47.4%  PF= 1.81  EV=+0.388R  n= 105  W= 46 L= 52 P=  7  WR= 46.9%  PF= 1.77  EV=+0.381R  n= 300  W=130 L=143 P= 27  WR= 47.6%  PF= 1.82  EV=+0.390R
+    2m  n= 188  W= 69 L= 91 P= 28  WR= 43.1%  PF= 1.52  EV=+0.250R  n=  40  W= 17 L= 18 P=  5  WR= 48.6%  PF= 1.89  EV=+0.400R  n= 148  W= 52 L= 73 P= 23  WR= 41.6%  PF= 1.42  EV=+0.209R
+    3m  n= 131  W= 61 L= 58 P= 12  WR= 51.3%  PF= 2.10  EV=+0.489R  n=  35  W= 24 L=  8 P=  3  WR= 75.0%  PF= 6.00  EV=+1.143R  n=  96  W= 37 L= 50 P=  9  WR= 42.5%  PF= 1.48  EV=+0.250R
+
+  ── Ranking by OOS PF (filter: n_oos >= 30) ──
+    TF   PF_OOS    EV_OOS    EV_ALL   drift |Δev|/|ev_is|
+    1m     1.82    +0.390    +0.388                  0.02
+   30s     1.50    +0.265    +0.320                  0.40
+    3m     1.48    +0.250    +0.489                  0.78
+    2m     1.42    +0.209    +0.250                  0.48
+
+Done.

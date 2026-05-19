@@ -1,0 +1,17 @@
+  M1 Short — Confluence Model (8yr re-validated)                (no trade_lists)
+  M1 Long — Confluence Model (NEW 8yr)                          (no trade_lists)
+  M2 Long — Confluence Model (8yr DOWNGRADED Tier B)            (no trade_lists)
+  M3 Long — Confluence Model (8yr re-validated)                 (no trade_lists)
+  W1 Short — Post-Sweep Continuation                            MISSING studies/mfe_multi_r/results/w1_short_setups/w1_shorts_by_regime.csv (filter regime == 'A (already swept)')
+  FVGC Off of 930 Candle (9:30 Candle FVG Premium Sub-Tier)     (no trade_lists)
+  No News + Macro 1 Short                                       (no trade_lists)
+  FVGC To Opening Range H/L                                     ~49/yr, median 5d between trades
+  Reversal-Confirmed FVG Continuation (HTF 15m Sweep)           (no trade_lists)
+  15m FVG Breakout Continuation                                 ~23/yr, ~1 every 10 days (median), can wait up to 38d (90th pct)
+  W3 Long — Confluence Model                                    MISSING studies/macro3_plays/results/m3_long_confluence_trades.csv
+  Thursday Inside Value Area                                    ~37/yr, median 0d between trades
+  Small-Gap Fade Long (9:31 Entry, Half-Gap Target, Gap>=25pts)  ~21/yr, ~1 every 13 days (median), can wait up to 41d (90th pct)
+  [extra] OR H/L base (1m)                                    ~24/yr, ~1 every 9 days (median), can wait up to 36d (90th pct)
+  [extra] OR H/L Tier A (1m)                                  ~8/yr, ~1 every 26 days (~3.6 wk median), can wait up to 110d (90th pct)
+
+Wrote /Users/philchan/Work/fvgc-backtest/.claude/worktrees/quizzical-mayer-dee91d/playbook/cadence_cache.json
