@@ -2094,18 +2094,31 @@ DEFAULT_AI_MODEL = 'gpt-5-nano'
 
 
 def _openai_chat(prompt: str, api_key: str, model: str,
-                 max_tokens: int = 220, timeout: int = 30) -> str | None:
+                 max_tokens: int = 800, timeout: int = 60) -> str | None:
     """One-shot chat completion. Returns the response text or None on error.
-    Uses urllib only — no third-party dep so the script stays portable."""
+    Uses urllib only — no third-party dep so the script stays portable.
+
+    Note: gpt-5-* and o1-* are reasoning models. They consume part of the
+    completion budget on internal reasoning before producing visible output.
+    We send `reasoning_effort: minimal` and budget enough tokens that the
+    short narrative output has room to land. Non-reasoning models ignore
+    the extra param."""
     import json as _json
     import urllib.request
     import urllib.error
 
-    body = _json.dumps({
+    payload_in = {
         'model': model,
         'messages': [{'role': 'user', 'content': prompt}],
         'max_completion_tokens': max_tokens,
-    }).encode('utf-8')
+    }
+    # Reasoning-model knob. Older / non-reasoning models accept it as a no-op
+    # in most cases; if a specific model rejects it, the HTTPError below
+    # surfaces and we return None.
+    if 'gpt-5' in model or model.startswith('o1') or model.startswith('o3'):
+        payload_in['reasoning_effort'] = 'minimal'
+
+    body = _json.dumps(payload_in).encode('utf-8')
 
     req = urllib.request.Request(
         OPENAI_API_URL,
@@ -2128,7 +2141,8 @@ def _openai_chat(prompt: str, api_key: str, model: str,
         return None
 
     try:
-        return payload['choices'][0]['message']['content'].strip()
+        out = payload['choices'][0]['message']['content']
+        return out.strip() if out else None
     except (KeyError, IndexError, AttributeError):
         return None
 
