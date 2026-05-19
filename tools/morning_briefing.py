@@ -1238,6 +1238,14 @@ def print_or_forecast(forecast: dict | None, target_date: date) -> None:
 #   - M2 Long: Tier A -> B (regime-fragile; 4+ tier only)
 # Plus added new cell: M1 Long (Tier A, gap-down quiet bounce).
 # M1 Short: kept per m1_short_factor_remine (Tier B, runner-exit edge).
+#
+# TIMEFRAME: ALL matrix plays are 30-SECOND NQ FVGC bars ONLY.
+# Cross-TF audit on 8yr (studies/multi_cell_8yr_v2/, post-shipping):
+#   - M3 Long: 30s 64% / 1m 49% / 2m 51% / 3m 57% -> 30s only
+#   - M1 Long: 30s 59% / 1m 50% / 2m 74%* / 3m 55% (*sample too small)
+#   - M1 Short: 30s 58% / 1m 47% (from m1_short_factor_remine cross-TF audit)
+# The FVGC engine produces structurally different signals on different bars;
+# the confluence-lift relationships do not carry across timeframes.
 # ======================================================================
 
 MATRIX_PLAYS = {
@@ -1501,7 +1509,12 @@ def print_matrix_play_scorecards(ctx, today_factors: dict[str, bool],
     f = _compute_matrix_factors(ctx, today_factors, target_date, csv_path)
     expectancy = _load_expectancy_stats()
 
-    print(f'[5c] MATRIX PLAY SCORECARDS  (source: studies/multi_cell_confluence/)')
+    print(f'[5c] MATRIX PLAY SCORECARDS  (source: studies/multi_cell_8yr_v2/)')
+    print(f'     🚨 TIMEFRAME: 30-second NQ FVGC bars ONLY for ALL matrix plays.')
+    print(f'        Score off the 30s chart. 1m/2m/3m FVGCs are a different signal.')
+    print(f'        M3 Long: 30s 64% / 1m 49% / 2m 51% / 3m 57%')
+    print(f'        M1 Long: 30s 59% / 1m 50% / 2m 74%(thin) / 3m 55%')
+    print(f'        M1 Short: 30s only (per m1_short_factor_remine)')
     print()
 
     for name, play in MATRIX_PLAYS.items():

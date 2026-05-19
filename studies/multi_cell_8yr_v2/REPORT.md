@@ -57,6 +57,19 @@ For each cell, on 8yr IS only: univariate lift per safe factor, greedy stack pro
 
 M4 (10:15–10:30) cell had only n=25–28 trades over 8yr — too thin for a confluence study. The FVGC engine emits very few signals in that window because by 10:15 most FVGs have been taken.
 
+### Cross-TF audit (post-shipping addition)
+
+Applied the new stacks to 30s / 1m / 2m / 3m baselines using the same 30s-IS quantile cutoffs (apples-to-apples). See `cross_tf_audit.py`.
+
+| Play | 30s | 1m | 2m | 3m |
+|---|---|---|---|---|
+| **M3 Long 3+** | **64.4%** (n=264) | 48.9% (n=135) | 51.2% (n=82) | 57.4% (n=54) |
+| **M1 Long 3+** | **59.0%** (n=117) | 50.0% (n=56) | 73.9% (n=23)\* | 54.5% (n=11) |
+
+\* M1 Long 2m sample too small to validate.
+
+**Verdict: 30-second bars only for all three plays.** WR drops 9–15pp on 1m. The FVGC engine produces structurally different signals at different bar resolutions; the confluence lifts don't translate. This matches the prior M1 Short cross-TF finding.
+
 ---
 
 ## Cell-by-cell verdicts
