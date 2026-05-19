@@ -381,33 +381,35 @@
     "confidence": "high",
     "direction": "both",
     "macro": "9:45-10:15",
-    "timeframe": "1m primary; 30s alt (more reps, same edge)",
+    "timeframe": "30s primary (1.64x more $/yr, more stable IS/OOS); 1m alt for easier-execution",
     "validated_on": "2026-05-18 (8yr: 2018-01 to 2026-05, magnet-aligned framing)",
-    "sample_size": 543,
-    "wr_base": "49%",
-    "pf_2r": 1.93,
-    "ev_r_per_trade_2r": 0.43,
+    "sample_size": 1001,
+    "wr_base": "47%",
+    "pf_2r": 1.78,
+    "ev_r_per_trade_2r": 0.385,
     "validation": {
       "data_window": "2018-01 .. 2026-05 (8.4yr, 2157 trading days)",
       "is_window": "2023-10-01 .. 2025-10-31",
-      "is_pf_2r": 2.32,
-      "oos_pf_2r": 1.78,
-      "bootstrap_pf_95ci": [
+      "primary_tf": "30s",
+      "30s_n": 1001,
+      "30s_pf_2r": 1.78,
+      "30s_ev_r": 0.385,
+      "30s_is_pf": 1.83,
+      "30s_oos_pf": 1.76,
+      "30s_drift": 0.07,
+      "30s_total_r_per_yr": 45.8,
+      "1m_n": 543,
+      "1m_pf_2r": 1.93,
+      "1m_ev_r": 0.433,
+      "1m_is_pf": 2.32,
+      "1m_oos_pf": 1.78,
+      "1m_drift": 0.35,
+      "1m_total_r_per_yr": 28.0,
+      "bootstrap_pf_95ci_universe": [
         1.47,
         2.21
       ],
-      "bootstrap_ev_95ci_r": [
-        0.25,
-        0.53
-      ],
-      "p_ev_le_0": 0.0,
-      "permutation_p_directional_filter": 0.05,
-      "tf_alt_30s": {
-        "n": 1376,
-        "pf_2r": 1.81,
-        "oos_pf": 1.75,
-        "drift": 0.18
-      }
+      "winner_tf": "30s — same OOS PF, 1.84x more trades, 1.64x more $/yr, lower drift"
     },
     "pre_market_factors": [],
     "intraday_triggers": [
@@ -447,19 +449,70 @@
       "mean_trades_per_day": 1.2,
       "pct_days_0_1_trades": 82,
       "pct_days_2_plus_trades": 18,
-      "source": "computed_from_magnet_aligned_1m_kill_switches_applied"
+      "source": "computed_30s_primary_1m_alt",
+      "30s": {
+        "trades_per_yr": 119,
+        "trades_per_month": 9.9,
+        "median_gap_days": 4,
+        "mean_trades_per_day": 1.49
+      }
     },
-    "cadence": "1m: ~65/yr (~5.4/mo), median 6d gap, 82% of days have 0-1 trade. 30s alt: ~164/yr (~14/mo), same edge. Entry window 9:45-10:15 ET.",
-    "description": "After 9:45, take 1m FVGCs pointing at an OR side that has NOT been swept yet. Target 2R, hold original SL. The OR is a magnet — 95% of days one side gets tested by 10:15. The play captures the move toward whichever side is still untouched. Kill switches: OR > 150pt | variant = ifvg | both OR sides already swept | direction toward already-swept side. 8yr validated: n=543, PF 1.93, OOS PF 1.78, EV +0.43R/trade. Bootstrap 95% CI on PF [1.47, 2.21]. The old 'play dies on any sweep' rule was over-strict — play is only dead when BOTH sides are swept.",
-    "action_plan": "At 9:45 ET: mark OR.H and OR.L. If OR range > 150pt -> NO PLAY today. From 9:45-10:15, watch 1m bars. On each FVGC: (1) variant != ifvg, (2) direction points at unswept OR side, (3) at least one OR side still unswept -> TAKE IT at flat size. Take every qualifying fire (same-day re-entries are stronger). Target 2R, hold original SL, NEVER move to BE. Day's done when both OR sides swept OR 10:15 ET.",
+    "cadence": "30s primary: ~119/yr (~10/mo), mean 1.5 trades/day. 34% of days have 2+ trades. 1m alt: ~65/yr (~5.4/mo). Entry window 9:45-10:15 ET.",
+    "description": "After 9:45, take 30s FVGCs pointing at an OR side that has NOT been swept yet. Target 2R, hold original SL. SIZING: 1st trade of day full size, 2nd-4th at half-size (concurrent positions are common on 30s and correlated). The OR is a magnet — 95% of days one side gets tested by 10:15. Kill switches: OR > 150pt | variant = ifvg | both OR sides already swept | direction toward already-swept side | trade #5+ of day. 8yr validated on 30s: n=1001, PF 1.78, OOS PF 1.76, drift 0.07 (very stable), EV +0.385R/trade, +45.8R/yr. 1m alt available for easier execution: n=543, PF 1.93, +28R/yr.",
+    "action_plan": "At 9:45 ET: mark OR.H and OR.L. If OR range > 150pt -> NO PLAY today. From 9:45-10:15, watch 30s bars (or 1m if 30s is too fast for you). On each FVGC: (1) variant != ifvg, (2) direction points at unswept OR side, (3) at least one OR side still unswept -> TAKE IT. SIZING: 1st trade of day = 1x full. 2nd/3rd/4th = 0.5x half. Skip 5th+. Same-day re-entries are real and +EV up to trade #4, but they overlap in time on 30s (48% within 5min) — half-sizing keeps correlated risk sane. Target 2R, hold original SL, NEVER move to BE. Day's done when both OR sides swept OR 10:15 ET.",
     "trade_lists": {
-      "all_trades_1m": "studies/or_hl_play_8yr_validation/results/magnet_aligned_1m.csv",
-      "all_trades_30s": "studies/or_hl_play_8yr_validation/results/magnet_aligned_30s.csv",
+      "all_trades_30s_primary": "studies/or_hl_play_8yr_validation/results/magnet_aligned_30s.csv (filter magnet='aligned' AND or_range<=150 AND variant!='ifvg')",
+      "all_trades_1m_alt": "studies/or_hl_play_8yr_validation/results/magnet_aligned_1m.csv (same filters)",
+      "recent_30_trades": "/tmp/recent_trades_30s.csv  (regenerate from above)",
       "validation_log": "studies/or_hl_play_8yr_validation/results/validate_and_xtf.log",
-      "magnet_analysis_log": "studies/or_hl_play_8yr_validation/results/magnet_30s_and_OR_touch.log",
-      "confluence_v2_log": "studies/or_hl_play_8yr_validation/results/confluence_v2.log"
+      "magnet_analysis_log": "studies/or_hl_play_8yr_validation/results/magnet_30s_and_OR_touch.log"
     },
-    "study_source": "studies/or_hl_play_8yr_validation/analysis.md"
+    "study_source": "studies/or_hl_play_8yr_validation/analysis.md",
+    "sizing_rule": {
+      "on_30s": "1st trade of day: 1x full size. 2nd, 3rd, 4th trades: 0.5x (half-size). 34% of days have multi-fires; 48% of same-day pairs fire within 5 min (overlapping in time, correlated risk). Half-sizing keeps daily peak risk ~2.5R instead of 4R while preserving ~85% of edge.",
+      "on_1m": "Take every fire at 1x full size — 1m only has 18% multi-fire days, concurrent positions rare.",
+      "skip_5plus": "Skip the 5th+ trade of the day (only 0.7% of days, edge breaks down: PF 0 on n=5)."
+    },
+    "same_day_distribution_30s": {
+      "1_trade_days_pct": 66,
+      "2_trade_days_pct": 23,
+      "3_trade_days_pct": 9,
+      "4_trade_days_pct": 2,
+      "5_plus_trade_days_pct": 0.7,
+      "mean_trades_per_day": 1.49,
+      "max_trades_per_day": 6,
+      "median_signal_gap_min": 5,
+      "pct_pairs_within_5min": 48,
+      "pct_pairs_within_2min": 15
+    },
+    "nth_trade_ev_30s": {
+      "1st": {
+        "n": 671,
+        "pf": 1.79,
+        "ev_r": 0.392
+      },
+      "2nd": {
+        "n": 229,
+        "pf": 1.73,
+        "ev_r": 0.362
+      },
+      "3rd": {
+        "n": 76,
+        "pf": 1.89,
+        "ev_r": 0.421
+      },
+      "4th": {
+        "n": 19,
+        "pf": 2.0,
+        "ev_r": 0.474
+      },
+      "5th_plus": {
+        "n": 5,
+        "pf": 0.0,
+        "ev_r": -0.8,
+        "note": "TINY SAMPLE, SKIP"
+      }
+    }
   },
   {
     "name": "Reversal-Confirmed FVG Continuation (HTF 15m Sweep)",
