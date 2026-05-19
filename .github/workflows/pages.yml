@@ -1,0 +1,47 @@
+name: Deploy Briefing to GitHub Pages
+
+# Auto-deploys tools/briefing/ to GitHub Pages whenever the dashboard files
+# change on master. Daily morning routine commits to briefing.json + data.js
+# trigger a redeploy; pushes that don't touch tools/briefing/ are ignored.
+#
+# Manual trigger available via Actions → Deploy Briefing → Run workflow.
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'tools/briefing/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deploy. New runs cancel any in-progress run.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload dashboard as Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: tools/briefing
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
