@@ -1907,18 +1907,9 @@
         h('span', {class:'t'}, 'PRE-MARKET'),
         h('span', null, 'CONDITIONS')));
 
-      // Headline: sizing tier
-      if (fc.available) {
-        const tlevel = fc.tier_level;
-        const headlineCls = tlevel === 'wide' || tlevel === 'wide_max' ? 'good'
-                          : tlevel === 'stand_down' ? 'bad'
-                          : tlevel === 'below' ? 'warn'
-                          : 'cool';
-        col.appendChild(h('div', {class: 'cond-headline ' + headlineCls},
-          h('div', {class:'l'}, 'SIZING TIER'),
-          h('div', {class:'v'}, fc.quintile || ''),
-          h('div', {class:'s'}, `${Math.round(fc.point_pts)} pts forecast · ${fc.lo80_pts}–${fc.hi80_pts}`)));
-      }
+      // Sizing tier deliberately NOT shown here — it gets the dedicated
+      // Range Briefing card below. This column is just the verifiable
+      // pre-market data points the trader needs to confirm.
 
       const gap = po.gap || {};
       const ovr = po.overnight || {};
@@ -1965,11 +1956,6 @@
       }
       const opex = active.includes('is_opex_week');
       if (opex) rows.push(['Opex Week', 'YES', 'warn', '']);
-
-      // Avoid kill
-      const av = d.avoid || {};
-      const hot = (av.factor_signals || []).length + (av.combo_signals || []).length;
-      rows.push(['Kill Switch', hot ? 'AVOID HOT' : 'CLEAR', hot ? 'down' : 'up', '']);
 
       rows.forEach(([l, v, cls, sub]) =>
         col.appendChild(h('div', {class:'cond-row'},
