@@ -1855,28 +1855,18 @@
     // Initial detail render
     renderDetail();
 
-    // ============ FRESHNESS / AVOID ============
+    // ============ FRESHNESS ============
     const stale = (d.freshness || []).filter(f => f.is_stale);
     if (stale.length) {
       app.appendChild(h('div', {class:'freshness'},
         h('h3', null, '⚠ STALE DATA'),
         stale.map(f => h('div', null, `${f.label} — last ${f.last_date} (${f.days_stale}d) — ${f.impact}`))));
     }
-
-    const av = d.avoid || {};
-    const avoidHot = (av.factor_signals || []).length + (av.combo_signals || []).length;
-    if (avoidHot) {
-      app.appendChild(h('div', {class:'avoid-banner'},
-        h('div', {class:'a-h'}, '◆ AVOID / STAND-DOWN'),
-        (av.factor_signals || []).map(fs => h('div', {class:'item'},
-          h('b', null, fs.factor), `WR ${fs.wr_pct}% · lift ${fs.lift_pp > 0 ? '+' : ''}${fs.lift_pp}pp · PF ${fs.pf}`)),
-        (av.combo_signals || []).map(cs => h('div', {class:'item'},
-          h('b', null, cs.status === 'armed' ? 'ARMED' : 'WATCH'),
-          cs.factors.join(' + '), ` — WR ${cs.wr_pct}%, PF ${cs.pf}`,
-          cs.post_needed && cs.post_needed.length
-            ? ` (confirm: ${cs.post_needed.map(p => p.factor).join(', ')})` : '')),
-        narrative(av.narrative)));
-    }
+    // Note: Avoid / Stand-Down banner removed (2026-05-19). The verbose combo
+    // list was repetitive — most lines shared the same kill-switch factor
+    // (tight_45min_or) and the Range Briefing already captures it as
+    // "Q1-Q2 = SKIP". d.avoid stays in the JSON for now in case we want to
+    // reintroduce as a distilled kill-switch chip strip later.
 
     // ============ RANGE BRIEFING + MARKET STATE ============
     app.appendChild(h('div', {class:'section-h'}, 'Range Briefing & Market State'));
