@@ -1136,6 +1136,150 @@
     color: var(--text-mute);
   }
 
+  /* ===== Range Briefing ===== */
+  .range-card { display: flex; flex-direction: column; gap: 14px; padding: 16px 18px; }
+  .range-head {
+    display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center;
+  }
+  .range-quintile {
+    font-family: var(--mono); font-size: 42px; font-weight: 700; line-height: 1;
+    padding: 8px 14px; border-radius: 4px;
+    border: 1px solid var(--line-2); background: var(--bg-2);
+    color: var(--text-dim); min-width: 70px; text-align: center;
+  }
+  .range-quintile.good { color: var(--green); border-color: var(--green); background: var(--green-dim); text-shadow: 0 0 12px var(--green); }
+  .range-quintile.cool { color: var(--cyan);  border-color: var(--cyan);  background: var(--cyan-dim); text-shadow: 0 0 12px var(--cyan-glow); }
+  .range-quintile.warn { color: var(--amber); border-color: var(--amber); background: var(--amber-dim); text-shadow: 0 0 12px var(--amber); }
+  .range-quintile.bad  { color: var(--red);   border-color: var(--red);   background: var(--red-dim);  text-shadow: 0 0 12px var(--red); }
+  .range-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .range-pts {
+    font-size: 28px; font-weight: 700; color: var(--text); line-height: 1;
+  }
+  .range-pts .unit {
+    font-size: 12px; color: var(--text-dim); margin-left: 6px;
+    font-weight: 600; letter-spacing: 1px;
+  }
+  .range-ci {
+    font-size: 11px; color: var(--text-dim); letter-spacing: 0.5px;
+  }
+
+  .q-bar {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;
+  }
+  .q-seg {
+    height: 10px; border-radius: 2px; background: var(--bg-3);
+    border: 1px solid var(--line);
+  }
+  .q-seg.q1.on { background: var(--red);   box-shadow: 0 0 10px var(--red);   border-color: var(--red); }
+  .q-seg.q2.on { background: var(--amber); box-shadow: 0 0 10px var(--amber); border-color: var(--amber); }
+  .q-seg.q3.on { background: var(--cyan);  box-shadow: 0 0 10px var(--cyan);  border-color: var(--cyan); }
+  .q-seg.q4.on { background: var(--green); box-shadow: 0 0 10px var(--green); border-color: var(--green); }
+  .q-seg.q5.on { background: var(--green); box-shadow: 0 0 14px var(--green), 0 0 24px var(--green); border-color: var(--green); }
+  .q-labels {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;
+    font-family: var(--mono); font-size: 9px; color: var(--text-mute);
+    text-align: center; letter-spacing: 1px;
+  }
+  .q-legend {
+    display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 4px;
+    font-size: 8px; color: var(--text-mute); letter-spacing: 1.5px;
+    margin-top: -4px;
+  }
+  .q-legend .lbad { color: var(--red);   text-align: left; }
+  .q-legend .lneutral { color: var(--cyan); text-align: center; }
+  .q-legend .lgood { color: var(--green); text-align: right; }
+
+  .range-action {
+    padding: 10px 12px; border-radius: 4px;
+    background: var(--bg-2); border-left: 3px solid var(--line-2);
+  }
+  .range-action.good { background: var(--green-dim); border-left-color: var(--green); }
+  .range-action.cool { background: var(--cyan-dim);  border-left-color: var(--cyan); }
+  .range-action.warn { background: var(--amber-dim); border-left-color: var(--amber); }
+  .range-action.bad  { background: var(--red-dim);   border-left-color: var(--red); }
+  .range-action .r-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 2px;
+    color: var(--text-mute); font-weight: 700; margin-bottom: 4px;
+  }
+  .range-action .r-text {
+    font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4;
+  }
+  .range-action.good .r-text { color: var(--green); }
+  .range-action.cool .r-text { color: var(--cyan); }
+  .range-action.warn .r-text { color: var(--amber); }
+  .range-action.bad  .r-text { color: var(--red); }
+
+  .range-intel { padding: 0; }
+  .range-intel .r-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 2px;
+    color: var(--text-mute); font-weight: 700; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .range-intel .r-label::before { content: "▸ "; color: var(--cyan); }
+  .range-intel .r-tag {
+    font-family: var(--mono); font-size: 8px; letter-spacing: 1px;
+    color: var(--green); padding: 1px 5px; border: 1px solid var(--green);
+    border-radius: 2px; background: var(--green-dim);
+    margin-left: auto;
+  }
+  .range-intel .r-title {
+    font-size: 12px; color: var(--text); font-weight: 600;
+    margin-bottom: 8px; line-height: 1.4;
+  }
+  .r-bullets { display: flex; flex-direction: column; gap: 4px; }
+  .r-bullet {
+    display: grid; grid-template-columns: 56px 92px 1fr;
+    gap: 8px; align-items: baseline;
+    padding: 6px 10px;
+    border-left: 2px solid var(--line-2);
+    background: rgba(255,255,255,0.01);
+    font-size: 11px;
+  }
+  .r-bullet.upsize    { border-left-color: var(--green); background: var(--green-dim); }
+  .r-bullet.standard  { border-left-color: var(--cyan);  background: var(--cyan-dim);  }
+  .r-bullet.skip      { border-left-color: var(--red);   background: var(--red-dim);   }
+  .r-bullet .r-q { font-weight: 700; letter-spacing: 1px; }
+  .r-bullet.upsize    .r-q { color: var(--green); }
+  .r-bullet.standard  .r-q { color: var(--cyan); }
+  .r-bullet.skip      .r-q { color: var(--red); }
+  .r-bullet .r-r { color: var(--text-dim); font-size: 10px; }
+  .r-bullet .r-s { color: var(--text); font-size: 11px; line-height: 1.4; }
+
+  .range-drivers .r-label,
+  .range-velocity .r-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 2px;
+    color: var(--text-mute); font-weight: 700; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .range-drivers .r-label::before,
+  .range-velocity .r-label::before { content: "▸ "; color: var(--cyan); }
+  .range-velocity .r-tag {
+    font-family: var(--mono); font-size: 8px; letter-spacing: 1px;
+    color: var(--violet); padding: 1px 5px; border: 1px solid var(--violet);
+    border-radius: 2px; background: var(--violet-dim);
+    margin-left: auto;
+  }
+  .r-driver {
+    display: grid; grid-template-columns: 1fr auto auto;
+    gap: 10px; align-items: baseline;
+    padding: 4px 0;
+    font-size: 11px;
+    border-bottom: 1px dashed var(--line-soft);
+  }
+  .r-driver:last-child { border-bottom: 0; }
+  .r-driver .r-d-name { color: var(--text); font-size: 11px; }
+  .r-driver .r-d-z { color: var(--text-dim); font-size: 10px; }
+  .r-driver.up .r-d-pts { color: var(--green); font-weight: 700; }
+  .r-driver.down .r-d-pts { color: var(--red); font-weight: 700; }
+  .r-velocity-text {
+    font-size: 11px; color: var(--text-dim); line-height: 1.7;
+    padding: 8px 10px; background: var(--bg-2); border-radius: 3px;
+    border-left: 2px solid var(--violet);
+  }
+  .r-v-good    { color: var(--green); font-weight: 700; }
+  .r-v-bad     { color: var(--red); font-weight: 700; }
+  .r-v-neutral { color: var(--amber); font-weight: 700; }
+
   /* ===== Pre-open / ladder ===== */
   .preopen-head {
     display: flex; align-items: flex-end; justify-content: space-between;
@@ -1734,68 +1878,12 @@
         narrative(av.narrative)));
     }
 
-    // ============ EDGES + PRE-OPEN ============
-    app.appendChild(h('div', {class:'section-h'}, 'Edges & Market State'));
+    // ============ RANGE BRIEFING + MARKET STATE ============
+    app.appendChild(h('div', {class:'section-h'}, 'Range Briefing & Market State'));
     const main = h('div', {class:'grid grid-2'});
 
     const leftCol = h('div', {class:'grid', style:'gap:12px;'});
-
-    const armed = d.armed_edges || [];
-    leftCol.appendChild(h('details', {class:'card'},
-      h('summary', {class:'card-h'},
-        h('span', {class:'card-t'}, 'Armed Edges'),
-        h('span', {class:'mono', style:'color:var(--green);font-size:11px;'}, `${armed.length} ACTIVE`)),
-      armed.length
-        ? h('div', {class:'edge-list'}, armed.map(e => renderEdge(e, true)))
-        : h('div', {class:'empty'}, 'No combos fully armed. Wait for 9:30.')));
-
-    if (d.w1_short_confluence) {
-      const w1 = d.w1_short_confluence;
-      const tier = w1.tier || {};
-      leftCol.appendChild(h('details', {class:'card'},
-        h('summary', {class:'card-h'},
-          h('span', {class:'card-t'}, 'W1 Short Confluence'),
-          h('span', {class:'mono', style:'color:var(--cyan);font-size:11px;'},
-            `${w1.preopen_count} PRE-MARKET`)),
-        h('div', null,
-          h('div', {style:'display:flex;flex-wrap:wrap;gap:3px;'},
-            (w1.active_factors || []).map(f => h('span', {class:'chip on'}, f))),
-          tier.action ? h('div', {style:'margin-top:10px;'},
-            h('div', {class:'mono', style:'color:var(--cyan);font-size:12px;font-weight:700;'}, tier.action),
-            h('div', {class:'mono dim', style:'font-size:10px;margin-top:4px;letter-spacing:0.5px;'},
-              `WR ${tier.wr || '?'} · PF ${tier.pf_1r || '?'} · target ${tier.target || '?'}`)) : null,
-          h('div', {class:'mute mono', style:'font-size:10px;margin-top:8px;letter-spacing:0.5px;'},
-            '↳ 9:30:30 bearish candle = +1 tier'))));
-    }
-
-    const watch = d.watch_list || [];
-    if (watch.length) {
-      leftCol.appendChild(h('details', {class:'card'},
-        h('summary', {class:'card-h'},
-          h('span', {class:'card-t'}, 'Watch List'),
-          h('span', {class:'mute mono', style:'font-size:10px;'},
-            `${watch.length} · NEED 9:30 CONFIRM`)),
-        h('div', {class:'edge-list'}, watch.map(e => renderEdge(e, false)))));
-    }
-
-    const ap = d.active_plays || [];
-    if (ap.length) {
-      leftCol.appendChild(h('details', {class:'card'},
-        h('summary', {class:'card-h'},
-          h('span', {class:'card-t'}, 'Playbook Plays Active'),
-          h('span', {class:'mono', style:'color:var(--cyan);font-size:11px;'}, `${ap.length}`)),
-        h('div', null,
-          ap.map(p => h('div', {style:'padding:7px 0;border-bottom:1px dashed var(--line-soft);'},
-            h('div', {style:'display:flex;justify-content:space-between;gap:8px;align-items:baseline;'},
-              h('div', null,
-                h('span', {class: 'badge-dir ' + (p.direction || 'both'), style:'margin-right:8px;'},
-                  (p.direction || '?').toUpperCase()),
-                h('span', {style:'font-size:12px;font-weight:600;'}, p.name || '?')),
-              h('span', {class:'mono dim', style:'font-size:10px;'},
-                `WR ${p.wr_base || '?'} · n=${p.sample_size || '?'}`)),
-            p.action_plan ? h('div', {class:'dim', style:'font-size:11px;margin-top:4px;line-height:1.55;'}, p.action_plan) : null)))));
-    }
-
+    leftCol.appendChild(renderRangeBriefing(fc, d.range_intelligence));
     main.appendChild(leftCol);
 
     const rightCol = h('div', {class:'grid', style:'gap:12px;'});
@@ -2629,6 +2717,131 @@
               (e.post_needed || []).map(p => p.factor).join(', ') || '—'))));
       }
       return wrap;
+    }
+
+    // ====== Range Briefing — uses or_forecast + validated insight intelligence
+    // about how 45-min OR drives FVGC outcomes. Hardcoded for the Q1-Q5 narrative
+    // (source: FVGC Insights — "Range Determines Reach", validated walk-forward).
+    function renderRangeBriefing(fc, intel) {
+      const card = h('div', {class:'card range-card'});
+
+      // Header
+      card.appendChild(h('div', {class:'card-h'},
+        h('span', {class:'card-t'}, 'Range Briefing'),
+        h('span', {class:'mono', style:'color:var(--cyan);font-size:10px;letter-spacing:1.5px;'},
+          '45-MIN OR FORECAST')));
+
+      if (!fc || !fc.available) {
+        card.appendChild(h('div', {class:'empty'},
+          'OR forecast unavailable today — range briefing offline.'));
+        return card;
+      }
+
+      const tier = fc.tier_level || 'unknown';
+      const qLetter = ((fc.quintile || '').split(' ', 1)[0] || '').toUpperCase();
+      const tierCls = tier === 'wide' || tier === 'wide_max' ? 'good'
+                    : tier === 'normal' ? 'cool'
+                    : tier === 'below' ? 'warn'
+                    : tier === 'stand_down' ? 'bad'
+                    : '';
+
+      // Headline forecast row
+      card.appendChild(h('div', {class:'range-head'},
+        h('div', {class:'range-quintile ' + tierCls}, qLetter || '—'),
+        h('div', {class:'range-main'},
+          h('div', {class:'range-pts mono'},
+            Math.round(fc.point_pts), h('span', {class:'unit'}, 'pts')),
+          h('div', {class:'range-ci mono'},
+            `${fc.lo80_pts}–${fc.hi80_pts} · ${fc.quintile || ''}`)),
+      ));
+
+      // Quintile bar (Q1-Q5)
+      const qBar = h('div', {class:'q-bar'});
+      ['q1','q2','q3','q4','q5'].forEach(q => {
+        const lit = q.toUpperCase() === qLetter;
+        qBar.appendChild(h('div', {class: 'q-seg ' + q + (lit ? ' on' : '')}));
+      });
+      const qLabels = h('div', {class:'q-labels mono'},
+        h('span', null, 'Q1'), h('span', null, 'Q2'),
+        h('span', null, 'Q3'), h('span', null, 'Q4'), h('span', null, 'Q5'));
+      const qLegend = h('div', {class:'q-legend mono'},
+        h('span', {class:'lbad'}, 'NEGATIVE EV'),
+        h('span', {class:'lneutral'}, 'STANDARD'),
+        h('span', {class:'lgood'}, 'UPSIZE'));
+      card.appendChild(qBar);
+      card.appendChild(qLabels);
+      card.appendChild(qLegend);
+
+      // Today's action
+      card.appendChild(h('div', {class: 'range-action ' + tierCls},
+        h('div', {class:'r-label'}, "TODAY'S ACTION"),
+        h('div', {class:'r-text'}, fc.tier_label || '—')));
+
+      // Why this matters — intelligence callout
+      const intelDefault = {
+        title: 'Range Determines Reach: 45-min OR is FVGC\'s Dominant Edge',
+        bullets: [
+          {q: 'Q5', range: '≥205 pts', stat: 'PF 2.02 · E[R] +0.68R at 4R', verdict: 'upsize'},
+          {q: 'Q3-Q4', range: '125–205 pts', stat: 'default size, target 3-4R', verdict: 'standard'},
+          {q: 'Q1-Q2', range: '<125 pts', stat: 'negative-EV at every target', verdict: 'skip'},
+        ],
+        source: 'validated · walk-forward · n=1513',
+      };
+      const ix = intel || intelDefault;
+      const intelBlock = h('div', {class:'range-intel'});
+      intelBlock.appendChild(h('div', {class:'r-label'},
+        'WHY THIS MATTERS',
+        h('span', {class:'r-tag'}, ix.source || 'validated · walk-forward')));
+      intelBlock.appendChild(h('div', {class:'r-title'}, ix.title));
+      const bul = h('div', {class:'r-bullets'});
+      (ix.bullets || []).forEach(b => {
+        const v = (b.verdict || '').toLowerCase();
+        bul.appendChild(h('div', {class: 'r-bullet ' + v},
+          h('span', {class:'r-q mono'}, b.q),
+          h('span', {class:'r-r mono'}, b.range),
+          h('span', {class:'r-s'}, b.stat)));
+      });
+      intelBlock.appendChild(bul);
+      card.appendChild(intelBlock);
+
+      // Drivers of today's forecast
+      if ((fc.drivers || []).length) {
+        const drv = h('div', {class:'range-drivers'});
+        drv.appendChild(h('div', {class:'r-label'}, "DRIVERS OF TODAY'S FORECAST"));
+        const drvList = h('div', null);
+        fc.drivers.slice(0, 4).forEach(dr => {
+          const sign = dr.z > 0 ? '↑' : '↓';
+          const cls = dr.delta_pts >= 0 ? 'up' : 'down';
+          drvList.appendChild(h('div', {class: 'r-driver ' + cls},
+            h('span', {class:'r-d-name mono'}, dr.factor),
+            h('span', {class:'r-d-z mono'},
+              sign, ' ', Math.abs(dr.z).toFixed(2), 'σ'),
+            h('span', {class:'r-d-pts mono'},
+              (dr.delta_pts >= 0 ? '+' : '') + dr.delta_pts.toFixed(1), ' pts')));
+        });
+        drv.appendChild(drvList);
+        card.appendChild(drv);
+      }
+
+      // Intraday velocity reminder (validated insight #2)
+      card.appendChild(h('div', {class:'range-velocity'},
+        h('div', {class:'r-label'},
+          'DURING SESSION CHECK',
+          h('span', {class:'r-tag'}, 'intraday')),
+        h('div', {class:'r-velocity-text'},
+          'At entry, gauge 15-min pre-entry velocity (price now vs 15m ago, signed by trade direction):',
+          h('br'),
+          h('span', {class:'r-v-good mono'}, '30–90 pts aligned'), ' → take · ',
+          h('span', {class:'r-v-bad mono'}, '90–120 pts'), ' → exhaustion skip · ',
+          h('span', {class:'r-v-neutral mono'}, '±10 pts'), ' → chop skip',
+        )));
+
+      // AI narrative (from briefing.json or_forecast.narrative)
+      if (fc.narrative) {
+        card.appendChild(h('div', {class:'narrative', html: fc.narrative}));
+      }
+
+      return card;
     }
 
     function renderPreOpen(po, lv) {
