@@ -82,7 +82,7 @@
       "model": "cold_start",
       "n_features": "17"
     },
-    "narrative": "The <b>208-pt forecast (Wide tier, Q4/65th pct)</b> is driven primarily by a wide overnight range (+46 pts contribution) and elevated 20d ATR (+28 pts). Today favors <b>full size on confluence setups</b> — the 80% interval spans 136–316 pts, so confirm actual OR width at 10:15 before committing to extended targets."
+    "narrative": "The <b>208-pt forecast (Wide tier, Q4/65th pct)</b> is driven primarily by a wide overnight range (+46 pts contribution) and elevated 20d ATR (+28 pts). Today favors <b>full size on confluence setups</b> \u2014 the 80% interval spans 136\u2013316 pts, so confirm actual OR width at 10:15 before committing to extended targets."
   },
   "calendar": {
     "day_of_week": "Tuesday",
@@ -97,7 +97,7 @@
         "currency": ""
       }
     ],
-    "narrative": "Calendar is <b>clean for the RTH session</b> — Pending Home Sales at 14:00 ET is post-session and medium impact only. <b>Tuesday structural headwind</b> (WR ~49.2%) is the primary drag; require higher confluence count before entry and stay selective."
+    "narrative": "Calendar is <b>clean for the RTH session</b> \u2014 Pending Home Sales at 14:00 ET is post-session and medium impact only. <b>Tuesday structural headwind</b> (WR ~49.2%) is the primary drag; require higher confluence count before entry and stay selective."
   },
   "pre_open": {
     "current_price": 28863.0,
@@ -132,7 +132,7 @@
       "direction": "gap_down"
     },
     "data_notes": [],
-    "narrative": "Overnight sold off <b>357.5 pts from 29188 to 28831</b> (wide top-20%, directionally down), with a <b>large gap-down of 235.75 pts (−0.81%)</b> setting a bearish bias into the open. Current price 28863 is clustered near overnight lows — the key 9:30 question is whether sellers push through the ON low or buyers defend for a gap-fade long."
+    "narrative": "Overnight sold off <b>357.5 pts from 29188 to 28831</b> (wide top-20%, directionally down), with a <b>large gap-down of 235.75 pts (\u22120.81%)</b> setting a bearish bias into the open. Current price 28863 is clustered near overnight lows \u2014 the key 9:30 question is whether sellers push through the ON low or buyers defend for a gap-fade long."
   },
   "levels": {
     "scope_pts": 100,
@@ -200,7 +200,7 @@
         "below_baseline": false
       }
     ],
-    "narrative": "<b>Short-side draw: PDL at 28814.75</b> is the highest-quality target below (WR 57.1%, PF 1.45 at −48 pts) — London low and ON low are below-baseline magnets and better treated as waypoints than clean TPs. <b>Long-side resistance: bearish 15m FVG at 28879.5</b> (+16.5 pts, WR 58.4%) stacks immediately below Asia low at 28885, creating a dense 28879–28885 cluster that caps any bounce play."
+    "narrative": "<b>Short-side draw: PDL at 28814.75</b> is the highest-quality target below (WR 57.1%, PF 1.45 at \u221248 pts) \u2014 London low and ON low are below-baseline magnets and better treated as waypoints than clean TPs. <b>Long-side resistance: bearish 15m FVG at 28879.5</b> (+16.5 pts, WR 58.4%) stacks immediately below Asia low at 28885, creating a dense 28879\u201328885 cluster that caps any bounce play."
   },
   "factors": {
     "active": [
@@ -231,7 +231,7 @@
       "wednesday"
     ],
     "unknown": [],
-    "narrative": "<b>No pre-RTH news (+21pp to M1 Long)</b> and wide overnight with gap-down create a textbook fade-the-gap setup alongside a clean short bias. The <b>elevated VIX and Tuesday bias</b> are the two headwinds — require 3+ confluence before entry and skip marginal setups. The clean calendar (no red folder) activates the structural Macro 1 short edge."
+    "narrative": "<b>No pre-RTH news (+21pp to M1 Long)</b> and wide overnight with gap-down create a textbook fade-the-gap setup alongside a clean short bias. The <b>elevated VIX and Tuesday bias</b> are the two headwinds \u2014 require 3+ confluence before entry and skip marginal setups. The clean calendar (no red folder) activates the structural Macro 1 short edge."
   },
   "armed_edges": [],
   "watch_list": [
@@ -465,7 +465,7 @@
       },
       "extra_note": "RUNNER EXIT DOCTRINE: TP@5R no-BE is the optimal exit (PF 3+). BE management caps the edge. Do not apply M2/M3 long-style BE@1R here.",
       "notion_url": "https://www.notion.so/33de2f0e776081889879c4dcbd495996",
-      "narrative": "<b>1/5 preopen active (gap_large_down)</b> — needs bearish 9:30 candle + large body at 9:31 to reach take tier. Today's large gap-down is structurally supportive; if sellers open aggressively with a momentum candle, this becomes a <b>full-size runner trade (no BE, target 5R)</b> targeting PDL at 28814.75."
+      "narrative": "<b>1/5 preopen active (gap_large_down)</b> \u2014 needs bearish 9:30 candle + large body at 9:31 to reach take tier. Today's large gap-down is structurally supportive; if sellers open aggressively with a momentum candle, this becomes a <b>full-size runner trade (no BE, target 5R)</b> targeting PDL at 28814.75."
     },
     {
       "name": "M1 Long",
@@ -576,7 +576,7 @@
       },
       "extra_note": "TIER B / CONFIDENCE LOW. 8yr re-val: year-floor 26.7% (2021), 16.7% (2023). Trade 4+ tier ONLY, capped size. Stand aside in melt-up (NQ >+15% 60d AND VIX<15) or chop years. No robust replacement stack found in re-mining.",
       "notion_url": "https://www.notion.so/361e2f0e776081e69d5dfc696dbd5726",
-      "narrative": "<b>Only 1/4 preopen active (regime_bull)</b> — needs a bullish 9:30 candle which runs counter to today's gap-down setup, making the 4-factor threshold structurally unlikely. Even if all 4 fire, <b>Tier B capped size only</b> — year-floor 16.7% in 2023 makes this the least reliable play in the matrix."
+      "narrative": "<b>Only 1/4 preopen active (regime_bull)</b> \u2014 needs a bullish 9:30 candle which runs counter to today's gap-down setup, making the 4-factor threshold structurally unlikely. Even if all 4 fire, <b>Tier B capped size only</b> \u2014 year-floor 16.7% in 2023 makes this the least reliable play in the matrix."
     },
     {
       "name": "M3 Long",
@@ -764,7 +764,7 @@
         ]
       }
     ],
-    "narrative": "<b>Tight 45-min OR is the universal kill switch</b> — if the OR lands in the bottom 20% by 10:15, every short combo collapses to 22–28% WR (PF &lt;0.45). With gap-down + overnight-down already stacked, a tight OR signals structural exhaustion; full stand-down required, no fading into a narrow range day."
+    "narrative": "<b>Tight 45-min OR is the universal kill switch</b> \u2014 if the OR lands in the bottom 20% by 10:15, every short combo collapses to 22\u201328% WR (PF &lt;0.45). With gap-down + overnight-down already stacked, a tight OR signals structural exhaustion; full stand-down required, no fading into a narrow range day."
   },
   "active_plays": [
     {
@@ -776,7 +776,8 @@
       "action_plan": "See Notion Morning Routine for the complete timeline. Quick version: vetoes off + FVGC short fires 9:30-9:45 \u2192 SL-adaptive TP + bias x 9:30-FVG sizing matrix + NO BE move + don't touch.",
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/33de2f0e776081889879c4dcbd495996"
     },
     {
       "name": "M1 Long \u2014 Confluence Model (NEW 8yr)",
@@ -787,7 +788,8 @@
       "action_plan": null,
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/365e2f0e77608154b4caca8dcc0a7c70"
     },
     {
       "name": "M2 Long \u2014 Confluence Model (8yr DOWNGRADED Tier B)",
@@ -798,7 +800,8 @@
       "action_plan": null,
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/361e2f0e776081e69d5dfc696dbd5726"
     },
     {
       "name": "M3 Long \u2014 Confluence Model (8yr re-validated)",
@@ -809,7 +812,8 @@
       "action_plan": null,
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/361e2f0e7760819bbbc7ca78b9faa8f9"
     },
     {
       "name": "W1 Short \u2014 Post-Sweep Continuation",
@@ -820,7 +824,8 @@
       "action_plan": "1) Confirm W1 short trigger (FVGC short 9:30-9:45). 2) Pull up 15m chart, identify nearest unswept bullish 15m FVG below current price. 3) Has price touched it between 9:30 and now? If YES \u2192 take with full size + extended target. If NO \u2192 fall back to standard W1 confluence model. 4) BE@1R then ride for 3R+, aggressive trail for 5R+.",
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/351e2f0e77608114b4fef8eb95750312"
     },
     {
       "name": "FVGC Off of 930 Candle (9:30 Candle FVG Premium Sub-Tier)",
@@ -831,7 +836,8 @@
       "action_plan": "When FVGC short signal fires in 9:30-9:45, look at the FVG's creation timestamp. If between 9:29:30 and 9:31:00 \u2192 premium sub-tier, size up. Otherwise standard M1 Short sizing.",
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/33de2f0e776081aa9c6bdc297e5fb68b"
     },
     {
       "name": "No News + Macro 1 Short",
@@ -844,7 +850,8 @@
         "no_red_folder"
       ],
       "pre_missing": [],
-      "match_status": "active"
+      "match_status": "active",
+      "notion_url": "https://www.notion.so/33de2f0e77608120a62bc46755fce98c"
     },
     {
       "name": "FVGC To Opening Range H/L",
@@ -855,7 +862,8 @@
       "action_plan": "At 9:45: note OR high and OR low. Check OR close bias (top 40% = short toward OR_L, bottom 40% = long toward OR_H, middle = skip). Take FVGC entries where R-to-OR < 1.0 and neither OR side has been swept. Hold original SL, target 1R. Play is dead once any OR level is breached.",
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/33de2f0e776080409d14f582b1868b64"
     },
     {
       "name": "Reversal-Confirmed FVG Continuation (HTF 15m Sweep)",
@@ -866,7 +874,8 @@
       "action_plan": "Identify unmitigated 15m FVGs pre-market. If one gets swept (non-reclaiming) and an opposing FVG inverts, take the FVGC reversal signal.",
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/340e2f0e7760813c8df9c4a25d4eb677"
     },
     {
       "name": "15m FVG Breakout Continuation",
@@ -877,7 +886,8 @@
       "action_plan": "DO NOT TRADE. Pending further investigation if any salvage path is found.",
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/340e2f0e776081cd922adc681ab3fdb1"
     },
     {
       "name": "W3 Long \u2014 Confluence Model",
@@ -924,6 +934,6 @@
         "direction": "above"
       }
     ],
-    "narrative": "<b>Primary: M1 Short</b> if 9:30 candle is bearish with large body → runner mode, TP@5R no-BE, PDL 28814.75 as guide; <b>Alt: M1 Long</b> — 3 preopen factors stacked, take full size BE@1R → 3R on no_fvg variant; <b>Kill switch: tight 45-min OR by 10:15</b> → stand down all shorts entirely."
+    "narrative": "<b>Primary: M1 Short</b> if 9:30 candle is bearish with large body \u2192 runner mode, TP@5R no-BE, PDL 28814.75 as guide; <b>Alt: M1 Long</b> \u2014 3 preopen factors stacked, take full size BE@1R \u2192 3R on no_fvg variant; <b>Kill switch: tight 45-min OR by 10:15</b> \u2192 stand down all shorts entirely."
   }
 }

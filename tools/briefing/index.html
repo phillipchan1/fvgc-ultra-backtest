@@ -557,6 +557,80 @@
     border-radius: 2px; letter-spacing: 1.5px; font-size: 10px;
   }
 
+  /* ===== Playbook chip strip ===== */
+  .playbook-strip {
+    display: flex; gap: 8px; padding: 8px 0;
+    margin-bottom: 14px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-2) transparent;
+  }
+  .playbook-strip::-webkit-scrollbar { height: 6px; }
+  .playbook-strip::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
+  .playbook-strip::-webkit-scrollbar-track { background: transparent; }
+  .pb-chip {
+    flex-shrink: 0;
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 8px 12px;
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    min-width: 180px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+  }
+  .pb-chip:hover { background: var(--bg-2); border-color: var(--line-2); }
+  .pb-chip::before {
+    content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 2px;
+    background: var(--line-2); border-radius: 2px 0 0 2px;
+  }
+  .pb-chip.long::before  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .pb-chip.short::before { background: var(--red);   box-shadow: 0 0 6px var(--red); }
+  .pb-chip.both::before  { background: var(--cyan);  box-shadow: 0 0 6px var(--cyan); }
+  .pb-chip .pb-name {
+    font-size: 12px; font-weight: 600; color: var(--text);
+    letter-spacing: 0.2px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .pb-chip .pb-stats {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 10px;
+  }
+  .pb-chip .pb-stats .wr { color: var(--text-dim); }
+  .pb-chip .pb-stats .wr b { color: var(--text); font-weight: 700; }
+  .pb-chip .pb-stats .n  { color: var(--text-mute); }
+  .pb-chip .pb-dir {
+    font-family: var(--mono); font-size: 8px; letter-spacing: 1.5px;
+    font-weight: 700; padding: 1px 5px; border-radius: 2px;
+  }
+  .pb-chip.long  .pb-dir { color: var(--green); background: var(--green-dim); }
+  .pb-chip.short .pb-dir { color: var(--red);   background: var(--red-dim); }
+  .pb-chip.both  .pb-dir { color: var(--cyan);  background: var(--cyan-dim); }
+  .pb-status {
+    font-family: var(--mono); font-size: 8px; letter-spacing: 1px;
+    padding: 1px 5px; border-radius: 2px; margin-left: auto;
+    border: 1px solid;
+  }
+  .pb-status.verified    { color: var(--green); border-color: var(--green); background: var(--green-dim); }
+  .pb-status.backtesting { color: var(--amber); border-color: var(--amber); background: var(--amber-dim); }
+  .pb-status.idea        { color: var(--text-dim); border-color: var(--line-2); background: var(--bg-2); }
+  .pb-status.under_review{ color: var(--violet); border-color: var(--violet); background: var(--violet-dim); }
+  .pb-status.rejected    { color: var(--red); border-color: var(--red); background: var(--red-dim); opacity: 0.6; }
+  .pb-strip-h {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--text-mute); font-weight: 700;
+    margin: 18px 0 4px;
+  }
+  .pb-strip-h::before {
+    content: "▸"; color: var(--cyan); text-shadow: 0 0 8px var(--cyan);
+  }
+  .pb-strip-h .source {
+    font-family: var(--mono); font-size: 9px; color: var(--text-mute);
+    letter-spacing: 1px;
+  }
+
   /* ===== Collapsible details/summary cards ===== */
   details.card { padding: 0; }
   details.card > summary {
@@ -1372,6 +1446,42 @@
       renderConditions(po, cal, fc, factors, mp),
       renderCandidates(mp, primary),
       renderExecution(primary, fc, gp)));
+
+    // ============ PLAYBOOK CHIP STRIP ============
+    const apAll = (d.active_plays || []);
+    // Hide matrix-confluence-model entries — they're already in column 2
+    const playbookOnly = apAll.filter(p =>
+      !/Confluence Model/i.test(p.name || ''));
+    if (playbookOnly.length) {
+      app.appendChild(h('div', {class:'pb-strip-h'},
+        'Playbook plays active',
+        h('span', {class:'source'},
+          `· ${playbookOnly.length} · source: playbook/plays.json`)));
+      const strip = h('div', {class:'playbook-strip'});
+      playbookOnly.forEach(p => {
+        const status = (p.status || 'idea').toLowerCase().replace(/\s+/g, '_');
+        const dir = (p.direction || 'both').toLowerCase();
+        // Truncate WR string to first number for compact display
+        const wrMatch = (p.wr_base || '').match(/[\d.]+%/);
+        const wr = wrMatch ? wrMatch[0] : (p.wr_base || '—');
+        const chip = h(p.notion_url ? 'a' : 'div',
+          {
+            class: 'pb-chip ' + dir,
+            href: p.notion_url || null,
+            target: p.notion_url ? '_blank' : null,
+            title: p.action_plan || '',
+          },
+          h('div', {style:'display:flex;align-items:center;gap:6px;'},
+            h('span', {class:'pb-dir'}, dir.toUpperCase()),
+            h('span', {class: 'pb-status ' + status}, status.replace('_', ' '))),
+          h('div', {class:'pb-name'}, p.name),
+          h('div', {class:'pb-stats'},
+            h('span', {class:'wr'}, 'WR ', h('b', null, wr)),
+            h('span', {class:'n'}, `n=${p.sample_size || '?'}`)));
+        strip.appendChild(chip);
+      });
+      app.appendChild(strip);
+    }
 
     // ============ FRESHNESS / AVOID ============
     const stale = (d.freshness || []).filter(f => f.is_stale);

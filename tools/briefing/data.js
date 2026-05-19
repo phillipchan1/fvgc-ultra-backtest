@@ -777,7 +777,8 @@ window.BRIEFING_DATA = {
       "action_plan": "See Notion Morning Routine for the complete timeline. Quick version: vetoes off + FVGC short fires 9:30-9:45 \u2192 SL-adaptive TP + bias x 9:30-FVG sizing matrix + NO BE move + don't touch.",
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/33de2f0e776081889879c4dcbd495996"
     },
     {
       "name": "M1 Long \u2014 Confluence Model (NEW 8yr)",
@@ -788,7 +789,8 @@ window.BRIEFING_DATA = {
       "action_plan": null,
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/365e2f0e77608154b4caca8dcc0a7c70"
     },
     {
       "name": "M2 Long \u2014 Confluence Model (8yr DOWNGRADED Tier B)",
@@ -799,7 +801,8 @@ window.BRIEFING_DATA = {
       "action_plan": null,
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/361e2f0e776081e69d5dfc696dbd5726"
     },
     {
       "name": "M3 Long \u2014 Confluence Model (8yr re-validated)",
@@ -810,7 +813,8 @@ window.BRIEFING_DATA = {
       "action_plan": null,
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/361e2f0e7760819bbbc7ca78b9faa8f9"
     },
     {
       "name": "W1 Short \u2014 Post-Sweep Continuation",
@@ -821,7 +825,8 @@ window.BRIEFING_DATA = {
       "action_plan": "1) Confirm W1 short trigger (FVGC short 9:30-9:45). 2) Pull up 15m chart, identify nearest unswept bullish 15m FVG below current price. 3) Has price touched it between 9:30 and now? If YES \u2192 take with full size + extended target. If NO \u2192 fall back to standard W1 confluence model. 4) BE@1R then ride for 3R+, aggressive trail for 5R+.",
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/351e2f0e77608114b4fef8eb95750312"
     },
     {
       "name": "FVGC Off of 930 Candle (9:30 Candle FVG Premium Sub-Tier)",
@@ -832,7 +837,8 @@ window.BRIEFING_DATA = {
       "action_plan": "When FVGC short signal fires in 9:30-9:45, look at the FVG's creation timestamp. If between 9:29:30 and 9:31:00 \u2192 premium sub-tier, size up. Otherwise standard M1 Short sizing.",
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/33de2f0e776081aa9c6bdc297e5fb68b"
     },
     {
       "name": "No News + Macro 1 Short",
@@ -845,7 +851,8 @@ window.BRIEFING_DATA = {
         "no_red_folder"
       ],
       "pre_missing": [],
-      "match_status": "active"
+      "match_status": "active",
+      "notion_url": "https://www.notion.so/33de2f0e77608120a62bc46755fce98c"
     },
     {
       "name": "FVGC To Opening Range H/L",
@@ -856,7 +863,8 @@ window.BRIEFING_DATA = {
       "action_plan": "At 9:45: note OR high and OR low. Check OR close bias (top 40% = short toward OR_L, bottom 40% = long toward OR_H, middle = skip). Take FVGC entries where R-to-OR < 1.0 and neither OR side has been swept. Hold original SL, target 1R. Play is dead once any OR level is breached.",
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/33de2f0e776080409d14f582b1868b64"
     },
     {
       "name": "Reversal-Confirmed FVG Continuation (HTF 15m Sweep)",
@@ -867,7 +875,8 @@ window.BRIEFING_DATA = {
       "action_plan": "Identify unmitigated 15m FVGs pre-market. If one gets swept (non-reclaiming) and an opposing FVG inverts, take the FVGC reversal signal.",
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/340e2f0e7760813c8df9c4a25d4eb677"
     },
     {
       "name": "15m FVG Breakout Continuation",
@@ -878,7 +887,8 @@ window.BRIEFING_DATA = {
       "action_plan": "DO NOT TRADE. Pending further investigation if any salvage path is found.",
       "pre_met": [],
       "pre_missing": [],
-      "match_status": "always"
+      "match_status": "always",
+      "notion_url": "https://www.notion.so/340e2f0e776081cd922adc681ab3fdb1"
     },
     {
       "name": "W3 Long \u2014 Confluence Model",

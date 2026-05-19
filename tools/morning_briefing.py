@@ -1921,6 +1921,7 @@ def build_briefing_dict(
             'wr_base': p.get('wr_base'),
             'sample_size': p.get('sample_size'),
             'action_plan': p.get('action_plan'),
+            'notion_url': p.get('notion_url'),
             'pre_met': list(mp.pre_met),
             'pre_missing': list(mp.pre_missing),
             'match_status': mp.status,
