@@ -1,0 +1,1349 @@
+[
+  {
+    "cell": "M1_long",
+    "pros": [
+      "no_pre_rth_news",
+      "prior_day_mid",
+      "variant_no_fvg",
+      "vixy_normal",
+      "is_fomc_week",
+      "dow_wednesday",
+      "gap_large_down"
+    ],
+    "vetos": [
+      "prior_day_weak",
+      "c930_body_top_q"
+    ],
+    "pro_lifts": {
+      "no_pre_rth_news": 21.1,
+      "prior_day_mid": 9.5,
+      "variant_no_fvg": 8.0,
+      "vixy_normal": 6.6,
+      "is_fomc_week": 6.3,
+      "dow_wednesday": 6.3,
+      "gap_large_down": 5.5
+    },
+    "veto_lifts": {
+      "prior_day_weak": -8.3,
+      "c930_body_top_q": -5.5
+    },
+    "primary_tier_min": 3,
+    "score_new": {
+      "all": {
+        "n": 117,
+        "wr": 59.0,
+        "pf_2r": 1.34
+      },
+      "is": {
+        "n": 97,
+        "wr": 59.8,
+        "pf_2r": 1.34
+      },
+      "oos": {
+        "n": 20,
+        "wr": 55.0,
+        "pf_2r": 1.33
+      },
+      "by_year": {
+        "2018": {
+          "n": 1,
+          "wr": 100.0,
+          "pf_2r": Infinity
+        },
+        "2019": {
+          "n": 5,
+          "wr": 80.0,
+          "pf_2r": 3.0
+        },
+        "2020": {
+          "n": 20,
+          "wr": 55.0,
+          "pf_2r": 1.64
+        },
+        "2021": {
+          "n": 19,
+          "wr": 63.2,
+          "pf_2r": 1.17
+        },
+        "2022": {
+          "n": 27,
+          "wr": 59.3,
+          "pf_2r": 1.86
+        },
+        "2023": {
+          "n": 16,
+          "wr": 56.2,
+          "pf_2r": 0.46
+        },
+        "2024": {
+          "n": 9,
+          "wr": 55.6,
+          "pf_2r": 1.0
+        },
+        "2025": {
+          "n": 16,
+          "wr": 50.0,
+          "pf_2r": 1.2
+        },
+        "2026": {
+          "n": 4,
+          "wr": 75.0,
+          "pf_2r": 2.0
+        }
+      },
+      "by_regime": {
+        "bear": {
+          "n": 20,
+          "wr": 55.0,
+          "pf_2r": 1.64
+        },
+        "bull": {
+          "n": 52,
+          "wr": 55.8,
+          "pf_2r": 0.89
+        },
+        "neutral": {
+          "n": 45,
+          "wr": 64.4,
+          "pf_2r": 1.91
+        }
+      },
+      "year_floor": 50.0,
+      "qualifying_years": 5,
+      "regime_spread": 9.4,
+      "gates": {
+        "is_wr": true,
+        "oos_wr": true,
+        "is_oos_delta": true,
+        "year_floor": true,
+        "regime_spread": true
+      },
+      "gates_passed": 5,
+      "gates_total": 5
+    },
+    "tier_bins": [
+      -0.5,
+      1.5,
+      2.5,
+      3.5,
+      99
+    ],
+    "tier_labels": [
+      "0-1",
+      "2",
+      "3",
+      "4+"
+    ],
+    "n_is": 471,
+    "score_old_stack": {
+      "all": {
+        "n": 68,
+        "wr": 54.4,
+        "pf_2r": 1.02
+      },
+      "is": {
+        "n": 34,
+        "wr": 52.9,
+        "pf_2r": 0.83
+      },
+      "oos": {
+        "n": 34,
+        "wr": 55.9,
+        "pf_2r": 1.24
+      },
+      "by_year": {
+        "2018": {
+          "n": 2,
+          "wr": 100.0,
+          "pf_2r": Infinity
+        },
+        "2020": {
+          "n": 9,
+          "wr": 33.3,
+          "pf_2r": 0.57
+        },
+        "2021": {
+          "n": 7,
+          "wr": 57.1,
+          "pf_2r": 0.8
+        },
+        "2022": {
+          "n": 4,
+          "wr": 50.0,
+          "pf_2r": 0.0
+        },
+        "2023": {
+          "n": 4,
+          "wr": 50.0,
+          "pf_2r": 0.67
+        },
+        "2024": {
+          "n": 8,
+          "wr": 62.5,
+          "pf_2r": 1.2
+        },
+        "2025": {
+          "n": 22,
+          "wr": 54.5,
+          "pf_2r": 1.38
+        },
+        "2026": {
+          "n": 12,
+          "wr": 58.3,
+          "pf_2r": 1.0
+        }
+      },
+      "by_regime": {
+        "bear": {
+          "n": 11,
+          "wr": 45.5,
+          "pf_2r": 1.14
+        },
+        "bull": {
+          "n": 31,
+          "wr": 48.4,
+          "pf_2r": 0.95
+        },
+        "neutral": {
+          "n": 25,
+          "wr": 64.0,
+          "pf_2r": 0.94
+        }
+      },
+      "year_floor": 54.5,
+      "qualifying_years": 2,
+      "regime_spread": 15.6
+    },
+    "old_pros": [
+      "prior_day_mid",
+      "gap_up",
+      "overnight_range_top_q",
+      "gap_large_up",
+      "no_pre_rth_news",
+      "vixy_high",
+      "dow_tuesday"
+    ],
+    "old_vetos": [
+      "overnight_range_bot_q",
+      "is_opex_week",
+      "bull_930"
+    ]
+  },
+  {
+    "cell": "M1_short",
+    "pros": [
+      "has_pre_rth_news",
+      "c930_body_top_q",
+      "gap_large_down",
+      "vixy_normal",
+      "prior_day_weak"
+    ],
+    "vetos": [
+      "vixy_high",
+      "variant_ifvg",
+      "prior_day_mid"
+    ],
+    "pro_lifts": {
+      "has_pre_rth_news": 14.3,
+      "c930_body_top_q": 7.1,
+      "gap_large_down": 6.9,
+      "vixy_normal": 5.9,
+      "prior_day_weak": 5.7
+    },
+    "veto_lifts": {
+      "vixy_high": -9.9,
+      "variant_ifvg": -7.9,
+      "prior_day_mid": -6.4
+    },
+    "primary_tier_min": 2,
+    "score_new": {
+      "all": {
+        "n": 106,
+        "wr": 59.4,
+        "pf_2r": 1.53
+      },
+      "is": {
+        "n": 104,
+        "wr": 59.6,
+        "pf_2r": 1.59
+      },
+      "oos": {
+        "n": 2,
+        "wr": 50.0,
+        "pf_2r": 0.0
+      },
+      "by_year": {
+        "2019": {
+          "n": 2,
+          "wr": 50.0,
+          "pf_2r": 2.0
+        },
+        "2020": {
+          "n": 17,
+          "wr": 41.2,
+          "pf_2r": 1.09
+        },
+        "2021": {
+          "n": 22,
+          "wr": 72.7,
+          "pf_2r": 1.67
+        },
+        "2022": {
+          "n": 31,
+          "wr": 51.6,
+          "pf_2r": 1.44
+        },
+        "2023": {
+          "n": 15,
+          "wr": 60.0,
+          "pf_2r": 1.33
+        },
+        "2024": {
+          "n": 17,
+          "wr": 76.5,
+          "pf_2r": 2.86
+        },
+        "2026": {
+          "n": 2,
+          "wr": 50.0,
+          "pf_2r": 0.0
+        }
+      },
+      "by_regime": {
+        "bear": {
+          "n": 25,
+          "wr": 56.0,
+          "pf_2r": 1.85
+        },
+        "bull": {
+          "n": 38,
+          "wr": 60.5,
+          "pf_2r": 1.8
+        },
+        "neutral": {
+          "n": 43,
+          "wr": 60.5,
+          "pf_2r": 1.19
+        }
+      },
+      "year_floor": 41.2,
+      "qualifying_years": 5,
+      "regime_spread": 4.5,
+      "gates": {
+        "is_wr": true,
+        "oos_wr": false,
+        "is_oos_delta": false,
+        "year_floor": false,
+        "regime_spread": true
+      },
+      "gates_passed": 2,
+      "gates_total": 5,
+      "note": "OOS sample thin (n=2)"
+    },
+    "tier_bins": [
+      -0.5,
+      1.5,
+      2.5,
+      3.5,
+      99
+    ],
+    "tier_labels": [
+      "0-1",
+      "2",
+      "3",
+      "4+"
+    ],
+    "n_is": 467,
+    "score_old_stack": {
+      "all": {
+        "n": 49,
+        "wr": 57.1,
+        "pf_2r": 1.92
+      },
+      "is": {
+        "n": 36,
+        "wr": 44.4,
+        "pf_2r": 1.0
+      },
+      "oos": {
+        "n": 13,
+        "wr": 92.3,
+        "pf_2r": 24.0
+      },
+      "by_year": {
+        "2020": {
+          "n": 8,
+          "wr": 50.0,
+          "pf_2r": 1.2
+        },
+        "2021": {
+          "n": 9,
+          "wr": 33.3,
+          "pf_2r": 0.57
+        },
+        "2022": {
+          "n": 12,
+          "wr": 66.7,
+          "pf_2r": 2.0
+        },
+        "2023": {
+          "n": 3,
+          "wr": 33.3,
+          "pf_2r": 1.0
+        },
+        "2024": {
+          "n": 4,
+          "wr": 0.0,
+          "pf_2r": 0.0
+        },
+        "2025": {
+          "n": 13,
+          "wr": 92.3,
+          "pf_2r": 24.0
+        }
+      },
+      "by_regime": {
+        "bear": {
+          "n": 11,
+          "wr": 81.8,
+          "pf_2r": 3.5
+        },
+        "bull": {
+          "n": 23,
+          "wr": 60.9,
+          "pf_2r": 2.6
+        },
+        "neutral": {
+          "n": 15,
+          "wr": 33.3,
+          "pf_2r": 0.73
+        }
+      },
+      "year_floor": 66.7,
+      "qualifying_years": 2,
+      "regime_spread": NaN
+    },
+    "old_pros": [
+      "bear_930",
+      "gap_large_down",
+      "c930_body_top_q",
+      "prior_day_weak",
+      "is_fomc_week",
+      "vixy_high",
+      "dow_friday"
+    ],
+    "old_vetos": [
+      "vixy_low",
+      "dow_monday",
+      "no_red_folder"
+    ]
+  },
+  {
+    "cell": "M2_long",
+    "pros": [
+      "regime_neutral",
+      "vixy_high",
+      "dow_thursday",
+      "has_red_folder",
+      "variant_bos",
+      "prior_day_strong"
+    ],
+    "vetos": [
+      "gap_large_down",
+      "dow_wednesday",
+      "macro_1_has_fvg"
+    ],
+    "pro_lifts": {
+      "regime_neutral": 13.6,
+      "vixy_high": 12.5,
+      "dow_thursday": 12.4,
+      "has_red_folder": 8.2,
+      "variant_bos": 6.9,
+      "prior_day_strong": 6.5
+    },
+    "veto_lifts": {
+      "gap_large_down": -18.9,
+      "dow_wednesday": -16.1,
+      "macro_1_has_fvg": -15.9
+    },
+    "primary_tier_min": 3,
+    "score_new": {
+      "all": {
+        "n": 14,
+        "wr": 64.3,
+        "pf_2r": 2.0
+      },
+      "is": {
+        "n": 10,
+        "wr": 80.0,
+        "pf_2r": 4.67
+      },
+      "oos": {
+        "n": 4,
+        "wr": 25.0,
+        "pf_2r": 0.0
+      },
+      "by_year": {
+        "2018": {
+          "n": 1,
+          "wr": 0.0,
+          "pf_2r": 0.0
+        },
+        "2019": {
+          "n": 2,
+          "wr": 50.0,
+          "pf_2r": 2.0
+        },
+        "2022": {
+          "n": 1,
+          "wr": 100.0,
+          "pf_2r": Infinity
+        },
+        "2023": {
+          "n": 2,
+          "wr": 100.0,
+          "pf_2r": 2.0
+        },
+        "2024": {
+          "n": 4,
+          "wr": 100.0,
+          "pf_2r": Infinity
+        },
+        "2025": {
+          "n": 4,
+          "wr": 25.0,
+          "pf_2r": 0.0
+        }
+      },
+      "by_regime": {
+        "bear": {
+          "n": 2,
+          "wr": 50.0,
+          "pf_2r": 0.0
+        },
+        "bull": {
+          "n": 2,
+          "wr": 50.0,
+          "pf_2r": 2.0
+        },
+        "neutral": {
+          "n": 10,
+          "wr": 70.0,
+          "pf_2r": 3.0
+        }
+      },
+      "year_floor": NaN,
+      "qualifying_years": 0,
+      "regime_spread": NaN,
+      "gates": {
+        "is_wr": true,
+        "oos_wr": false,
+        "is_oos_delta": false,
+        "year_floor": false,
+        "regime_spread": true
+      },
+      "gates_passed": 2,
+      "gates_total": 5,
+      "note": "OOS sample thin (n=4)"
+    },
+    "tier_bins": [
+      -0.5,
+      1.5,
+      2.5,
+      3.5,
+      99
+    ],
+    "tier_labels": [
+      "0-1",
+      "2",
+      "3",
+      "4+"
+    ],
+    "n_is": 497,
+    "score_old_stack": {
+      "all": {
+        "n": 229,
+        "wr": 59.0,
+        "pf_2r": 1.18
+      },
+      "is": {
+        "n": 158,
+        "wr": 55.7,
+        "pf_2r": 1.07
+      },
+      "oos": {
+        "n": 71,
+        "wr": 66.2,
+        "pf_2r": 1.46
+      },
+      "by_year": {
+        "2018": {
+          "n": 6,
+          "wr": 50.0,
+          "pf_2r": 1.0
+        },
+        "2019": {
+          "n": 3,
+          "wr": 66.7,
+          "pf_2r": 1.0
+        },
+        "2020": {
+          "n": 37,
+          "wr": 54.1,
+          "pf_2r": 0.74
+        },
+        "2021": {
+          "n": 30,
+          "wr": 26.7,
+          "pf_2r": 0.5
+        },
+        "2022": {
+          "n": 11,
+          "wr": 45.5,
+          "pf_2r": 1.67
+        },
+        "2023": {
+          "n": 31,
+          "wr": 54.8,
+          "pf_2r": 0.7
+        },
+        "2024": {
+          "n": 40,
+          "wr": 82.5,
+          "pf_2r": 2.71
+        },
+        "2025": {
+          "n": 62,
+          "wr": 67.7,
+          "pf_2r": 1.65
+        },
+        "2026": {
+          "n": 9,
+          "wr": 55.6,
+          "pf_2r": 0.57
+        }
+      },
+      "by_regime": {
+        "bull": {
+          "n": 162,
+          "wr": 56.2,
+          "pf_2r": 1.09
+        },
+        "neutral": {
+          "n": 67,
+          "wr": 65.7,
+          "pf_2r": 1.44
+        }
+      },
+      "year_floor": 26.7,
+      "qualifying_years": 6,
+      "regime_spread": 9.5
+    },
+    "old_pros": [
+      "bull_930",
+      "dow_thursday",
+      "has_pre_rth_news",
+      "macro_1_2plus_fvgs",
+      "regime_bull",
+      "has_5m_bear_fvg",
+      "gap_up"
+    ],
+    "old_vetos": [
+      "is_opex_week",
+      "dow_wednesday",
+      "regime_bear"
+    ]
+  },
+  {
+    "cell": "M2_short",
+    "pros": [
+      "has_5m_bear_fvg",
+      "no_pre_rth_news",
+      "prior_day_weak",
+      "not_fomc_week",
+      "c930_range_bot_q",
+      "no_5m_bull_fvg",
+      "has_15m_bear_fvg"
+    ],
+    "vetos": [
+      "prior_day_mid",
+      "gap_down",
+      "dow_friday"
+    ],
+    "pro_lifts": {
+      "has_5m_bear_fvg": 15.1,
+      "no_pre_rth_news": 14.5,
+      "prior_day_weak": 10.5,
+      "not_fomc_week": 10.5,
+      "c930_range_bot_q": 9.0,
+      "no_5m_bull_fvg": 8.5,
+      "has_15m_bear_fvg": 8.4
+    },
+    "veto_lifts": {
+      "prior_day_mid": -9.5,
+      "gap_down": -6.9,
+      "dow_friday": -6.2
+    },
+    "primary_tier_min": 3,
+    "score_new": {
+      "all": {
+        "n": 205,
+        "wr": 53.2,
+        "pf_2r": 1.15
+      },
+      "is": {
+        "n": 172,
+        "wr": 55.2,
+        "pf_2r": 1.19
+      },
+      "oos": {
+        "n": 33,
+        "wr": 42.4,
+        "pf_2r": 1.0
+      },
+      "by_year": {
+        "2018": {
+          "n": 12,
+          "wr": 58.3,
+          "pf_2r": 1.0
+        },
+        "2019": {
+          "n": 5,
+          "wr": 60.0,
+          "pf_2r": 1.33
+        },
+        "2020": {
+          "n": 36,
+          "wr": 47.2,
+          "pf_2r": 0.88
+        },
+        "2021": {
+          "n": 33,
+          "wr": 51.5,
+          "pf_2r": 1.0
+        },
+        "2022": {
+          "n": 27,
+          "wr": 55.6,
+          "pf_2r": 2.5
+        },
+        "2023": {
+          "n": 22,
+          "wr": 54.5,
+          "pf_2r": 0.93
+        },
+        "2024": {
+          "n": 37,
+          "wr": 64.9,
+          "pf_2r": 1.22
+        },
+        "2025": {
+          "n": 24,
+          "wr": 37.5,
+          "pf_2r": 1.0
+        },
+        "2026": {
+          "n": 9,
+          "wr": 55.6,
+          "pf_2r": 1.0
+        }
+      },
+      "by_regime": {
+        "bear": {
+          "n": 37,
+          "wr": 51.4,
+          "pf_2r": 0.96
+        },
+        "bull": {
+          "n": 91,
+          "wr": 51.6,
+          "pf_2r": 1.08
+        },
+        "neutral": {
+          "n": 73,
+          "wr": 56.2,
+          "pf_2r": 1.4
+        }
+      },
+      "year_floor": 37.5,
+      "qualifying_years": 7,
+      "regime_spread": 4.8,
+      "gates": {
+        "is_wr": false,
+        "oos_wr": false,
+        "is_oos_delta": false,
+        "year_floor": false,
+        "regime_spread": true
+      },
+      "gates_passed": 1,
+      "gates_total": 5
+    },
+    "tier_bins": [
+      -0.5,
+      1.5,
+      2.5,
+      3.5,
+      99
+    ],
+    "tier_labels": [
+      "0-1",
+      "2",
+      "3",
+      "4+"
+    ],
+    "n_is": 488,
+    "score_old_stack": {
+      "all": {
+        "n": 246,
+        "wr": 52.8,
+        "pf_2r": 0.95
+      },
+      "is": {
+        "n": 173,
+        "wr": 50.9,
+        "pf_2r": 0.84
+      },
+      "oos": {
+        "n": 73,
+        "wr": 57.5,
+        "pf_2r": 1.24
+      },
+      "by_year": {
+        "2018": {
+          "n": 2,
+          "wr": 50.0,
+          "pf_2r": 0.0
+        },
+        "2019": {
+          "n": 1,
+          "wr": 0.0,
+          "pf_2r": 0.0
+        },
+        "2020": {
+          "n": 35,
+          "wr": 40.0,
+          "pf_2r": 0.41
+        },
+        "2021": {
+          "n": 37,
+          "wr": 62.2,
+          "pf_2r": 0.96
+        },
+        "2022": {
+          "n": 45,
+          "wr": 46.7,
+          "pf_2r": 1.21
+        },
+        "2023": {
+          "n": 17,
+          "wr": 17.6,
+          "pf_2r": 0.0
+        },
+        "2024": {
+          "n": 36,
+          "wr": 72.2,
+          "pf_2r": 1.6
+        },
+        "2025": {
+          "n": 49,
+          "wr": 57.1,
+          "pf_2r": 1.16
+        },
+        "2026": {
+          "n": 24,
+          "wr": 58.3,
+          "pf_2r": 1.43
+        }
+      },
+      "by_regime": {
+        "bear": {
+          "n": 75,
+          "wr": 48.0,
+          "pf_2r": 0.94
+        },
+        "bull": {
+          "n": 90,
+          "wr": 53.3,
+          "pf_2r": 1.0
+        },
+        "neutral": {
+          "n": 81,
+          "wr": 56.8,
+          "pf_2r": 0.89
+        }
+      },
+      "year_floor": 17.6,
+      "qualifying_years": 7,
+      "regime_spread": 8.8
+    },
+    "old_pros": [
+      "not_fomc_week",
+      "or_5m_top_q",
+      "has_5m_bear_fvg",
+      "no_pre_rth_news",
+      "has_15m_bear_fvg",
+      "c930_body_top_q",
+      "overnight_range_top_q"
+    ],
+    "old_vetos": [
+      "or_15m_bot_q",
+      "dow_tuesday",
+      "has_5m_bull_fvg"
+    ]
+  },
+  {
+    "cell": "M3_long",
+    "pros": [
+      "dow_monday",
+      "prior_day_weak",
+      "no_5m_bull_fvg",
+      "not_fomc_week",
+      "has_5m_bear_fvg",
+      "variant_no_fvg",
+      "dow_friday"
+    ],
+    "vetos": [
+      "prior_day_mid",
+      "is_opex_week",
+      "dow_tuesday"
+    ],
+    "pro_lifts": {
+      "dow_monday": 10.5,
+      "prior_day_weak": 10.3,
+      "no_5m_bull_fvg": 8.1,
+      "not_fomc_week": 7.4,
+      "has_5m_bear_fvg": 6.8,
+      "variant_no_fvg": 6.2,
+      "dow_friday": 5.9
+    },
+    "veto_lifts": {
+      "prior_day_mid": -15.4,
+      "is_opex_week": -12.5,
+      "dow_tuesday": -10.1
+    },
+    "primary_tier_min": 3,
+    "score_new": {
+      "all": {
+        "n": 264,
+        "wr": 64.4,
+        "pf_2r": 1.34
+      },
+      "is": {
+        "n": 191,
+        "wr": 65.4,
+        "pf_2r": 1.38
+      },
+      "oos": {
+        "n": 73,
+        "wr": 61.6,
+        "pf_2r": 1.24
+      },
+      "by_year": {
+        "2018": {
+          "n": 6,
+          "wr": 66.7,
+          "pf_2r": 4.0
+        },
+        "2019": {
+          "n": 4,
+          "wr": 50.0,
+          "pf_2r": 2.0
+        },
+        "2020": {
+          "n": 38,
+          "wr": 57.9,
+          "pf_2r": 0.92
+        },
+        "2021": {
+          "n": 26,
+          "wr": 73.1,
+          "pf_2r": 2.73
+        },
+        "2022": {
+          "n": 42,
+          "wr": 69.0,
+          "pf_2r": 1.36
+        },
+        "2023": {
+          "n": 41,
+          "wr": 63.4,
+          "pf_2r": 1.15
+        },
+        "2024": {
+          "n": 34,
+          "wr": 67.6,
+          "pf_2r": 1.24
+        },
+        "2025": {
+          "n": 50,
+          "wr": 68.0,
+          "pf_2r": 1.23
+        },
+        "2026": {
+          "n": 23,
+          "wr": 47.8,
+          "pf_2r": 1.29
+        }
+      },
+      "by_regime": {
+        "bear": {
+          "n": 59,
+          "wr": 64.4,
+          "pf_2r": 1.28
+        },
+        "bull": {
+          "n": 106,
+          "wr": 65.1,
+          "pf_2r": 1.16
+        },
+        "neutral": {
+          "n": 98,
+          "wr": 63.3,
+          "pf_2r": 1.56
+        }
+      },
+      "year_floor": 47.8,
+      "qualifying_years": 7,
+      "regime_spread": 1.8,
+      "gates": {
+        "is_wr": true,
+        "oos_wr": true,
+        "is_oos_delta": true,
+        "year_floor": true,
+        "regime_spread": true
+      },
+      "gates_passed": 5,
+      "gates_total": 5
+    },
+    "tier_bins": [
+      -0.5,
+      1.5,
+      2.5,
+      3.5,
+      99
+    ],
+    "tier_labels": [
+      "0-1",
+      "2",
+      "3",
+      "4+"
+    ],
+    "n_is": 519,
+    "score_old_stack": {
+      "all": {
+        "n": 261,
+        "wr": 63.2,
+        "pf_2r": 1.18
+      },
+      "is": {
+        "n": 229,
+        "wr": 62.9,
+        "pf_2r": 1.18
+      },
+      "oos": {
+        "n": 32,
+        "wr": 65.6,
+        "pf_2r": 1.2
+      },
+      "by_year": {
+        "2018": {
+          "n": 11,
+          "wr": 45.5,
+          "pf_2r": 1.14
+        },
+        "2019": {
+          "n": 4,
+          "wr": 50.0,
+          "pf_2r": 2.0
+        },
+        "2020": {
+          "n": 37,
+          "wr": 56.8,
+          "pf_2r": 0.96
+        },
+        "2021": {
+          "n": 33,
+          "wr": 69.7,
+          "pf_2r": 1.88
+        },
+        "2022": {
+          "n": 43,
+          "wr": 58.1,
+          "pf_2r": 0.77
+        },
+        "2023": {
+          "n": 53,
+          "wr": 64.2,
+          "pf_2r": 1.21
+        },
+        "2024": {
+          "n": 48,
+          "wr": 70.8,
+          "pf_2r": 1.31
+        },
+        "2025": {
+          "n": 30,
+          "wr": 66.7,
+          "pf_2r": 1.16
+        },
+        "2026": {
+          "n": 2,
+          "wr": 50.0,
+          "pf_2r": 2.0
+        }
+      },
+      "by_regime": {
+        "bear": {
+          "n": 42,
+          "wr": 64.3,
+          "pf_2r": 1.0
+        },
+        "bull": {
+          "n": 139,
+          "wr": 66.9,
+          "pf_2r": 1.31
+        },
+        "neutral": {
+          "n": 78,
+          "wr": 56.4,
+          "pf_2r": 1.06
+        }
+      },
+      "year_floor": 45.5,
+      "qualifying_years": 7,
+      "regime_spread": 10.5
+    },
+    "old_pros": [
+      "c930_range_bot_q",
+      "or_5m_bot_q",
+      "no_5m_bear_fvg",
+      "dow_friday",
+      "not_fomc_week",
+      "prior_day_weak",
+      "variant_no_fvg"
+    ],
+    "old_vetos": [
+      "dow_tuesday",
+      "or_5m_top_q",
+      "prior_day_mid"
+    ]
+  },
+  {
+    "cell": "M3_short",
+    "pros": [
+      "has_5m_bull_fvg",
+      "macro_1_has_fvg",
+      "bear_930",
+      "prior_day_weak",
+      "or_15m_top_q"
+    ],
+    "vetos": [
+      "dow_monday",
+      "or_5m_bot_q",
+      "overnight_range_bot_q"
+    ],
+    "pro_lifts": {
+      "has_5m_bull_fvg": 12.0,
+      "macro_1_has_fvg": 10.2,
+      "bear_930": 6.7,
+      "prior_day_weak": 5.3,
+      "or_15m_top_q": 5.0
+    },
+    "veto_lifts": {
+      "dow_monday": -11.3,
+      "or_5m_bot_q": -10.0,
+      "overnight_range_bot_q": -9.2
+    },
+    "primary_tier_min": 3,
+    "score_new": {
+      "all": {
+        "n": 196,
+        "wr": 57.1,
+        "pf_2r": 1.04
+      },
+      "is": {
+        "n": 144,
+        "wr": 63.2,
+        "pf_2r": 1.13
+      },
+      "oos": {
+        "n": 52,
+        "wr": 40.4,
+        "pf_2r": 0.81
+      },
+      "by_year": {
+        "2018": {
+          "n": 3,
+          "wr": 100.0,
+          "pf_2r": 4.0
+        },
+        "2020": {
+          "n": 13,
+          "wr": 61.5,
+          "pf_2r": 0.89
+        },
+        "2021": {
+          "n": 26,
+          "wr": 65.4,
+          "pf_2r": 0.89
+        },
+        "2022": {
+          "n": 57,
+          "wr": 59.6,
+          "pf_2r": 1.35
+        },
+        "2023": {
+          "n": 26,
+          "wr": 57.7,
+          "pf_2r": 0.6
+        },
+        "2024": {
+          "n": 19,
+          "wr": 73.7,
+          "pf_2r": 1.8
+        },
+        "2025": {
+          "n": 34,
+          "wr": 47.1,
+          "pf_2r": 1.09
+        },
+        "2026": {
+          "n": 18,
+          "wr": 27.8,
+          "pf_2r": 0.4
+        }
+      },
+      "by_regime": {
+        "bear": {
+          "n": 53,
+          "wr": 50.9,
+          "pf_2r": 0.72
+        },
+        "bull": {
+          "n": 60,
+          "wr": 50.0,
+          "pf_2r": 0.86
+        },
+        "neutral": {
+          "n": 82,
+          "wr": 65.9,
+          "pf_2r": 1.42
+        }
+      },
+      "year_floor": 27.8,
+      "qualifying_years": 7,
+      "regime_spread": 15.9,
+      "gates": {
+        "is_wr": true,
+        "oos_wr": false,
+        "is_oos_delta": false,
+        "year_floor": false,
+        "regime_spread": false
+      },
+      "gates_passed": 1,
+      "gates_total": 5
+    },
+    "tier_bins": [
+      -0.5,
+      1.5,
+      2.5,
+      3.5,
+      99
+    ],
+    "tier_labels": [
+      "0-1",
+      "2",
+      "3",
+      "4+"
+    ],
+    "n_is": 544,
+    "score_old_stack": {
+      "all": {
+        "n": 234,
+        "wr": 54.7,
+        "pf_2r": 1.14
+      },
+      "is": {
+        "n": 172,
+        "wr": 55.2,
+        "pf_2r": 1.1
+      },
+      "oos": {
+        "n": 62,
+        "wr": 53.2,
+        "pf_2r": 1.26
+      },
+      "by_year": {
+        "2018": {
+          "n": 1,
+          "wr": 100.0,
+          "pf_2r": Infinity
+        },
+        "2020": {
+          "n": 21,
+          "wr": 52.4,
+          "pf_2r": 1.5
+        },
+        "2021": {
+          "n": 35,
+          "wr": 62.9,
+          "pf_2r": 1.18
+        },
+        "2022": {
+          "n": 31,
+          "wr": 58.1,
+          "pf_2r": 1.44
+        },
+        "2023": {
+          "n": 34,
+          "wr": 38.2,
+          "pf_2r": 0.43
+        },
+        "2024": {
+          "n": 50,
+          "wr": 60.0,
+          "pf_2r": 1.23
+        },
+        "2025": {
+          "n": 46,
+          "wr": 56.5,
+          "pf_2r": 1.29
+        },
+        "2026": {
+          "n": 16,
+          "wr": 43.8,
+          "pf_2r": 1.2
+        }
+      },
+      "by_regime": {
+        "bull": {
+          "n": 119,
+          "wr": 48.7,
+          "pf_2r": 0.87
+        },
+        "neutral": {
+          "n": 114,
+          "wr": 60.5,
+          "pf_2r": 1.45
+        }
+      },
+      "year_floor": 38.2,
+      "qualifying_years": 7,
+      "regime_spread": 11.8
+    },
+    "old_pros": [
+      "not_fomc_week",
+      "bear_930",
+      "c930_range_bot_q",
+      "dow_friday",
+      "prior_day_weak",
+      "macro_1_has_fvg",
+      "vixy_normal"
+    ],
+    "old_vetos": [
+      "regime_bear",
+      "dow_wednesday",
+      "or_5m_bot_q"
+    ]
+  }
+]

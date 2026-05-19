@@ -1202,9 +1202,12 @@ def print_or_forecast(forecast: dict | None, target_date: date) -> None:
 # ======================================================================
 # Matrix Play Scorecards
 # ----------------------------------------------------------------------
-# Source: studies/multi_cell_confluence/ (2026-05-15)
-# Per-play factor stack with pre-open vs post-open knowability tags.
-# Used in section [5c] of the briefing.
+# Source: studies/multi_cell_8yr_v2/results/cell_configs_8yr.json (2026-05-18)
+# 8yr re-validation flipped two cells:
+#   - M3 Long: Tier B -> A (new factor stack, no magnet gate)
+#   - M2 Long: Tier A -> B (regime-fragile; 4+ tier only)
+# Plus added new cell: M1 Long (Tier A, gap-down quiet bounce).
+# M1 Short: kept per m1_short_factor_remine (Tier B, runner-exit edge).
 # ======================================================================
 
 MATRIX_PLAYS = {
@@ -1226,13 +1229,44 @@ MATRIX_PLAYS = {
         ],
         'tiers': [
             (0, 1,  'SKIP',                                  'no edge'),
-            (2, 2,  'TAKE full size, runner mode',           '~57% WR, PF 1.60'),
+            (2, 2,  'TAKE full size, runner mode (TP@5R no-BE)', '~57% WR, PF 2.0+ via runner'),
             (3, 3,  'TAKE full size, runner mode',           '~73% WR, PF 2.71'),
-            (4, 99, 'TAKE MAX size, runner mode',            '~87% WR, PF 6.00 (premium)'),
+            (4, 99, 'TAKE MAX size, runner mode',            'premium tier (m1_short_factor_remine)'),
         ],
         'notion_url': 'https://www.notion.so/33de2f0e776081889879c4dcbd495996',
+        'extra_note': 'RUNNER EXIT DOCTRINE: TP@5R no-BE is the optimal exit (PF 3+). BE management caps the edge. Do not apply M2/M3 long-style BE@1R here.',
+    },
+    'M1 Long': {
+        # NEW play 2026-05-18 from studies/multi_cell_8yr_v2/.
+        # Tier A, 5/5 gates. Gap-down quiet morning bounce.
+        # Different from M1 Short: same window, opposite setup (fade gap-down vs short panic).
+        'direction': 'long',
+        'window': '9:30-9:45',
+        'pros': [
+            ('no_pre_rth_news',  'preopen', 'NO pre-RTH news scheduled (strongest factor)',   21.1),
+            ('prior_day_mid',    'preopen', 'Prior day close in middle 1/3 (no narrative)',    9.5),
+            ('variant_no_fvg',   'signal',  'FVGC variant is no_fvg (cleanest signal)',         8.0),
+            ('vixy_normal',      'preopen', 'VIXY in normal regime (not panicky)',              6.6),
+            ('is_fomc_week',     'preopen', 'IS FOMC week (counter-intuitive — favors play)',   6.3),
+            ('dow_wednesday',    'preopen', 'Day is Wednesday',                                 6.3),
+            ('gap_large_down',   'preopen', 'Gap < -100 pts',                                   5.5),
+        ],
+        'vetos': [
+            ('prior_day_weak',   'preopen', 'Prior day close in bottom 1/3 (already cooked)',  -8.3),
+            ('c930_body_top_q',  '9:31',    '9:30 body top quartile (move already extended)',  -5.5),
+        ],
+        'tiers': [
+            (0, 2,  'SKIP',                                                   'no setup'),
+            (3, 3,  'TAKE full size, BE@1R -> 3R fixed',                      '~59% WR, PF 2.31, EV +0.54R (operating tier)'),
+            (4, 99, 'TAKE same size — do NOT scale up',                       '4+ OOS too thin (n=1) to validate'),
+        ],
+        'notion_url': 'https://www.notion.so/365e2f0e77608154b4caca8dcc0a7c70',
+        'extra_note': '8yr-validated (n=117): IS 59.8% / OOS 55.0% @ 3+, regime spread 9.4pp, year-floor 50%. Gap-down quiet bounce: when sellers gap it large-down without fresh catalyst, vol normal, prior close non-committal — fade the gap-down via no_fvg long in M1.',
     },
     'M2 Long': {
+        # DOWNGRADED 2026-05-18 from Tier A to Tier B (Confidence: Low).
+        # 8yr re-validation revealed year-floor 26.7% in 2021, 16.7% in 2023.
+        # 4+ tier ONLY. Old factor stack preserved (no robust replacement found).
         'direction': 'long',
         'window': '9:45-10:00',
         'pros': [
@@ -1250,41 +1284,39 @@ MATRIX_PLAYS = {
             ('regime_bear',        'preopen', '60d NQ return < -5% (bear macro)',             -20.9),
         ],
         'tiers': [
-            (0, 2,  'SKIP',                                                   'edge too thin'),
-            (3, 3,  'TAKE full size, BE@1R -> 2R',                            '~56-61% WR, PF 1.33-1.50'),
-            (4, 99, 'TAKE MAX size, BE@1R -> 3R',                             '~74-83% WR, PF 2.06-2.61'),
+            (0, 3,  'SKIP',                                                   '3+ tier no longer viable on 8yr'),
+            (4, 99, 'TAKE Tier B size (capped), BE@1R -> 3R fixed',           '~64.5% WR, PF 2.62 — but regime-fragile'),
         ],
         'notion_url': 'https://www.notion.so/361e2f0e776081e69d5dfc696dbd5726',
+        'extra_note': 'TIER B / CONFIDENCE LOW. 8yr re-val: year-floor 26.7% (2021), 16.7% (2023). Trade 4+ tier ONLY, capped size. Stand aside in melt-up (NQ >+15% 60d AND VIX<15) or chop years. No robust replacement stack found in re-mining.',
     },
     'M3 Long': {
-        # NOTE: M3 Long is a *mean-reversion* play (compressed open + washout),
-        # NOT a momentum continuation like M2 Long. Factors are the inverse:
-        # M2 wants bull_930 / gap_up / regime_bull; M3 wants compressed_930 /
-        # compressed_5m_OR / no_bear_FVG / prior_day_weak / Friday / not_FOMC.
-        # Source: studies/multi_cell_confluence/results/cell_configs.json.
+        # UPGRADED 2026-05-18 to Tier A from prior Tier B / conditional version.
+        # NEW factor stack: Mon/Fri prior-weak no-bull-FVG mean-reversion.
+        # The old compression-thesis stack was overfit to 2023-2025.
         'direction': 'long',
         'window': '10:00-10:15',
         'pros': [
-            ('c930_range_bot_q',   '9:31',    '9:30 candle RANGE in bottom quartile (<=22 pts; compressed open)', 16.7),
-            ('or_5m_bot_q',        '9:35',    '5-min OR range in bottom quartile (<=42 pts; compressed)',         13.5),
-            ('no_5m_bear_fvg',     '9:35',    'NO bearish FVG in first 5min',                                     13.0),
-            ('dow_friday',         'preopen', 'Day is Friday',                                                    11.5),
-            ('not_fomc_week',      'preopen', 'NOT FOMC week',                                                    11.4),
-            ('prior_day_weak',     'preopen', 'Prior day close in bottom 1/3 of range',                           11.2),
-            ('variant_no_fvg',     'signal',  'FVGC variant is no_fvg (cleanest signal at entry)',                10.6),
+            ('dow_monday',       'preopen', 'Day is Monday',                                   10.5),
+            ('prior_day_weak',   'preopen', 'Prior day close in bottom 1/3 of range',          10.3),
+            ('no_5m_bull_fvg',   '9:35',    'NO bullish FVG in first 5min (bulls not committed)', 8.1),
+            ('not_fomc_week',    'preopen', 'NOT FOMC week',                                    7.4),
+            ('has_5m_bear_fvg',  '9:35',    'Bearish FVG in first 5min (seller liquidation)',   6.8),
+            ('variant_no_fvg',   'signal',  'FVGC variant is no_fvg (cleanest signal)',         6.2),
+            ('dow_friday',       'preopen', 'Day is Friday',                                    5.9),
         ],
         'vetos': [
-            ('dow_tuesday',        'preopen', 'Day is Tuesday',                                                   -20.9),
-            ('or_5m_top_q',        '9:35',    '5-min OR range in TOP quartile (>=72 pts; momentum, not washout)', -18.3),
-            ('prior_day_mid',      'preopen', 'Prior day close in middle 1/3 (no narrative)',                     -14.8),
+            ('prior_day_mid',    'preopen', 'Prior day close in middle 1/3 (no narrative)',   -15.4),
+            ('is_opex_week',     'preopen', 'Opex week (3rd Friday week)',                    -12.5),
+            ('dow_tuesday',      'preopen', 'Day is Tuesday',                                 -10.1),
         ],
         'tiers': [
-            (0, 2,  'SKIP',                                                   'no compression-washout setup'),
-            (3, 3,  'TAKE Tier B size, BE@1R -> 2R (magnet required)',        '~51% WR generic'),
-            (4, 99, 'TAKE Tier B size, BE@1R -> 2.5R (magnet required)',      '~72% IS / OOS uncertain'),
+            (0, 2,  'SKIP',                                                   'no setup'),
+            (3, 3,  'TAKE full size, BE@1R -> 2R fixed',                      '~65% WR, PF 2.26, EV +0.45R (operating tier)'),
+            (4, 99, 'TAKE same size — do NOT scale up',                       '4+/5+ OOS collapses (Δ -17pp at 4+, -23pp at 5+)'),
         ],
         'notion_url': 'https://www.notion.so/361e2f0e7760819bbbc7ca78b9faa8f9',
-        'extra_note': 'REQUIRES MAGNET GATE at 10:00 (unswept liquidity level above entry). No magnet = no trade. Tier B sizing until OOS confirms. This is a MEAN-REVERSION play (compressed/washout), not a momentum continuation.',
+        'extra_note': '8yr-validated Tier A (n=264, 5/5 gates): IS 65.4% / OOS 61.6% @ 3+, year-floor 47.8%, regime spread 1.8pp — most regime-robust cell in the matrix. Thesis: Mon/Fri prior-weak no-bull-FVG mean-reversion. Magnet gate no longer required (8yr re-mine confirmed edge holds without it).',
     },
 }
 

@@ -1,0 +1,308 @@
+{
+  "M1_long": {
+    "pros": [
+      "no_pre_rth_news",
+      "prior_day_mid",
+      "variant_no_fvg",
+      "vixy_normal",
+      "is_fomc_week",
+      "dow_wednesday",
+      "gap_large_down"
+    ],
+    "pro_lifts": {
+      "no_pre_rth_news": 21.1,
+      "prior_day_mid": 9.5,
+      "variant_no_fvg": 8.0,
+      "vixy_normal": 6.6,
+      "is_fomc_week": 6.3,
+      "dow_wednesday": 6.3,
+      "gap_large_down": 5.5
+    },
+    "vetos": [
+      "prior_day_weak",
+      "c930_body_top_q"
+    ],
+    "veto_lifts": {
+      "prior_day_weak": -8.3,
+      "c930_body_top_q": -5.5
+    },
+    "tier_bins": [
+      -0.5,
+      1.5,
+      2.5,
+      3.5,
+      99
+    ],
+    "tier_labels": [
+      "0-1",
+      "2",
+      "3",
+      "4+"
+    ],
+    "n_is": 471,
+    "primary_tier_min": 3,
+    "gates_passed": 5,
+    "gates": {
+      "is_wr": true,
+      "oos_wr": true,
+      "is_oos_delta": true,
+      "year_floor": true,
+      "regime_spread": true
+    }
+  },
+  "M1_short": {
+    "pros": [
+      "has_pre_rth_news",
+      "c930_body_top_q",
+      "gap_large_down",
+      "vixy_normal",
+      "prior_day_weak"
+    ],
+    "pro_lifts": {
+      "has_pre_rth_news": 14.3,
+      "c930_body_top_q": 7.1,
+      "gap_large_down": 6.9,
+      "vixy_normal": 5.9,
+      "prior_day_weak": 5.7
+    },
+    "vetos": [
+      "vixy_high",
+      "variant_ifvg",
+      "prior_day_mid"
+    ],
+    "veto_lifts": {
+      "vixy_high": -9.9,
+      "variant_ifvg": -7.9,
+      "prior_day_mid": -6.4
+    },
+    "tier_bins": [
+      -0.5,
+      1.5,
+      2.5,
+      3.5,
+      99
+    ],
+    "tier_labels": [
+      "0-1",
+      "2",
+      "3",
+      "4+"
+    ],
+    "n_is": 467,
+    "primary_tier_min": 2,
+    "gates_passed": 2,
+    "gates": {
+      "is_wr": true,
+      "oos_wr": false,
+      "is_oos_delta": false,
+      "year_floor": false,
+      "regime_spread": true
+    }
+  },
+  "M2_long": {
+    "pros": [
+      "regime_neutral",
+      "vixy_high",
+      "dow_thursday",
+      "has_red_folder",
+      "variant_bos",
+      "prior_day_strong"
+    ],
+    "pro_lifts": {
+      "regime_neutral": 13.6,
+      "vixy_high": 12.5,
+      "dow_thursday": 12.4,
+      "has_red_folder": 8.2,
+      "variant_bos": 6.9,
+      "prior_day_strong": 6.5
+    },
+    "vetos": [
+      "gap_large_down",
+      "dow_wednesday",
+      "macro_1_has_fvg"
+    ],
+    "veto_lifts": {
+      "gap_large_down": -18.9,
+      "dow_wednesday": -16.1,
+      "macro_1_has_fvg": -15.9
+    },
+    "tier_bins": [
+      -0.5,
+      1.5,
+      2.5,
+      3.5,
+      99
+    ],
+    "tier_labels": [
+      "0-1",
+      "2",
+      "3",
+      "4+"
+    ],
+    "n_is": 497,
+    "primary_tier_min": 3,
+    "gates_passed": 2,
+    "gates": {
+      "is_wr": true,
+      "oos_wr": false,
+      "is_oos_delta": false,
+      "year_floor": false,
+      "regime_spread": true
+    }
+  },
+  "M2_short": {
+    "pros": [
+      "has_5m_bear_fvg",
+      "no_pre_rth_news",
+      "prior_day_weak",
+      "not_fomc_week",
+      "c930_range_bot_q",
+      "no_5m_bull_fvg",
+      "has_15m_bear_fvg"
+    ],
+    "pro_lifts": {
+      "has_5m_bear_fvg": 15.1,
+      "no_pre_rth_news": 14.5,
+      "prior_day_weak": 10.5,
+      "not_fomc_week": 10.5,
+      "c930_range_bot_q": 9.0,
+      "no_5m_bull_fvg": 8.5,
+      "has_15m_bear_fvg": 8.4
+    },
+    "vetos": [
+      "prior_day_mid",
+      "gap_down",
+      "dow_friday"
+    ],
+    "veto_lifts": {
+      "prior_day_mid": -9.5,
+      "gap_down": -6.9,
+      "dow_friday": -6.2
+    },
+    "tier_bins": [
+      -0.5,
+      1.5,
+      2.5,
+      3.5,
+      99
+    ],
+    "tier_labels": [
+      "0-1",
+      "2",
+      "3",
+      "4+"
+    ],
+    "n_is": 488,
+    "primary_tier_min": 3,
+    "gates_passed": 1,
+    "gates": {
+      "is_wr": false,
+      "oos_wr": false,
+      "is_oos_delta": false,
+      "year_floor": false,
+      "regime_spread": true
+    }
+  },
+  "M3_long": {
+    "pros": [
+      "dow_monday",
+      "prior_day_weak",
+      "no_5m_bull_fvg",
+      "not_fomc_week",
+      "has_5m_bear_fvg",
+      "variant_no_fvg",
+      "dow_friday"
+    ],
+    "pro_lifts": {
+      "dow_monday": 10.5,
+      "prior_day_weak": 10.3,
+      "no_5m_bull_fvg": 8.1,
+      "not_fomc_week": 7.4,
+      "has_5m_bear_fvg": 6.8,
+      "variant_no_fvg": 6.2,
+      "dow_friday": 5.9
+    },
+    "vetos": [
+      "prior_day_mid",
+      "is_opex_week",
+      "dow_tuesday"
+    ],
+    "veto_lifts": {
+      "prior_day_mid": -15.4,
+      "is_opex_week": -12.5,
+      "dow_tuesday": -10.1
+    },
+    "tier_bins": [
+      -0.5,
+      1.5,
+      2.5,
+      3.5,
+      99
+    ],
+    "tier_labels": [
+      "0-1",
+      "2",
+      "3",
+      "4+"
+    ],
+    "n_is": 519,
+    "primary_tier_min": 3,
+    "gates_passed": 5,
+    "gates": {
+      "is_wr": true,
+      "oos_wr": true,
+      "is_oos_delta": true,
+      "year_floor": true,
+      "regime_spread": true
+    }
+  },
+  "M3_short": {
+    "pros": [
+      "has_5m_bull_fvg",
+      "macro_1_has_fvg",
+      "bear_930",
+      "prior_day_weak",
+      "or_15m_top_q"
+    ],
+    "pro_lifts": {
+      "has_5m_bull_fvg": 12.0,
+      "macro_1_has_fvg": 10.2,
+      "bear_930": 6.7,
+      "prior_day_weak": 5.3,
+      "or_15m_top_q": 5.0
+    },
+    "vetos": [
+      "dow_monday",
+      "or_5m_bot_q",
+      "overnight_range_bot_q"
+    ],
+    "veto_lifts": {
+      "dow_monday": -11.3,
+      "or_5m_bot_q": -10.0,
+      "overnight_range_bot_q": -9.2
+    },
+    "tier_bins": [
+      -0.5,
+      1.5,
+      2.5,
+      3.5,
+      99
+    ],
+    "tier_labels": [
+      "0-1",
+      "2",
+      "3",
+      "4+"
+    ],
+    "n_is": 544,
+    "primary_tier_min": 3,
+    "gates_passed": 1,
+    "gates": {
+      "is_wr": true,
+      "oos_wr": false,
+      "is_oos_delta": false,
+      "year_floor": false,
+      "regime_spread": false
+    }
+  }
+}
