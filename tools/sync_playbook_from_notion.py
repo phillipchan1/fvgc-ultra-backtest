@@ -160,20 +160,149 @@ def sync(notion_rows: list[dict]) -> tuple[list[dict], list[dict]]:
     return new_plays, deleted
 
 
+# ---------------------------------------------------------------------------
+# Direct Notion HTTP API path — used by GitHub Actions cron so the morning
+# briefing can run fully autonomously without Claude Code / MCP.
+#
+# Requires:
+#   - NOTION_API_TOKEN env var (an Internal Integration secret)
+#   - The integration must be shared with the FVGC Playbook database in Notion
+#     (Database → ⋯ → Connections → invite the integration)
+# ---------------------------------------------------------------------------
+
+FVGC_PLAYBOOK_DB_ID = '33de2f0e7760802f8cf3e82d8cf2f8a3'
+
+
+def fetch_from_notion_api(database_id: str, token: str) -> list[dict]:
+    """Query the FVGC Playbook database via Notion's HTTP API. Returns a list
+    of flat dicts matching the structure produced by the MCP path so the rest
+    of the sync pipeline doesn't need to know which fetch was used."""
+    import json as _json
+    import urllib.request
+    import urllib.error
+
+    url = f'https://api.notion.com/v1/databases/{database_id}/query'
+    all_pages: list[dict] = []
+    cursor: str | None = None
+
+    while True:
+        body: dict = {'page_size': 100}
+        if cursor:
+            body['start_cursor'] = cursor
+        req = urllib.request.Request(
+            url,
+            data=_json.dumps(body).encode('utf-8'),
+            method='POST',
+            headers={
+                'Authorization': f'Bearer {token}',
+                'Notion-Version': '2022-06-28',
+                'Content-Type': 'application/json',
+            },
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                payload = _json.loads(resp.read())
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode('utf-8', errors='replace')[:500]
+            raise RuntimeError(
+                f'Notion API HTTP {e.code}: {err_body}\n'
+                f'Check that NOTION_API_TOKEN is valid and the integration '
+                f'is shared with the database.'
+            )
+        for page in payload.get('results', []):
+            all_pages.append(_notion_page_to_play_row(page))
+        if not payload.get('has_more'):
+            break
+        cursor = payload.get('next_cursor')
+    return all_pages
+
+
+def _notion_page_to_play_row(page: dict) -> dict:
+    """Flatten Notion's rich property structure into the same shape that the
+    cached MCP JSON uses, so normalize_play() can consume either source
+    interchangeably."""
+    props = page.get('properties', {}) or {}
+
+    def _title(name: str) -> str | None:
+        items = (props.get(name) or {}).get('title') or []
+        text = ''.join(t.get('plain_text', '') for t in items)
+        return text or None
+
+    def _text(name: str) -> str | None:
+        items = (props.get(name) or {}).get('rich_text') or []
+        text = ''.join(t.get('plain_text', '') for t in items)
+        return text or None
+
+    def _select(name: str) -> str | None:
+        sel = (props.get(name) or {}).get('select')
+        return sel.get('name') if sel else None
+
+    def _multi(name: str) -> list[str]:
+        items = (props.get(name) or {}).get('multi_select') or []
+        return [it.get('name') for it in items if it.get('name')]
+
+    def _number(name: str) -> float | None:
+        return (props.get(name) or {}).get('number')
+
+    def _url(name: str) -> str | None:
+        return (props.get(name) or {}).get('url')
+
+    return {
+        'Strategy Name': _title('Strategy Name'),
+        'Direction': _select('Direction'),
+        'Status': _select('Status'),
+        'WR': _text('WR'),
+        'Sample Size': _number('Sample Size'),
+        'Description': _text('Description'),
+        'Pre-Market Conditions': _text('Pre-Market Conditions'),
+        'Intraday Conditions': _text('Intraday Conditions'),
+        'Exit Strategy': _text('Exit Strategy'),
+        'Tier': _select('Tier'),
+        'Confidence': _select('Confidence'),
+        'Frequency': _text('Frequency'),
+        'Best PF': _number('Best PF'),
+        'Avg MFE (R)': _number('Avg MFE (R)'),
+        'Macro': _multi('Macro'),
+        'Manual Backtest Notes': _text('Manual Backtest Notes'),
+        'Analysis': _url('Analysis'),
+        'Trade List': _url('Trade List'),
+        'url': page.get('url'),
+    }
+
+
 def main():
+    import os
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument('input', help='Path to Notion query JSON (or - for stdin)')
+    ap.add_argument('input', nargs='?',
+                    help='Path to Notion query JSON (or - for stdin). Omit when '
+                         'using --from-api.')
+    ap.add_argument('--from-api', action='store_true',
+                    help='Fetch directly from Notion HTTP API. Requires '
+                         'NOTION_API_TOKEN env var.')
+    ap.add_argument('--database-id', default=FVGC_PLAYBOOK_DB_ID,
+                    help=f'Notion database ID (default: FVGC Playbook).')
     ap.add_argument('--dry-run', action='store_true',
                     help='Show diff but do not write plays.json')
     args = ap.parse_args()
 
-    raw = sys.stdin.read() if args.input == '-' else Path(args.input).read_text()
-    data = json.loads(raw)
-    # MCP returns {"results": [...]} but accept a bare array too.
-    rows = data.get('results') if isinstance(data, dict) else data
-    if not isinstance(rows, list):
-        print(f'[sync] expected array or {{"results": [...]}}', file=sys.stderr)
-        sys.exit(1)
+    if args.from_api:
+        token = os.environ.get('NOTION_API_TOKEN')
+        if not token:
+            print('[sync] NOTION_API_TOKEN env var not set', file=sys.stderr)
+            sys.exit(1)
+        print(f'[sync] Querying Notion API: db={args.database_id}')
+        rows = fetch_from_notion_api(args.database_id, token)
+    else:
+        if not args.input:
+            print('[sync] Must provide input file or --from-api', file=sys.stderr)
+            sys.exit(1)
+        raw = sys.stdin.read() if args.input == '-' else Path(args.input).read_text()
+        data = json.loads(raw)
+        # MCP returns {"results": [...]} but accept a bare array too.
+        rows = data.get('results') if isinstance(data, dict) else data
+        if not isinstance(rows, list):
+            print(f'[sync] expected array or {{"results": [...]}}', file=sys.stderr)
+            sys.exit(1)
 
     new_plays, deleted = sync(rows)
 

@@ -1,0 +1,85 @@
+name: Morning Briefing
+
+# Runs the daily pre-market briefing autonomously — replaces the Claude Code
+# routine entirely. Order:
+#   1. Sync the FVGC Playbook from Notion → playbook/plays.json
+#   2. Run morning_briefing.py to fetch live market data + write
+#      briefing.json + data.js
+#   3. Fill AI narratives via GPT-5 Nano (same morning_briefing.py call)
+#   4. Commit + push the artifacts. The GitHub Pages deploy workflow will
+#      pick the new artifacts up and refresh the deployed dashboard.
+#
+# Cron: 13:10 UTC weekdays. During DST that's 6:10 AM PT (matches the old
+# Claude routine); during standard time it runs 1h earlier — still pre-open.
+
+on:
+  schedule:
+    - cron: '10 13 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      ai_overwrite:
+        description: 'Regenerate AI narratives even if present'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: morning-briefing
+  cancel-in-progress: false
+
+jobs:
+  briefing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Sync FVGC Playbook from Notion
+        env:
+          NOTION_API_TOKEN: ${{ secrets.NOTION_API_TOKEN }}
+        run: |
+          python tools/sync_playbook_from_notion.py --from-api
+
+      - name: Run morning briefing (live data + AI narratives)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -o pipefail
+          AI_FLAGS="--ai-narratives"
+          if [ "${{ github.event.inputs.ai_overwrite }}" = "true" ]; then
+            AI_FLAGS="$AI_FLAGS --ai-overwrite"
+          fi
+          python tools/morning_briefing.py --export-dashboard $AI_FLAGS
+
+      - name: Commit and push artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add playbook/plays.json tools/briefing/briefing.json tools/briefing/data.js
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "briefing: daily run $(TZ=America/New_York date +%Y-%m-%d)"
+          # Retry-on-fast-forward in case the GitHub Pages deploy workflow
+          # somehow raced (it shouldn't — different paths — but be safe).
+          for i in 1 2 3; do
+            if git push origin HEAD:master; then
+              echo "Pushed successfully."
+              exit 0
+            fi
+            git pull --rebase origin master
+          done
+          echo "Push failed after 3 attempts."
+          exit 1

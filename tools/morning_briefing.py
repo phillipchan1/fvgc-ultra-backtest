@@ -2052,6 +2052,161 @@ def _merge_narratives(new_data: dict, old_data: dict) -> dict:
     return new_data
 
 
+# ======================================================================
+# AI narrative generation (GPT-5 Nano, called directly via HTTPS)
+# ----------------------------------------------------------------------
+# Used by --ai-narratives. Replaces the Claude Code routine's narrative-
+# writing step so the morning briefing can run fully autonomously from
+# GitHub Actions cron without any human/Claude in the loop.
+#
+# Requires OPENAI_API_KEY env var. Skips silently if unset so the script
+# stays usable locally without an API key.
+# ======================================================================
+
+OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions'
+DEFAULT_AI_MODEL = 'gpt-5-nano'
+
+
+def _openai_chat(prompt: str, api_key: str, model: str,
+                 max_tokens: int = 220, timeout: int = 30) -> str | None:
+    """One-shot chat completion. Returns the response text or None on error.
+    Uses urllib only — no third-party dep so the script stays portable."""
+    import json as _json
+    import urllib.request
+    import urllib.error
+
+    body = _json.dumps({
+        'model': model,
+        'messages': [{'role': 'user', 'content': prompt}],
+        'max_completion_tokens': max_tokens,
+    }).encode('utf-8')
+
+    req = urllib.request.Request(
+        OPENAI_API_URL,
+        data=body,
+        method='POST',
+        headers={
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json',
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            payload = _json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        err = e.read().decode('utf-8', errors='replace')[:300]
+        print(f'[ai] HTTP {e.code}: {err}')
+        return None
+    except (urllib.error.URLError, TimeoutError) as e:
+        print(f'[ai] network error: {e}')
+        return None
+
+    try:
+        return payload['choices'][0]['message']['content'].strip()
+    except (KeyError, IndexError, AttributeError):
+        return None
+
+
+def _narrative_prompt(section_label: str, section_data: dict,
+                      context: dict) -> str:
+    """Build a tight prompt for a single section. The dashboard renders the
+    response inside an .narrative callout that already prefixes 'AI', so the
+    response must NOT include section headers — just the analysis text."""
+    return (
+        "You write the AI narrative for an NQ futures pre-market briefing "
+        "dashboard. Audience: a manual day trader. Be concise, specific to "
+        "today's data, and grounded — do not invent stats.\n\n"
+        f"SECTION: {section_label}\n\n"
+        f"CONTEXT (today):\n{json.dumps(context, default=_json_default)}\n\n"
+        f"SECTION DATA:\n{json.dumps(section_data, default=_json_default)[:1800]}\n\n"
+        "Write 1–3 sentences explaining what this section means for "
+        "execution TODAY. Wrap key numbers or terms in <b>...</b> for "
+        "emphasis. Do not include any section header or label — just the "
+        "narrative prose. No bullet points."
+    )
+
+
+def fill_narratives_with_ai(data: dict, model: str = DEFAULT_AI_MODEL,
+                            api_key: str | None = None,
+                            overwrite: bool = False) -> dict:
+    """Populate `narrative` fields throughout the briefing dict using GPT
+    Nano. Skips sections that already have a narrative unless overwrite=True.
+    Returns the same dict, mutated in place.
+
+    Sections covered:
+      - or_forecast / calendar / pre_open / levels / factors / game_plan
+      - avoid (only when there are factor_signals or combo_signals)
+      - matrix_plays[i].narrative per play
+    """
+    import os
+    if api_key is None:
+        api_key = os.environ.get('OPENAI_API_KEY')
+    if not api_key:
+        print('[ai] OPENAI_API_KEY not set — skipping narrative generation')
+        return data
+
+    meta = data.get('meta', {}) or {}
+    fc = data.get('or_forecast', {}) or {}
+    context = {
+        'date': meta.get('date'),
+        'day_of_week': meta.get('day_of_week'),
+        'sizing_tier': fc.get('tier_label'),
+        'quintile': fc.get('quintile'),
+        'or_forecast_pts': fc.get('point_pts'),
+    }
+
+    sections = [
+        ('or_forecast', "OR-width forecast (45-min) and today's sizing tier"),
+        ('calendar',    "Economic calendar + FOMC week status"),
+        ('pre_open',    "Pre-open market state — overnight, gap, prior RTH"),
+        ('levels',      "Nearby liquidity levels above/below current price"),
+        ('factors',     "Pre-market factors active today"),
+        ('game_plan',   "Today's game plan summary"),
+    ]
+    total = 0
+    for key, label in sections:
+        sec = data.get(key)
+        if not isinstance(sec, dict):
+            continue
+        if sec.get('narrative') and not overwrite:
+            continue
+        out = _openai_chat(_narrative_prompt(label, sec, context),
+                           api_key=api_key, model=model)
+        if out:
+            sec['narrative'] = out
+            total += 1
+            print(f'[ai] wrote narrative for {key} ({len(out)} chars)')
+
+    # Avoid section — only narrate if signals are actually hot.
+    av = data.get('avoid') or {}
+    if av and (av.get('factor_signals') or av.get('combo_signals')) \
+            and (overwrite or not av.get('narrative')):
+        out = _openai_chat(
+            _narrative_prompt('Avoid / kill-switch signals active', av, context),
+            api_key=api_key, model=model)
+        if out:
+            av['narrative'] = out
+            total += 1
+            print(f'[ai] wrote narrative for avoid ({len(out)} chars)')
+
+    # Matrix plays — one narrative per play.
+    for play in (data.get('matrix_plays') or []):
+        if play.get('narrative') and not overwrite:
+            continue
+        label = (f"Matrix play {play.get('name', '?')} "
+                 f"({play.get('direction', '?')}, {play.get('window', '?')})")
+        out = _openai_chat(_narrative_prompt(label, play, context),
+                           api_key=api_key, model=model)
+        if out:
+            play['narrative'] = out
+            total += 1
+            print(f'[ai] wrote narrative for matrix play {play.get("name")} '
+                  f'({len(out)} chars)')
+
+    print(f'[ai] generated {total} narratives via {model}')
+    return data
+
+
 def export_dashboard(data: dict, out_dir: Path) -> tuple[Path, Path]:
     """Write briefing.json and data.js to out_dir.
 
@@ -2437,6 +2592,15 @@ def main():
                         metavar='OUT_DIR',
                         help='Read briefing.json from OUT_DIR and regenerate data.js. '
                              'Use after editing narratives by hand.')
+    parser.add_argument('--ai-narratives', action='store_true',
+                        help='Generate AI narratives for each section via the '
+                             'OpenAI API (requires OPENAI_API_KEY). Used by the '
+                             'GitHub Actions cron so the routine runs without '
+                             'Claude in the loop. Honors --ai-model.')
+    parser.add_argument('--ai-model', default=DEFAULT_AI_MODEL,
+                        help=f'Model for --ai-narratives (default: {DEFAULT_AI_MODEL}).')
+    parser.add_argument('--ai-overwrite', action='store_true',
+                        help='Regenerate narratives even if already present.')
     args = parser.parse_args()
 
     # Standalone: regenerate data.js from an existing briefing.json. Skips
@@ -2655,6 +2819,13 @@ def main():
             cal_unknown=cal_unknown,
             csv_path=csv_path,
         )
+        # Fill AI narratives BEFORE writing — otherwise the data.js the
+        # dashboard reads won't include them until --rewrite-js-from-json
+        # is run separately.
+        if args.ai_narratives:
+            print()
+            fill_narratives_with_ai(
+                data, model=args.ai_model, overwrite=args.ai_overwrite)
         out_dir = REPO / args.export_dashboard
         json_path, js_path = export_dashboard(data, out_dir)
         print()
