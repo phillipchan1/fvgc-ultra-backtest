@@ -71,6 +71,58 @@
     ]
   },
   {
+    "name": "W1 Short \u2014 Post-Sweep Continuation",
+    "notion_url": "https://www.notion.so/351e2f0e77608114b4fef8eb95750312",
+    "status": "under_review",
+    "confidence": "low",
+    "do_not_trade": true,
+    "review_reason": "Look-ahead bias discovered 2026-04-29. The htf_fvg_15m_swept='in_session' label that defines this cohort was set by intraday-tagged 15m FVGs (available_time='10:00') leaking into the candidate set for trades entering before 10:00. 51 of 55 'verified' trades had their sweep label triggered by an intraday FVG that wasn't a defined structure at entry time. Bug fix in enrich_trades_with_levels.py:286 (passes_time_gate now enforced on HTF FVG loop). With the fix, legitimate cohort drops from 55 trades (94.5% WR) to 4 trades (50% WR, 2W/2L) \u2014 sample too small to claim edge.",
+    "direction": "short",
+    "macro": "9:30-9:45",
+    "sample_size_after_fix": 4,
+    "wr_after_fix": "50.0% (2W/2L)",
+    "hit_rates_after_fix": {"1R": "50%", "2R": "50%", "3R": "25%"},
+    "claimed_stats_archived": {
+      "claimed_n": 55,
+      "claimed_wr_1r": "94.5%",
+      "claimed_pf_1r": 17.33,
+      "claimed_hit_2r": "89.1%",
+      "claimed_hit_3r": "76.4%",
+      "actual_n_after_fix": 4,
+      "actual_wr_after_fix": "50.0%",
+      "actual_hit_1r_after_fix": "50%",
+      "actual_hit_2r_after_fix": "50%",
+      "actual_hit_3r_after_fix": "25%"
+    },
+    "broader_audit": "Across 1572 enriched trades: 221 had cached 'in_session', 101 (46%) were look-ahead bias triggered by intraday FVGs.",
+    "frequency_per_month": "<0.5 (insufficient sample)",
+    "fix_committed": "2026-04-29",
+    "setup": {
+      "trigger": "FVGC short in 9:30-9:45 RTH",
+      "gate": "htf_fvg_15m_swept == 'in_session' \u2014 the nearest unswept bullish 15m FVG below entry has ALREADY been touched by price between 9:30 and your entry timestamp",
+      "narrative": "The 15m FVG below acts as a magnet/reaction zone. When price taps it before your entry, the reactive zone is consumed. Your entry then has clean path down with no near-term bounce point. Sequence: 9:30 RTH opens \u2192 price dips into 15m FVG below (the liquidity grab) \u2192 price retraces up \u2192 FVGC short fires on the bounce \u2192 you enter \u2192 price runs freely (median MFE 8.4R)."
+    },
+    "exit_strategy": {
+      "primary": "BE@1R then hold for 3R+ (EV +2.06R/trade)",
+      "aggressive_runner": "BE@1R, scale out 1/3 at 3R, trail rest for 5R+ (EV +2.82R/trade with higher variance)",
+      "do_not": "Do NOT cap at 1R. 89% reach 2R, 76% reach 3R, 64% reach 5R (hit_X_R columns, during-trade only). Old playbook capped at 1R and left ~+1.0R/trade on the table."
+    },
+    "size_multiplier": {
+      "rule": "Combine with W1 confluence count. At 4+ conf AND in_session sweep: 24/24 winners in sample \u2014 max position size."
+    },
+    "description": "When the 15m FVG below your W1 short entry has already been swept by price between 9:30 and entry, you have an A++ setup. 94.5% WR (52W/3L), 76% reach 3R, ~1.8 trades/month. The highest-EV cell in the entire playbook for shorts. Verified-reproducible 2026-04-29.",
+    "action_plan": "1) Confirm W1 short trigger (FVGC short 9:30-9:45). 2) Pull up 15m chart, identify nearest unswept bullish 15m FVG below current price. 3) Has price touched it between 9:30 and now? If YES \u2192 take with full size + extended target. If NO \u2192 fall back to standard W1 confluence model. 4) BE@1R then ride for 3R+, aggressive trail for 5R+.",
+    "caveats": [
+      "Sample n=55 robust over 30 months but smaller than parent W1 play. Forward-track for OOS validation.",
+      "Confluence count and sweep state are correlated (more bearish setup = price moves faster = more likely to sweep before entry). 37% of 4+ conf trades have in_session sweep vs 8% at 0-1 conf.",
+      "Sweep label uses 30s bars from 9:30 \u2192 entry timestamp inclusive only \u2014 no look-ahead bias confirmed in data/levels/enrich_trades_with_levels.py.",
+      "mfe_r column has documented bug (tracks post-exit movement). Use hit_X_R columns for runner expectations, NOT median/mean MFE figures."
+    ],
+    "trade_lists": {
+      "regime_tagged": "studies/mfe_multi_r/results/w1_short_setups/w1_shorts_by_regime.csv (filter regime == 'A (already swept)')"
+    }
+  },
+  {
     "name": "FVGC Off of 930 Candle (9:30 Candle FVG Premium Sub-Tier)",
     "notion_url": "https://www.notion.so/33de2f0e776081aa9c6bdc297e5fb68b",
     "status": "verified",
@@ -167,19 +219,36 @@
   {
     "name": "15m FVG Breakout Continuation",
     "notion_url": "https://www.notion.so/340e2f0e776081cd922adc681ab3fdb1",
-    "status": "backtesting",
-    "confidence": "medium",
+    "status": "rejected",
+    "confidence": "low",
     "direction": "both",
     "macro": "any",
-    "sample_size": 40,
-    "wr_base": "93.3%",
-    "pf_1r": 2.33,
-    "avg_mfe_r": 9.44,
+    "sample_size": 47,
+    "wr_base": "31.9% (re-run actual)",
+    "rejection_reason": "Reproduction failed 2026-04-29. Notion claimed n=40, 93.3% WR, median MFE 8.7R. Re-run with canonical config (rw=10, ew=40, reclaims=False, locality=any, 30s, 15m FVGs only, no protected_swing) produces n=47, 31.9% WR, median MFE 0.57R. All 4 grid cells produce 25-38% WR \u2014 none approach 93%. Cross-check confirms script is sound (reversal direction reproduces original 124-trade cohort exactly). Likely the original n=40 stats were overfit, post-hoc filtered, or based on a different code path not preserved.",
+    "do_not_trade": true,
+    "claimed_stats_archived": {
+      "claimed_n": 40,
+      "claimed_wr_1r": "93.3%",
+      "claimed_pf_1r": 2.33,
+      "claimed_avg_mfe_r": 9.44,
+      "actual_n": 47,
+      "actual_wr_1r": "31.9%",
+      "actual_hit_1r": "31.9%",
+      "actual_hit_2r": "25.5%",
+      "actual_hit_3r": "25.5%",
+      "actual_median_mfe": 0.57,
+      "actual_baseline_30s_wr": "51.7%"
+    },
     "pre_market_factors": [],
     "intraday_triggers": ["htf_15m_fvg_break", "opposing_fvg_inversion"],
     "confluence_model": null,
-    "description": "Price breaks through 15m FVG (continuation, not reversal). 93.3% WR at 1R on 40 trades. Median MFE 8.7R. Only works on 15m FVGs.",
-    "action_plan": "Watch for price breaking through (not bouncing off) a 15m FVG. If opposing FVG inverts, take FVGC in the break direction. Hold \u2014 these run hard."
+    "description": "REJECTED 2026-04-29. Claimed 93% WR did not reproduce \u2014 actual is 31.9% WR on n=47, negative edge vs 51.7% baseline. See Notion page for full reproduction analysis. Mechanic (15m FVG break + opposing inversion + same-direction FVGC) does not have edge as currently defined. Possible salvage paths: tighter time window, requiring entry past the broken FVG, multi-bar break confirmation \u2014 none tested.",
+    "action_plan": "DO NOT TRADE. Pending further investigation if any salvage path is found.",
+    "trade_lists": {
+      "reproduction": "studies/breakout_continuation/results/trades_continuation_canonical_n47.csv",
+      "all_15m_grid_cells": "studies/breakout_continuation/results/trades_continuation_15m_only.csv"
+    }
   },
   {
     "name": "W3 Long \u2014 Confluence Model",

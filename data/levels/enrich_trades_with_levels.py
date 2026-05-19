@@ -286,6 +286,13 @@ def enrich_row(
         for _, r in liqu_day.iterrows():
             if _is_session_liquidity_row(r.get('timeframe')):
                 continue
+            # Bug fix 2026-04-29: HTF (FVG) loop must respect passes_time_gate
+            # the same way the session-levels loop above does. Without this gate,
+            # intraday-tagged FVGs (e.g. available_time='10:00') leak into
+            # candidate sets for trades entering before their availability time,
+            # producing look-ahead bias in the {group}_swept categorical.
+            if not passes_time_gate(str(r.get('available_time')), ts):
+                continue
             px = r['price']
             if px is None or (isinstance(px, float) and np.isnan(px)):
                 continue
