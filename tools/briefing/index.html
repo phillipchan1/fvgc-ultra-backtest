@@ -232,8 +232,35 @@
   }
   .window-header .w-bar { width: 4px; height: 10px; background: var(--cyan); border-radius: 1px; box-shadow: 0 0 6px var(--cyan); }
   .window-header .w-count { color: var(--cyan); margin-left: auto; font-size: 9px; }
+  .window-header .w-status {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px;
+    color: var(--text-mute); margin-left: 4px;
+  }
   .window-header.win-any .w-bar { background: var(--violet); box-shadow: 0 0 6px var(--violet); }
   .window-header.win-any .w-count { color: var(--violet); }
+
+  /* Time-based macro status (set by tickMacroStatus) */
+  .window-section.live .window-header .w-bar {
+    background: var(--cyan);
+    box-shadow: 0 0 10px var(--cyan), 0 0 18px var(--cyan);
+    animation: macroPulse 1.6s ease-in-out infinite;
+  }
+  .window-section.live .window-header .w-status::before {
+    content: "● LIVE"; color: var(--cyan); text-shadow: 0 0 6px var(--cyan);
+  }
+  .window-section.past { opacity: 0.45; }
+  .window-section.past .window-header .w-bar { background: var(--text-mute); box-shadow: none; }
+  .window-section.past .window-header .w-count { color: var(--text-mute); }
+  .window-section.past .window-header .w-status::before { content: "PAST"; }
+  .window-section.past .play-card.primary,
+  .window-section.past .play-card.selected {
+    background: var(--bg-2); box-shadow: none; border-color: var(--line);
+  }
+  .window-section.past .play-card::before { background: var(--line-2); box-shadow: none; }
+  @keyframes macroPulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.5; }
+  }
 
   /* Detail-pane empty hint */
   .detail-empty {
@@ -1829,10 +1856,11 @@
       WINDOW_ORDER.forEach(w => {
         const plays = groups.get(w);
         if (!plays || !plays.length) return;
-        const sec = h('div', {class:'window-section'});
+        const sec = h('div', {class:'window-section', 'data-window': w});
         sec.appendChild(h('div', {class: 'window-header' + (w === 'Any' ? ' win-any' : '')},
           h('span', {class:'w-bar'}),
           h('span', null, windowLabels[w]),
+          h('span', {class:'w-status'}),
           h('span', {class:'w-count'}, `${plays.length}`)));
         plays.forEach(p => sec.appendChild(renderCandidateCard(p, onClick)));
         col.appendChild(sec);
@@ -2768,6 +2796,50 @@
       body.appendChild(narrative(gp.narrative));
       return card;
     }
+
+    // ============ LIVE MACRO STATUS ============
+    // Walk each .window-section[data-window] and tag it pending/live/past
+    // based on the current time in America/New_York. Only applies when the
+    // briefing's meta.date matches today in ET — otherwise the cards stay
+    // in their static historical state.
+    function getETNow() {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/New_York',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false,
+      }).formatToParts(new Date());
+      const p = Object.fromEntries(parts.map(x => [x.type, x.value]));
+      let hour = parseInt(p.hour, 10);
+      if (hour === 24) hour = 0;
+      return {
+        date: `${p.year}-${p.month}-${p.day}`,
+        minOfDay: hour * 60 + parseInt(p.minute, 10),
+      };
+    }
+    function parseWindowRange(w) {
+      const m = w && w.match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
+      if (!m) return null;
+      return {
+        start: parseInt(m[1], 10) * 60 + parseInt(m[2], 10),
+        end:   parseInt(m[3], 10) * 60 + parseInt(m[4], 10),
+      };
+    }
+    function tickMacroStatus() {
+      const { date, minOfDay } = getETNow();
+      const isToday = meta.date === date;
+      document.querySelectorAll('.window-section[data-window]').forEach(sec => {
+        sec.classList.remove('pending', 'live', 'past');
+        if (!isToday) return;
+        const range = parseWindowRange(sec.getAttribute('data-window'));
+        if (!range) return;
+        const state = minOfDay < range.start ? 'pending'
+                    : minOfDay < range.end   ? 'live'
+                    :                          'past';
+        sec.classList.add(state);
+      });
+    }
+    tickMacroStatus();
+    setInterval(tickMacroStatus, 30000);
   })();
   </script>
 </body>
