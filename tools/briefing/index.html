@@ -221,6 +221,77 @@
     margin-left: 4px; letter-spacing: 0.3px;
   }
 
+  /* Col 2: time-window sections + unified play list */
+  .window-section { margin-bottom: 14px; }
+  .window-section:last-child { margin-bottom: 0; }
+  .window-header {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--text-mute); font-weight: 700;
+    margin-bottom: 6px; padding: 0 2px;
+  }
+  .window-header .w-bar { width: 4px; height: 10px; background: var(--cyan); border-radius: 1px; box-shadow: 0 0 6px var(--cyan); }
+  .window-header .w-count { color: var(--cyan); margin-left: auto; font-size: 9px; }
+  .window-header.win-any .w-bar { background: var(--violet); box-shadow: 0 0 6px var(--violet); }
+  .window-header.win-any .w-count { color: var(--violet); }
+
+  /* Detail-pane empty hint */
+  .detail-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 380px; text-align: center;
+    color: var(--text-mute); font-family: var(--mono);
+    padding: 24px; gap: 14px;
+  }
+  .detail-empty .icon {
+    font-size: 32px; color: var(--cyan); opacity: 0.4;
+    text-shadow: 0 0 12px var(--cyan);
+  }
+  .detail-empty .hint {
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .detail-empty .arrow {
+    font-size: 18px; color: var(--cyan); opacity: 0.7;
+  }
+  .detail-empty .summary {
+    font-size: 11px; line-height: 1.7; color: var(--text-dim);
+    letter-spacing: 0.3px; max-width: 280px; text-align: left;
+    padding-top: 8px; border-top: 1px solid var(--line-soft);
+  }
+  .detail-empty .summary b { color: var(--cyan); }
+
+  /* Detail header (for selected play) */
+  .detail-head {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .detail-title {
+    font-family: var(--mono); font-size: 22px; font-weight: 700;
+    color: var(--text); letter-spacing: 0.5px; line-height: 1.1;
+  }
+  .detail-sub {
+    font-family: var(--mono); font-size: 11px; color: var(--text-dim);
+    margin-top: 4px; letter-spacing: 1px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .detail-sub .badge-dir { font-size: 9px; padding: 2px 7px; }
+  .detail-section { margin-bottom: 14px; }
+  .detail-section:last-child { margin-bottom: 0; }
+  .detail-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 2px;
+    color: var(--text-mute); font-weight: 700; margin-bottom: 6px;
+  }
+  .detail-label::before { content: "▸ "; color: var(--cyan); }
+  .detail-text {
+    font-size: 12px; color: var(--text); line-height: 1.6;
+    white-space: pre-wrap;
+  }
+  .detail-text-mute {
+    font-size: 11px; color: var(--text-dim); line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
   /* Col 2: candidate plays */
   .play-card {
     background: var(--bg-2);
@@ -236,12 +307,17 @@
     content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 3px;
     background: var(--line-2);
   }
-  .play-card.primary {
+  .play-card.primary,
+  .play-card.selected {
     border-color: var(--cyan);
     background: linear-gradient(180deg, var(--cyan-dim), var(--bg-2) 70%);
     box-shadow: 0 0 0 1px var(--cyan-dim), 0 0 22px -8px var(--cyan-glow);
   }
-  .play-card.primary::before { background: var(--cyan); box-shadow: 0 0 12px var(--cyan); }
+  .play-card.primary::before,
+  .play-card.selected::before { background: var(--cyan); box-shadow: 0 0 12px var(--cyan); }
+  .play-card.selected .pname::after {
+    content: " ◢"; color: var(--cyan); font-size: 9px;
+  }
   .play-card.wait::before { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
   .play-card.veto {
     opacity: 0.42;
@@ -1372,6 +1448,23 @@
       ? h('div', {class: 'narrative', html: text})
       : h('div', {class: 'narrative-empty'}, 'AI NARRATIVE PENDING — edit briefing.json');
 
+    // Time-window helpers (used by column-2 grouping + column-3 detail).
+    // Declared up here so they're initialized before any render function calls them
+    // (function declarations are hoisted; const is not).
+    const WINDOW_ORDER = ['9:30-9:45', '9:45-10:00', '10:00-10:15', 'Any'];
+    function normalizeWindows(p) {
+      if (typeof p.window === 'string') return [p.window];
+      if (Array.isArray(p.window) && p.window.length) return p.window;
+      return ['Any'];
+    }
+    function primaryWindow(p) {
+      const wins = normalizeWindows(p);
+      for (const w of WINDOW_ORDER) {
+        if (wins.includes(w)) return w;
+      }
+      return wins[0] || 'Any';
+    }
+
     // ============ Compute Primary Read ============
     function computePrimary() {
       const fc = d.or_forecast || {};
@@ -1435,53 +1528,71 @@
     ));
 
     // ============ DECISION FLOW (3 cols) ============
-    const primary = computePrimary();
     const po = d.pre_open || {};
     const cal = d.calendar || {};
     const mp = d.matrix_plays || [];
     const factors = d.factors || {};
     const gp = d.game_plan || {};
+    const apAll = (d.active_plays || []);
+
+    // Build unified candidate list: matrix plays + verified-status playbook plays.
+    // Matrix plays always show (they're the time-windowed scorecard). Playbook
+    // plays only show if status is "verified" — backtesting/idea plays stay in
+    // Notion as the catalog but don't crowd the briefing.
+    // Confluence Model entries are filtered too — they're duplicates of matrix.
+    const allCandidates = [];
+    mp.forEach(p => allCandidates.push({...p, _kind: 'matrix'}));
+    apAll
+      .filter(p => !/Confluence Model/i.test(p.name || ''))
+      .filter(p => (p.status || '').toLowerCase() === 'verified')
+      .forEach(p => allCandidates.push({...p, _kind: 'playbook'}));
+
+    // Selection state — single source of truth
+    const state = {selectedKey: null};
+    const playKey = (p) => `${p._kind}:${p.name}`;
+
+    // Container for column 3 — re-rendered on selection change
+    const detailPane = h('div', {class:'flow-col exec'},
+      h('div', {class:'exec-frame'},
+        h('i', {class:'tl'}), h('i', {class:'tr'}),
+        h('i', {class:'bl'}), h('i', {class:'br'})));
+    detailPane.appendChild(h('div', {class:'flow-step'},
+      h('span', {class:'n'}, '3'),
+      h('span', {class:'t'}, "PLAY"), h('span', null, 'DETAIL')));
+    const detailBody = h('div');
+    detailPane.appendChild(detailBody);
+
+    function renderDetail() {
+      detailBody.innerHTML = '';
+      const sel = state.selectedKey
+        ? allCandidates.find(p => playKey(p) === state.selectedKey)
+        : null;
+      if (!sel) {
+        detailBody.appendChild(renderDetailEmpty(allCandidates));
+      } else if (sel._kind === 'matrix') {
+        detailBody.appendChild(renderMatrixDetail(sel));
+      } else {
+        detailBody.appendChild(renderPlaybookDetail(sel));
+      }
+      // Update card highlights in column 2
+      document.querySelectorAll('.play-card[data-key]').forEach(el => {
+        el.classList.toggle('selected', el.dataset.key === state.selectedKey);
+      });
+    }
+
+    function onCardClick(p) {
+      const k = playKey(p);
+      state.selectedKey = state.selectedKey === k ? null : k;
+      renderDetail();
+    }
 
     app.appendChild(h('div', {class:'flow'},
       renderConditions(po, cal, fc, factors, mp),
-      renderCandidates(mp, primary),
-      renderExecution(primary, fc, gp)));
+      renderTimeGroupedCandidates(allCandidates, onCardClick),
+      detailPane));
 
-    // ============ PLAYBOOK CHIP STRIP ============
-    const apAll = (d.active_plays || []);
-    // Hide matrix-confluence-model entries — they're already in column 2
-    const playbookOnly = apAll.filter(p =>
-      !/Confluence Model/i.test(p.name || ''));
-    if (playbookOnly.length) {
-      app.appendChild(h('div', {class:'pb-strip-h'},
-        'Playbook plays active',
-        h('span', {class:'source'},
-          `· ${playbookOnly.length} · source: playbook/plays.json`)));
-      const strip = h('div', {class:'playbook-strip'});
-      playbookOnly.forEach(p => {
-        const status = (p.status || 'idea').toLowerCase().replace(/\s+/g, '_');
-        const dir = (p.direction || 'both').toLowerCase();
-        // Truncate WR string to first number for compact display
-        const wrMatch = (p.wr_base || '').match(/[\d.]+%/);
-        const wr = wrMatch ? wrMatch[0] : (p.wr_base || '—');
-        const chip = h(p.notion_url ? 'a' : 'div',
-          {
-            class: 'pb-chip ' + dir,
-            href: p.notion_url || null,
-            target: p.notion_url ? '_blank' : null,
-            title: p.action_plan || '',
-          },
-          h('div', {style:'display:flex;align-items:center;gap:6px;'},
-            h('span', {class:'pb-dir'}, dir.toUpperCase()),
-            h('span', {class: 'pb-status ' + status}, status.replace('_', ' '))),
-          h('div', {class:'pb-name'}, p.name),
-          h('div', {class:'pb-stats'},
-            h('span', {class:'wr'}, 'WR ', h('b', null, wr)),
-            h('span', {class:'n'}, `n=${p.sample_size || '?'}`)));
-        strip.appendChild(chip);
-      });
-      app.appendChild(strip);
-    }
+    // Initial detail render
+    renderDetail();
 
     // ============ FRESHNESS / AVOID ============
     const stale = (d.freshness || []).filter(f => f.is_stale);
@@ -1673,6 +1784,327 @@
 
       return col;
     }
+
+    // ====== New time-grouped candidates + selection-driven detail pane ======
+
+    function renderTimeGroupedCandidates(candidates, onClick) {
+      const col = h('div', {class:'flow-col'});
+      col.appendChild(h('div', {class:'flow-step'},
+        h('span', {class:'n'}, '2'),
+        h('span', {class:'t'}, 'PLAY'),
+        h('span', null, 'CANDIDATES')));
+
+      if (!candidates.length) {
+        col.appendChild(h('div', {class:'empty'}, 'No candidates today.'));
+        return col;
+      }
+
+      // Group by window
+      const groups = new Map();
+      WINDOW_ORDER.forEach(w => groups.set(w, []));
+      candidates.forEach(p => {
+        const w = primaryWindow(p);
+        if (!groups.has(w)) groups.set(w, []);
+        groups.get(w).push(p);
+      });
+
+      // Sort within each group: non-vetoed first, then by confluence count (matrix) / WR (playbook)
+      groups.forEach((plays) => {
+        plays.sort((a, b) => {
+          if (a.veto_active && !b.veto_active) return 1;
+          if (b.veto_active && !a.veto_active) return -1;
+          const aScore = a._kind === 'matrix' ? a.preopen_count : 0;
+          const bScore = b._kind === 'matrix' ? b.preopen_count : 0;
+          return bScore - aScore;
+        });
+      });
+
+      const windowLabels = {
+        '9:30-9:45':   'W1 · 9:30–9:45',
+        '9:45-10:00':  'W2 · 9:45–10:00',
+        '10:00-10:15': 'W3 · 10:00–10:15',
+        'Any':         'Any window',
+      };
+
+      WINDOW_ORDER.forEach(w => {
+        const plays = groups.get(w);
+        if (!plays || !plays.length) return;
+        const sec = h('div', {class:'window-section'});
+        sec.appendChild(h('div', {class: 'window-header' + (w === 'Any' ? ' win-any' : '')},
+          h('span', {class:'w-bar'}),
+          h('span', null, windowLabels[w]),
+          h('span', {class:'w-count'}, `${plays.length}`)));
+        plays.forEach(p => sec.appendChild(renderCandidateCard(p, onClick)));
+        col.appendChild(sec);
+      });
+
+      return col;
+    }
+
+    function renderCandidateCard(p, onClick) {
+      const isVeto = !!p.veto_active;
+      const isMatrix = p._kind === 'matrix';
+
+      let stateClass, stateLabel;
+      if (isVeto) { stateClass = 'veto'; stateLabel = 'VETO'; }
+      else if (isMatrix) {
+        const maxAction = (p.projection?.max_tier?.action || '').toUpperCase();
+        if (maxAction.includes('TAKE')) { stateClass = 'live'; stateLabel = 'LIVE'; }
+        else { stateClass = 'wait'; stateLabel = 'WAIT'; }
+      }
+      else {
+        // playbook: state by status
+        const s = (p.status || 'idea').toLowerCase();
+        if (s === 'verified')         { stateClass = 'live'; stateLabel = 'VERIFIED'; }
+        else if (s === 'backtesting') { stateClass = 'wait'; stateLabel = 'BACKTEST'; }
+        else                          { stateClass = 'wait'; stateLabel = (p.status || 'idea').toUpperCase(); }
+      }
+
+      const cardCls = 'play-card ' + (isVeto ? 'veto' : stateClass === 'wait' ? 'wait' : '');
+      const card = h('div', {class: cardCls, 'data-key': playKey(p)});
+
+      const dir = (p.direction || 'both').toLowerCase();
+
+      // Header row
+      card.appendChild(h('div', {class:'ph'},
+        h('div', {class:'pname'},
+          h('span', {class: 'badge-dir ' + dir, style:'font-size:8px;'}, dir.toUpperCase()),
+          h('span', null, p.name)),
+        h('span', {class: 'pstate ' + stateClass}, stateLabel)));
+
+      // Body row
+      if (isMatrix) {
+        if (isVeto) {
+          const reasons = (p.active_vetoes || []).map(v => v.id).join(', ') || 'veto';
+          card.appendChild(h('div', {class:'pveto-line'}, reasons + ' · skip'));
+        } else {
+          // Confluence dots
+          const dots = [];
+          for (let i = 0; i < p.max_preopen; i++) {
+            dots.push(h('div', {class: 'dd' + (i < p.preopen_count ? ' on' : '')}));
+          }
+          for (let i = 0; i < (p.post_pending || []).length; i++) {
+            dots.push(h('div', {class:'dd maybe'}));
+          }
+          const noteMax = p.projection?.max_tier?.note || '';
+          const wrMatch = noteMax.match(/~?(\d+(?:[-–]\d+)?)\s*%\s*WR/i);
+          const pfMatch = noteMax.match(/PF\s*(\d+(?:\.\d+)?(?:[-–]\d+(?:\.\d+)?)?)/i);
+          card.appendChild(h('div', {class:'pbody'},
+            h('div', {class:'conf-mini'}, dots),
+            h('span', null,
+              `${p.preopen_count}/${p.max_preopen}`,
+              (p.post_pending || []).length ? ` · +${p.post_pending.length}` : ''),
+            h('div', {class:'pstats'},
+              wrMatch ? h('span', null, 'WR ', h('b', null, wrMatch[1] + '%')) : null,
+              pfMatch ? h('span', null, 'PF ', h('b', null, pfMatch[1])) : null)));
+        }
+      } else {
+        // playbook play body
+        const wrMatch = (p.wr_base || '').match(/[\d.]+%/);
+        const wr = wrMatch ? wrMatch[0] : (p.wr_base || '—');
+        card.appendChild(h('div', {class:'pbody'},
+          h('span', {class:'mute mono', style:'font-size:10px;'}, p.tier ? `Tier ${p.tier}` : ''),
+          h('div', {class:'pstats'},
+            h('span', null, 'WR ', h('b', null, wr)),
+            p.pf_base ? h('span', null, 'PF ', h('b', null, Number(p.pf_base).toFixed(2))) : null,
+            h('span', null, `n=`, h('b', null, p.sample_size || '?')))));
+      }
+
+      card.addEventListener('click', () => onClick(p));
+      return card;
+    }
+
+    // ====== Detail-pane renderers (column 3) ======
+
+    function renderDetailEmpty(candidates) {
+      const wrap = h('div', {class:'detail-empty'});
+      wrap.appendChild(h('div', {class:'icon'}, '◎'));
+      wrap.appendChild(h('div', {class:'hint'}, 'Select a candidate'));
+      wrap.appendChild(h('div', {class:'arrow'}, '◀'));
+
+      // Compact "what to watch" summary
+      const nonVeto = candidates.filter(p => !p.veto_active);
+      const matrixTop = nonVeto
+        .filter(p => p._kind === 'matrix')
+        .sort((a, b) => b.preopen_count - a.preopen_count)[0];
+      const verified = nonVeto.filter(p => p._kind === 'playbook' && (p.status || '').toLowerCase() === 'verified').length;
+      const total = nonVeto.length;
+      const vetoed = candidates.length - nonVeto.length;
+
+      const summary = h('div', {class:'summary'},
+        h('div', null,
+          h('b', null, `${total}`), ' active candidates · ',
+          h('b', null, `${vetoed}`), ' vetoed'),
+        matrixTop ? h('div', {style:'margin-top:6px;'},
+          'Highest matrix confluence: ',
+          h('b', null, `${matrixTop.name}`),
+          ` (${matrixTop.preopen_count}/${matrixTop.max_preopen})`) : null,
+        h('div', {style:'margin-top:6px;'},
+          h('b', null, `${verified}`), ' verified playbook plays today'));
+      wrap.appendChild(summary);
+      return wrap;
+    }
+
+    function renderMatrixDetail(p) {
+      const wrap = h('div');
+      const dir = (p.direction || 'both').toLowerCase();
+
+      wrap.appendChild(h('div', {class:'detail-head'},
+        h('div', {class:'detail-title'}, p.name),
+        h('div', {class:'detail-sub'},
+          h('span', {class:'badge-dir ' + dir}, dir.toUpperCase()),
+          h('span', null, p.window),
+          p.veto_active ? h('span', {class:'chip veto'}, '🚫 VETO') : null,
+          h('span', {class:'mute'}, `${p.preopen_count}/${p.max_preopen} pre-open`))));
+
+      if (p.veto_active) {
+        wrap.appendChild(h('div', {class:'detail-section'},
+          h('div', {class:'detail-label'}, 'ACTIVE VETOES'),
+          ...(p.active_vetoes || []).map(v => h('div', {class:'factor-line veto'},
+            h('span', {class:'marker'}, '✕'),
+            h('span', {class:'lift'}, `${v.lift_pp > 0 ? '+' : ''}${v.lift_pp}pp`),
+            h('span', {class:'desc'}, v.desc),
+            h('span', {class:'meta'}, v.id)))));
+        wrap.appendChild(h('div', {class:'extra-note'},
+          `Skip ${p.name} today — veto overrides any confluence count.`));
+        if (p.extra_note) wrap.appendChild(h('div', {class:'extra-note'}, p.extra_note));
+        if (p.notion_url) wrap.appendChild(h('a', {class:'play-link', href: p.notion_url, target:'_blank'}, '→ PLAYBOOK'));
+        wrap.appendChild(narrative(p.narrative));
+        return wrap;
+      }
+
+      // Active factors
+      if ((p.preopen_active || []).length) {
+        const sec = h('div', {class:'detail-section'},
+          h('div', {class:'detail-label'}, `ACTIVE PRE-OPEN · ${p.preopen_active.length}`));
+        p.preopen_active.forEach(f => sec.appendChild(h('div', {class:'factor-line on'},
+          h('span', {class:'marker'}, '✓'),
+          h('span', {class:'lift'}, `+${f.lift_pp}pp`),
+          h('span', {class:'desc'}, f.desc),
+          h('span', {class:'meta'}, f.id))));
+        wrap.appendChild(sec);
+      }
+
+      // Pending factors
+      if ((p.post_pending || []).length) {
+        const sec = h('div', {class:'detail-section'},
+          h('div', {class:'detail-label'}, `PENDING POST-OPEN · ${p.post_pending.length}`));
+        p.post_pending.forEach(f => sec.appendChild(h('div', {class:'factor-line pending'},
+          h('span', {class:'marker'}, '○'),
+          h('span', {class:'lift'}, `+${f.lift_pp}pp`),
+          h('span', {class:'desc'}, f.desc),
+          h('span', {class:'meta'},
+            h('span', {class:'when'}, f.when), f.id))));
+        wrap.appendChild(sec);
+      }
+
+      // Projection
+      const proj = p.projection || {};
+      const minAction = (proj.min_tier?.action || '').toUpperCase();
+      const maxAction = (proj.max_tier?.action || '').toUpperCase();
+      const cls = (action) => action.includes('TAKE') ? 'take' : 'skip';
+      const projStrip = h('div', {class:'projection-strip'});
+      if (proj.locked) {
+        projStrip.appendChild(h('div', {class:'proj-card ' + cls(minAction) + ' active'},
+          h('div', {class:'pl'}, `COUNT ${proj.min_count}`),
+          h('div', {class:'pa'}, proj.min_tier.action),
+          h('div', {class:'pn'}, proj.min_tier.note || '')));
+      } else {
+        projStrip.appendChild(h('div', {class:'proj-card ' + cls(minAction)},
+          h('div', {class:'pl'}, `IF ${proj.min_count}`),
+          h('div', {class:'pa'}, proj.min_tier.action),
+          h('div', {class:'pn'}, proj.min_tier.note || '')));
+        projStrip.appendChild(h('div', {class:'proj-card ' + cls(maxAction) + ' active'},
+          h('div', {class:'pl'}, `IF ${proj.max_count}`),
+          h('div', {class:'pa'}, proj.max_tier.action),
+          h('div', {class:'pn'}, proj.max_tier.note || '')));
+      }
+      wrap.appendChild(h('div', {class:'detail-section'},
+        h('div', {class:'detail-label'}, 'PROJECTION'),
+        projStrip));
+
+      // Expectancy
+      if (p.expectancy) {
+        const e = p.expectancy;
+        wrap.appendChild(h('div', {class:'detail-section'},
+          h('div', {class:'detail-label'}, 'EXPECTANCY'),
+          h('div', {class:'pd-exp'},
+            'Baseline (no veto, conf≥', h('b', null, e.tradeable_threshold), '): ',
+            h('b', null, `${e.setup_pct_of_all_days}%`), ' of days · fires ',
+            h('b', null, `${e.fire_rate_pct}%`), ' · EV ',
+            h('b', null, `+${e.ev_per_setup_day_R}R/setup-day`),
+            e.fire_rate_now_pct != null
+              ? [' · today fires ~', h('b', null,
+                  e.fire_rate_now_pct === e.fire_rate_max_pct || e.fire_rate_max_pct == null
+                    ? `${e.fire_rate_now_pct}%`
+                    : `${e.fire_rate_now_pct}-${e.fire_rate_max_pct}%`)]
+              : null)));
+      }
+
+      if (p.extra_note) wrap.appendChild(h('div', {class:'extra-note'}, p.extra_note));
+      if (p.notion_url) wrap.appendChild(h('a', {class:'play-link', href: p.notion_url, target:'_blank'}, '→ PLAYBOOK'));
+      wrap.appendChild(narrative(p.narrative));
+      return wrap;
+    }
+
+    function renderPlaybookDetail(p) {
+      const wrap = h('div');
+      const dir = (p.direction || 'both').toLowerCase();
+      const status = (p.status || 'idea').toLowerCase();
+
+      wrap.appendChild(h('div', {class:'detail-head'},
+        h('div', {class:'detail-title'}, p.name),
+        h('div', {class:'detail-sub'},
+          h('span', {class:'badge-dir ' + dir}, dir.toUpperCase()),
+          h('span', {class: 'pb-status ' + status}, status),
+          p.tier ? h('span', {class:'chip'}, 'Tier ' + p.tier) : null,
+          h('span', {class:'mute mono'},
+            (normalizeWindows(p)).join(', ')))));
+
+      // Stats row
+      const stats = [];
+      if (p.wr_base)    stats.push(['WR', p.wr_base]);
+      if (p.pf_base)    stats.push(['PF', Number(p.pf_base).toFixed(2)]);
+      if (p.sample_size) stats.push(['n', p.sample_size]);
+      if (p.frequency)  stats.push(['Freq', p.frequency]);
+      if (p.avg_mfe_r)  stats.push(['Avg MFE', `${p.avg_mfe_r}R`]);
+      if (p.confidence) stats.push(['Confidence', p.confidence]);
+
+      if (stats.length) {
+        const statsBlock = h('div', {class:'detail-section'},
+          h('div', {class:'detail-label'}, 'STATS'),
+          h('div', {class:'mono', style:'font-size:11px;line-height:1.9;color:var(--text-dim);'},
+            stats.map((s, i) => h('span', null,
+              s[0], ' ', h('b', {style:'color:var(--text);'}, String(s[1])),
+              i < stats.length - 1 ? '   ·   ' : ''))));
+        wrap.appendChild(statsBlock);
+      }
+
+      if (p.description) {
+        wrap.appendChild(h('div', {class:'detail-section'},
+          h('div', {class:'detail-label'}, 'DESCRIPTION'),
+          h('div', {class:'detail-text'}, p.description)));
+      }
+
+      if (p.pre_market_conditions) {
+        wrap.appendChild(h('div', {class:'detail-section'},
+          h('div', {class:'detail-label'}, 'PRE-MARKET CONDITIONS'),
+          h('div', {class:'detail-text'}, p.pre_market_conditions)));
+      }
+
+      if (p.action_plan) {
+        wrap.appendChild(h('div', {class:'detail-section'},
+          h('div', {class:'detail-label'}, 'INTRADAY + EXIT'),
+          h('div', {class:'detail-text'}, p.action_plan)));
+      }
+
+      if (p.notion_url) {
+        wrap.appendChild(h('a', {class:'play-link', href: p.notion_url, target:'_blank'}, '→ PLAYBOOK'));
+      }
+      return wrap;
+    }
+
+    // ====== Legacy renderers (kept but unused by new layout) ======
 
     function renderCandidates(mp, primary) {
       const col = h('div', {class:'flow-col'});
