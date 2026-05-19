@@ -98,6 +98,23 @@
     color: var(--text-dim);
   }
   .meta-tag b { color: var(--text); font-weight: 600; }
+  .meta-tag.dim { color: var(--text-mute); }
+
+  /* Live clock + data-age in topbar */
+  .now-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px;
+    color: var(--text-mute); margin-left: 6px;
+  }
+  .live-clock {
+    font-family: var(--mono); font-size: 14px; font-weight: 700;
+    color: var(--cyan); text-shadow: 0 0 8px var(--cyan-dim);
+    letter-spacing: 1px;
+    min-width: 78px; text-align: right;
+  }
+  .now-tz {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px;
+    color: var(--cyan); opacity: 0.6;
+  }
   .pulse {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 3px 10px;
@@ -378,6 +395,29 @@
     display: flex; align-items: center; gap: 10px;
     font-family: var(--mono); font-size: 10px; color: var(--text-dim);
   }
+  /* Standardized body grid: indicator | meta | stats (right-aligned).
+     Fixed-width columns so cards align across matrix + playbook cards. */
+  .play-card .pbody-standard {
+    display: grid;
+    grid-template-columns: 78px 1fr auto;
+    gap: 10px; align-items: center;
+  }
+  .play-card .pbody-standard .pmeta {
+    color: var(--text-dim); font-size: 10px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .play-card.veto .pbody-standard .pmeta { color: var(--red); }
+  .play-card .pbody-standard .pstats {
+    display: grid; grid-template-columns: repeat(3, minmax(46px, auto));
+    gap: 8px; margin-left: auto;
+  }
+  .play-card .pbody-standard .stat-cell {
+    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
+    text-align: right; white-space: nowrap;
+  }
+  .play-card .pbody-standard .stat-cell b { color: var(--text); font-weight: 700; }
+  .play-card.primary .pbody-standard .stat-cell b,
+  .play-card.selected .pbody-standard .stat-cell b { color: var(--cyan); }
   .conf-mini { display: flex; gap: 3px; }
   .conf-mini .dd {
     width: 9px; height: 9px; border-radius: 50%;
@@ -1542,15 +1582,48 @@
     const pulseClass = isDemo ? 'demo' : (meta.mode === 'live' ? '' : 'offline');
     const pulseText  = isDemo ? 'Demo' : (meta.mode || 'idle').toUpperCase();
 
+    // Generated-at timestamp shown as "DATA: HH:MM" — distinct from the live clock.
+    const generatedLabel = meta.generated_at_et
+      ? 'DATA  ' + new Date(meta.generated_at_et).toLocaleTimeString('en-US',
+          {hour:'2-digit', minute:'2-digit', hour12:false}) + ' ET'
+      : 'HISTORICAL';
+    // Compute data age (minutes since generated) so stale data is visible at a glance.
+    function dataAgeText() {
+      if (!meta.generated_at_et) return null;
+      const ms = Date.now() - new Date(meta.generated_at_et).getTime();
+      const min = Math.max(0, Math.floor(ms / 60000));
+      if (min < 60) return `${min}m ago`;
+      const hr = Math.floor(min / 60);
+      return `${hr}h ${min % 60}m ago`;
+    }
+    const dataAgeEl = h('span', {class:'meta-tag mono dim'},
+      dataAgeText() || '');
+
+    // Live clock — ticks every second in ET. Shown as HH:MM:SS.
+    const clockEl = h('span', {class:'live-clock mono'}, '--:--:--');
+    function tickClock() {
+      const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'America/New_York',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+      }).formatToParts(new Date());
+      const p = Object.fromEntries(parts.map(x => [x.type, x.value]));
+      clockEl.textContent = `${p.hour}:${p.minute}:${p.second}`;
+      const age = dataAgeText();
+      if (age) dataAgeEl.textContent = age;
+    }
+    tickClock();
+    setInterval(tickClock, 1000);
+
     app.appendChild(h('div', {class:'topbar'},
       h('div', {class:'brand'},
         h('span', {class:'accent'}, 'NQ'), ' BRIEFING'),
       h('div', {class:'spacer'}),
       h('span', {class:'meta-tag mono'}, h('b', null, meta.date || '—'), ' · ', meta.day_of_week || '—'),
-      h('span', {class:'meta-tag mono'},
-        meta.generated_at_et
-          ? new Date(meta.generated_at_et).toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',hour12:false}) + ' ET'
-          : 'HISTORICAL'),
+      h('span', {class:'meta-tag mono dim'}, generatedLabel),
+      dataAgeEl,
+      h('span', {class:'now-label'}, 'NOW'),
+      clockEl,
+      h('span', {class:'now-tz'}, 'ET'),
       h('span', {class: 'pulse ' + pulseClass}, pulseText),
     ));
 
@@ -1567,8 +1640,25 @@
     // plays only show if status is "verified" — backtesting/idea plays stay in
     // Notion as the catalog but don't crowd the briefing.
     // Confluence Model entries are filtered too — they're duplicates of matrix.
+
+    // Index ALL playbook plays by name prefix (before filtering) so matrix plays
+    // can borrow their corresponding "overall" sample_size for consistent display.
+    // e.g. matrix "M1 Short" ↔ playbook "M1 Short — Confluence Model".
+    const playbookByPrefix = new Map();
+    apAll.forEach(p => {
+      const prefix = (p.name || '').split(/[—\-(]/)[0].trim().toLowerCase();
+      if (prefix && !playbookByPrefix.has(prefix)) playbookByPrefix.set(prefix, p);
+    });
+
     const allCandidates = [];
-    mp.forEach(p => allCandidates.push({...p, _kind: 'matrix'}));
+    mp.forEach(p => {
+      const pb = playbookByPrefix.get((p.name || '').trim().toLowerCase());
+      allCandidates.push({
+        ...p,
+        _kind: 'matrix',
+        _sample_size: pb?.sample_size ?? null,
+      });
+    });
     apAll
       .filter(p => !/Confluence Model/i.test(p.name || ''))
       .filter(p => (p.status || '').toLowerCase() === 'verified')
@@ -1900,43 +1990,66 @@
           h('span', null, p.name)),
         h('span', {class: 'pstate ' + stateClass}, stateLabel)));
 
-      // Body row
+      // ===== Standardized body: [indicator] [meta] [stats] =====
+      // Indicator: confluence dots (matrix) | status dot (playbook)
+      // Meta:      "1/5 · +2" (matrix)      | "Tier A" (playbook)
+      // Stats:     WR · PF · n  (both, right-aligned, consistent width)
+      let indicator, metaText, wr, pf, n;
+
       if (isMatrix) {
-        if (isVeto) {
-          const reasons = (p.active_vetoes || []).map(v => v.id).join(', ') || 'veto';
-          card.appendChild(h('div', {class:'pveto-line'}, reasons + ' · skip'));
-        } else {
-          // Confluence dots
-          const dots = [];
-          for (let i = 0; i < p.max_preopen; i++) {
-            dots.push(h('div', {class: 'dd' + (i < p.preopen_count ? ' on' : '')}));
-          }
-          for (let i = 0; i < (p.post_pending || []).length; i++) {
-            dots.push(h('div', {class:'dd maybe'}));
-          }
-          const noteMax = p.projection?.max_tier?.note || '';
-          const wrMatch = noteMax.match(/~?(\d+(?:[-–]\d+)?)\s*%\s*WR/i);
-          const pfMatch = noteMax.match(/PF\s*(\d+(?:\.\d+)?(?:[-–]\d+(?:\.\d+)?)?)/i);
-          card.appendChild(h('div', {class:'pbody'},
-            h('div', {class:'conf-mini'}, dots),
-            h('span', null,
-              `${p.preopen_count}/${p.max_preopen}`,
-              (p.post_pending || []).length ? ` · +${p.post_pending.length}` : ''),
-            h('div', {class:'pstats'},
-              wrMatch ? h('span', null, 'WR ', h('b', null, wrMatch[1] + '%')) : null,
-              pfMatch ? h('span', null, 'PF ', h('b', null, pfMatch[1])) : null)));
+        const dots = [];
+        for (let i = 0; i < p.max_preopen; i++) {
+          dots.push(h('div', {class: 'dd' + (i < p.preopen_count ? ' on' : '')}));
         }
+        for (let i = 0; i < (p.post_pending || []).length; i++) {
+          dots.push(h('div', {class:'dd maybe'}));
+        }
+        indicator = h('div', {class:'conf-mini'}, dots);
+        if (isVeto) {
+          metaText = (p.active_vetoes || []).map(v => v.id).join(', ').slice(0, 32) || 'veto';
+        } else {
+          metaText = `${p.preopen_count}/${p.max_preopen}`
+            + ((p.post_pending || []).length ? ` · +${p.post_pending.length}` : '');
+        }
+        // Parse "%WR" and "PF" from tier notes. Decimals matter — "64.5% WR"
+        // must capture "64.5", not "5". Fall back from max_tier to min_tier when
+        // max_tier is unlock-only / has no clean numbers.
+        const parseTierStats = (text) => {
+          if (!text) return {wr: null, pf: null};
+          const wrM = text.match(/(\d+(?:\.\d+)?(?:[-–]\d+(?:\.\d+)?)?)\s*%\s*WR/i);
+          const pfM = text.match(/PF\s*(\d+(?:\.\d+)?(?:[-–]\d+(?:\.\d+)?)?)/i);
+          return {wr: wrM ? wrM[1] : null, pf: pfM ? pfM[1] : null};
+        };
+        const maxStats = parseTierStats(p.projection?.max_tier?.note);
+        const minStats = parseTierStats(p.projection?.min_tier?.note);
+        wr = (maxStats.wr || minStats.wr);
+        pf = (maxStats.pf || minStats.pf);
+        if (wr) wr += '%';
+        // n = sample size from cross-referenced playbook entry. Falls back to
+        // setup frequency (% of days) if no playbook match found.
+        n = p._sample_size != null
+          ? String(p._sample_size)
+          : p.expectancy?.setup_pct_of_all_days != null
+            ? `${p.expectancy.setup_pct_of_all_days}%/d`
+            : null;
       } else {
-        // playbook play body
+        // Playbook: indicator is a single status dot; meta is tier
+        indicator = h('div', {class:'conf-mini'},
+          h('div', {class: 'dd on'}));
+        metaText = p.tier ? `Tier ${p.tier}` : '—';
         const wrMatch = (p.wr_base || '').match(/[\d.]+%/);
-        const wr = wrMatch ? wrMatch[0] : (p.wr_base || '—');
-        card.appendChild(h('div', {class:'pbody'},
-          h('span', {class:'mute mono', style:'font-size:10px;'}, p.tier ? `Tier ${p.tier}` : ''),
-          h('div', {class:'pstats'},
-            h('span', null, 'WR ', h('b', null, wr)),
-            p.pf_base ? h('span', null, 'PF ', h('b', null, Number(p.pf_base).toFixed(2))) : null,
-            h('span', null, `n=`, h('b', null, p.sample_size || '?')))));
+        wr = wrMatch ? wrMatch[0] : null;
+        pf = p.pf_base != null ? Number(p.pf_base).toFixed(2) : null;
+        n  = p.sample_size != null ? String(p.sample_size) : null;
       }
+
+      card.appendChild(h('div', {class:'pbody pbody-standard'},
+        indicator,
+        h('span', {class:'pmeta'}, metaText),
+        h('div', {class:'pstats'},
+          h('span', {class:'stat-cell'}, 'WR ', h('b', null, wr || '—')),
+          h('span', {class:'stat-cell'}, 'PF ', h('b', null, pf || '—')),
+          h('span', {class:'stat-cell'}, 'n ', h('b', null, n || '—')))));
 
       card.addEventListener('click', () => onClick(p));
       return card;
