@@ -1,102 +1,88 @@
 {
   "schema_version": 1,
   "meta": {
-    "date": "2026-05-19",
-    "day_of_week": "Tuesday",
-    "generated_at_et": "2026-05-19T17:01:10.583903-04:00",
-    "generated_at_pt": "2026-05-19T14:01:10.583903-07:00",
+    "date": "2026-05-20",
+    "day_of_week": "Wednesday",
+    "generated_at_et": "2026-05-20T09:15:40.310828-04:00",
+    "generated_at_pt": "2026-05-20T06:15:40.310828-07:00",
     "mode": "live"
   },
   "freshness": [],
   "or_forecast": {
     "available": false,
-    "narrative": "Today\u2019s OR-width forecast (45-min) and sizing tier are not available. Without a current forecast, be prepared for limited guidance on expected order flow range and optimal trade size, and wait for live updates before committing orders. Monitor briefly for any late data release this morning and adjust risk using your standard pre-market guardrails."
+    "narrative": "The OR-width forecast for the next 45 minutes is not available today, so there is no defined range to anchor entries or stop placement. Without an OR forecast, rely on your current pre-market levels and liquidity cues to gauge potential breakout or mean-reversion moves. Monitor price action near key levels and adjust sizing and risk prompts as new OR data becomes available."
   },
   "calendar": {
-    "day_of_week": "Tuesday",
-    "dow_note": "Tuesday is the weakest day in the sample (WR ~49.2%). Stay selective.",
+    "day_of_week": "Wednesday",
+    "dow_note": "Wednesday is middling (WR ~50.9%). Longs have historically been the weaker side.",
     "unknown": false,
     "is_fomc_week": false,
     "events": [
       {
-        "event": "Pending Home Sales m/m",
-        "time_et": "14:00",
-        "impact": "Medium",
+        "event": "FOMC Meeting Minutes",
+        "time_et": "18:00",
+        "impact": "High",
         "currency": ""
       }
     ],
-    "narrative": "Today is a Tuesday, the weakest day in the sample with a <b>WR ~49.2%</b> guidance, so stay selective in setups and risk. We have one notable release: <b>Pending Home Sales m/m</b> at <b>14:00 ET</b>, with a <b>Medium</b> impact, which could nudge early moves but remains a low-confirmation driver for pre-market trades. Also note this is not an <b>FOMC week</b>, so keep position sizing modest around liquidity and avoid overreacting to any intraday chatter."
+    "narrative": "Today is a middling Wednesday with a tendency for longs to underperform, so expect tighter risk appetite until clearer intraday cues emerge. The key driver is the <b>FOMC Meeting Minutes</b> due at <b>18:00 ET</b>, flagged as having <b>High</b> potential impact on price action across majors; trade smaller into the release and watch for a quick move into the <b>pre/minute volatility window</b>. Since this isn\u2019t an FOMC decision week, maintain disciplined risk and prepare to shift bias if the minutes show hawkish or dovish tilt."
   },
   "pre_open": {
-    "current_price": 28849.5,
-    "current_price_ts": "09:29 ET",
+    "current_price": 29112.0,
+    "current_price_ts": "09:05 ET",
     "prior_rth": {
-      "close": 29098.75,
-      "open": 29338.25,
-      "high": 29356.25,
-      "low": 28814.75,
-      "close_position": 0.5244690674053555,
+      "close": 28923.25,
+      "open": 28850.25,
+      "high": 29126.5,
+      "low": 28663.0,
+      "close_position": 0.5614886731391586,
       "label": null
     },
     "overnight": {
-      "high": 29188.5,
-      "low": 28802.75,
-      "range": 385.75,
-      "direction": "down",
+      "high": 29169.25,
+      "low": 28797.25,
+      "range": 372.0,
+      "direction": "up",
       "tight": false,
       "wide": false
     },
     "asia": {
-      "high": 29188.5,
-      "low": 28885.0
+      "high": 29024.25,
+      "low": 28797.25
     },
     "london": {
-      "high": 29125.25,
-      "low": 28836.0
+      "high": 29157.75,
+      "low": 28950.75
     },
     "gap": {
-      "pts": -249.25,
-      "pct": -0.8565660036943168,
-      "direction": "gap_down"
+      "pts": 188.75,
+      "pct": 0.6525891799849602,
+      "direction": "gap_up"
     },
     "data_notes": [],
-    "narrative": "Tonight\u2019s action leaves the market gapping <b>down</b> by <b>-249.25 points</b> (~<b>-0.86%</b>) from yesterday\u2019s <b>RTH close</b> of <b>29098.75</b> and opening around <b>29338.25</b>, with the overnight range trading as low as <b>28802.75</b> and high to <b>29188.5</b>. At the current print of <b>28849.5</b>, price sits near the lower end of the overnight range and below the prior RTH <b>low</b> of <b>28814.75</b>, hinting at continuation risk into the open; expect potential test of the <b>gap area</b> near <b>28800\u201328900</b> and a focus on early velocity to determine if this gap down fills or extends. Use caution on aggressive longs at the open and look for early price rejection near the <b>28800</b> area before committing."
+    "narrative": "This morning, the <b>overnight range</b> held a high of <b>29169.25</b> and a low of <b>28797.25</b, with the <b>gap up</b> of <b>188.75 points</b> or roughly <b>0.65%</b> above the prior RTH close, signaling initial selling pressure abated but upside momentum remains cautious. As of <b>09:05 ET</b>, the <b>current price</b> sits around <b>29112.0</b, just under the overnight high, suggesting potential test of resistance near <b>29126.5</b> from yesterday\u2019s high; a break above that in early session could extend upside toward the <b>RTH high</b> at <b>29126.5</b>, while failure back below today\u2019s gap could draw buyers back toward the <b>28850.25</b> open from yesterday. For execution, consider small long initiations if price clears the overnight high with tight risk below the gap area, and have a plan to step back if price breaks back into the <b>28797\u201328950</b> region."
   },
   "levels": {
     "scope_pts": 100,
     "above": [
       {
-        "group": "asia",
-        "label": "Asia low",
-        "price": 28885.0,
-        "distance_pts": 35.5,
+        "group": "htf_fvg_15m",
+        "label": "15m FVG (bearish)",
+        "price": 29116.75,
+        "distance_pts": 4.75,
         "direction": "above",
         "tier": "A",
-        "hit_rate_45m_pct": 59.2,
-        "wr_as_magnet_pct": 54.2,
-        "pf_as_magnet": 1.22,
+        "hit_rate_45m_pct": 26.2,
+        "wr_as_magnet_pct": 58.4,
+        "pf_as_magnet": 1.51,
         "below_baseline": false
-      }
-    ],
-    "below": [
-      {
-        "group": "london",
-        "label": "London low",
-        "price": 28836.0,
-        "distance_pts": -13.5,
-        "direction": "below",
-        "tier": "C",
-        "hit_rate_45m_pct": 54.3,
-        "wr_as_magnet_pct": 47.4,
-        "pf_as_magnet": 0.95,
-        "below_baseline": true
       },
       {
         "group": "prev_day",
-        "label": "Prev day low",
-        "price": 28814.75,
-        "distance_pts": -34.75,
-        "direction": "below",
+        "label": "Prev day high",
+        "price": 29126.5,
+        "distance_pts": 14.5,
+        "direction": "above",
         "tier": "A",
         "hit_rate_45m_pct": 40.6,
         "wr_as_magnet_pct": 57.1,
@@ -104,11 +90,23 @@
         "below_baseline": false
       },
       {
+        "group": "london",
+        "label": "London high",
+        "price": 29157.75,
+        "distance_pts": 45.75,
+        "direction": "above",
+        "tier": "C",
+        "hit_rate_45m_pct": 54.3,
+        "wr_as_magnet_pct": 47.4,
+        "pf_as_magnet": 0.95,
+        "below_baseline": true
+      },
+      {
         "group": "overnight",
-        "label": "Overnight low",
-        "price": 28802.75,
-        "distance_pts": -46.75,
-        "direction": "below",
+        "label": "Overnight high",
+        "price": 29169.25,
+        "distance_pts": 57.25,
+        "direction": "above",
         "tier": "C",
         "hit_rate_45m_pct": 41.1,
         "wr_as_magnet_pct": 48.7,
@@ -116,62 +114,79 @@
         "below_baseline": true
       }
     ],
-    "narrative": "Today\u2019s near-term liquidity sits with a cluster around the current price, with an upper zone at <b>Asia low 28885.0</b> (about <b>35.5 pts above</b> current) showing active upside liquidity and a relative magnet tendency at <b>54.2%</b> vs a 59.2% hit rate over 45 minutes. On the downside, the immediate supports are at <b>London low 28836.0</b> (<b>13.5 pts below</b>), <b>Prev day low 28814.75</b> (<b>34.75 pts below</b>), and <b>Overnight low 28802.75</b> (<b>46.75 pts below</b>), with the strongest near-term magnet among them at Prev day low ( <b>1.45</b> pf_as_magnet). For execution today, prioritize fades or scalps near the Asia upper liquidity if price trades around 28885, and watch for reactions into the London/Prev day/Overnight supports if price drifts lower toward those levels."
+    "below": [
+      {
+        "group": "htf_fvg_15m",
+        "label": "15m FVG (bullish)",
+        "price": 29060.0,
+        "distance_pts": -52.0,
+        "direction": "below",
+        "tier": "A",
+        "hit_rate_45m_pct": 26.2,
+        "wr_as_magnet_pct": 58.4,
+        "pf_as_magnet": 1.51,
+        "below_baseline": false
+      },
+      {
+        "group": "asia",
+        "label": "Asia high",
+        "price": 29024.25,
+        "distance_pts": -87.75,
+        "direction": "below",
+        "tier": "A",
+        "hit_rate_45m_pct": 59.2,
+        "wr_as_magnet_pct": 54.2,
+        "pf_as_magnet": 1.22,
+        "below_baseline": false
+      },
+      {
+        "group": "htf_fvg_1H",
+        "label": "1H FVG (bullish)",
+        "price": 29014.25,
+        "distance_pts": -97.75,
+        "direction": "below",
+        "tier": "A",
+        "hit_rate_45m_pct": 22.5,
+        "wr_as_magnet_pct": 64.2,
+        "pf_as_magnet": 2.16,
+        "below_baseline": false
+      }
+    ],
+    "narrative": "Today\u2019s near-term liquidity sits around the current level with notable pins just above and below. The nearest above liquidity is the <b>15m FVG (bearish) at 29116.75</b> (\u2248 <b>4.75 pts</b> above current), and the immediate above baselines also include <b>Prev day high 29126.5</b> (\u2248 14.5 pts away) and <b>London high 29157.75</b> (~45.75 pts away) with mixed magnet signals. On the downside, the closest bids include <b>15m FVG (bullish) at 29060.0</b> (\u2248 <b>\u221252.0 pts</b>), <b>Asia high 29024.25</b> (\u2248 \u221287.75), and <b>1H FVG (bullish) 29014.25</b> (\u2248 \u221297.75), suggesting a wider potential downside buffer; expect execution risk to escalate near these key levels, especially where magnet strength is lower."
   },
   "factors": {
     "active": [
-      "gap_down",
+      "gap_up",
+      "has_red_folder",
       "no_pre_rth_news",
-      "no_red_folder",
       "not_fomc_week",
-      "overnight_down",
-      "tuesday"
+      "overnight_up",
+      "wednesday"
     ],
     "inactive": [
       "elevated_vixy",
       "entry_inside_prior_day_value_area",
       "friday",
-      "gap_up",
+      "gap_down",
       "has_pre_rth_news",
-      "has_red_folder",
       "is_fomc_week",
       "low_vixy",
       "monday",
+      "no_red_folder",
       "normal_vixy",
-      "overnight_up",
+      "overnight_down",
       "prior_day_down",
       "prior_day_up",
       "thursday",
       "tight_overnight",
-      "wednesday",
+      "tuesday",
       "wide_overnight"
     ],
     "unknown": [],
-    "narrative": "Today\u2019s pre-market setup shows a <b>gap-down</b> and <b>overnight_down</b> backdrop with a Tuesday session and no pre-RTH news. With <b>no_red_folder</b> and <b>not_fomc_week</b>, expect more drift potential than news-driven moves, so manage risk around the <b>gap-down</b> level and look for early price reversion into the first hour if the opening print stabilizes. Avoid chasing gains into momentum you don\u2019t have visible catalysts, and monitor if price action remains within the prior day\u2019s range to define your initial executions."
+    "narrative": "Today favors a topside bias into the open given <b>gap_up</b> and <b>overnight_up</b> prints, with no pre-market news to dampen momentum and a <b>Wednesday</b> session as the context. The presence of <b>has_red_folder</b> suggests potential risk controls or alert triggers to watch for shifts, while <b>no_pre_rth_news</b> supports a cleaner price discovery ahead of regular hours. Expect potential volatility as we trade into the open, but absence of <b>no_red_folder</b> or other negative pre-market flags lowers the likelihood of abrupt gaps beyond initial print, so bias toward maintaining directional moves established overnight into early session."
   },
   "armed_edges": [],
   "watch_list": [
-    {
-      "stars": "\u2605\u2605\u2605",
-      "factors": [
-        "macro_w1",
-        "no_red_folder",
-        "wide_45min_or"
-      ],
-      "n": 64,
-      "wr_pct": 75.0,
-      "pf": 3.21,
-      "p_wr": 0.0,
-      "pre_matched": [
-        "no_red_folder"
-      ],
-      "post_needed": [
-        {
-          "factor": "wide_45min_or",
-          "desc": "45-min OR (9:30\u201310:15) in top 20% \u2014 KEY confirmation"
-        }
-      ]
-    },
     {
       "stars": "\u2605\u2605",
       "factors": [
@@ -254,48 +269,6 @@
     {
       "stars": "\u2605\u2605",
       "factors": [
-        "bearish_930",
-        "macro_w1",
-        "overnight_down"
-      ],
-      "n": 64,
-      "wr_pct": 68.8,
-      "pf": 2.3,
-      "p_wr": 0.003,
-      "pre_matched": [
-        "overnight_down"
-      ],
-      "post_needed": [
-        {
-          "factor": "bearish_930",
-          "desc": "9:30 candle closed bearish"
-        }
-      ]
-    },
-    {
-      "stars": "\u2605\u2605",
-      "factors": [
-        "gap_down",
-        "short_only",
-        "wide_45min_or"
-      ],
-      "n": 92,
-      "wr_pct": 67.4,
-      "pf": 2.18,
-      "p_wr": 0.0,
-      "pre_matched": [
-        "gap_down"
-      ],
-      "post_needed": [
-        {
-          "factor": "wide_45min_or",
-          "desc": "45-min OR (9:30\u201310:15) in top 20% \u2014 KEY confirmation"
-        }
-      ]
-    },
-    {
-      "stars": "\u2605\u2605",
-      "factors": [
         "bullish_930",
         "long_only",
         "macro_w2"
@@ -311,17 +284,28 @@
           "desc": "9:30 candle closed bullish"
         }
       ]
+    },
+    {
+      "stars": "\u2605\u2605",
+      "factors": [
+        "bearish_930",
+        "macro_w1",
+        "short_only"
+      ],
+      "n": 151,
+      "wr_pct": 66.2,
+      "pf": 2.17,
+      "p_wr": 0.0,
+      "pre_matched": [],
+      "post_needed": [
+        {
+          "factor": "bearish_930",
+          "desc": "9:30 candle closed bearish"
+        }
+      ]
     }
   ],
-  "w1_short_confluence": {
-    "preopen_count": 3,
-    "active_factors": [
-      "gap_down",
-      "large_gap",
-      "overnight_down"
-    ],
-    "tier": null
-  },
+  "w1_short_confluence": null,
   "matrix_plays": [
     {
       "name": "M1 Short",
@@ -329,15 +313,9 @@
       "window": "9:30-9:45",
       "veto_active": false,
       "active_vetoes": [],
-      "preopen_count": 1,
+      "preopen_count": 0,
       "max_preopen": 5,
-      "preopen_active": [
-        {
-          "id": "gap_large_down",
-          "desc": "Gap < -100 pts",
-          "lift_pp": 19.0
-        }
-      ],
+      "preopen_active": [],
       "post_pending": [
         {
           "id": "bear_930",
@@ -353,15 +331,15 @@
         }
       ],
       "projection": {
-        "min_count": 1,
-        "max_count": 3,
+        "min_count": 0,
+        "max_count": 2,
         "min_tier": {
           "action": "SKIP",
           "note": "no edge"
         },
         "max_tier": {
-          "action": "TAKE full size, runner mode",
-          "note": "~73% WR, PF 2.71"
+          "action": "TAKE full size, runner mode (TP@5R no-BE)",
+          "note": "~57% WR, PF 2.0+ via runner"
         },
         "locked": false
       },
@@ -370,12 +348,12 @@
         "setup_pct_of_all_days": 36.0,
         "fire_rate_pct": 23.0,
         "ev_per_setup_day_R": 0.253,
-        "fire_rate_now_pct": 21.1,
-        "fire_rate_max_pct": 20.2
+        "fire_rate_now_pct": 19.5,
+        "fire_rate_max_pct": 23.0
       },
       "extra_note": "RUNNER EXIT DOCTRINE: TP@5R no-BE is the optimal exit (PF 3+). BE management caps the edge. Do not apply M2/M3 long-style BE@1R here.",
       "notion_url": "https://www.notion.so/33de2f0e776081889879c4dcbd495996",
-      "narrative": "Today\u2019s M1 Short window (9:30\u20139:45) is evaluating a downside bias with a potential preopen gap signal: a <b>gap>100 pts</b> preopen trigger is active (gap_large_down, lift_pp 19.0). Expect a bearish micro-pattern at 9:31 if the first 1-minute candle shows softness (bear_930, lift_pp 21.3) or if the 9:30 candle sits in the top quartile of its range (c930_body_top_q, lift_pp 15.6). The model favors taking full size into a <b>runner</b> with an exit at <b>5R</b> (no-be) and notes that BE management caps the edge, so do not apply M2/M3 BE@1R. Current expectancy supports a <b>TAKE full size, runner mode</b> in ~73% of win-rate scenarios, with an overall fire-rate around <b>21.1%</b> at present (maxing toward <b>20.2%</b> under the plan), so execute only if the preopen gap and early 9:31 signals confirm the setup. The official tight stop remains at BE protection, but the optimal exit remains <b>TP@5R</b> per the runner doctrine."
+      "narrative": "For today\u2019s <b>M1 Short</b> window (9:30\u20139:45), the setup favors a quick fade of early strength with an edge limited by BE management; expect to target a <b>5R</b> runner exit, aiming for <b>TP@5R</b> without a break-even, and be prepared to reduce risk if the 9:30 candle closes in the top quartile. Current post-open signals show two pending triggers: a bearish 9:30 1-min candle and a 9:30 body in the top quartile, which together imply a modest likelihood of a favorable short squeeze being capped, with an <b>EV</b> around the 0.25 mark per setup and a <b>fire rate</b> near <b>19.5%</b> of days so far. Execute only if you can reach full-size with runner discipline and avoid BE adjustments from M2/M3 on 1R."
     },
     {
       "name": "M1 Long",
@@ -397,9 +375,9 @@
           "lift_pp": 9.5
         },
         {
-          "id": "gap_large_down",
-          "desc": "Gap < -100 pts",
-          "lift_pp": 5.5
+          "id": "dow_wednesday",
+          "desc": "Day is Wednesday",
+          "lift_pp": 6.3
         }
       ],
       "post_pending": [
@@ -426,17 +404,29 @@
       "expectancy": null,
       "extra_note": "8yr-validated (n=117): IS 59.8% / OOS 55.0% @ 3+, regime spread 9.4pp, year-floor 50%. Gap-down quiet bounce: when sellers gap it large-down without fresh catalyst, vol normal, prior close non-committal \u2014 fade the gap-down via no_fvg long in M1.",
       "notion_url": "https://www.notion.so/365e2f0e77608154b4caca8dcc0a7c70",
-      "narrative": "Today\u2019s M1 Long window (9:30\u20139:45) favors taking full size and targeting a BE@1R to 3R if the setup confirms, with a projected full-size action at the <b>min_tier</b> level and a hard cap at the <b>max_tier</b> level to avoid over-sizing when there isn\u2019t enough data. The strongest factor is <b>NO pre-RTH news scheduled</b> (lift_pp <b>21.1</b>), supported by a history of a quiet gap-down bounce, while a large-down gap would add a supportive edge but remains limited by the lone qualifying post-no_fvg signal (<b>FVGC variant is no_fvg</b>, lift_pp <b>8.0</b>). Expect execution to proceed if the preopen signals align with a clean, non-volatile buildup, aiming for <b>3\u20134</b> total preopen counts and avoiding scaling beyond the full-size target."
+      "narrative": "For today\u2019s 9:30\u20139:45 window, the M1 Long setup leans on a clean signal with no pre-RTH news and a mid-day prior close bias, giving the strongest factor from the preopen cues: expect to consider taking <b>full size</b> with a <b>BE@1R \u2192 3R</b> target if you see a clean entry, with a projected tier of <b>min_tier</b> indicating a ~59% win-rate and EV favoring long exposure. If you don\u2019t get a visible 3R move, the max tier caps at <b>same size</b> to avoid over-risk in an otherwise thin OOS (n=1) context. Overall, anticipate a likely gap-close opportunity on a quiet day, with the <b>no_fvg</b> post-signal condition supporting the long bias."
     },
     {
       "name": "M2 Long",
       "direction": "long",
       "window": "9:45-10:00",
-      "veto_active": false,
-      "active_vetoes": [],
-      "preopen_count": 0,
+      "veto_active": true,
+      "active_vetoes": [
+        {
+          "id": "dow_wednesday",
+          "desc": "Day is Wednesday",
+          "lift_pp": -23.7
+        }
+      ],
+      "preopen_count": 1,
       "max_preopen": 4,
-      "preopen_active": [],
+      "preopen_active": [
+        {
+          "id": "gap_up",
+          "desc": "Gap > +10 pts",
+          "lift_pp": 7.0
+        }
+      ],
       "post_pending": [
         {
           "id": "bull_930",
@@ -458,15 +448,15 @@
         }
       ],
       "projection": {
-        "min_count": 0,
-        "max_count": 3,
+        "min_count": 1,
+        "max_count": 4,
         "min_tier": {
           "action": "SKIP",
           "note": "3+ tier no longer viable on 8yr"
         },
         "max_tier": {
-          "action": "SKIP",
-          "note": "3+ tier no longer viable on 8yr"
+          "action": "TAKE Tier B size (capped), BE@1R -> 3R fixed",
+          "note": "~64.5% WR, PF 2.62 \u2014 but regime-fragile"
         },
         "locked": false
       },
@@ -475,12 +465,12 @@
         "setup_pct_of_all_days": 31.3,
         "fire_rate_pct": 30.1,
         "ev_per_setup_day_R": 0.277,
-        "fire_rate_now_pct": 29.1,
-        "fire_rate_max_pct": 30.1
+        "fire_rate_now_pct": 29.6,
+        "fire_rate_max_pct": 36.6
       },
       "extra_note": "TIER B / CONFIDENCE LOW. 8yr re-val: year-floor 26.7% (2021), 16.7% (2023). Trade 4+ tier ONLY, capped size. Stand aside in melt-up (NQ >+15% 60d AND VIX<15) or chop years. No robust replacement stack found in re-mining.",
       "notion_url": "https://www.notion.so/361e2f0e776081e69d5dfc696dbd5726",
-      "narrative": "For today\u2019s M2 Long window from 9:45 to 10:00, the setup is active but at a lower confidence level (TIER B / CONFIDENCE LOW) with a cap on position size and a preference to stand aside in strong melt-up or chop conditions; expect trade opportunities only on 4+ tier signals if they align with the 9:31 bullish 1-min candle and the macro FVGs noted. The observed post-pending signals include a bullish 9:30 candle (<b>lift_pp 20.6</b>), and at least two macro FVGs in 9:30\u20139:45 (<b>lift_pp 9.4</b>), plus a bear FVG in the first 5 minutes (<b>lift_pp 7.6</b>), but overall <b>expectancy</b> shows limited edge with <b>ev_per_setup_day_R 0.277</b> and a <b>fire_rate_now_pct 29.1%</b>, near the 30% threshold. Trade only on the 4+ tier signals with capped size and avoid action in melt-up or choppy regimes."
+      "narrative": "Today, the M2 Long setup is active only if you accept the caveat that \u201cTier B\u201d size is capped and the overall confidence is low, with a <b>max 4</b> preopen signals and a <b>preopen gap > +10 pts</b> currently present but the veto active on Wednesday reducing immediate conviction. The post-9:31 bullish 1-min candle adds a <b>+20.6 pts</b> lift potential, while other macro/FVG signals in play suggest a modest <b>9.4 pts</b> and <b>7.6 pts</b> lift potential respectively, but expect regime fragility and stand aside if NQ is in melt-up or chop conditions (NQ > +15% 60d and VIX < 15). Trade only if you\u2019re willing to take a capped Tier B size and monitor for the 9:45 window alignment, with an overall expectancy around <b>0.277 EV per setup day</b> and a current fire rate near <b>29.6%</b>."
     },
     {
       "name": "M3 Long",
@@ -492,11 +482,6 @@
           "id": "prior_day_mid",
           "desc": "Prior day close in middle 1/3 (no narrative)",
           "lift_pp": -15.4
-        },
-        {
-          "id": "dow_tuesday",
-          "desc": "Day is Tuesday",
-          "lift_pp": -10.1
         }
       ],
       "preopen_count": 1,
@@ -551,63 +536,12 @@
       },
       "extra_note": "8yr-validated Tier A (n=264, 5/5 gates): IS 65.4% / OOS 61.6% @ 3+, year-floor 47.8%, regime spread 1.8pp \u2014 most regime-robust cell in the matrix. Thesis: Mon/Fri prior-weak no-bull-FVG mean-reversion. Magnet gate no longer required (8yr re-mine confirmed edge holds without it).",
       "notion_url": "https://www.notion.so/361e2f0e7760819bbbc7ca78b9faa8f9",
-      "narrative": "For today\u2019s M3 Long window (10:00\u201310:15), the setup is active but constrained by vetoes: avoid trades if the prior-day close sits in the middle third and today is Tuesday, reducing favorable signals by roughly <b>-25.5</b>pp total from vetoes, so expect only the strongest premarket cues to trigger. With not-FOMC-week relief active in preopen and post-9:35 FVG signals at play, the most credible reads are a clean no-FVG signal or a bullish first 5-minute FVG, each offering a potential lift around <b>6.2\u20138.1</b> points; if multiple checks fail, skip or keep position size small, since the max take is to stay at the same size and avoid scaling beyond 4+ signals. In short, proceed only on the cleanest, evidence-backed 10:00\u201310:15 reads (especially a 9:35 no-bull FVG or no FVG variants), with <b>fire-rate ~30%</b> and cautious sizing."
+      "narrative": "Today, for the M3 Long setup in the 10:00\u201310:15 window, the veto is active with prior-day mid close in the middle third weighing against trades at <b>-15.4</b> pp, while NOT FOMC week preopen signals are positive at <b>+7.4</b> pp and post-open signals show mixed directional signals with bullish FVG absent at <b>+8.1</b> pp taking precedence over a bearish FVG at <b>+6.8</b> pp and the cleanest FVGC variant at <b>+6.2</b> pp. Overall, the projection allows taking the same size on up to 4/5+ days (locked: false) with a max of 4 entries today, and the expectancy context supports a tradable threshold around <b>3</b> signals per day, while the strongest edge remains the 8-year validated Tier A thesis that weak Monday/Friday prior-bias mean-reversion is in play, so execute with discipline and avoid scale-up beyond the 4+ signal boundary."
     }
   ],
   "avoid": {
     "factor_signals": [],
     "combo_signals": [
-      {
-        "status": "watch",
-        "factors": [
-          "overnight_down",
-          "short_only",
-          "tight_45min_or"
-        ],
-        "n": 31,
-        "wr_pct": 22.6,
-        "pf": 0.32,
-        "post_needed": [
-          {
-            "factor": "tight_45min_or",
-            "desc": "45-min OR in bottom 20% \u2014 HARD stand-down signal"
-          }
-        ]
-      },
-      {
-        "status": "watch",
-        "factors": [
-          "gap_down",
-          "short_only",
-          "tight_45min_or"
-        ],
-        "n": 44,
-        "wr_pct": 25.0,
-        "pf": 0.36,
-        "post_needed": [
-          {
-            "factor": "tight_45min_or",
-            "desc": "45-min OR in bottom 20% \u2014 HARD stand-down signal"
-          }
-        ]
-      },
-      {
-        "status": "watch",
-        "factors": [
-          "gap_down",
-          "macro_w1",
-          "tight_45min_or"
-        ],
-        "n": 35,
-        "wr_pct": 25.7,
-        "pf": 0.4,
-        "post_needed": [
-          {
-            "factor": "tight_45min_or",
-            "desc": "45-min OR in bottom 20% \u2014 HARD stand-down signal"
-          }
-        ]
-      },
       {
         "status": "watch",
         "factors": [
@@ -624,51 +558,9 @@
             "desc": "45-min OR in bottom 20% \u2014 HARD stand-down signal"
           }
         ]
-      },
-      {
-        "status": "watch",
-        "factors": [
-          "bullish_930",
-          "overnight_down",
-          "tight_45min_or"
-        ],
-        "n": 45,
-        "wr_pct": 26.7,
-        "pf": 0.33,
-        "post_needed": [
-          {
-            "factor": "bullish_930",
-            "desc": "9:30 candle closed bullish"
-          },
-          {
-            "factor": "tight_45min_or",
-            "desc": "45-min OR in bottom 20% \u2014 HARD stand-down signal"
-          }
-        ]
-      },
-      {
-        "status": "watch",
-        "factors": [
-          "bearish_930",
-          "gap_down",
-          "tight_45min_or"
-        ],
-        "n": 46,
-        "wr_pct": 28.3,
-        "pf": 0.43,
-        "post_needed": [
-          {
-            "factor": "bearish_930",
-            "desc": "9:30 candle closed bearish"
-          },
-          {
-            "factor": "tight_45min_or",
-            "desc": "45-min OR in bottom 20% \u2014 HARD stand-down signal"
-          }
-        ]
       }
     ],
-    "narrative": "Today, avoid action if you see the <b>tight_45min_or</b> risk condition triggering as a \u201cHARD stand-down\u201d signal\u2014the current combo signals show all lines marked as <b>watch</b> with a bottom-20% 45-minute OR, indicating a convergence toward caution. The strongest read is on the <b>bearish_930</b> and <b>gap_down</b> pair (n=46, wr_pct= <b>28.3%</b>, pf=<b>0.43</b>), which also carries the hard-stop 45-minute OR warning, so execution today should be tightly restricted unless you see a clear reversal confirmation. In short, proceed with high alert for risk-off setups and defer entries until a concrete signal clears the hard stand-down threshold."
+    "narrative": "Today\u2019s pre-market risk cues show a <b>watch</b> on the combo signals with a cluster around <b>57</b> signals and a <b>premium factor</b> of <b>0.35</b>. The key constraint is a <b>tight_45min_or</b> that sits in the <b>bottom 20%</b>, flagged as a <b>hard stand-down signal</b>, signaling to avoid aggressive long entries into the open. Expect tighter risk controls and limited long exposure unless price action confirms above-resistance or a clear reversal pattern."
   },
   "active_plays": [
     {
@@ -919,16 +811,16 @@
       "name": "FVGC To Opening Range H/L",
       "direction": "both",
       "status": "verified",
-      "wr_base": "47.4%",
-      "sample_size": 405,
-      "action_plan": "1. After 9:45 ET (OR set). 2. Compute OR range (OR.H - OR.L). If > 150pts \u2192 SKIP (kill switch). 3. FVGC entry forms on 1m chart. 4. Prefer LONG entries (PF 2.02 vs short 1.60). 5. OR range sweet spot 60-100pt (PF 2.03), acceptable 30-100pt. 6. R-to-OR between 0.25 and 1.0 (sweet spot 0.5-0.75 = PF 2.67). Skip if R-to-OR > 1.5. 7. SKIP ifvg variant (PF 1.52, weakest). 8. Target 2R, hold original SL.\n\nExit Strategy: Target 2R, hold original SL. NEVER move to breakeven. Validated on 8 years (2018-2026): IS PF 1.77, OOS PF 1.82 \u2014 essentially identical. 1m timeframe wins cross-TF stability (drift 0.02 vs 30s 0.40, 2m 0.48, 3m 0.78).",
+      "wr_base": "47%",
+      "sample_size": 1001,
+      "action_plan": "1. AT 9:45: mark OR.H, OR.L. If OR > 150pt \u2192 NO PLAY today. 2. From 9:45-10:15, watch 30s bars (or 1m if you find 30s too fast). 3. On each FVGC: (a) variant != ifvg, (b) direction points at unswept OR side, (c) at least one OR side still unswept \u2192 TAKE IT. 4. SIZING: 1st fire of day = 1x full size. 2nd/3rd/4th fires = 0.5x half-size. Skip 5th+ (only 0.7% of days, edge breaks down). 5. Take every qualifying fire \u2014 same-day re-entries are +EV up to trade #4. Half-sizing prevents correlated risk on multi-fire days. 6. Target = 2R, hold original SL, NEVER BE. 7. Day's done when both OR sides swept OR 10:15 ET passes.\n\nExit Strategy: Target = 2R. Hold ORIGINAL SL through any OR retest. Do NOT move to breakeven \u2014 70-85% of OR touches retrace through entry before continuing; a BE stop gets hit. Data: of trades that touch the OR target, 72-83% blow through it to 2R; only 10-16% reverse. The runner past OR is where the edge concentrates. Avg excursion beyond OR target on continuations: +6R.",
       "notion_url": "https://www.notion.so/FVGC-To-Opening-Range-H-L-33de2f0e776080409d14f582b1868b64",
-      "description": "1m FVGC entries after 9:45 ET, target 2R, hold original SL. Base play 8yr-validated: n=405, 47.4% WR, PF 1.81 at 2R, EV +0.388R per trade. IS\u2248OOS (drift 0.02). Bootstrap 95% CI on PF [1.47, 2.21]. Kill switch: OR > 150pts (PF 0.92). Sweet spot: OR 60-100pt + long direction = PF 2.36 (premium A+ cell). The 'play dies on OR sweep' rule is intuitive but permutation-test shows it \u2248 noise \u2014 the edge is in the base FVGC model + 2R hold, not the sweep gate.",
+      "description": "After 9:45, take 30s FVGCs pointing at an OR side that has NOT been swept yet. Target 2R, hold original SL. SIZING: 1st trade of day full 1x, 2nd-4th at 0.5x (multi-fires overlap in time and are correlated). The OR is a magnet \u2014 95% of days one side gets tested by 10:15. Kill switches: OR > 150pt | variant=ifvg | both OR sides swept | direction toward already-swept side | trade #5+ of day. 8yr validated: 30s n=1001, PF 1.78, OOS PF 1.76, drift 0.07 (very stable), +45.8R/yr. 1m alt: n=543, PF 1.93, +28R/yr (1.64x less capital accrual).",
       "pre_market_conditions": "None required. This is an intraday-only setup. OR is set at 9:45 ET.",
       "tier": "A",
       "confidence": "high",
-      "frequency": "Tier A (premium, 2x): ~8/yr (~0.7/mo) | median 26d between trades | longest typical wait 110d. Base play (1x): ~24/yr (~2.0/mo) | median 9d between trades | longest typical wait 36d. Combined: ~32 non-vetoed/yr (~1 every 7-10 days).",
-      "pf_base": 2.36,
+      "frequency": "30s primary: ~119/yr (~10/mo), mean 1.49 trades/day, 34% of days have 2+ fires (~half overlap within 5min). 1m alt: ~65/yr (~5.4/mo), 18% multi-fire days. Entry window 9:45-10:15 ET.",
+      "pf_base": 1.78,
       "avg_mfe_r": null,
       "window": [
         "9:45-10:00"
@@ -947,24 +839,50 @@
     ],
     "best_targets": [
       {
-        "label": "London low",
-        "price": 28836.0,
-        "distance_pts": -13.5,
+        "label": "15m FVG (bullish)",
+        "price": 29060.0,
+        "distance_pts": -52.0,
         "direction": "below"
       },
       {
-        "label": "Prev day low",
-        "price": 28814.75,
-        "distance_pts": -34.75,
+        "label": "Asia high",
+        "price": 29024.25,
+        "distance_pts": -87.75,
         "direction": "below"
       },
       {
-        "label": "Asia low",
-        "price": 28885.0,
-        "distance_pts": 35.5,
+        "label": "15m FVG (bearish)",
+        "price": 29116.75,
+        "distance_pts": 4.75,
+        "direction": "above"
+      },
+      {
+        "label": "Prev day high",
+        "price": 29126.5,
+        "distance_pts": 14.5,
         "direction": "above"
       }
     ],
-    "narrative": "Today\u2019s plan: wait for a 9:30 candle that confirms bearish bias across the high-edge setups, as those signals are most likely to be actionable this session. Monitor the 45-minute order flow width by 10:15; a WIDE width gives a green light to pursue directional moves, while a TIGHT reading calls for caution and stand-down. Key reference levels: <b>London low 28836</b> (about <b>-13.5</b> pts from current), <b>Prev day low 28814.75</b> (about <b>-34.75</b> pts), and <b>Asia low 28885</b> (about <b>+35.5</b> pts). If price breaks below the London/Prev day lows with bearish confirmation, lean toward shorts; if price holds above Asia low and the 9:30 candle confirms bearish sentiment, consider targeted downside play toward those lows."
-  }
+    "narrative": "Today\u2019s plan centers on early direction after the 9:30 candle: if the open prints bearish, expect high-edge setups to favor downside, with <b>15m FVG bearish at 29116.75</b> acting as a nearby ceiling and <b>Prev day high 29126.5</b> as a potential short squeeze target beyond that. Monitor the 45-minute OR width by 10:15; a <b>WIDE</b> reading keeps risk-on for long setups, while a <b>TIGHT</b> read calls for stand-down. Key nearby levels to watch for entries and risk are <b>Asia high 29024.25</b> and <b>15m FVG bullish at 29060.0</b>, which is currently a negative distance of <b>52.0 pts</b>."
+  },
+  "unknown_factors": [
+    {
+      "factor": "gap_atr_ratio_lt_0.6",
+      "plays": [
+        "Small-Gap Fade Long (9:31 Entry, Gap\u226525pts)"
+      ]
+    },
+    {
+      "factor": "gap_down_ge_25pts",
+      "plays": [
+        "Small-Gap Fade Long (9:31 Entry, Gap\u226525pts)"
+      ]
+    },
+    {
+      "factor": "open_inside_prior_day_range",
+      "plays": [
+        "Small-Gap Fade Long (9:31 Entry, Gap\u226525pts)"
+      ]
+    }
+  ]
 }
