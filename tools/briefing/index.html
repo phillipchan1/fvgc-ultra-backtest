@@ -2452,20 +2452,22 @@
         const stateEl = card.querySelector('.pstate');
         if (!stateEl) return;
 
-        // Don't downgrade ARMED or MISSED unless the window has actually
-        // passed — these are decisive states set by the live overlay and
-        // shouldn't get clobbered by a generic time-state tick.
+        // Don't downgrade ARMED/MISSED/verdict states set by the live
+        // overlay — they're decisive and shouldn't get clobbered by a
+        // generic time-state tick.
         const cur = stateEl.textContent.trim();
         const isArmed  = cur === 'ARMED'  || card.classList.contains('armed');
         const isMissed = cur === 'MISSED' || card.classList.contains('missed');
+        // Playbook live verdicts set by applyLivePlaybookVerdicts:
+        const isVerdict = /^(VETOED|PRIME|ELIGIBLE|SHORTS ONLY|LONGS ONLY)/.test(cur);
 
         const timeState = timeStateForPlay(p);
         let cls, label;
         if (timeState === 'wait')        { cls = 'wait';   label = 'WAIT'; }
         else if (timeState === 'passed') { cls = 'passed'; label = 'DONE'; }
         else {
-          // in window — preserve ARMED / MISSED if set by live overlay
-          if (isArmed || isMissed) return;
+          // in window — preserve ARMED / MISSED / verdict if set by live overlay
+          if (isArmed || isMissed || isVerdict) return;
           if (kind === 'matrix') {
             const maxAction = (p.projection?.max_tier?.action || '').toUpperCase();
             cls = maxAction.includes('TAKE') ? 'live' : 'wait';
@@ -2693,13 +2695,54 @@
       }
 
       // -------- Tier 2: playbook play live kill-switches --------
-      // Currently just FVGC To Opening Range H/L (the only playbook play
-      // with a hard intraday kill switch). Generalisable later — keyed
-      // off play name for now.
+      // FVGC To Opening Range H/L decision tree, applied against the
+      // 15-min OR (snap.or_15min — locks at 9:45) NOT the 45-min OR
+      // used by the Range Briefing:
+      //
+      //   width > 150 pts                      → VETOED (fires immediately,
+      //                                          width is monotonically
+      //                                          non-decreasing during build)
+      //   both OR sides swept (post-9:45)      → VETOED
+      //   one side swept                       → "LONGS ONLY" or "SHORTS ONLY"
+      //                                          (direction toward the
+      //                                          remaining-unswept side)
+      //   width 60-100 and OR locked, no sweep → PRIME
+      //   width otherwise and OR locked         → ELIGIBLE
+      //   OR not yet locked                    → leave badge (time-state ticker
+      //                                          handles WAIT/LIVE)
+      //
+      // Generalisable later — keyed off play name for now.
       function applyLivePlaybookVerdicts(snap) {
-        const range = snap?.opening_range;
-        if (!range || range.high == null || !range.complete) return;
-        const w = range.width || 0;
+        const or15 = snap?.or_15min;
+        if (!or15 || or15.high == null) return;
+        const w = or15.width || 0;
+
+        // Determine verdict.
+        let verdict = null;
+        let cls = null;
+        let cardExtraCls = null;
+
+        if (w > 150) {
+          // Width kill switch fires immediately — width can only grow.
+          verdict = 'VETOED · OR > 150';
+          cls = 'veto';
+        } else if (or15.complete && or15.high_swept && or15.low_swept) {
+          verdict = 'VETOED · BOTH SWEPT';
+          cls = 'veto';
+        } else if (or15.complete && or15.high_swept) {
+          verdict = 'SHORTS ONLY';   // OR.H taken — trade toward OR.L
+          cls = 'wait';
+        } else if (or15.complete && or15.low_swept) {
+          verdict = 'LONGS ONLY';    // OR.L taken — trade toward OR.H
+          cls = 'wait';
+        } else if (or15.complete) {
+          // OR locked, neither side swept yet, width <= 150.
+          if (w >= 60 && w <= 100) { verdict = 'PRIME';    cls = 'live'; }
+          else                     { verdict = 'ELIGIBLE'; cls = 'live'; }
+        } else {
+          // Pre-9:45 — let the time-state ticker handle WAIT/LIVE.
+          return;
+        }
 
         const apAll = window.BRIEFING_DATA?.active_plays || [];
         apAll.forEach(p => {
@@ -2711,20 +2754,11 @@
           if (!card) return;
           const stateEl = card.querySelector('.pstate');
           if (!stateEl) return;
-
-          let verdict, cls;
-          if (w > 150) {
-            verdict = 'VETOED';
-            cls = 'veto';
-          } else if (w >= 60 && w <= 100) {
-            verdict = 'PRIME';
-            cls = 'live';
-          } else {
-            verdict = 'ELIGIBLE';
-            cls = 'live';
-          }
+          if (stateEl.textContent === verdict) return;  // no change
           stateEl.className = 'pstate ' + cls;
           stateEl.textContent = verdict;
+          // Apply card-level dimming for VETOED.
+          card.classList.toggle('veto', cls === 'veto');
         });
       }
 

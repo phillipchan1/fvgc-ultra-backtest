@@ -164,10 +164,18 @@ def _compute_snapshot() -> dict[str, Any] | None:
         hour=RTH_OPEN[0], minute=RTH_OPEN[1], second=0, microsecond=0
     )
 
-    prior_rth: list[dict] = []   # yesterday 9:30–16:00 ET
-    overnight: list[dict] = []   # yesterday 16:00 ET → today 9:30 ET
-    session_bars: list[dict] = [] # today 9:30 ET onward
-    or_bars: list[dict] = []     # today 9:30–10:15 ET
+    # 15-min opening range (9:30–9:45) — used by FVGC To Opening Range H/L
+    # for its kill switches (width > 150, both sides swept, direction toward
+    # swept side). DISTINCT from the 45-min OR (9:30–10:15) used by the
+    # Range Briefing's Q1–Q5 quintile system.
+    or15_close_dt = open_dt + timedelta(minutes=15)
+
+    prior_rth: list[dict] = []     # yesterday 9:30–16:00 ET
+    overnight: list[dict] = []     # yesterday 16:00 ET → today 9:30 ET
+    session_bars: list[dict] = []  # today 9:30 ET onward
+    or_bars: list[dict] = []       # today 9:30–10:15 ET (45-min OR)
+    or15_bars: list[dict] = []     # today 9:30–9:45 ET  (15-min OR)
+    post_or15_bars: list[dict] = []  # today after 9:45 ET (used for sweep detection)
 
     for b in bars:
         bar_et = b["ts"].astimezone(NY_TZ)
@@ -175,6 +183,10 @@ def _compute_snapshot() -> dict[str, Any] | None:
             session_bars.append(b)
             if bar_et < or_close_dt:
                 or_bars.append(b)
+            if bar_et < or15_close_dt:
+                or15_bars.append(b)
+            else:
+                post_or15_bars.append(b)
         elif bar_et >= prev_close_dt:
             overnight.append(b)
         elif bar_et >= prev_open_dt:
@@ -197,7 +209,8 @@ def _compute_snapshot() -> dict[str, Any] | None:
         "source": "databento-live",
         "prior_rth": None,
         "overnight": None,
-        "opening_range": None,
+        "opening_range": None,    # 45-min OR (Range Briefing)
+        "or_15min": None,         # 15-min OR (FVGC To Opening Range H/L)
     }
 
     if prior_rth:
@@ -244,6 +257,36 @@ def _compute_snapshot() -> dict[str, Any] | None:
             "bar_count": 0,
             "minutes_elapsed": 0,
             "complete": False,
+        }
+
+    # 15-min OR — used by FVGC To Opening Range H/L kill switches.
+    if or15_bars:
+        h15 = max(b["high"] for b in or15_bars)
+        l15 = min(b["low"]  for b in or15_bars)
+        complete_15 = now_et >= or15_close_dt
+        or15: dict[str, Any] = {
+            "high": h15,
+            "low":  l15,
+            "width": h15 - l15,
+            "bar_count": len(or15_bars),
+            "minutes_elapsed": min(len(or15_bars), 15),
+            "complete": complete_15,
+            "high_swept": None,
+            "low_swept":  None,
+        }
+        # OR-side-swept tracking: only meaningful once OR is locked at 9:45.
+        # A side is "swept" if any post-9:45 bar wicked beyond the locked
+        # OR boundary. Both-swept fires the kill switch; one-side-swept
+        # restricts the play to the opposite direction.
+        if complete_15:
+            or15["high_swept"] = any(b["high"] > h15 for b in post_or15_bars)
+            or15["low_swept"]  = any(b["low"]  < l15 for b in post_or15_bars)
+        snap["or_15min"] = or15
+    elif now_et >= open_dt:
+        snap["or_15min"] = {
+            "high": None, "low": None, "width": 0,
+            "bar_count": 0, "minutes_elapsed": 0, "complete": False,
+            "high_swept": None, "low_swept": None,
         }
 
     # Intraday factors — machine-readable booleans the dashboard uses to
