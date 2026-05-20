@@ -1639,6 +1639,117 @@
   .or-live-verdict.warn b { color: var(--amber); }
   .or-live-verdict.bad  b { color: var(--red); }
 
+  /* ===== Evolving Forecast (stepwise OR trajectory) ===== */
+  /* Renders a 4-row table between the static quintile bar and the live-OR
+     section. Each row represents a refinement step: cold → 5m → 15m → final.
+     States: waiting (faded), live (cyan glow), locked (solid). */
+  .evolving-forecast {
+    margin: 10px 0 0;
+    padding: 10px 12px;
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+  }
+  .evolving-forecast .r-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 2px;
+    color: var(--text-mute); font-weight: 700; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .evolving-forecast .r-tag {
+    font-family: var(--mono); font-size: 8px; letter-spacing: 1px;
+    color: var(--text-dim); padding: 1px 5px;
+    border: 1px solid var(--line); border-radius: 2px;
+    margin-left: auto;
+  }
+  .ef-rows {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .ef-row {
+    display: grid;
+    grid-template-columns: 145px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 3px;
+    background: rgba(0,0,0,0.18);
+    border-left: 2px solid var(--line);
+    transition: background 0.4s ease, border-color 0.4s ease;
+  }
+  .ef-row.waiting { opacity: 0.45; }
+  .ef-row.live {
+    border-left-color: var(--cyan);
+    background: linear-gradient(90deg, var(--cyan-dim), transparent 70%);
+  }
+  .ef-row.locked {
+    border-left-color: var(--green);
+    background: rgba(0,0,0,0.32);
+  }
+  .ef-stage {
+    display: flex; align-items: center; gap: 7px;
+    font-family: var(--mono);
+  }
+  .ef-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--text-mute);
+    flex: 0 0 auto;
+  }
+  .ef-dot.waiting { background: var(--text-mute); }
+  .ef-dot.live    { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: pulse 2s ease-in-out infinite; }
+  .ef-dot.locked  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .ef-time {
+    font-size: 10px; color: var(--text-dim); letter-spacing: 0.5px;
+    min-width: 32px;
+  }
+  .ef-name {
+    font-size: 10px; letter-spacing: 1.5px; font-weight: 700;
+    color: var(--text);
+  }
+  .ef-row.waiting .ef-name { color: var(--text-mute); }
+  .ef-data {
+    display: flex; align-items: baseline; gap: 10px;
+    justify-content: flex-start;
+  }
+  .ef-q {
+    font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
+    padding: 1px 6px; border-radius: 2px;
+    border: 1px solid currentColor;
+    min-width: 26px; text-align: center;
+  }
+  .ef-q.good { color: var(--green); }
+  .ef-q.cool { color: var(--cyan); }
+  .ef-q.warn { color: var(--amber); }
+  .ef-q.bad  { color: var(--red); }
+  .ef-q.dim  { color: var(--text-mute); border-color: var(--line); }
+  .ef-pts {
+    font-size: 14px; font-weight: 700; color: var(--text);
+  }
+  .ef-pts.mute { color: var(--text-mute); font-weight: 500; }
+  .ef-unit {
+    font-size: 9px; color: var(--text-dim); font-weight: 500;
+    margin-left: 1px; letter-spacing: 0.5px;
+  }
+  .ef-range {
+    font-size: 10px; letter-spacing: 0.5px;
+  }
+  .ef-conf {
+    font-size: 10px; letter-spacing: 0.5px;
+    padding: 1px 4px; border: 1px solid var(--line);
+    border-radius: 2px;
+  }
+  .ef-basis {
+    font-size: 9px; letter-spacing: 0.5px;
+    text-align: right;
+    color: var(--text-dim);
+  }
+  .ef-drift {
+    margin-top: 8px; padding: 5px 8px;
+    font-size: 10px; letter-spacing: 1px; font-weight: 700;
+    border-radius: 3px; text-align: center;
+  }
+  .ef-drift.good { color: var(--green); background: var(--green-dim); border: 1px solid var(--green); }
+  .ef-drift.bad  { color: var(--red);   background: var(--red-dim);   border: 1px solid var(--red); }
+  .ef-drift.cool { color: var(--cyan);  background: var(--cyan-dim);  border: 1px solid var(--cyan); }
+
   /* When the live OR has locked in a quintile, that quintile in the static
      Q-bar above gets a brighter ring so the user can see actual vs forecast
      at a glance. Live wins. */
@@ -2569,6 +2680,10 @@
           setLiveField('prior_rth_close',
             snap.prior_rth.close.toFixed(2), null);
         }
+        // Evolving forecast (cold → 5min → 15min → final). Must render
+        // before the Live OR section so the section order stays:
+        //   quintile bar → evolving forecast → live OR build → action.
+        renderEvolvingForecast(snap);
         // Live OR section (in Range Briefing). Render conditionally based on
         // snap.opening_range.
         renderLiveORSection(snap);
@@ -2760,6 +2875,212 @@
           // Apply card-level dimming for VETOED.
           card.classList.toggle('veto', cls === 'veto');
         });
+      }
+
+      // ====== EVOLVING FORECAST ======
+      // Three-step refinement of the 45-min OR forecast as live evidence
+      // arrives. Sources:
+      //   cold:  fc.point_pts (model output, pre-open)
+      //   5min:  snap.or_5min.width × ratio_5_to_45.median  (locks 9:35)
+      //   15min: snap.or_15min.width × ratio_15_to_45.median (locks 9:45)
+      //   final: snap.opening_range.width once 9:30+45min elapsed
+      //
+      // Confidence per step = max-probability quintile from the relevant
+      // transition matrix (5→45 or 15→45). Validated on 1393 trading days:
+      // 15min Q5 → 45min Q5 hits 66% (95% top-2 adjacent).
+      function _bucketize(width, cuts) {
+        // cuts = [Q1max, Q2max, Q3max, Q4max] → returns 1..5
+        for (let i = 0; i < cuts.length; i++) {
+          if (width <= cuts[i]) return i + 1;
+        }
+        return 5;
+      }
+      function _refineForecast(width, transitionRow, ratio) {
+        // transitionRow: array of 5 probabilities P(45min=Qi | observed=Qsource)
+        // ratio: {median, q25, q75, q10, q90}
+        if (!transitionRow || !ratio) return null;
+        let bestI = 0, bestP = -1;
+        transitionRow.forEach((p, i) => { if (p > bestP) { bestP = p; bestI = i; } });
+        const top2P = (bestP || 0) + (transitionRow[Math.min(4, bestI + 1)] || 0)
+                    + (transitionRow[Math.max(0, bestI - 1)] || 0)
+                    - (bestP || 0);  // bestP counted once; adjacents added
+        return {
+          quintile: `Q${bestI + 1}`,
+          confidence: bestP,             // 0..1, max-quintile probability
+          top2_adj: Math.min(1, bestP + Math.max(
+            transitionRow[Math.min(4, bestI + 1)] || 0,
+            transitionRow[Math.max(0, bestI - 1)] || 0)),
+          point_pts: width * ratio.median,
+          lo_pts: width * ratio.q25,
+          hi_pts: width * ratio.q75,
+        };
+      }
+      function _qClass(qLetter) {
+        switch ((qLetter || '').toUpperCase()) {
+          case 'Q5': return 'good';
+          case 'Q4': return 'good';
+          case 'Q3': return 'cool';
+          case 'Q2': return 'warn';
+          case 'Q1': return 'bad';
+          default:   return '';
+        }
+      }
+      function renderEvolvingForecast(snap) {
+        const fc = window.BRIEFING_DATA?.or_forecast;
+        const sw = fc?.stepwise;
+        let container = document.getElementById('evolving-forecast');
+
+        // Need stepwise stats (baked into briefing.json) + a cold-start
+        // forecast to even show the trajectory.
+        if (!sw || !sw.available || !fc?.available) {
+          if (container) container.style.display = 'none';
+          return;
+        }
+        if (!container) {
+          const rangeCard = document.querySelector('.range-card');
+          if (!rangeCard) return;
+          container = document.createElement('div');
+          container.id = 'evolving-forecast';
+          container.className = 'evolving-forecast';
+          // Insert before live-OR section if present, else before action.
+          const liveOR = rangeCard.querySelector('#or-live-section');
+          const actionBlock = rangeCard.querySelector('.range-action');
+          const anchor = liveOR || actionBlock;
+          if (anchor) {
+            rangeCard.insertBefore(container, anchor);
+          } else {
+            rangeCard.appendChild(container);
+          }
+        }
+        container.style.display = '';
+
+        const or5  = snap?.or_5min;
+        const or15 = snap?.or_15min;
+        const or45 = snap?.opening_range;
+
+        // STEP 1 — COLD START (always shown; model output)
+        const coldQ = ((fc.quintile || '').split(' ', 1)[0] || '').toUpperCase();
+        const coldRow = {
+          stage: 'COLD START',
+          time: '9:29',
+          state: 'locked',          // model output, never changes intraday
+          quintile: coldQ || '—',
+          confidence: null,
+          point_pts: fc.point_pts,
+          lo_pts: fc.lo80_pts,
+          hi_pts: fc.hi80_pts,
+          basis: 'model · 13 features',
+        };
+
+        // STEP 2 — AFTER 5-MIN OR (locks 9:35)
+        let step5 = { stage: '+5 MIN', time: '9:35', state: 'waiting' };
+        if (or5 && or5.width > 0) {
+          const q5 = _bucketize(or5.width, sw.thresholds.or_5min);
+          const row = sw.transition_5_to_45[q5 - 1];
+          const refined = _refineForecast(or5.width, row, sw.ratio_5_to_45);
+          step5 = Object.assign(step5, refined || {}, {
+            state: or5.complete ? 'locked' : 'live',
+            basis: `OR(5m) = ${Math.round(or5.width)}pt · Q${q5}`,
+            source_q: q5,
+            source_width: or5.width,
+          });
+        }
+
+        // STEP 3 — AFTER 15-MIN OR (locks 9:45)
+        let step15 = { stage: '+15 MIN', time: '9:45', state: 'waiting' };
+        if (or15 && or15.width > 0) {
+          const q15 = _bucketize(or15.width, sw.thresholds.or_15min);
+          const row = sw.transition_15_to_45[q15 - 1];
+          const refined = _refineForecast(or15.width, row, sw.ratio_15_to_45);
+          step15 = Object.assign(step15, refined || {}, {
+            state: or15.complete ? 'locked' : 'live',
+            basis: `OR(15m) = ${Math.round(or15.width)}pt · Q${q15}`,
+            source_q: q15,
+            source_width: or15.width,
+          });
+        }
+
+        // STEP 4 — ACTUAL (45-min OR locked)
+        let stepFinal = { stage: 'ACTUAL', time: '10:15', state: 'waiting' };
+        if (or45 && or45.complete && or45.width > 0) {
+          const qFinal = _bucketize(or45.width, sw.thresholds.or_45min);
+          stepFinal = {
+            stage: 'ACTUAL',
+            time: '10:15',
+            state: 'locked',
+            quintile: `Q${qFinal}`,
+            confidence: 1.0,
+            point_pts: or45.width,
+            lo_pts: or45.width,
+            hi_pts: or45.width,
+            basis: 'OR(45m) locked',
+            source_width: or45.width,
+          };
+        }
+
+        const steps = [coldRow, step5, step15, stepFinal];
+
+        // Build HTML. Re-render whole block each tick — cheap, lets us
+        // animate state transitions cleanly.
+        const stepHtml = steps.map((s, i) => {
+          const isWaiting = s.state === 'waiting';
+          const qLetter = (s.quintile || '').toUpperCase();
+          const qCls = _qClass(qLetter);
+          const stateCls = s.state || 'waiting';
+          const widthCell = s.point_pts != null
+            ? `<span class="ef-pts mono">${Math.round(s.point_pts)}<span class="ef-unit">pt</span></span>`
+            : `<span class="ef-pts mute mono">—</span>`;
+          const rangeCell = (s.lo_pts != null && s.hi_pts != null && s.lo_pts !== s.hi_pts)
+            ? `<span class="ef-range mono mute">${Math.round(s.lo_pts)}–${Math.round(s.hi_pts)}</span>`
+            : '';
+          const qCell = qLetter && !isWaiting
+            ? `<span class="ef-q ${qCls} mono">${qLetter}</span>`
+            : `<span class="ef-q dim mono">—</span>`;
+          const confCell = (s.confidence != null && s.confidence > 0 && s.state !== 'waiting' && s.stage !== 'COLD START' && s.stage !== 'ACTUAL')
+            ? `<span class="ef-conf mono mute">${Math.round(s.confidence * 100)}%</span>`
+            : '';
+          return `
+            <div class="ef-row ${stateCls}">
+              <div class="ef-stage">
+                <span class="ef-dot ${stateCls}"></span>
+                <span class="ef-time mono">${s.time}</span>
+                <span class="ef-name mono">${s.stage}</span>
+              </div>
+              <div class="ef-data">
+                ${qCell}
+                ${widthCell}
+                ${rangeCell}
+                ${confCell}
+              </div>
+              <div class="ef-basis mono mute">${s.basis || (isWaiting ? 'pending' : '')}</div>
+            </div>
+          `;
+        }).join('');
+
+        // Drift indicator: if the latest available step disagrees with
+        // cold-start quintile, surface it (Q drift is real signal).
+        const last = [stepFinal, step15, step5].find(s => s && s.state !== 'waiting' && s.quintile);
+        let drift = '';
+        if (last && last.stage !== 'COLD START' && coldQ && last.quintile) {
+          const cIdx = parseInt(coldQ.slice(1), 10);
+          const lIdx = parseInt(last.quintile.slice(1), 10);
+          if (!isNaN(cIdx) && !isNaN(lIdx) && lIdx !== cIdx) {
+            const dir = lIdx > cIdx ? 'WIDER' : 'TIGHTER';
+            const dCls = lIdx > cIdx ? 'good' : 'bad';
+            drift = `<div class="ef-drift ${dCls} mono">DRIFT ${dir} · cold ${coldQ} → live ${last.quintile}</div>`;
+          } else if (!isNaN(cIdx) && !isNaN(lIdx)) {
+            drift = `<div class="ef-drift cool mono">ON TRACK · cold ${coldQ} confirmed at ${last.stage}</div>`;
+          }
+        }
+
+        container.innerHTML = `
+          <div class="r-label">
+            EVOLVING FORECAST
+            <span class="r-tag">stepwise · n=${sw.sample_size}</span>
+          </div>
+          <div class="ef-rows">${stepHtml}</div>
+          ${drift}
+        `;
       }
 
       function renderLiveORSection(snap) {

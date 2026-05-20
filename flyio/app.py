@@ -176,12 +176,17 @@ def _compute_snapshot() -> dict[str, Any] | None:
     # swept side). DISTINCT from the 45-min OR (9:30–10:15) used by the
     # Range Briefing's Q1–Q5 quintile system.
     or15_close_dt = open_dt + timedelta(minutes=15)
+    # 5-min opening range (9:30–9:35) — first refinement step of the
+    # stepwise OR forecast. Locks 5 minutes after open and feeds the
+    # 5min→45min quintile transition matrix in briefing.json.
+    or5_close_dt = open_dt + timedelta(minutes=5)
 
     prior_rth: list[dict] = []     # yesterday 9:30–16:00 ET
     overnight: list[dict] = []     # yesterday 16:00 ET → today 9:30 ET
     session_bars: list[dict] = []  # today 9:30 ET onward
     or_bars: list[dict] = []       # today 9:30–10:15 ET (45-min OR)
     or15_bars: list[dict] = []     # today 9:30–9:45 ET  (15-min OR)
+    or5_bars: list[dict] = []      # today 9:30–9:35 ET  (5-min OR)
     post_or15_bars: list[dict] = []  # today after 9:45 ET (used for sweep detection)
 
     for b in bars:
@@ -194,6 +199,8 @@ def _compute_snapshot() -> dict[str, Any] | None:
                 or15_bars.append(b)
             else:
                 post_or15_bars.append(b)
+            if bar_et < or5_close_dt:
+                or5_bars.append(b)
         elif bar_et >= prev_close_dt:
             overnight.append(b)
         elif bar_et >= prev_open_dt:
@@ -218,6 +225,7 @@ def _compute_snapshot() -> dict[str, Any] | None:
         "overnight": None,
         "opening_range": None,    # 45-min OR (Range Briefing)
         "or_15min": None,         # 15-min OR (FVGC To Opening Range H/L)
+        "or_5min": None,          # 5-min OR (Stepwise forecast step 1)
     }
 
     if prior_rth:
@@ -303,6 +311,28 @@ def _compute_snapshot() -> dict[str, Any] | None:
             "bar_count": 0, "minutes_elapsed": 0, "seconds_elapsed": 0,
             "complete": False,
             "high_swept": None, "low_swept": None,
+        }
+
+    # 5-min OR — first refinement step of the stepwise OR forecast.
+    # Locks at 9:35 ET. The dashboard uses width here to refine the
+    # cold-start Q1–Q5 forecast via the 5→45 quintile transition matrix.
+    if or5_bars:
+        h5 = max(b["high"] for b in or5_bars)
+        l5 = min(b["low"]  for b in or5_bars)
+        snap["or_5min"] = {
+            "high": h5,
+            "low":  l5,
+            "width": h5 - l5,
+            "bar_count": len(or5_bars),
+            "minutes_elapsed": min(5, secs_since_open // 60),
+            "seconds_elapsed": min(5 * 60, secs_since_open),
+            "complete": now_et >= or5_close_dt,
+        }
+    elif now_et >= open_dt:
+        snap["or_5min"] = {
+            "high": None, "low": None, "width": 0,
+            "bar_count": 0, "minutes_elapsed": 0, "seconds_elapsed": 0,
+            "complete": False,
         }
 
     # Intraday factors — machine-readable booleans the dashboard uses to
