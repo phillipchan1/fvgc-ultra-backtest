@@ -2395,6 +2395,74 @@
         minOfDay: hour * 60 + parseInt(p.minute, 10),
       };
     }
+    // Single source of truth for matrix-play state. Used by:
+    //   - renderMatrixDetail   (initial render of col-3 state banner)
+    //   - updateMatrixCardLive (live-overlay updates on every Fly.io poll)
+    //   - updatePlayTimeStates (30s ticker — flips WAIT → in-window → DONE)
+    //
+    // Precedence (highest wins):
+    //   1. VETO       — sticky, regardless of time or factors
+    //   2. DONE       — window has passed (replaces in-window states)
+    //   3. WAIT       — window hasn't started yet
+    //   4. ARMED      — in window, confluence ≥ projection.max_count
+    //   5. MISSED     — in window, can no longer reach max_count + ≥1 missed
+    //   6. LIVE       — in window, ≥1 factor fired
+    //   7. WATCHING   — in window, nothing fired yet
+    //
+    // Returns {label, cls, action} — never null.
+    function _computeMatrixState(p) {
+      const proj         = p.projection || {};
+      const projMax      = proj.max_count ?? 0;
+      const maxActionStr = proj.max_tier?.action || '';
+      const maxActionUC  = maxActionStr.toUpperCase();
+      const firedSet     = new Set(p._fired_factor_ids  || []);
+      const missedSet    = new Set(p._missed_factor_ids || []);
+      const liveCount    = p._live_count != null ? p._live_count : p.preopen_count;
+      const pending      = p.post_pending || [];
+      const unknownPending = pending.filter(f =>
+        !firedSet.has(f.id) && !missedSet.has(f.id));
+
+      if (p.veto_active) {
+        return { label: 'VETOED', cls: 'veto',
+                 action: `Skip ${p.name} today — veto overrides any confluence.` };
+      }
+
+      const ts = timeStateForPlay(p);  // 'wait' | 'in_window' | 'passed' | null
+
+      if (ts === 'passed') {
+        // Window over — summarise what happened.
+        if (liveCount >= projMax && maxActionUC.includes('TAKE')) {
+          return { label: 'DONE · ARMED', cls: 'live',
+                   action: `Window armed. Action: ${maxActionStr}` };
+        }
+        return { label: 'DONE', cls: 'wait',
+                 action: `Window has passed. Final count: ${liveCount}/${p.max_preopen}.` };
+      }
+
+      if (ts === 'wait') {
+        return { label: 'WAIT', cls: 'wait',
+                 action: `Pre-window. Watch ${p.window} for first signal.` };
+      }
+
+      // In window (ts === 'in_window' or null fallback) — live states.
+      if (liveCount >= projMax && maxActionUC.includes('TAKE')) {
+        return { label: 'ARMED', cls: 'live', action: maxActionStr };
+      }
+      const canReach = (liveCount + unknownPending.length) >= projMax
+                       && maxActionUC.includes('TAKE');
+      if (!canReach && missedSet.size > 0) {
+        return { label: 'MISSED', cls: 'missed',
+                 action: 'Confluence threshold unreachable — stand down.' };
+      }
+      if (firedSet.size > 0) {
+        return { label: 'LIVE · BUILDING', cls: 'live',
+                 action: `Currently ${liveCount}/${p.max_preopen} — ` +
+                         `need ${Math.max(0, projMax - liveCount)} more for TAKE.` };
+      }
+      return { label: 'LIVE · WATCHING', cls: 'wait',
+               action: `Currently ${liveCount}/${p.max_preopen} pre-open. Watch ${p.window}.` };
+    }
+
     function timeStateForPlay(p) {
       const briefingDate = window.BRIEFING_DATA?.meta?.date;
       if (!briefingDate) return null;
@@ -2736,23 +2804,44 @@
           stateEl.textContent = label;
         }
         // Mirror to the detail-pane state banner if this play is shown.
-        // Matrix plays handle this themselves in updateMatrixCardLive; the
-        // mirror here is for playbook plays where the time-state ticker
-        // is the primary state driver.
-        if (kind === 'playbook') {
-          const chipSel = `[data-detail-state-chip="${cssEscape(name)}"]`;
-          const banSel  = `[data-detail-play="${cssEscape(name)}"]`;
-          const dChip = document.querySelector(chipSel);
-          const dBan  = document.querySelector(banSel);
-          if (dChip && dBan) {
-            // Map ticker label → banner classes/labels.
-            const bClass = label === 'WAIT' ? 'wait'
-                         : label === 'DONE' ? 'wait'
-                         : label === 'LIVE' ? 'live'
-                         : 'wait';
-            dBan.className  = 'detail-state-banner ' + bClass;
-            dChip.className = 'dsb-chip ' + bClass;
-            dChip.textContent = label;
+        // Matrix plays use _computeMatrixState (time-aware, so DONE shows
+        // post-window). Playbook plays use a simpler label/action map.
+        const chipSel = `[data-detail-state-chip="${cssEscape(name)}"]`;
+        const banSel  = `[data-detail-play="${cssEscape(name)}"]`;
+        const actSel  = `[data-detail-state-action="${cssEscape(name)}"]`;
+        const dChip = document.querySelector(chipSel);
+        const dBan  = document.querySelector(banSel);
+        const dAct  = document.querySelector(actSel);
+        if (dChip && dBan) {
+          if (kind === 'matrix') {
+            const st = _computeMatrixState(p);
+            dBan.className  = 'detail-state-banner ' + st.cls;
+            dChip.className = 'dsb-chip ' + st.cls;
+            dChip.textContent = st.label;
+            if (dAct) {
+              dAct.className = 'dsb-action ' + st.cls;
+              dAct.textContent = st.action;
+            }
+          } else {
+            // Playbook: ticker controls label; preserve any live verdict
+            // (set by applyLivePlaybookVerdicts) — those win over WAIT/LIVE.
+            const isVerdictNow = /^(VETOED|PRIME|ELIGIBLE|SHORTS ONLY|LONGS ONLY)/.test(dChip.textContent || '');
+            if (!isVerdictNow || timeState !== 'in_window') {
+              const bClass = label === 'WAIT' ? 'wait'
+                           : label === 'DONE' ? 'wait'
+                           : label === 'LIVE' ? 'live'
+                           : 'wait';
+              dBan.className  = 'detail-state-banner ' + bClass;
+              dChip.className = 'dsb-chip ' + bClass;
+              dChip.textContent = label;
+              if (dAct && (label === 'DONE' || label === 'WAIT')) {
+                const winStr = (normalizeWindows(p)).join(', ');
+                dAct.className = 'dsb-action ' + bClass;
+                dAct.textContent = label === 'DONE'
+                  ? 'Window has passed.'
+                  : `Pre-window. Watch ${winStr}.`;
+              }
+            }
           }
         }
         // Sync card-level class for opacity dimming, etc.
@@ -2977,30 +3066,14 @@
         const dbAction = document.querySelector(`[data-detail-state-action="${cssEscape(p.name)}"]`);
         const dbBanner = document.querySelector(`[data-detail-play="${cssEscape(p.name)}"]`);
         if (dbChip && dbCount && dbAction && dbBanner) {
-          // Recompute the same state machine used in renderMatrixDetail.
-          let stateKey, stateLabel, stateCls, actionLine;
-          if (p.veto_active) {
-            stateKey='VETO'; stateLabel='VETOED'; stateCls='veto';
-            actionLine = `Skip ${p.name} today — veto overrides any confluence.`;
-          } else if (liveCount >= projMax && (p.projection?.max_tier?.action || '').toUpperCase().includes('TAKE')) {
-            stateKey='ARMED'; stateLabel='ARMED'; stateCls='live';
-            actionLine = p.projection.max_tier.action;
-          } else if (!canStillReachTake && missedIds.size > 0) {
-            stateKey='MISSED'; stateLabel='MISSED'; stateCls='missed';
-            actionLine = 'Confluence threshold unreachable — stand down.';
-          } else if (firedIds.size > 0) {
-            stateKey='LIVE'; stateLabel='LIVE · BUILDING'; stateCls='live';
-            actionLine = `Currently ${liveCount}/${p.max_preopen} — ` +
-                         `need ${Math.max(0, projMax - liveCount)} more for TAKE.`;
-          } else {
-            stateKey='WAIT'; stateLabel='WAIT'; stateCls='wait';
-            actionLine = `Watch ${p.window} for first signal.`;
-          }
-          dbBanner.className = 'detail-state-banner ' + stateCls;
-          dbChip.className   = 'dsb-chip ' + stateCls;
-          dbChip.textContent = stateLabel;
-          dbAction.className = 'dsb-action ' + stateCls;
-          dbAction.textContent = actionLine;
+          // Recompute via the shared helper — pulls in time-state so the
+          // banner flips to DONE once the window passes.
+          const st = _computeMatrixState(p);
+          dbBanner.className = 'detail-state-banner ' + st.cls;
+          dbChip.className   = 'dsb-chip ' + st.cls;
+          dbChip.textContent = st.label;
+          dbAction.className = 'dsb-action ' + st.cls;
+          dbAction.textContent = st.action;
           // Count: "<liveCount>/<max>  · +<unknown>"
           const unknownCount = pending.length - firedIds.size - missedIds.size;
           dbCount.innerHTML =
@@ -3789,8 +3862,9 @@
           h('span', {class:'mute'}, `${p.preopen_count}/${p.max_preopen} pre-open`))));
 
       // -------- State banner (live-updatable) --------
-      // Compute current state from persisted live-update results when present,
-      // otherwise from pre-open baseline.
+      // Single source of truth — same logic the card uses, so the detail
+      // banner can never disagree with the col-2 chip (incl. post-window
+      // DONE, which used to be missing here).
       const firedSet  = new Set(p._fired_factor_ids  || []);
       const missedSet = new Set(p._missed_factor_ids || []);
       const liveCount = p._live_count != null ? p._live_count : p.preopen_count;
@@ -3799,30 +3873,10 @@
         !firedSet.has(f.id) && !missedSet.has(f.id));
       const proj = p.projection || {};
       const projMax = proj.max_count ?? 0;
-      const maxAction = (proj.max_tier?.action || '').toUpperCase();
-      const canStillReachTake =
-        (liveCount + unknownPending.length) >= projMax
-        && maxAction.includes('TAKE');
-
-      // Pick the live state — same logic as updateMatrixCardLive.
-      let stateKey, stateLabel, stateCls, actionLine;
-      if (p.veto_active) {
-        stateKey = 'VETO'; stateLabel = 'VETOED'; stateCls = 'veto';
-        actionLine = `Skip ${p.name} today — veto overrides any confluence.`;
-      } else if (liveCount >= projMax && maxAction.includes('TAKE')) {
-        stateKey = 'ARMED'; stateLabel = 'ARMED'; stateCls = 'live';
-        actionLine = proj.max_tier?.action || 'TAKE per playbook';
-      } else if (!canStillReachTake && missedSet.size > 0) {
-        stateKey = 'MISSED'; stateLabel = 'MISSED'; stateCls = 'missed';
-        actionLine = 'Confluence threshold unreachable — stand down.';
-      } else if (firedSet.size > 0) {
-        stateKey = 'LIVE'; stateLabel = 'LIVE · BUILDING'; stateCls = 'live';
-        actionLine = `Currently ${liveCount}/${p.max_preopen} — ` +
-                     `need ${Math.max(0, projMax - liveCount)} more for TAKE.`;
-      } else {
-        stateKey = 'WAIT'; stateLabel = 'WAIT'; stateCls = 'wait';
-        actionLine = `Watch ${p.window} for first signal.`;
-      }
+      const st = _computeMatrixState(p);
+      const stateLabel = st.label;
+      const stateCls   = st.cls;
+      const actionLine = st.action;
 
       // Confluence dot tracker — mirrors the mini dots in col 2 but bigger.
       // Renders ALL factors (preopen + pending) so the tracker is visually
