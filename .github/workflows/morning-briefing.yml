@@ -2,11 +2,13 @@ name: Morning Briefing
 
 # Runs the daily pre-market briefing autonomously — replaces the Claude Code
 # routine entirely. Order:
-#   1. Sync the FVGC Playbook from Notion → playbook/plays.json
-#   2. Run morning_briefing.py to fetch live market data + write
+#   1. Skip-guard: if today's briefing already exists, no-op (so backup
+#      cron firings don't produce duplicate commits).
+#   2. Sync the FVGC Playbook from Notion → playbook/plays.json
+#   3. Run morning_briefing.py to fetch live market data + write
 #      briefing.json + data.js (with AI narratives via GPT-5 Nano)
-#   3. Commit + push the artifacts to master
-#   4. Deploy the dashboard to GitHub Pages directly from this run.
+#   4. Commit + push the artifacts to master
+#   5. Deploy the dashboard to GitHub Pages directly from this run.
 #
 # Why the deploy lives here instead of in pages.yml:
 # GitHub Actions silently blocks workflows from being triggered by the
@@ -16,16 +18,28 @@ name: Morning Briefing
 # separate pages.yml still handles deploys for human pushes that don't
 # go through this cron.
 #
-# Cron: 13:10 UTC weekdays. During DST that's 6:10 AM PT (matches the old
-# Claude routine); during standard time it runs 1h earlier — still pre-open.
+# Cron schedule:
+#   Primary at 13:10 UTC weekdays (6:10 AM PT / 9:10 AM ET during DST).
+#   Backups at +10, +20, +30, +40, +50 min so we keep retrying through
+#   the next 50 minutes if GitHub's scheduler is overloaded — a routine
+#   free-tier issue. The skip-guard ensures only the first successful
+#   run writes a commit.
 
 on:
   schedule:
-    - cron: '10 13 * * 1-5'
+    - cron: '10 13 * * 1-5'   # primary  — 6:10 AM PT (DST) / 5:10 AM PT (PST)
+    - cron: '20 13 * * 1-5'   # backup 1 — fires if primary was skipped
+    - cron: '30 13 * * 1-5'   # backup 2
+    - cron: '40 13 * * 1-5'   # backup 3
+    - cron: '50 13 * * 1-5'   # backup 4 (last call, still pre-open)
   workflow_dispatch:
     inputs:
       ai_overwrite:
         description: 'Regenerate AI narratives even if present'
+        type: boolean
+        default: false
+      force:
+        description: 'Force regeneration even if today briefing exists'
         type: boolean
         default: false
 
@@ -52,18 +66,42 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Skip-guard — only the first run of the day proceeds
+        id: guard
+        run: |
+          set -e
+          TODAY=$(TZ=America/New_York date +%Y-%m-%d)
+          FORCE='${{ github.event.inputs.force }}'
+          if [ "$FORCE" = "true" ]; then
+            echo "Force-run requested via workflow_dispatch — proceeding."
+            echo "skip=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          if [ -f tools/briefing/briefing.json ]; then
+            EXISTING=$(python3 -c "import json; print(json.load(open('tools/briefing/briefing.json'))['meta']['date'])" 2>/dev/null || echo "")
+            if [ "$EXISTING" = "$TODAY" ]; then
+              echo "Briefing for $TODAY already exists — backup cron has nothing to do."
+              echo "skip=true" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          fi
+          echo "skip=false" >> $GITHUB_OUTPUT
+
       - name: Set up Python
+        if: steps.guard.outputs.skip != 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Sync FVGC Playbook from Notion
+        if: steps.guard.outputs.skip != 'true'
         env:
           NOTION_API_TOKEN: ${{ secrets.NOTION_API_TOKEN }}
         run: |
           python tools/sync_playbook_from_notion.py --from-api
 
       - name: Run morning briefing (live data + AI narratives)
+        if: steps.guard.outputs.skip != 'true'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
@@ -75,6 +113,7 @@ jobs:
           python tools/morning_briefing.py --export-dashboard $AI_FLAGS
 
       - name: Commit and push artifacts
+        if: steps.guard.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -93,13 +132,16 @@ jobs:
           fi
 
       - name: Configure Pages
+        if: steps.guard.outputs.skip != 'true'
         uses: actions/configure-pages@v5
 
       - name: Upload dashboard artifact
+        if: steps.guard.outputs.skip != 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: tools/briefing
 
       - name: Deploy to GitHub Pages
+        if: steps.guard.outputs.skip != 'true'
         id: deployment
         uses: actions/deploy-pages@v4
