@@ -1123,13 +1123,19 @@ async def lifespan(app: FastAPI):
         t.start()
         log.info("Started Databento Live thread")
 
-    # Narrative regen — non-blocking, degrades gracefully without the key.
+    # Briefing context (matrix_plays definitions, morning narratives) —
+    # always fetch, even without OPENAI_API_KEY. Used by:
+    #   - narrative worker (when key is set) for prompt context
+    #   - play-history endpoint to match FVGC signals to matrix plays
+    ctx = _fetch_briefing_context()
+    if ctx:
+        with state_lock:
+            state["briefing_context"] = ctx
+            state["briefing_context_fetched_at"] = datetime.now(timezone.utc)
+    else:
+        log.info("briefing context unavailable — play-history will lack play matches")
+
     if OPENAI_API_KEY:
-        ctx = _fetch_briefing_context()
-        if ctx:
-            with state_lock:
-                state["briefing_context"] = ctx
-                state["briefing_context_fetched_at"] = datetime.now(timezone.utc)
         nt = threading.Thread(target=_narrative_worker, daemon=True,
                               name="narrative-worker")
         nt.start()
