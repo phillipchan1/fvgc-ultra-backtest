@@ -330,6 +330,42 @@
   }
   .pulse.demo { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
   .pulse.offline { border-color: var(--text-mute); color: var(--text-mute); background: transparent; }
+  .pulse.stale { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
+  /* Live feed status pill — distinct from morning-mode "pulse" */
+  .live-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 9px;
+    border-radius: 2px;
+    border: 1px solid var(--cyan); color: var(--cyan);
+    background: var(--cyan-dim);
+    font-family: var(--mono); font-size: 9px;
+    text-transform: uppercase; letter-spacing: 2px;
+    cursor: help;
+  }
+  .live-pill.live    { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+  .live-pill.stale   { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
+  .live-pill.offline { border-color: var(--text-mute); color: var(--text-mute); background: transparent; }
+  .live-pill::before {
+    content: ""; width: 5px; height: 5px;
+    border-radius: 50%; background: currentColor;
+  }
+  .live-pill.live::before {
+    animation: pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 6px currentColor;
+  }
+  .live-pill .lag {
+    font-size: 9px; opacity: 0.7; letter-spacing: 1px;
+  }
+
+  /* Subtle pulse on a live-updated field to make changes visible. */
+  @keyframes live-update-flash {
+    0%   { background-color: var(--cyan-dim); }
+    100% { background-color: transparent; }
+  }
+  [data-live-field].live-just-updated {
+    animation: live-update-flash 0.9s ease-out;
+    border-radius: 2px;
+  }
   .pulse::before {
     content: ""; width: 6px; height: 6px;
     border-radius: 50%; background: currentColor;
@@ -1483,6 +1519,84 @@
   .r-v-bad     { color: var(--red); font-weight: 700; }
   .r-v-neutral { color: var(--amber); font-weight: 700; }
 
+  /* ===== Live OR Progress (rendered inside Range Briefing during session) ===== */
+  .range-or-live { /* placeholder, hidden until live data fills it */ }
+  .or-live-card {
+    padding: 12px 14px;
+    background: linear-gradient(135deg, var(--cyan-dim), transparent 70%);
+    border: 1px solid var(--cyan);
+    border-radius: 4px;
+    box-shadow: 0 0 24px -8px var(--cyan-glow);
+  }
+  .or-live-card .r-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 2px;
+    color: var(--cyan); font-weight: 700; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .or-live-card .r-label::before { content: "● "; color: var(--cyan); animation: pulse 2s ease-in-out infinite; }
+  .or-live-card .r-tag {
+    font-family: var(--mono); font-size: 8px; letter-spacing: 1px;
+    color: var(--green); padding: 1px 5px; border: 1px solid var(--green);
+    border-radius: 2px; background: var(--green-dim);
+    margin-left: auto;
+  }
+  .or-live-card.locked .r-tag {
+    color: var(--text-dim); border-color: var(--text-dim); background: transparent;
+  }
+  .or-live-stats {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+    margin-bottom: 10px;
+  }
+  .or-live-stat {
+    background: var(--bg-3); border: 1px solid var(--line);
+    border-radius: 3px; padding: 6px 8px;
+  }
+  .or-live-stat .lbl {
+    font-family: var(--mono); font-size: 8px; letter-spacing: 1.5px;
+    color: var(--text-mute); font-weight: 700;
+  }
+  .or-live-stat .val {
+    font-family: var(--mono); font-size: 16px; font-weight: 700;
+    color: var(--text); margin-top: 3px;
+  }
+  .or-live-stat.width .val { color: var(--cyan); }
+  .or-time-bar {
+    height: 4px; background: var(--bg-3); border-radius: 2px;
+    overflow: hidden; margin-bottom: 4px;
+  }
+  .or-time-bar > i {
+    display: block; height: 100%; background: var(--cyan);
+    box-shadow: 0 0 6px var(--cyan);
+    transition: width 0.6s ease-out;
+  }
+  .or-time-label {
+    font-family: var(--mono); font-size: 9px; color: var(--text-dim);
+    letter-spacing: 0.5px; text-align: right; margin-bottom: 10px;
+  }
+  .or-live-verdict {
+    font-size: 11px; color: var(--text-dim); line-height: 1.6;
+    padding: 8px 10px; background: var(--bg-3); border-radius: 3px;
+    border-left: 2px solid;
+  }
+  .or-live-verdict.good { border-color: var(--green); }
+  .or-live-verdict.cool { border-color: var(--cyan); }
+  .or-live-verdict.warn { border-color: var(--amber); }
+  .or-live-verdict.bad  { border-color: var(--red); }
+  .or-live-verdict b { font-weight: 700; }
+  .or-live-verdict.good b { color: var(--green); }
+  .or-live-verdict.cool b { color: var(--cyan); }
+  .or-live-verdict.warn b { color: var(--amber); }
+  .or-live-verdict.bad  b { color: var(--red); }
+
+  /* When the live OR has locked in a quintile, that quintile in the static
+     Q-bar above gets a brighter ring so the user can see actual vs forecast
+     at a glance. Live wins. */
+  .q-seg.live-locked.q1 { background: var(--red);   box-shadow: 0 0 16px var(--red), 0 0 4px white inset; border-color: white; }
+  .q-seg.live-locked.q2 { background: var(--amber); box-shadow: 0 0 16px var(--amber), 0 0 4px white inset; border-color: white; }
+  .q-seg.live-locked.q3 { background: var(--cyan);  box-shadow: 0 0 16px var(--cyan), 0 0 4px white inset; border-color: white; }
+  .q-seg.live-locked.q4 { background: var(--green); box-shadow: 0 0 16px var(--green), 0 0 4px white inset; border-color: white; }
+  .q-seg.live-locked.q5 { background: var(--green); box-shadow: 0 0 22px var(--green), 0 0 4px white inset; border-color: white; }
+
   /* ===== Pre-open / ladder ===== */
   .preopen-head {
     display: flex; align-items: flex-end; justify-content: space-between;
@@ -2027,6 +2141,13 @@
     tickClock();
     setInterval(tickClock, 1000);
 
+    // Live-feed status pill (Fly.io). Starts CONNECTING; live polling
+    // updates it to LIVE / STALE / OFFLINE as appropriate. The static
+    // "pulse" pill (MORNING/DEMO mode) stays alongside it so the user
+    // can see both data layers' state.
+    const livePill = h('span', {class:'live-pill', title:'Live data status'},
+      h('span', {class:'lbl'}, 'CONNECTING'));
+
     const topbar = h('div', {class:'topbar'},
       h('div', {class:'brand'},
         h('span', {class:'accent'}, 'NQ'), ' BRIEFING'),
@@ -2038,6 +2159,7 @@
       clockEl,
       h('span', {class:'now-tz'}, 'ET'),
       h('span', {class: 'pulse ' + pulseClass}, pulseText),
+      livePill,
     );
     if (window.BriefingTheme) window.BriefingTheme.mountToggle(topbar);
     app.appendChild(topbar);
@@ -2189,6 +2311,215 @@
     app.appendChild(h('div', {class:'mute mono', style:'text-align:center;font-size:9px;margin-top:28px;letter-spacing:2px;'},
       `// SCHEMA v${d.schema_version} ${isDemo ? '// DEMO MODE — run morning_briefing.py --export-dashboard' : ''}`));
 
+    // ============ LIVE OVERLAY (Fly.io) ============
+    // Polls https://nq-live-snapshot.fly.dev/api/live every 5-10s. Updates
+    // tagged DOM elements in place. Skipped entirely in demo mode (no
+    // baseline data → live overlay has nothing to merge into meaningfully).
+    if (!isDemo) {
+      setupLiveOverlay({ livePill });
+    } else {
+      livePill.innerHTML = '<span class="lbl">demo</span>';
+      livePill.classList.add('offline');
+    }
+
+    function setupLiveOverlay({ livePill }) {
+      const LIVE_API = 'https://nq-live-snapshot.fly.dev/api/live';
+      const POLL_INTERVAL_MS = 7000;          // every 7s
+      const STALE_SECONDS = 90;               // > 90s old = STALE pill
+      const OFFLINE_AFTER_FAILS = 3;          // 3 consecutive failures → OFFLINE
+      let liveData = null;
+      let lastSuccessAt = 0;
+      let consecutiveFails = 0;
+
+      // Status pill UI
+      function setPill(state, lagSeconds) {
+        livePill.className = 'live-pill ' + state;
+        const label = state.toUpperCase();
+        let lag = '';
+        if (lagSeconds != null) {
+          lag = lagSeconds < 60
+            ? ` <span class="lag">${lagSeconds}s</span>`
+            : ` <span class="lag">${Math.floor(lagSeconds / 60)}m</span>`;
+        }
+        livePill.innerHTML = `<span class="lbl">${label}</span>${lag}`;
+        livePill.title = state === 'live'
+          ? `Live Databento feed via Fly.io · bar ${lagSeconds || '?'}s old`
+          : state === 'stale'
+          ? 'Live feed has not updated recently — using last good snapshot'
+          : state === 'offline'
+          ? 'Live feed unreachable — falling back to morning baseline only'
+          : 'Connecting to live feed…';
+      }
+
+      function flashUpdated(el) {
+        if (!el) return;
+        el.classList.remove('live-just-updated');
+        // Force reflow so the animation restarts even on rapid updates.
+        void el.offsetWidth;
+        el.classList.add('live-just-updated');
+      }
+
+      function setLiveField(name, text, subText) {
+        document.querySelectorAll(`[data-live-field="${name}"]`).forEach(el => {
+          // Update the leading text node only, preserve .sub child if any.
+          const subEl = el.querySelector('.sub');
+          // Clear non-element children:
+          for (const child of [...el.childNodes]) {
+            if (child !== subEl) el.removeChild(child);
+          }
+          el.insertBefore(document.createTextNode(text), subEl);
+          if (subText != null && subEl) subEl.textContent = subText;
+          flashUpdated(el);
+        });
+      }
+
+      function applyLiveOverlay(snap) {
+        if (snap?.current_price != null) {
+          // Format like fmtPrice elsewhere
+          setLiveField('price', snap.current_price.toFixed(2),
+            snap.current_ts_et ? snap.current_ts_et.slice(11, 16) + ' ET' : null);
+        }
+        if (snap?.gap_pts != null) {
+          const sign = snap.gap_pts >= 0 ? '+' : '';
+          setLiveField('gap', `${sign}${snap.gap_pts.toFixed(1)}`,
+            null);
+          // Update color class
+          document.querySelectorAll('[data-live-field="gap"]').forEach(el => {
+            el.classList.remove('up', 'down');
+            el.classList.add(snap.gap_pts >= 0 ? 'up' : 'down');
+          });
+        }
+        if (snap?.overnight?.range != null) {
+          setLiveField('overnight',
+            `${Math.round(snap.overnight.range)}p`,
+            null);
+        }
+        if (snap?.prior_rth?.close != null) {
+          setLiveField('prior_rth_close',
+            snap.prior_rth.close.toFixed(2), null);
+        }
+        // Live OR section (in Range Briefing). Render conditionally based on
+        // snap.opening_range.
+        renderLiveORSection(snap);
+      }
+
+      function renderLiveORSection(snap) {
+        let container = document.getElementById('or-live-section');
+        const range = snap?.opening_range;
+        // Hide section entirely if not in session OR no OR data.
+        if (!snap?.in_session || !range || range.high == null) {
+          if (container) container.style.display = 'none';
+          return;
+        }
+        if (!container) {
+          // Inject after the existing quintile bar — find the Range Briefing card
+          const rangeCard = document.querySelector('.range-card');
+          if (!rangeCard) return;
+          container = document.createElement('div');
+          container.id = 'or-live-section';
+          // Insert after the quintile bar / labels — before TODAY'S ACTION block.
+          const actionBlock = rangeCard.querySelector('.range-action');
+          if (actionBlock) {
+            rangeCard.insertBefore(container, actionBlock);
+          } else {
+            rangeCard.appendChild(container);
+          }
+        }
+        container.style.display = '';
+
+        // Classify live OR width into a quintile using approximate boundaries
+        // (matches the validated insight's reference: Q1-Q2 = <125, Q3-Q4
+        // = 125-205, Q5 = ≥205 pts).
+        const w = range.width || 0;
+        let qLive, qClass, qVerdict, qLabel;
+        if (w >= 225) { qLive = 'Q5'; qClass = 'good'; qLabel = 'WIDE / UPSIZE'; }
+        else if (w >= 180) { qLive = 'Q4'; qClass = 'good'; qLabel = 'WIDE'; }
+        else if (w >= 125) { qLive = 'Q3'; qClass = 'cool'; qLabel = 'STANDARD'; }
+        else if (w >= 65)  { qLive = 'Q2'; qClass = 'warn'; qLabel = 'BELOW / TIGHTEN'; }
+        else               { qLive = 'Q1'; qClass = 'bad';  qLabel = 'TIGHT / SKIP'; }
+
+        const minsElapsed = range.minutes_elapsed || 0;
+        const timePct = Math.min(100, (minsElapsed / 45) * 100);
+        const complete = !!range.complete;
+
+        // Build card. Single-render then update text on subsequent polls.
+        container.innerHTML = `
+          <div class="or-live-card ${complete ? 'locked' : ''}">
+            <div class="r-label">
+              LIVE OPENING RANGE
+              <span class="r-tag">${complete ? 'LOCKED' : 'BUILDING'}</span>
+            </div>
+            <div class="or-live-stats">
+              <div class="or-live-stat width">
+                <div class="lbl">WIDTH</div>
+                <div class="val">${Math.round(w)} pts</div>
+              </div>
+              <div class="or-live-stat">
+                <div class="lbl">H / L</div>
+                <div class="val" style="font-size:12px;line-height:1.2;">
+                  ${range.high?.toFixed(2)}<br>${range.low?.toFixed(2)}
+                </div>
+              </div>
+              <div class="or-live-stat">
+                <div class="lbl">QUINTILE</div>
+                <div class="val">${qLive}</div>
+              </div>
+            </div>
+            <div class="or-time-bar"><i style="width:${timePct}%"></i></div>
+            <div class="or-time-label">
+              ${minsElapsed}/45 min ${complete ? '· complete' : 'elapsed'}
+            </div>
+            <div class="or-live-verdict ${qClass}">
+              Currently <b>${qLive} (${qLabel})</b> ·
+              ${qLive === 'Q1' || qLive === 'Q2'
+                ? 'Negative-EV territory at every target. <b>Stand down</b> if OR locks here.'
+                : qLive === 'Q5'
+                ? 'Premium <b>upsize</b> tier per validated insight. PF 2.02 at 4R target.'
+                : 'Default size, target 3-4R.'}
+            </div>
+          </div>
+        `;
+
+        // Also light up the matching live quintile segment in the static
+        // forecast bar so the user sees actual vs forecast at a glance.
+        if (complete) {
+          document.querySelectorAll('.q-seg').forEach(seg => seg.classList.remove('live-locked'));
+          const seg = document.querySelector(`.q-seg.${qLive.toLowerCase()}`);
+          if (seg) seg.classList.add('live-locked');
+        }
+      }
+
+      async function pollOnce() {
+        try {
+          const resp = await fetch(LIVE_API, { cache: 'no-store' });
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          const snap = await resp.json();
+          if (snap.error) throw new Error(snap.error);
+          liveData = snap;
+          lastSuccessAt = Date.now();
+          consecutiveFails = 0;
+          // Show snapshot lag in pill — that's "bar publish lag",
+          // typically ~60s for 1-min bars (start-of-minute timestamp).
+          const lag = snap.lag_seconds != null ? snap.lag_seconds : 0;
+          setPill(lag > STALE_SECONDS ? 'stale' : 'live', lag);
+          applyLiveOverlay(snap);
+        } catch (e) {
+          consecutiveFails++;
+          const ageSinceSuccessSec = lastSuccessAt
+            ? Math.floor((Date.now() - lastSuccessAt) / 1000)
+            : null;
+          if (consecutiveFails >= OFFLINE_AFTER_FAILS || !lastSuccessAt) {
+            setPill('offline');
+          } else {
+            setPill('stale', ageSinceSuccessSec);
+          }
+        }
+      }
+
+      pollOnce();
+      setInterval(pollOnce, POLL_INTERVAL_MS);
+    }
+
     // ========================================================
     // Renderers
     // ========================================================
@@ -2210,25 +2541,38 @@
       const ovr = po.overnight || {};
       const pr = po.prior_rth || {};
 
+      // Rows are tuples: [label, value, valueClass, sub, liveField?]
+      // liveField tags the value span with data-live-field so the live
+      // poller can update it in place when Fly.io snapshot arrives.
       const rows = [];
-      if (po.current_price != null) {
-        rows.push(['Price', fmtPrice(po.current_price), '', po.current_price_ts || '']);
-      }
-      if (gap.pts != null) {
-        rows.push(['Gap', fmtPts(gap.pts), gap.pts >= 0 ? 'up' : 'down',
-                   gap.pct != null ? fmtPts(gap.pct) + '%' : '']);
-      }
+      // Always emit Price + Gap rows even if morning data missing — live
+      // overlay will populate them shortly. Avoids layout jump.
+      rows.push(['Price',
+                 po.current_price != null ? fmtPrice(po.current_price) : '—',
+                 '', po.current_price_ts || '', 'price']);
+      rows.push(['Gap',
+                 gap.pts != null ? fmtPts(gap.pts) : '—',
+                 gap.pts == null ? '' : (gap.pts >= 0 ? 'up' : 'down'),
+                 gap.pct != null ? fmtPts(gap.pct) + '%' : '',
+                 'gap']);
       if (ovr.range != null) {
         const tag = ovr.tight ? 'TIGHT' : ovr.wide ? 'WIDE' : '';
         rows.push(['Overnight', `${Math.round(ovr.range)}p ${(ovr.direction || '').toLowerCase()}`,
-                   ovr.tight || ovr.wide ? 'warn' : '', tag]);
+                   ovr.tight || ovr.wide ? 'warn' : '', tag, 'overnight']);
+      } else {
+        rows.push(['Overnight', '—', '', '', 'overnight']);
       }
       if (pr.close_position != null) {
         const pcp = pr.close_position;
         const pcpStr = `close@${(pcp * 100).toFixed(0)}%`;
         const cls = pcp < 0.33 ? 'down' : pcp > 0.66 ? 'up' : '';
         rows.push(['Prior RTH', pcpStr, cls,
-                   pcp < 0.33 ? 'WEAK' : pcp > 0.66 ? 'STRONG' : 'MID']);
+                   pcp < 0.33 ? 'WEAK' : pcp > 0.66 ? 'STRONG' : 'MID',
+                   'prior_rth_position']);
+      } else if (pr.close != null) {
+        rows.push(['Prior RTH', fmtPrice(pr.close), '', '', 'prior_rth_close']);
+      } else {
+        rows.push(['Prior RTH', '—', '', '', 'prior_rth_close']);
       }
       if (cal && !cal.unknown) {
         const evts = (cal.events || []).filter(e => (e.impact||'').toLowerCase() === 'high');
@@ -2252,11 +2596,14 @@
       const opex = active.includes('is_opex_week');
       if (opex) rows.push(['Opex Week', 'YES', 'warn', '']);
 
-      rows.forEach(([l, v, cls, sub]) =>
+      rows.forEach(([l, v, cls, sub, liveField]) => {
+        const valAttrs = {class: 'v ' + (cls || '')};
+        if (liveField) valAttrs['data-live-field'] = liveField;
         col.appendChild(h('div', {class:'cond-row'},
           h('span', {class:'l'}, l),
-          h('span', {class:'v ' + (cls || '')},
-            v, sub ? h('span', {class:'sub'}, sub) : null))));
+          h('span', valAttrs,
+            v, sub ? h('span', {class:'sub', 'data-live-sub': liveField || ''}, sub) : null)));
+      });
 
       return col;
     }
