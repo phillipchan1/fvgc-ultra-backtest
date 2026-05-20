@@ -490,9 +490,13 @@ def historical_backfill() -> None:
              BACKFILL_HOURS, SCHEMA)
     try:
         client = db.Historical(key=API_KEY)
-        # Historical has a publishing lag; pull until ~15 min ago to avoid
-        # 422 "data_end_after_available_end" errors.
-        end = datetime.now(timezone.utc) - timedelta(minutes=15)
+        # Historical has a publishing lag — for ohlcv-1s the observed lag
+        # is just over 15 minutes. Pull until 20 min ago and round down to
+        # the minute boundary so the `end` is always a clean timestamp the
+        # historical endpoint has definitely published. Otherwise we hit
+        # 422 "data_end_after_available_end".
+        end = (datetime.now(timezone.utc) - timedelta(minutes=20)).replace(
+            second=0, microsecond=0)
         start = end - timedelta(hours=BACKFILL_HOURS)
         df = client.timeseries.get_range(
             dataset=DATASET,
