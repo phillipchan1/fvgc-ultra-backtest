@@ -246,7 +246,64 @@ def _compute_snapshot() -> dict[str, Any] | None:
             "complete": False,
         }
 
+    # Intraday factors — machine-readable booleans the dashboard uses to
+    # re-evaluate matrix-play confluence + tier live.
+    snap["intraday_factors"] = _compute_intraday_factors(
+        or_bars, session_bars, now_et, or_close_dt
+    )
+
     return snap
+
+
+def _compute_intraday_factors(
+    or_bars: list, session_bars: list, now_et, or_close_dt
+) -> dict[str, Any]:
+    """Derive bool factors from live bars. None = not yet computable; True/
+    False = known. Threshold constants come from the validated insights:
+      - 9:30 body top quartile: >= 23 pts
+      - 9:30 range bottom quartile: <= 22 pts
+      - 5-min OR bottom quartile: <= 42 pts
+      - 5-min OR top quartile: >= 72 pts
+      - 45-min OR tight (Q1 ~bottom 20%): <= 125 pts
+      - 45-min OR wide  (Q5 ~top 20%): >= 205 pts
+    """
+    factors: dict[str, Any] = {
+        "bear_930": None,
+        "bull_930": None,
+        "c930_body_top_q": None,
+        "c930_range_bot_q": None,
+        "or_5m_bot_q": None,
+        "or_5m_top_q": None,
+        "wide_45min_or": None,
+        "tight_45min_or": None,
+    }
+
+    # 9:30 candle = the first OR bar (ts_event = 9:30:00 ET, ascending sort).
+    if or_bars:
+        c = or_bars[0]
+        body = abs(c["close"] - c["open"])
+        rng = c["high"] - c["low"]
+        factors["bear_930"] = c["close"] < c["open"]
+        factors["bull_930"] = c["close"] > c["open"]
+        factors["c930_body_top_q"] = body >= 23
+        factors["c930_range_bot_q"] = rng <= 22
+
+    # First 5-min OR (bars 9:30-9:34 inclusive).
+    if len(or_bars) >= 5:
+        first5 = or_bars[:5]
+        rng5 = max(b["high"] for b in first5) - min(b["low"] for b in first5)
+        factors["or_5m_bot_q"] = rng5 <= 42
+        factors["or_5m_top_q"] = rng5 >= 72
+
+    # 45-min OR — only after the window has fully closed.
+    if or_bars and now_et >= or_close_dt:
+        hi = max(b["high"] for b in or_bars)
+        lo = min(b["low"] for b in or_bars)
+        rng45 = hi - lo
+        factors["tight_45min_or"] = rng45 <= 125
+        factors["wide_45min_or"] = rng45 >= 205
+
+    return factors
 
 
 # ---------------------------------------------------------------------------

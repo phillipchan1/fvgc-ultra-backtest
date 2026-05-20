@@ -366,6 +366,27 @@
     animation: live-update-flash 0.9s ease-out;
     border-radius: 2px;
   }
+
+  /* Stronger pulse when an intraday factor fires — confluence dot or row
+     transitioning from pending → active. */
+  @keyframes live-factor-fire {
+    0%   { box-shadow: 0 0 0 8px var(--cyan-glow); transform: scale(1.4); }
+    100% { box-shadow: 0 0 6px var(--cyan); transform: scale(1); }
+  }
+  .conf-mini .dd.live-just-fired {
+    animation: live-factor-fire 0.9s ease-out;
+  }
+  .factor-line.live-just-fired {
+    animation: live-update-flash 1.2s ease-out;
+  }
+
+  /* Card-level glow when a matrix play transitions to ARMED. */
+  .play-card.armed {
+    box-shadow: 0 0 0 1px var(--cyan), 0 0 24px -4px var(--cyan-glow);
+  }
+  .play-card.armed .pstate {
+    animation: pulse 1.8s ease-in-out infinite;
+  }
   .pulse::before {
     content: ""; width: 6px; height: 6px;
     border-radius: 50%; background: currentColor;
@@ -2401,6 +2422,134 @@
         // Live OR section (in Range Briefing). Render conditionally based on
         // snap.opening_range.
         renderLiveORSection(snap);
+        // Matrix play cards — re-evaluate confluence + state from live factors.
+        applyLiveMatrixUpdates(snap);
+        // Playbook play live kill-switches (FVGC To OR H/L, etc).
+        applyLivePlaybookVerdicts(snap);
+      }
+
+      // -------- Tier 1: matrix-play live confluence updates --------
+      function applyLiveMatrixUpdates(snap) {
+        const factors = snap?.intraday_factors;
+        if (!factors) return;
+        const mp = window.BRIEFING_DATA?.matrix_plays || [];
+        mp.forEach(p => {
+          const cardKey = `matrix:${p.name}`;
+          // CSS.escape to handle spaces / special chars in name
+          const card = document.querySelector(
+            `[data-key="${(window.CSS && CSS.escape) ? CSS.escape(cardKey) : cardKey}"]`
+          );
+          if (!card) return;
+          updateMatrixCardLive(card, p, factors);
+        });
+      }
+
+      function updateMatrixCardLive(card, p, factors) {
+        // Which pending factors have fired this session?
+        const pending = p.post_pending || [];
+        const fired = pending.filter(f => factors[f.id] === true);
+        const firedIds = new Set(fired.map(f => f.id));
+        const stillPendingIds = new Set(
+          pending.filter(f => factors[f.id] !== true).map(f => f.id)
+        );
+        const liveCount = p.preopen_count + fired.length;
+
+        // 1. Compact card dots — flip "maybe" dots tagged with fired factor
+        //    ids into "on" dots. Pulse on transition.
+        card.querySelectorAll('.conf-mini .dd[data-pending-factor]').forEach(d => {
+          if (firedIds.has(d.dataset.pendingFactor) && d.classList.contains('maybe')) {
+            d.classList.remove('maybe');
+            d.classList.add('on');
+            d.classList.add('live-just-fired');
+            setTimeout(() => d.classList.remove('live-just-fired'), 1200);
+          }
+        });
+
+        // 2. Counter text in compact pbody: "1/5 · +2" → "3/5 · +0"
+        const pmeta = card.querySelector('.pmeta');
+        if (pmeta && !p.veto_active) {
+          const stillPending = stillPendingIds.size;
+          pmeta.textContent =
+            `${liveCount}/${p.max_preopen}` +
+            (stillPending > 0 ? ` · +${stillPending}` : '');
+        }
+
+        // 3. State badge — flip WAIT/LIVE → ARMED when live confluence crosses
+        //    the play's "TAKE"-tier threshold. We treat anything that turns
+        //    the max-tier into a TAKE outcome (factor count >= proj.max_count
+        //    threshold) as ARMED. Conservative: also keep LIVE if not yet at
+        //    that threshold but at least one post factor fired.
+        if (!p.veto_active && fired.length > 0) {
+          const stateEl = card.querySelector('.pstate');
+          const projMax = p.projection?.max_count ?? 0;
+          if (liveCount >= projMax && (p.projection?.max_tier?.action || '').toUpperCase().includes('TAKE')) {
+            if (stateEl && stateEl.textContent !== 'ARMED') {
+              stateEl.textContent = 'ARMED';
+              stateEl.classList.add('live');
+              card.classList.add('armed');
+            }
+          } else if (liveCount > p.preopen_count) {
+            // Some progress but not max — keep LIVE.
+            if (stateEl && stateEl.classList.contains('wait')) {
+              stateEl.classList.remove('wait');
+              stateEl.classList.add('live');
+              stateEl.textContent = 'LIVE';
+            }
+          }
+        }
+
+        // 4. Detail view (column 3 if selected) — pending factor lines flip to active.
+        document.querySelectorAll(`.factor-line.pending[data-pending-factor]`).forEach(row => {
+          if (firedIds.has(row.dataset.pendingFactor)) {
+            row.classList.remove('pending');
+            row.classList.add('on', 'live-just-fired');
+            const marker = row.querySelector('.marker');
+            if (marker) marker.textContent = '✓';
+            setTimeout(() => row.classList.remove('live-just-fired'), 1200);
+          }
+        });
+
+        // Persist computed live count on the play object so subsequent
+        // re-renders (e.g. detail-pane re-render on selection change) start
+        // from the correct state.
+        p._live_count = liveCount;
+        p._fired_factor_ids = [...firedIds];
+      }
+
+      // -------- Tier 2: playbook play live kill-switches --------
+      // Currently just FVGC To Opening Range H/L (the only playbook play
+      // with a hard intraday kill switch). Generalisable later — keyed
+      // off play name for now.
+      function applyLivePlaybookVerdicts(snap) {
+        const range = snap?.opening_range;
+        if (!range || range.high == null || !range.complete) return;
+        const w = range.width || 0;
+
+        const apAll = window.BRIEFING_DATA?.active_plays || [];
+        apAll.forEach(p => {
+          if (p.name !== 'FVGC To Opening Range H/L') return;
+          const cardKey = `playbook:${p.name}`;
+          const card = document.querySelector(
+            `[data-key="${(window.CSS && CSS.escape) ? CSS.escape(cardKey) : cardKey}"]`
+          );
+          if (!card) return;
+          const stateEl = card.querySelector('.pstate');
+          if (!stateEl) return;
+
+          let verdict, cls;
+          if (w > 150) {
+            verdict = 'VETOED';
+            cls = 'veto';
+          } else if (w >= 60 && w <= 100) {
+            verdict = 'PRIME';
+            cls = 'live';
+          } else {
+            verdict = 'ELIGIBLE';
+            cls = 'live';
+          }
+          stateEl.className = 'pstate ' + cls;
+          stateEl.textContent = verdict;
+        });
       }
 
       function renderLiveORSection(snap) {
@@ -2707,8 +2856,13 @@
         for (let i = 0; i < p.max_preopen; i++) {
           dots.push(h('div', {class: 'dd' + (i < p.preopen_count ? ' on' : '')}));
         }
-        for (let i = 0; i < (p.post_pending || []).length; i++) {
-          dots.push(h('div', {class:'dd maybe'}));
+        // Each "maybe" dot is tagged with its post_pending factor id so the
+        // live overlay can flip it to "on" when intraday_factors[id] === true.
+        for (const f of (p.post_pending || [])) {
+          dots.push(h('div', {
+            class: 'dd maybe',
+            'data-pending-factor': f.id,
+          }));
         }
         indicator = h('div', {class:'conf-mini'}, dots);
         if (isVeto) {
@@ -2832,11 +2986,15 @@
         wrap.appendChild(sec);
       }
 
-      // Pending factors
+      // Pending factors — each row tagged with data-pending-factor so the
+      // live overlay can flip pending → on as factors fire.
       if ((p.post_pending || []).length) {
         const sec = h('div', {class:'detail-section'},
           h('div', {class:'detail-label'}, `PENDING POST-OPEN · ${p.post_pending.length}`));
-        p.post_pending.forEach(f => sec.appendChild(h('div', {class:'factor-line pending'},
+        p.post_pending.forEach(f => sec.appendChild(h('div', {
+          class:'factor-line pending',
+          'data-pending-factor': f.id,
+        },
           h('span', {class:'marker'}, '○'),
           h('span', {class:'lift'}, `+${f.lift_pp}pp`),
           h('span', {class:'desc'}, f.desc),
