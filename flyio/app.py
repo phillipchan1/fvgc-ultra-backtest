@@ -52,8 +52,9 @@ NY_TZ = ZoneInfo("America/New_York")
 PRICE_SCALE = 1_000_000_000
 
 # Session windows in ET
-RTH_OPEN = (9, 30)
-OR_CLOSE = (10, 15)
+RTH_OPEN = (9, 30)   # today's RTH open
+RTH_CLOSE = (16, 0)  # prior day's RTH close (boundary between prior RTH + overnight)
+OR_CLOSE = (10, 15)  # today's opening-range close
 
 # Bar buffer — keep last 24h (~1440 bars). Plenty for overnight + OR.
 BAR_BUFFER_HOURS = 24
@@ -154,23 +155,31 @@ def _compute_snapshot() -> dict[str, Any] | None:
     or_close_dt = now_et.replace(
         hour=OR_CLOSE[0], minute=OR_CLOSE[1], second=0, microsecond=0
     )
+    # Prior RTH close = yesterday 16:00 ET. Anchors the start of the
+    # overnight session so we don't conflate prior-day RTH with overnight.
+    prev_close_dt = (open_dt - timedelta(days=1)).replace(
+        hour=RTH_CLOSE[0], minute=RTH_CLOSE[1], second=0, microsecond=0
+    )
+    prev_open_dt = prev_close_dt.replace(
+        hour=RTH_OPEN[0], minute=RTH_OPEN[1], second=0, microsecond=0
+    )
 
-    overnight: list[dict] = []
-    or_bars: list[dict] = []
-    session_bars: list[dict] = []
+    prior_rth: list[dict] = []   # yesterday 9:30–16:00 ET
+    overnight: list[dict] = []   # yesterday 16:00 ET → today 9:30 ET
+    session_bars: list[dict] = [] # today 9:30 ET onward
+    or_bars: list[dict] = []     # today 9:30–10:15 ET
 
     for b in bars:
         bar_et = b["ts"].astimezone(NY_TZ)
-        if bar_et.date() == today_et:
-            if bar_et < open_dt:
-                overnight.append(b)
-            else:
-                session_bars.append(b)
-                if bar_et < or_close_dt:
-                    or_bars.append(b)
-        else:
-            # Bars before today (ET) — overnight from our window
+        if bar_et >= open_dt:
+            session_bars.append(b)
+            if bar_et < or_close_dt:
+                or_bars.append(b)
+        elif bar_et >= prev_close_dt:
             overnight.append(b)
+        elif bar_et >= prev_open_dt:
+            prior_rth.append(b)
+        # else: older than yesterday's RTH open — outside any defined window
 
     last = bars[-1]
     lag_seconds = max(0, int((now - last["ts"]).total_seconds()))
@@ -186,9 +195,22 @@ def _compute_snapshot() -> dict[str, Any] | None:
         "pre_open": now_et < open_dt,
         "in_session": len(session_bars) > 0,
         "source": "databento-live",
+        "prior_rth": None,
         "overnight": None,
         "opening_range": None,
     }
+
+    if prior_rth:
+        high = max(b["high"] for b in prior_rth)
+        low = min(b["low"] for b in prior_rth)
+        close = prior_rth[-1]["close"]
+        snap["prior_rth"] = {
+            "high": high,
+            "low": low,
+            "close": close,
+            "range": high - low,
+            "bar_count": len(prior_rth),
+        }
 
     if overnight:
         high = max(b["high"] for b in overnight)
@@ -199,6 +221,9 @@ def _compute_snapshot() -> dict[str, Any] | None:
             "range": high - low,
             "bar_count": len(overnight),
         }
+        # Derived gap vs prior RTH close, when both are known.
+        if snap["prior_rth"]:
+            snap["gap_pts"] = last["close"] - snap["prior_rth"]["close"]
 
     if or_bars:
         high = max(b["high"] for b in or_bars)
