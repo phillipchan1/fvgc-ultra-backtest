@@ -40,6 +40,11 @@ const PRICE_SCALE = 1e9;
 const RTH_OPEN  = { h: 9,  m: 30 };
 const OR_CLOSE  = { h: 10, m: 15 };
 
+// Databento historical timeseries publishes with a small delay vs real time
+// (varies by dataset + subscription tier). We pull `end = now - this buffer`
+// so we never request data ahead of the feed. 15 min covers GLBX.MDP3.
+const DATABENTO_AVAILABILITY_LAG_MS = 15 * 60 * 1000;
+
 // ---------------------------------------------------------------------------
 // Worker entrypoints
 // ---------------------------------------------------------------------------
@@ -128,10 +133,13 @@ async function pollAndStore(env, cronOrTrigger) {
 // ---------------------------------------------------------------------------
 
 async function fetchSnapshot(apiKey) {
-  // Fetch last ~6 hours of 1-min bars. Covers overnight + opening-range with
-  // margin. Trimmed by Databento if outside trading hours; we adapt downstream.
+  // Fetch last ~6 hours of 1-min bars, ending at `now - availability_lag`.
+  // The lag avoids 422 errors when querying ahead of the feed's published edge.
+  // Covers overnight + opening-range with margin. Trimmed by Databento if
+  // outside trading hours; we adapt downstream.
   const now = new Date();
-  const start = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+  const end = new Date(now.getTime() - DATABENTO_AVAILABILITY_LAG_MS);
+  const start = new Date(end.getTime() - 6 * 60 * 60 * 1000);
 
   const params = new URLSearchParams({
     dataset: DATASET,
@@ -139,7 +147,7 @@ async function fetchSnapshot(apiKey) {
     schema: SCHEMA,
     stype_in: 'continuous',
     start: start.toISOString(),
-    end: now.toISOString(),
+    end: end.toISOString(),
     encoding: 'json',
   });
 
@@ -215,11 +223,17 @@ function computeSnapshot(bars, nowUTC) {
     }
   }
 
+  const lastBarMs = Number(BigInt(last.ts_event) / 1_000_000n);
+  const lagSeconds = Math.max(0, Math.round((nowUTC.getTime() - lastBarMs) / 1000));
+
   const snap = {
     current_price: currentPrice,
     current_ts_utc: nanosToIso(BigInt(last.ts_event)),
     fetched_at_utc: nowUTC.toISOString(),
     fetched_at_et: toET(nowUTC).iso,
+    // How far behind real-time the latest bar is. Reflects Databento's
+    // publishing lag on the GLBX.MDP3 historical feed (~10-15min typical).
+    lag_seconds: lagSeconds,
     bar_count: bars.length,
     pre_open: minNow < minOpen,
     in_session: sessionBars.length > 0,
