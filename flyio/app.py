@@ -42,7 +42,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 API_KEY = os.environ.get("DATABENTO_API_KEY")
 DATASET = "GLBX.MDP3"
-SCHEMA = "ohlcv-1m"
+# 1-second OHLCV — tick-precise H/L, sub-second `current_price`, and the
+# >150-pt kill switch on or_15min fires the instant any 1s bar pushes
+# width past the threshold. Factor logic (bear_930, c930_body_top_q, etc.)
+# aggregates these 1s bars into synthetic 1-min candles at compute time.
+SCHEMA = "ohlcv-1s"
 SYMBOL = "NQ.c.0"
 STYPE_IN = "continuous"
 
@@ -56,7 +60,10 @@ RTH_OPEN = (9, 30)   # today's RTH open
 RTH_CLOSE = (16, 0)  # prior day's RTH close (boundary between prior RTH + overnight)
 OR_CLOSE = (10, 15)  # today's opening-range close
 
-# Bar buffer — keep last 24h (~1440 bars). Plenty for overnight + OR.
+# Bar buffer.
+#   24h × 3600 sec/h = 86400 1s bars at ~100 bytes each → ~8 MB in memory.
+#   Fly.io free tier is 256 MB so this is fine, and 24h is needed to keep
+#   yesterday's prior_rth window in the buffer.
 BAR_BUFFER_HOURS = 24
 
 # CORS — origins allowed to read /api/live
@@ -238,6 +245,11 @@ def _compute_snapshot() -> dict[str, Any] | None:
         if snap["prior_rth"]:
             snap["gap_pts"] = last["close"] - snap["prior_rth"]["close"]
 
+    # Elapsed in the session — timestamp-based (was: bar-count-based, which
+    # silently broke when we switched to 1s bars: 45 1m bars vs 2700 1s bars
+    # for the same 45 minutes of session).
+    secs_since_open = max(0, int((now_et - open_dt).total_seconds()))
+
     if or_bars:
         high = max(b["high"] for b in or_bars)
         low = min(b["low"] for b in or_bars)
@@ -246,7 +258,8 @@ def _compute_snapshot() -> dict[str, Any] | None:
             "low": low,
             "width": high - low,
             "bar_count": len(or_bars),
-            "minutes_elapsed": min(len(or_bars), 45),
+            "minutes_elapsed": min(45, secs_since_open // 60),
+            "seconds_elapsed": min(45 * 60, secs_since_open),
             "complete": now_et >= or_close_dt,
         }
     elif now_et >= open_dt:
@@ -256,6 +269,7 @@ def _compute_snapshot() -> dict[str, Any] | None:
             "width": 0,
             "bar_count": 0,
             "minutes_elapsed": 0,
+            "seconds_elapsed": 0,
             "complete": False,
         }
 
@@ -269,7 +283,8 @@ def _compute_snapshot() -> dict[str, Any] | None:
             "low":  l15,
             "width": h15 - l15,
             "bar_count": len(or15_bars),
-            "minutes_elapsed": min(len(or15_bars), 15),
+            "minutes_elapsed": min(15, secs_since_open // 60),
+            "seconds_elapsed": min(15 * 60, secs_since_open),
             "complete": complete_15,
             "high_swept": None,
             "low_swept":  None,
@@ -285,21 +300,49 @@ def _compute_snapshot() -> dict[str, Any] | None:
     elif now_et >= open_dt:
         snap["or_15min"] = {
             "high": None, "low": None, "width": 0,
-            "bar_count": 0, "minutes_elapsed": 0, "complete": False,
+            "bar_count": 0, "minutes_elapsed": 0, "seconds_elapsed": 0,
+            "complete": False,
             "high_swept": None, "low_swept": None,
         }
 
     # Intraday factors — machine-readable booleans the dashboard uses to
     # re-evaluate matrix-play confluence + tier live.
     snap["intraday_factors"] = _compute_intraday_factors(
-        or_bars, session_bars, now_et, or_close_dt
+        or_bars, session_bars, now_et, open_dt, or_close_dt
     )
 
     return snap
 
 
+def _bars_in_window(bars_list: list, window_start, window_end) -> list:
+    """Return bars whose ts (ET) falls in [window_start, window_end). Works
+    on any bar granularity — we filter by timestamp, not by index."""
+    out = []
+    for b in bars_list:
+        ts = b["ts"].astimezone(NY_TZ)
+        if window_start <= ts < window_end:
+            out.append(b)
+    return out
+
+
+def _synth_minute(window_bars: list) -> dict | None:
+    """Aggregate a list of sub-minute OHLCV bars into a single synthetic
+    1-minute candle. None if no bars present. Used to derive the "9:30
+    1-min candle" factors (bear_930, c930_body_top_q, ...) when the
+    underlying stream is sub-minute granularity."""
+    if not window_bars:
+        return None
+    return {
+        "open":  window_bars[0]["open"],
+        "high":  max(b["high"]  for b in window_bars),
+        "low":   min(b["low"]   for b in window_bars),
+        "close": window_bars[-1]["close"],
+        "bar_count": len(window_bars),
+    }
+
+
 def _compute_intraday_factors(
-    or_bars: list, session_bars: list, now_et, or_close_dt
+    or_bars: list, session_bars: list, now_et, open_dt, or_close_dt
 ) -> dict[str, Any]:
     """Derive bool factors from live bars. None = not yet computable; True/
     False = known. Threshold constants come from the validated insights:
@@ -309,6 +352,10 @@ def _compute_intraday_factors(
       - 5-min OR top quartile: >= 72 pts
       - 45-min OR tight (Q1 ~bottom 20%): <= 125 pts
       - 45-min OR wide  (Q5 ~top 20%): >= 205 pts
+
+    Bar-size-agnostic. Aggregates sub-minute bars into synthetic 1-min
+    candles for the candle-level factors; works directly on min/max across
+    bars for window-range factors.
     """
     factors: dict[str, Any] = {
         "bear_930": None,
@@ -321,22 +368,32 @@ def _compute_intraday_factors(
         "tight_45min_or": None,
     }
 
-    # 9:30 candle = the first OR bar (ts_event = 9:30:00 ET, ascending sort).
-    if or_bars:
-        c = or_bars[0]
-        body = abs(c["close"] - c["open"])
-        rng = c["high"] - c["low"]
-        factors["bear_930"] = c["close"] < c["open"]
-        factors["bull_930"] = c["close"] > c["open"]
-        factors["c930_body_top_q"] = body >= 23
-        factors["c930_range_bot_q"] = rng <= 22
+    one_min = timedelta(minutes=1)
+    five_min = timedelta(minutes=5)
+    c930_end = open_dt + one_min
+    or5_end  = open_dt + five_min
 
-    # First 5-min OR (bars 9:30-9:34 inclusive).
-    if len(or_bars) >= 5:
-        first5 = or_bars[:5]
-        rng5 = max(b["high"] for b in first5) - min(b["low"] for b in first5)
-        factors["or_5m_bot_q"] = rng5 <= 42
-        factors["or_5m_top_q"] = rng5 >= 72
+    # 9:30 candle — aggregate the first full minute. Only emit factors once
+    # the minute is COMPLETE (now past 9:31), otherwise mid-formation bars
+    # would cause bear_930 to flicker. The conservative "wait for completion"
+    # mirrors the old 1m behavior where the bar didn't appear until 9:31.
+    if now_et >= c930_end:
+        c930 = _synth_minute(_bars_in_window(session_bars, open_dt, c930_end))
+        if c930:
+            body = abs(c930["close"] - c930["open"])
+            rng = c930["high"] - c930["low"]
+            factors["bear_930"] = c930["close"] < c930["open"]
+            factors["bull_930"] = c930["close"] > c930["open"]
+            factors["c930_body_top_q"] = body >= 23
+            factors["c930_range_bot_q"] = rng <= 22
+
+    # First 5-min OR — only after 9:35 (window closed).
+    if now_et >= or5_end:
+        first5 = _bars_in_window(session_bars, open_dt, or5_end)
+        if first5:
+            rng5 = max(b["high"] for b in first5) - min(b["low"] for b in first5)
+            factors["or_5m_bot_q"] = rng5 <= 42
+            factors["or_5m_top_q"] = rng5 >= 72
 
     # 45-min OR — only after the window has fully closed.
     if or_bars and now_et >= or_close_dt:
@@ -354,18 +411,59 @@ def _compute_intraday_factors(
 # ---------------------------------------------------------------------------
 
 
-def historical_backfill() -> None:
-    """Load last ~24h of 1-min bars from Databento Historical so the
-    snapshot is meaningful immediately on startup (otherwise we'd have to
-    wait for fresh bars to stream in, and overnight H/L would be empty).
+def _bulk_ingest(new_bars: list[dict[str, Any]]) -> int:
+    """Append a batch of bars and recompute snapshot ONCE. Used by the
+    historical backfill — calling _ingest_bar() per bar would recompute
+    the snapshot on each insertion, causing O(n²) work that's fine for
+    1m bars (n=1440) but ~7B ops for 1s bars (n=86400).
     """
-    log.info("Fetching historical backfill (%dh of bars)…", BAR_BUFFER_HOURS)
+    if not new_bars:
+        return 0
+    with state_lock:
+        bars.extend(new_bars)
+        # Sort and neighbor-dedupe in one pass.
+        sorted_bars = sorted(bars, key=lambda b: b["ts"])
+        deduped: list[dict[str, Any]] = []
+        last_ts = None
+        for b in sorted_bars:
+            if last_ts is not None and b["ts"] == last_ts:
+                deduped[-1] = b  # newer wins
+            else:
+                deduped.append(b)
+                last_ts = b["ts"]
+        bars.clear()
+        bars.extend(deduped)
+        # Trim — drop bars older than BAR_BUFFER_HOURS
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=BAR_BUFFER_HOURS)
+        while bars and bars[0]["ts"] < cutoff:
+            bars.popleft()
+        state["last_record_at"] = datetime.now(timezone.utc)
+        state["bar_count"] = len(bars)
+        # Single snapshot recompute at end.
+        state["snapshot"] = _compute_snapshot()
+        return len(bars)
+
+
+# How far back to backfill on startup. 8h covers most of overnight session
+# from a morning start (e.g. 9 AM ET → fetches back to 1 AM ET). The full
+# overnight (16:00 prior day → 9:30 today) requires 17h+; we skip the
+# earlier half to keep startup fast. The morning briefing's prior_rth in
+# briefing.json is the canonical source the dashboard falls back to.
+BACKFILL_HOURS = 8
+
+
+def historical_backfill() -> None:
+    """Load recent OHLCV bars from Databento Historical so the snapshot is
+    meaningful immediately on startup. Bulk-ingests in a single pass so the
+    snapshot is only recomputed once, regardless of bar count."""
+    log.info("Fetching historical backfill (%dh of bars, schema=%s)…",
+             BACKFILL_HOURS, SCHEMA)
     try:
         client = db.Historical(key=API_KEY)
         # Historical has a publishing lag; pull until ~15 min ago to avoid
         # 422 "data_end_after_available_end" errors.
         end = datetime.now(timezone.utc) - timedelta(minutes=15)
-        start = end - timedelta(hours=BAR_BUFFER_HOURS)
+        start = end - timedelta(hours=BACKFILL_HOURS)
         df = client.timeseries.get_range(
             dataset=DATASET,
             symbols=SYMBOL,
@@ -377,23 +475,23 @@ def historical_backfill() -> None:
         if df.empty:
             log.warning("Historical backfill returned 0 bars")
             return
-        ingested = 0
+
+        batch: list[dict[str, Any]] = []
         for ts_event, row in df.iterrows():
-            # Convert pandas Timestamp → tz-aware UTC datetime
             ts = ts_event.to_pydatetime() if hasattr(ts_event, "to_pydatetime") else ts_event
             if ts.tzinfo is None:
                 ts = ts.replace(tzinfo=timezone.utc)
-            bar = {
+            batch.append({
                 "ts": ts.astimezone(timezone.utc),
                 "open": float(row["open"]),
                 "high": float(row["high"]),
                 "low": float(row["low"]),
                 "close": float(row["close"]),
                 "volume": int(row.get("volume", 0)),
-            }
-            _ingest_bar(bar)
-            ingested += 1
-        log.info("Historical backfill: ingested %d bars", ingested)
+            })
+        total = _bulk_ingest(batch)
+        log.info("Historical backfill: ingested %d bars (buffer total %d)",
+                 len(batch), total)
     except Exception as e:
         log.exception("Historical backfill failed: %s", e)
         with state_lock:
