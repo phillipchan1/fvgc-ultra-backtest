@@ -1,4 +1,9 @@
-# Slim Python base — only ~50MB, runs comfortably in Fly.io's 256MB free VM.
+# Slim Python base — only ~50MB; pandas/numpy add ~70MB but we're still
+# comfortably under Fly.io's 256MB free VM memory budget.
+#
+# Build context (set in fly.toml [build]) is the REPO ROOT so COPY can
+# reach both flyio/* and the sibling fvgc/ package. Paths below are
+# relative to that root.
 FROM python:3.11-slim
 
 # Avoid .pyc files + stdout buffering inside containers.
@@ -10,10 +15,17 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # Install deps first so Docker layer cache stays warm across app code edits.
-COPY requirements.txt .
+COPY flyio/requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY app.py .
+# Application code.
+COPY flyio/app.py .
+
+# FVGC engine — imported by app.py to detect FVG signals on the live
+# 1s stream (aggregated to 30s). Importing the canonical engine instead
+# of re-implementing it ensures the dashboard's "missed signal" view
+# matches the backtest behavior bit-for-bit.
+COPY fvgc/ ./fvgc/
 
 # Fly's default internal port is 8080 — keep that convention.
 EXPOSE 8080

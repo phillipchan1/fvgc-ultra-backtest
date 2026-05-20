@@ -1468,6 +1468,143 @@
     100% { box-shadow: 0 0 0 0 transparent; }
   }
 
+  /* ===== Session Replay — today's FVGC signals + playbook match =====
+     Sits between the 3-column decision flow and the Range Briefing /
+     analysis section. Lets the trader scan "what fired today" without
+     touching the play cards. Driven by Fly.io's /api/play-history which
+     runs the canonical FVGC engine on aggregated 30s session bars. */
+  .session-replay {
+    margin: 18px 0 12px;
+    padding: 14px 16px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+  }
+  .sr-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .sr-title {
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 2.5px; color: var(--cyan);
+    text-transform: uppercase;
+  }
+  .sr-title::before {
+    content: "◆"; color: var(--cyan); margin-right: 8px;
+  }
+  .sr-meta {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 9px; letter-spacing: 1px;
+  }
+  .sr-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-mute);
+  }
+  .sr-dot.good { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .sr-dot.bad  { background: var(--red); }
+  .sr-status { color: var(--text-dim); }
+  .sr-age { color: var(--text-dim); }
+  .sr-empty {
+    padding: 10px 12px; font-size: 11px; color: var(--text-dim);
+    background: rgba(0,0,0,0.18); border-radius: 3px;
+    border-left: 2px solid var(--line);
+  }
+  .sr-section { margin-bottom: 14px; }
+  .sr-section:last-child { margin-bottom: 0; }
+  .sr-section-h {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 9px; letter-spacing: 2px; font-weight: 700;
+    color: var(--text-mute); margin-bottom: 6px;
+  }
+  .sr-section-h::before {
+    content: "▸ "; color: var(--cyan);
+  }
+  .sr-count {
+    background: var(--bg-3); padding: 1px 6px; border-radius: 2px;
+    color: var(--text-dim); font-size: 9px;
+  }
+
+  /* Signal rows */
+  .sr-signal-list {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .sr-signal {
+    display: grid;
+    grid-template-columns: 90px 80px 90px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 6px 10px;
+    background: rgba(0,0,0,0.18);
+    border-radius: 3px;
+    border-left: 2px solid var(--line);
+    font-size: 11px;
+  }
+  .sr-signal.good { border-left-color: var(--green); }
+  .sr-signal.bad  { border-left-color: var(--red); }
+  .sr-time {
+    font-size: 10px; color: var(--text); font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .sr-dir {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+  }
+  .sr-signal.good .sr-dir { color: var(--green); }
+  .sr-signal.bad  .sr-dir { color: var(--red); }
+  .sr-variant {
+    font-size: 10px; color: var(--cyan);
+    padding: 1px 6px; border: 1px solid var(--cyan-dim);
+    border-radius: 2px; background: var(--cyan-dim);
+    justify-self: start;
+  }
+  .sr-prices {
+    font-size: 10px; color: var(--text-dim); letter-spacing: 0.3px;
+  }
+  .sr-prices b { color: var(--text); font-weight: 600; }
+
+  /* Per-play match rows */
+  .sr-play-list {
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .sr-play {
+    display: grid;
+    grid-template-columns: 22px 1fr 100px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 5px 10px;
+    background: rgba(0,0,0,0.12);
+    border-radius: 3px;
+    border-left: 2px solid var(--line);
+    font-size: 11px;
+  }
+  .sr-play.good { border-left-color: var(--green); background: var(--green-dim); }
+  .sr-play.bad  { border-left-color: var(--red);   opacity: 0.7; }
+  .sr-play.wait { border-left-color: var(--cyan); }
+  .sr-play.mute { opacity: 0.55; }
+  .sr-picon {
+    font-size: 12px; text-align: center;
+  }
+  .sr-play.good .sr-picon { color: var(--green); }
+  .sr-play.bad  .sr-picon { color: var(--red); }
+  .sr-play.wait .sr-picon { color: var(--cyan); }
+  .sr-play.mute .sr-picon { color: var(--text-mute); }
+  .sr-pname {
+    font-size: 11px; font-weight: 600; color: var(--text);
+  }
+  .sr-pstatus {
+    font-size: 9px; letter-spacing: 1.5px; font-weight: 700;
+    text-align: center;
+    padding: 1px 6px; border: 1px solid currentColor; border-radius: 2px;
+  }
+  .sr-pstatus.good { color: var(--green); background: var(--green-dim); }
+  .sr-pstatus.bad  { color: var(--red);   background: var(--red-dim); }
+  .sr-pstatus.wait { color: var(--cyan);  background: var(--cyan-dim); }
+  .sr-pstatus.mute { color: var(--text-mute); border-color: var(--line); }
+  .sr-pdetail {
+    font-size: 10px; color: var(--text-dim);
+  }
+
   /* ===== Chips ===== */
   .chip {
     display: inline-flex; align-items: center;
@@ -2963,6 +3100,30 @@
     // Initial detail render
     renderDetail();
 
+    // ============ TODAY'S FVGC SIGNALS — session replay ============
+    // Sits between the decision flow and the deeper analysis below. Lets
+    // the trader scan: "did the FVGC engine emit any signals today, and
+    // which playbook plays did they validate?" Useful if they stepped
+    // away from the desk or opened the dashboard mid-session.
+    //
+    // Data lives on Fly.io — /api/play-history runs the canonical FVGC
+    // engine on aggregated 30s session bars. We poll every 30s.
+    const sessionReplay = h('div', {class:'session-replay'});
+    sessionReplay.innerHTML = `
+      <div class="sr-head">
+        <span class="sr-title">Today's FVGC Signals</span>
+        <span class="sr-meta mono">
+          <span class="sr-status mute">engine: waiting…</span>
+          <span class="sr-dot dim"></span>
+          <span class="sr-age mute">—</span>
+        </span>
+      </div>
+      <div class="sr-body" data-sr-body>
+        <div class="sr-empty mute">Engine starts after market open — checking back in 30s.</div>
+      </div>
+    `;
+    app.appendChild(sessionReplay);
+
     // ============ FRESHNESS ============
     const stale = (d.freshness || []).filter(f => f.is_stale);
     if (stale.length) {
@@ -3889,6 +4050,137 @@
       pollNarratives();
       setInterval(pollNarratives,  NARR_POLL_MS);
       setInterval(tickNarrativeAges, NARR_POLL_MS);
+
+      // ====== Session replay (FVGC signal retrospective) ======
+      // Polls Fly.io's /api/play-history every 30s. Fly runs the canonical
+      // FVGC engine on today's aggregated 30s session bars and returns
+      // both raw signals and a per-play match table.
+      const PLAY_HISTORY_API = 'https://nq-live-snapshot.fly.dev/api/play-history';
+      const PLAY_HIST_POLL_MS = 30000;
+      let lastPlayHistoryAt = 0;
+      async function pollPlayHistory() {
+        try {
+          const resp = await fetch(PLAY_HISTORY_API, { cache: 'no-store' });
+          if (!resp.ok) return;
+          const data = await resp.json();
+          lastPlayHistoryAt = Date.now();
+          renderSessionReplay(data);
+        } catch (_) { /* silent — best-effort */ }
+      }
+      pollPlayHistory();
+      setInterval(pollPlayHistory, PLAY_HIST_POLL_MS);
+    }
+
+    // ======================================================
+    // Session replay renderer — lives at module scope so the
+    // poller (inside setupLiveOverlay) and the initial render
+    // path can both reach it.
+    // ======================================================
+    function renderSessionReplay(data) {
+      const root = document.querySelector('.session-replay');
+      if (!root) return;
+      const body = root.querySelector('[data-sr-body]');
+      const statusEl = root.querySelector('.sr-status');
+      const dotEl = root.querySelector('.sr-dot');
+      const ageEl = root.querySelector('.sr-age');
+
+      if (!data || data.engine_available === false) {
+        if (statusEl) statusEl.textContent = 'engine: unavailable';
+        if (dotEl) dotEl.className = 'sr-dot bad';
+        if (ageEl) ageEl.textContent = '—';
+        if (body) body.innerHTML = `
+          <div class="sr-empty">
+            FVGC engine not loaded on the live service.
+            <span class="mute">${(data && data.error) || ''}</span>
+          </div>`;
+        return;
+      }
+      if (statusEl) statusEl.textContent = `engine: live · ${data.candle_count || 0} candles`;
+      if (dotEl) dotEl.className = 'sr-dot good';
+      if (ageEl) {
+        const ts = data.as_of_utc ? new Date(data.as_of_utc).getTime() : Date.now();
+        const ageS = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+        ageEl.textContent = ageS < 60 ? `${ageS}s ago` : `${Math.floor(ageS/60)}m ago`;
+      }
+
+      const signals = data.signals || [];
+      const plays = data.plays || [];
+
+      // Build signal list (chronological).
+      const sigHtml = signals.length
+        ? signals.map(s => _signalRowHtml(s)).join('')
+        : `<div class="sr-empty">No FVGC signals yet today.
+             <span class="mute">Signals fire when the engine detects an FVG re-tap inside the 9:30–10:15 window.</span>
+           </div>`;
+
+      // Per-play match table.
+      const playRows = plays.map(p => _playMatchRowHtml(p)).join('');
+
+      body.innerHTML = `
+        <div class="sr-section">
+          <div class="sr-section-h mono">
+            <span>SIGNALS</span>
+            <span class="sr-count mono">${signals.length}</span>
+          </div>
+          <div class="sr-signal-list">${sigHtml}</div>
+        </div>
+        ${plays.length ? `
+          <div class="sr-section">
+            <div class="sr-section-h mono">
+              <span>PLAYBOOK MATCH</span>
+              <span class="sr-count mono">${plays.length}</span>
+            </div>
+            <div class="sr-play-list">${playRows}</div>
+          </div>` : ''}
+      `;
+    }
+
+    function _signalRowHtml(s) {
+      const dirCls = s.direction === 'long' ? 'good' : 'bad';
+      const dirArrow = s.direction === 'long' ? '▲' : '▼';
+      const time = s.time_et_human || (s.timestamp_et || '').slice(11, 19);
+      const variant = s.variant || '?';
+      const entry = s.entry_price != null ? s.entry_price.toFixed(2) : '—';
+      const sl = s.sl != null ? s.sl.toFixed(2) : '—';
+      const tp = s.tp != null ? s.tp.toFixed(2) : '—';
+      const sld = s.sl_dist != null ? `${s.sl_dist.toFixed(1)}pt` : '';
+      return `
+        <div class="sr-signal ${dirCls}">
+          <span class="sr-time mono">${time}</span>
+          <span class="sr-dir mono">${dirArrow} ${(s.direction || '?').toUpperCase()}</span>
+          <span class="sr-variant mono">${variant}</span>
+          <span class="sr-prices mono">
+            entry <b>${entry}</b> · SL <b>${sl}</b> ${sld ? `(${sld})` : ''} · TP <b>${tp}</b>
+          </span>
+        </div>`;
+    }
+
+    function _playMatchRowHtml(p) {
+      const statusInfo = ({
+        fired:     {cls:'good', label:'FIRED',     icon:'✓'},
+        no_signal: {cls:'mute', label:'NO SIGNAL', icon:'—'},
+        pending:   {cls:'wait', label:'PENDING',   icon:'○'},
+        vetoed:    {cls:'bad',  label:'VETOED',    icon:'⊘'},
+      })[p.status] || {cls:'mute', label:p.status || '?', icon:'·'};
+      const matched = p.matched_signal;
+      const detail = matched
+        ? `<span class="sr-pdetail mono">${matched.time_et_human || ''}
+             · ${matched.variant || ''}
+             · entry ${matched.entry_price != null ? matched.entry_price.toFixed(2) : '—'}</span>`
+        : p.status === 'pending'
+          ? `<span class="sr-pdetail mute mono">window still open</span>`
+          : p.status === 'no_signal'
+            ? `<span class="sr-pdetail mute mono">no FVGC signal in ${p.window || 'window'}</span>`
+            : p.status === 'vetoed'
+              ? `<span class="sr-pdetail mute mono">kill switch active</span>`
+              : '';
+      return `
+        <div class="sr-play ${statusInfo.cls}">
+          <span class="sr-picon mono">${statusInfo.icon}</span>
+          <span class="sr-pname mono">${p.name || '?'}</span>
+          <span class="sr-pstatus mono ${statusInfo.cls}">${statusInfo.label}</span>
+          ${detail}
+        </div>`;
     }
 
     // Resolve which DOM element should host a given narrative event.

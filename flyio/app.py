@@ -40,6 +40,20 @@ import databento as db
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
+# FVGC engine — imported lazily inside the play-history compute path so a
+# missing/broken pandas install can't take down the live snapshot service.
+# (Live data + narratives still work without it.)
+try:
+    import pandas as _pd
+    from fvgc.model import generate_signals as _fvgc_generate_signals
+    _FVGC_AVAILABLE = True
+    _FVGC_IMPORT_ERROR: str | None = None
+except Exception as _fvgc_err:  # pragma: no cover — diagnostic path only
+    _pd = None
+    _fvgc_generate_signals = None
+    _FVGC_AVAILABLE = False
+    _FVGC_IMPORT_ERROR = repr(_fvgc_err)
+
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
@@ -874,6 +888,225 @@ def live_thread() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Play history — retrospective view ("did the FVGC engine emit a signal?")
+# ---------------------------------------------------------------------------
+# Pattern: aggregate today's session bars (1s) into 30s candles → feed to
+# fvgc.model.generate_signals (the canonical engine, same code the backtest
+# uses) → match each emitted signal to a matrix play by direction + variant
+# + window. Dashboard polls /api/play-history and shows fired/missed plays.
+#
+# Cached for 30s — the engine is cheap (~1k candles for a full RTH session)
+# but no point recomputing more often than the bar cadence anyway.
+
+_play_history_cache: dict | None = None
+_play_history_cache_at: datetime | None = None
+PLAY_HISTORY_TTL_SEC = 30
+
+
+def _parse_play_window(win_str: str) -> dict | None:
+    """Parse "9:30-9:45" → {'start_min': 570, 'end_min': 585}. Returns None
+    on unparseable input — caller falls back to no window filter."""
+    if not win_str or "-" not in win_str:
+        return None
+    try:
+        a, b = win_str.split("-", 1)
+        def _to_min(s: str) -> int:
+            s = s.strip()
+            h, m = s.split(":")
+            return int(h) * 60 + int(m)
+        return {"start_min": _to_min(a), "end_min": _to_min(b),
+                "raw": win_str}
+    except Exception:
+        return None
+
+
+def _aggregate_session_to_30s(session_bars: list[dict]) -> "Any":
+    """Bucket 1s OHLCV dicts into 30s candles in the shape fvgc expects:
+    columns timestamp_utc (tz-aware UTC), timestamp_ny (tz-aware NY),
+    open/high/low/close/volume. Sorted by time, no gaps within session."""
+    if _pd is None or not session_bars:
+        return None
+    rows = [{
+        "timestamp_utc": b["ts"],
+        "open": b["open"], "high": b["high"],
+        "low": b["low"], "close": b["close"],
+        "volume": b.get("volume", 0),
+    } for b in session_bars]
+    df = _pd.DataFrame(rows)
+    df = df.sort_values("timestamp_utc").reset_index(drop=True)
+    ts30 = df["timestamp_utc"].dt.floor("30s")
+    agg = (
+        df.groupby(ts30)
+        .agg(open=("open", "first"), high=("high", "max"),
+             low=("low", "min"), close=("close", "last"),
+             volume=("volume", "sum"))
+        .reset_index()
+        .rename(columns={"timestamp_utc": "timestamp_utc"})
+    )
+    agg["timestamp_ny"] = agg["timestamp_utc"].dt.tz_convert(NY_TZ)
+    agg = agg.sort_values("timestamp_utc").reset_index(drop=True)
+    return agg
+
+
+def _signal_to_json(s: dict) -> dict:
+    """Convert a raw FVGC signal dict into a JSON-friendly + display-ready
+    structure. The engine returns timestamps as pandas Timestamps in NY tz;
+    we serialise to ISO and split out a human time string."""
+    ts = s.get("timestamp")
+    ts_iso = ts.isoformat() if ts is not None else None
+    ts_human = ts.strftime("%-I:%M:%S %p") if ts is not None else None
+    def _num(x):
+        if x in ("", None): return None
+        try: return float(x)
+        except (TypeError, ValueError): return None
+    return {
+        "timestamp_et": ts_iso,
+        "time_et_human": ts_human,
+        "direction": s.get("direction"),
+        "variant": s.get("variant"),
+        "entry_price": _num(s.get("entry_price")),
+        "sl": _num(s.get("sl")),
+        "tp": _num(s.get("tp")),
+        "sl_dist": _num(s.get("sl_dist")),
+        "fvg_top": _num(s.get("fvg_top")),
+        "fvg_bottom": _num(s.get("fvg_bottom")),
+        "fvg_mid": _num(s.get("fvg_mid")),
+        "fvg_direction": s.get("fvg_direction"),
+        "fvg_id": s.get("fvg_id"),
+    }
+
+
+def _match_signals_to_plays(signals: list[dict], matrix_plays: list[dict],
+                            now_et: datetime) -> list[dict]:
+    """For each matrix play, find the best-matching signal (direction +
+    variant + window). Returns one entry per play with status:
+      - vetoed       — play.veto_active is True; never tradeable today
+      - fired        — engine emitted a matching signal during window
+      - no_signal    — window has passed, no matching signal
+      - pending      — window still open
+    Signals can match multiple plays (variant + direction overlap)."""
+    now_min = now_et.hour * 60 + now_et.minute
+    out = []
+    for p in matrix_plays:
+        win = _parse_play_window(p.get("window", ""))
+        direction = p.get("direction")
+        # Required variants from post_pending IDs (e.g. variant_no_fvg).
+        play_variants = [
+            f.get("id", "").replace("variant_", "")
+            for f in (p.get("post_pending") or [])
+            if isinstance(f.get("id"), str) and f["id"].startswith("variant_")
+        ]
+        matched = None
+        # First-in-window match wins (signals are time-ordered).
+        for s in signals:
+            if direction and s["direction"] != direction:
+                continue
+            sig_iso = s.get("timestamp_et")
+            if not sig_iso:
+                continue
+            try:
+                sig_dt = datetime.fromisoformat(sig_iso)
+            except ValueError:
+                continue
+            sig_min = sig_dt.hour * 60 + sig_dt.minute
+            if win and (sig_min < win["start_min"] or sig_min > win["end_min"]):
+                continue
+            if play_variants and s.get("variant") not in play_variants:
+                continue
+            matched = s
+            break
+        # Status — window-aware so a play that hasn't run yet shows "pending"
+        # not "no_signal".
+        if p.get("veto_active"):
+            status = "vetoed"
+        elif matched is not None:
+            status = "fired"
+        elif win and now_min < win["end_min"]:
+            status = "pending"
+        else:
+            status = "no_signal"
+        out.append({
+            "name": p.get("name"),
+            "window": p.get("window"),
+            "direction": direction,
+            "status": status,
+            "veto_active": bool(p.get("veto_active")),
+            "matched_signal": matched,
+            "required_variants": play_variants,
+        })
+    return out
+
+
+def _compute_play_history() -> dict:
+    """Run the FVGC engine on today's session and return a retrospective.
+
+    Output shape:
+      {
+        "as_of_utc":     ISO timestamp,
+        "session_date_et": "2026-05-20",
+        "engine_available": bool,
+        "signal_count":  int,
+        "signals":       [ ...one entry per signal... ],
+        "plays":         [ ...one entry per matrix play with status... ],
+      }
+    """
+    out_base: dict[str, Any] = {
+        "as_of_utc": datetime.now(timezone.utc).isoformat(),
+        "engine_available": _FVGC_AVAILABLE,
+        "signals": [],
+        "plays": [],
+        "signal_count": 0,
+    }
+    if not _FVGC_AVAILABLE:
+        out_base["error"] = f"fvgc engine import failed: {_FVGC_IMPORT_ERROR}"
+        return out_base
+
+    with state_lock:
+        all_bars = list(bars)
+        ctx = state.get("briefing_context")
+
+    if not all_bars:
+        out_base["error"] = "no bars in buffer yet"
+        return out_base
+
+    # Today's session = bars from 9:30 ET onward.
+    now_et = datetime.now(NY_TZ)
+    open_dt = now_et.replace(hour=RTH_OPEN[0], minute=RTH_OPEN[1],
+                             second=0, microsecond=0)
+    session_bars = [b for b in all_bars
+                    if b["ts"].astimezone(NY_TZ) >= open_dt]
+    out_base["session_date_et"] = open_dt.strftime("%Y-%m-%d")
+
+    if not session_bars:
+        out_base["note"] = "session hasn't started yet"
+        return out_base
+
+    df = _aggregate_session_to_30s(session_bars)
+    if df is None or df.empty:
+        out_base["error"] = "aggregation produced empty frame"
+        return out_base
+
+    try:
+        signals, _fvgs = _fvgc_generate_signals(df)
+    except Exception as e:
+        log.exception("FVGC signal generation failed")
+        out_base["error"] = f"engine error: {e}"
+        return out_base
+
+    signals_json = [_signal_to_json(s) for s in signals]
+    matrix_plays = (ctx or {}).get("matrix_plays") or []
+    plays_matched = _match_signals_to_plays(signals_json, matrix_plays, now_et)
+
+    out_base.update({
+        "signals": signals_json,
+        "signal_count": len(signals_json),
+        "plays": plays_matched,
+        "candle_count": int(len(df)),
+    })
+    return out_base
+
+
+# ---------------------------------------------------------------------------
 # FastAPI app
 # ---------------------------------------------------------------------------
 
@@ -1028,10 +1261,34 @@ async def api_narrative_trigger(req: Request) -> dict[str, Any]:
     return {"ok": True, "status": "queued", "event": event}
 
 
+@app.get("/api/play-history")
+def api_play_history(response: Response) -> dict[str, Any]:
+    """Today's playbook retrospective: which FVGC signals fired, which
+    plays they validated, which plays didn't get a signal in their window.
+
+    Cached for PLAY_HISTORY_TTL_SEC since bar cadence is 30s — recomputing
+    more often is wasted work."""
+    global _play_history_cache, _play_history_cache_at
+    now = datetime.now(timezone.utc)
+    if (_play_history_cache_at is not None and _play_history_cache is not None
+            and (now - _play_history_cache_at).total_seconds() < PLAY_HISTORY_TTL_SEC):
+        response.headers["Cache-Control"] = "no-store"
+        return {**_play_history_cache, "from_cache": True}
+    result = _compute_play_history()
+    _play_history_cache = result
+    _play_history_cache_at = now
+    response.headers["Cache-Control"] = "no-store"
+    return result
+
+
 @app.get("/")
 def root() -> dict[str, Any]:
     return {
         "service": "nq-live-snapshot",
-        "endpoints": ["/health", "/api/live", "/api/narratives", "/api/narrative-trigger"],
+        "endpoints": [
+            "/health", "/api/live", "/api/narratives",
+            "/api/narrative-trigger", "/api/play-history",
+        ],
         "source": "databento-live",
+        "fvgc_engine": _FVGC_AVAILABLE,
     }

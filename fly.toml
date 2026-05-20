@@ -11,7 +11,11 @@ app = "nq-live-snapshot"
 primary_region = "iad"  # US East — close to Databento's NY infra + GitHub Pages
 
 [build]
-  dockerfile = "Dockerfile"
+  # Dockerfile lives in flyio/ but the build CONTEXT is the repo root so
+  # we can COPY the fvgc/ package (sibling of flyio/) into the image.
+  # Without this, the FVGC engine can't be imported and intra-session
+  # signal detection would have to duplicate engine code.
+  dockerfile = "flyio/Dockerfile"
 
 [http_service]
   internal_port = 8080
