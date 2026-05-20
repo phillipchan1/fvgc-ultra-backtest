@@ -303,59 +303,159 @@
   .meta-tag b { color: var(--text); font-weight: 600; }
   .meta-tag.dim { color: var(--text-mute); }
 
-  /* Live clock + data-age in topbar */
-  .now-label {
-    font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px;
-    color: var(--text-mute); margin-left: 6px;
-  }
+  /* ===== Topbar — clock + status pill cluster =====
+     Reading order, left to right:
+       BRAND → spacer → day · date → CLOCK (12hr) → MARKET pill →
+       FEED pill → AI pill → PLAYS pill → briefing-age label
+     Each named pill answers a single question. Together they let the
+     trader see at a glance: is the market open, is the data fresh, is
+     the AI working, and how many plays are still on the table.
+  */
   .live-clock {
-    font-family: var(--mono); font-size: 14px; font-weight: 700;
-    color: var(--cyan); text-shadow: 0 0 calc(8px * var(--glow)) var(--cyan-dim);
+    font-family: var(--mono); font-size: 18px; font-weight: 700;
+    color: var(--cyan); text-shadow: 0 0 calc(10px * var(--glow)) var(--cyan-dim);
     letter-spacing: 1px;
-    min-width: 78px; text-align: right;
+    margin-left: 4px;
+  }
+  .live-meridiem {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    color: var(--cyan); opacity: 0.85;
+    letter-spacing: 1.5px;
+    align-self: flex-end;
+    margin-bottom: 3px;
   }
   .now-tz {
     font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px;
     color: var(--cyan); opacity: 0.6;
+    align-self: flex-end;
+    margin-bottom: 3px;
   }
-  .pulse {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 3px 10px;
-    border-radius: 2px;
-    border: 1px solid var(--green);
-    color: var(--green);
-    font-family: var(--mono); font-size: 9px;
-    text-transform: uppercase; letter-spacing: 2px;
-    background: var(--green-dim);
+  .pill-sep {
+    width: 1px; height: 18px;
+    background: var(--line);
+    margin: 0 4px;
   }
-  .pulse.demo { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
-  .pulse.offline { border-color: var(--text-mute); color: var(--text-mute); background: transparent; }
-  .pulse.stale { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
-  /* Live feed status pill — distinct from morning-mode "pulse" */
-  .live-pill {
+  .briefing-age {
+    font-size: 9px; letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-left: 8px;
+    white-space: nowrap;
+  }
+  .briefing-age .dim { color: var(--text-mute); }
+
+  /* Status pills — shared shell. Each pill has:
+       .dot   — colored circle (state indicator, pulses when live)
+       .lbl   — uppercase short label ("OR WINDOW" / "FEED" / etc)
+       .sub   — secondary detail (countdown, lag, age)
+     States set the color tint via the parent's modifier class. */
+  .status-pill {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 3px 9px;
-    border-radius: 2px;
-    border: 1px solid var(--cyan); color: var(--cyan);
-    background: var(--cyan-dim);
+    padding: 4px 9px;
+    border-radius: 3px;
+    border: 1px solid var(--line);
+    background: var(--bg-2);
     font-family: var(--mono); font-size: 9px;
-    text-transform: uppercase; letter-spacing: 2px;
+    letter-spacing: 1.5px;
+    white-space: nowrap;
     cursor: help;
+    transition: border-color 0.3s ease, color 0.3s ease;
   }
-  .live-pill.live    { border-color: var(--green); color: var(--green); background: var(--green-dim); }
-  .live-pill.stale   { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
-  .live-pill.offline { border-color: var(--text-mute); color: var(--text-mute); background: transparent; }
-  .live-pill::before {
-    content: ""; width: 5px; height: 5px;
-    border-radius: 50%; background: currentColor;
+  .status-pill .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-mute);
+    flex: 0 0 auto;
   }
-  .live-pill.live::before {
+  .status-pill .lbl {
+    font-weight: 700;
+    color: var(--text);
+  }
+  .status-pill .sub {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+  /* Generic "active/pulse" — green dot animation. Apply when adding
+     `.live` / `.or` / `.open` to any pill. */
+  .status-pill.live .dot,
+  .status-pill.or .dot,
+  .status-pill.open .dot,
+  .status-pill.fresh .dot {
     animation: pulse 2s ease-in-out infinite;
     box-shadow: 0 0 6px currentColor;
   }
-  .live-pill .lag {
-    font-size: 9px; opacity: 0.7; letter-spacing: 1px;
+
+  /* MARKET state */
+  .status-pill.market.pre   { border-color: var(--amber); color: var(--amber); }
+  .status-pill.market.pre   .dot { background: var(--amber); }
+  .status-pill.market.pre   .lbl { color: var(--amber); }
+  .status-pill.market.or    { border-color: var(--green); color: var(--green);
+                              background: var(--green-dim);
+                              box-shadow: 0 0 16px -6px var(--green); }
+  .status-pill.market.or    .dot { background: var(--green); }
+  .status-pill.market.or    .lbl { color: var(--green); }
+  .status-pill.market.open  { border-color: var(--green); color: var(--green); }
+  .status-pill.market.open  .dot { background: var(--green); }
+  .status-pill.market.open  .lbl { color: var(--green); }
+  .status-pill.market.closed { color: var(--text-mute); }
+  .status-pill.market.closed .lbl { color: var(--text-mute); }
+
+  /* FEED — Fly.io live data. `.live-pill` is set externally by
+     setupLiveOverlay; here we re-skin it to match the named-pill
+     vocabulary (FEED · 1s). */
+  .live-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 9px;
+    border-radius: 3px;
+    border: 1px solid var(--line);
+    background: var(--bg-2);
+    font-family: var(--mono); font-size: 9px;
+    letter-spacing: 1.5px;
+    white-space: nowrap;
+    cursor: help;
   }
+  .live-pill::before {
+    content: ""; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--text-mute);
+    flex: 0 0 auto;
+  }
+  .live-pill .lbl { font-weight: 700; color: var(--text); }
+  .live-pill .lag { font-size: 9px; color: var(--text-dim); letter-spacing: 0.5px; }
+  .live-pill.live    { border-color: var(--green); color: var(--green); }
+  .live-pill.live::before {
+    background: var(--green);
+    animation: pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 6px var(--green);
+  }
+  .live-pill.live .lbl { color: var(--green); }
+  .live-pill.stale   { border-color: var(--amber); }
+  .live-pill.stale::before { background: var(--amber); }
+  .live-pill.stale .lbl { color: var(--amber); }
+  .live-pill.offline { border-color: var(--text-mute); color: var(--text-mute); }
+  .live-pill.offline .lbl { color: var(--text-mute); }
+
+  /* AI pill */
+  .status-pill.ai.disabled { color: var(--text-mute); }
+  .status-pill.ai.disabled .lbl { color: var(--text-mute); }
+  .status-pill.ai.ready    { border-color: var(--cyan); color: var(--cyan); }
+  .status-pill.ai.ready    .dot { background: var(--cyan); }
+  .status-pill.ai.ready    .lbl { color: var(--cyan); }
+  .status-pill.ai.fresh    { border-color: var(--violet); color: var(--violet);
+                             background: var(--violet-dim); }
+  .status-pill.ai.fresh    .dot { background: var(--violet); }
+  .status-pill.ai.fresh    .lbl { color: var(--violet); }
+
+  /* PLAYS pill */
+  .status-pill.plays.wait  { border-color: var(--text-mute); }
+  .status-pill.plays.wait  .dot { background: var(--text-mute); }
+  .status-pill.plays.live  { border-color: var(--cyan); color: var(--cyan);
+                             background: var(--cyan-dim);
+                             box-shadow: 0 0 16px -6px var(--cyan); }
+  .status-pill.plays.live  .dot { background: var(--cyan); }
+  .status-pill.plays.live  .lbl { color: var(--cyan); }
+  .status-pill.plays.done  { color: var(--text-mute); }
+  .status-pill.plays.done  .lbl { color: var(--text-mute); }
+  .status-pill.plays.muted { color: var(--text-mute); }
 
   /* Subtle pulse on a live-updated field to make changes visible. */
   @keyframes live-update-flash {
@@ -2431,14 +2531,19 @@
     function getETNowParts() {
       const parts = new Intl.DateTimeFormat('en-CA', {
         timeZone: 'America/New_York',
+        weekday: 'short',
         year: 'numeric', month: '2-digit', day: '2-digit',
         hour: '2-digit', minute: '2-digit', hour12: false,
       }).formatToParts(new Date());
       const p = Object.fromEntries(parts.map(x => [x.type, x.value]));
       const hour = parseInt(p.hour, 10) % 24;
+      // Map weekday short name → day-of-week index (0=Sun..6=Sat). Used by
+      // the market-state pill to identify weekends.
+      const dowMap = {Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6};
       return {
         dateStr: `${p.year}-${p.month}-${p.day}`,
         minOfDay: hour * 60 + parseInt(p.minute, 10),
+        dow: dowMap[p.weekday] != null ? dowMap[p.weekday] : new Date().getDay(),
       };
     }
     // Single source of truth for matrix-play state. Used by:
@@ -2572,63 +2677,205 @@
     const fc = d.or_forecast || {};
     const tierLevel = fc.tier_level || 'unknown';
     const qLabel = (fc.quintile || '').split(' ', 1)[0];
-    const pulseClass = isDemo ? 'demo' : (meta.mode === 'live' ? '' : 'offline');
-    const pulseText  = isDemo ? 'Demo' : (meta.mode || 'idle').toUpperCase();
+    // (Legacy `pulse` pill removed in favour of named MARKET/FEED/AI/PLAYS
+    // pills below; the meta.mode info migrated into the FEED + briefing-age
+    // labels — no longer needs its own duplicated chip.)
 
-    // Generated-at timestamp shown as "DATA: HH:MM" — distinct from the live clock.
+    // Generated-at timestamp shown as "BRIEFING 6:10a" — small label, not a pill.
     // Force ET so the label matches the value regardless of viewer's browser TZ.
-    const generatedLabel = meta.generated_at_et
-      ? 'DATA  ' + new Date(meta.generated_at_et).toLocaleTimeString('en-US',
-          {hour:'2-digit', minute:'2-digit', hour12:false,
-           timeZone: 'America/New_York'}) + ' ET'
-      : 'HISTORICAL';
-    // Compute data age (minutes since generated) so stale data is visible at a glance.
+    const generatedTimeLabel = meta.generated_at_et
+      ? new Date(meta.generated_at_et).toLocaleTimeString('en-US',
+          {hour:'numeric', minute:'2-digit', hour12:true,
+           timeZone: 'America/New_York'})
+          .replace(' AM', 'a').replace(' PM', 'p').replace(/\s/g, '')
+      : 'historical';
+    // Data age (minutes since briefing was generated).
     function dataAgeText() {
       if (!meta.generated_at_et) return null;
       const ms = Date.now() - new Date(meta.generated_at_et).getTime();
       const min = Math.max(0, Math.floor(ms / 60000));
-      if (min < 60) return `${min}m ago`;
+      if (min < 60) return `${min}m`;
       const hr = Math.floor(min / 60);
-      return `${hr}h ${min % 60}m ago`;
+      return `${hr}h${min % 60 ? ` ${min % 60}m` : ''}`;
     }
-    const dataAgeEl = h('span', {class:'meta-tag mono dim'},
-      dataAgeText() || '');
 
-    // Live clock — ticks every second in ET. Shown as HH:MM:SS.
+    // Live clock — 12-hour with AM/PM.
     const clockEl = h('span', {class:'live-clock mono'}, '--:--:--');
+    const clockMeridiemEl = h('span', {class:'live-meridiem mono'}, '');
     function tickClock() {
-      const parts = new Intl.DateTimeFormat('en-GB', {
+      const parts = new Intl.DateTimeFormat('en-US', {
         timeZone: 'America/New_York',
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+        hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true,
       }).formatToParts(new Date());
       const p = Object.fromEntries(parts.map(x => [x.type, x.value]));
       clockEl.textContent = `${p.hour}:${p.minute}:${p.second}`;
-      const age = dataAgeText();
-      if (age) dataAgeEl.textContent = age;
+      clockMeridiemEl.textContent = (p.dayPeriod || '').toUpperCase();
+      tickMarketState();
+      tickPlaysSummary();
+      tickBriefingAge();
     }
-    tickClock();
-    setInterval(tickClock, 1000);
 
-    // Live-feed status pill (Fly.io). Starts CONNECTING; live polling
-    // updates it to LIVE / STALE / OFFLINE as appropriate. The static
-    // "pulse" pill (MORNING/DEMO mode) stays alongside it so the user
-    // can see both data layers' state.
-    const livePill = h('span', {class:'live-pill', title:'Live data status'},
+    // ===== Market state pill =====
+    // Reads current ET time, derives session state, shows countdown to the
+    // next transition. NQ trades nearly 24/5 but FVGC is RTH-only; we
+    // gate on RTH (9:30–16:00 ET) for "OPEN" state. The 9:30–10:15 OR
+    // window gets its own emphasis since that's where most plays live.
+    const marketPill = h('span', {class:'status-pill market', title:'Market session state'},
+      h('span', {class:'dot'}),
+      h('span', {class:'lbl'}, '—'),
+      h('span', {class:'sub mono'}, ''));
+    function tickMarketState() {
+      const {minOfDay, dow, dateStr} = getETNowParts();
+      // dow: 0=Sun..6=Sat
+      const isWeekend = dow === 0 || dow === 6;
+      const open  = 9 * 60 + 30;   // 9:30
+      const orEnd = 10 * 60 + 15;  // 10:15
+      const close = 16 * 60;       // 16:00
+      let state, label, sub, cls;
+      function fmtMins(m) {
+        m = Math.max(0, m);
+        const h = Math.floor(m / 60), mm = m % 60;
+        return h ? `${h}h ${mm}m` : `${mm}m`;
+      }
+      if (isWeekend) {
+        cls = 'closed'; label = 'CLOSED'; sub = 'weekend';
+      } else if (minOfDay < open) {
+        cls = 'pre'; label = 'PRE-MARKET';
+        sub = `opens 9:30a · ${fmtMins(open - minOfDay)}`;
+      } else if (minOfDay < orEnd) {
+        cls = 'or'; label = 'OR WINDOW';
+        sub = `closes 10:15a · ${fmtMins(orEnd - minOfDay)}`;
+      } else if (minOfDay < close) {
+        cls = 'open'; label = 'MARKET OPEN';
+        sub = `closes 4:00p · ${fmtMins(close - minOfDay)}`;
+      } else {
+        cls = 'closed'; label = 'CLOSED';
+        sub = 'until 9:30a tomorrow';
+      }
+      marketPill.className = 'status-pill market ' + cls;
+      marketPill.querySelector('.lbl').textContent = label;
+      marketPill.querySelector('.sub').textContent = sub;
+    }
+
+    // ===== Plays summary pill =====
+    // Single-glance answer to "how much of today is still ahead of me?"
+    // Counts matrix plays by state: pending (WAIT/LIVE), armed, missed, done.
+    // DONE FOR DAY when nothing pending.
+    const playsPill = h('span', {class:'status-pill plays', title:'Plays remaining today'},
+      h('span', {class:'dot'}),
+      h('span', {class:'lbl'}, '—'),
+      h('span', {class:'sub mono'}, ''));
+    function tickPlaysSummary() {
+      const mpList = window.BRIEFING_DATA?.matrix_plays || [];
+      if (!mpList.length) {
+        playsPill.className = 'status-pill plays muted';
+        playsPill.querySelector('.lbl').textContent = 'NO PLAYS';
+        playsPill.querySelector('.sub').textContent = '';
+        return;
+      }
+      let pending = 0, armed = 0, missed = 0, done = 0, vetoed = 0;
+      mpList.forEach(p => {
+        if (p.veto_active) { vetoed++; return; }
+        // typeof check protects against earlier-load ordering on initial render.
+        const st = (typeof _computeMatrixState === 'function')
+          ? _computeMatrixState(p) : null;
+        if (!st) { pending++; return; }
+        if (st.label === 'ARMED' || st.label === 'DONE · ARMED') armed++;
+        else if (st.label === 'MISSED') missed++;
+        else if (st.label === 'DONE') done++;
+        else pending++;
+      });
+      const stillOpen = pending > 0;
+      if (!stillOpen) {
+        playsPill.className = 'status-pill plays done';
+        playsPill.querySelector('.lbl').textContent = 'DONE FOR DAY';
+        const bits = [];
+        if (armed)  bits.push(`${armed} armed`);
+        if (done)   bits.push(`${done} done`);
+        if (missed) bits.push(`${missed} missed`);
+        if (vetoed) bits.push(`${vetoed} vetoed`);
+        playsPill.querySelector('.sub').textContent = bits.join(' · ') || 'no signal';
+        return;
+      }
+      const cls = armed > 0 ? 'live' : 'wait';
+      playsPill.className = 'status-pill plays ' + cls;
+      playsPill.querySelector('.lbl').textContent =
+        `${pending} PENDING` + (armed ? ` · ${armed} ARMED` : '');
+      const tail = [];
+      if (done)   tail.push(`${done} done`);
+      if (missed) tail.push(`${missed} missed`);
+      if (vetoed) tail.push(`${vetoed} veto`);
+      playsPill.querySelector('.sub').textContent = tail.join(' · ');
+    }
+
+    // ===== AI / narrative status pill =====
+    // Shows whether intra-day re-narration is enabled and how fresh the
+    // last regen was. Polled by the same loop that fetches /api/narratives.
+    const aiPill = h('span', {class:'status-pill ai', title:'AI narrative regen status'},
+      h('span', {class:'dot'}),
+      h('span', {class:'lbl'}, 'AI'),
+      h('span', {class:'sub mono'}, '…'));
+    window._setAiPillState = (enabled, lastGeneratedAtUtc) => {
+      if (!enabled) {
+        aiPill.className = 'status-pill ai disabled';
+        aiPill.querySelector('.sub').textContent = 'off';
+        return;
+      }
+      if (!lastGeneratedAtUtc) {
+        aiPill.className = 'status-pill ai ready';
+        aiPill.querySelector('.sub').textContent = 'ready';
+        return;
+      }
+      const mins = Math.max(0, Math.floor(
+        (Date.now() - new Date(lastGeneratedAtUtc).getTime()) / 60000));
+      aiPill.className = 'status-pill ai fresh';
+      aiPill.querySelector('.sub').textContent =
+        mins < 1 ? 'just now' : (mins < 60 ? `${mins}m` : `${Math.floor(mins/60)}h`);
+    };
+
+    // ===== Briefing (morning data) age — small label, not a pill =====
+    const briefingAgeEl = h('span', {class:'briefing-age mono'},
+      h('span', {class:'dim'}, 'briefing '),
+      h('span', null, generatedTimeLabel),
+      h('span', {class:'dim'}, ' · '),
+      h('span', null, dataAgeText() || '—'));
+    function tickBriefingAge() {
+      const age = dataAgeText();
+      if (age) briefingAgeEl.lastChild.textContent = age;
+    }
+
+    // ===== Live feed pill (Fly.io) — same element as before, restyled =====
+    // setupLiveOverlay still writes to this via livePill.className/innerHTML;
+    // CSS just renders the .live-pill cleaner now.
+    const livePill = h('span', {class:'live-pill', title:'Live data feed (Fly.io)'},
       h('span', {class:'lbl'}, 'CONNECTING'));
 
     const topbar = h('div', {class:'topbar'},
       h('div', {class:'brand'},
         h('span', {class:'accent'}, 'NQ'), ' BRIEFING'),
       h('div', {class:'spacer'}),
-      h('span', {class:'meta-tag mono'}, h('b', null, meta.date || '—'), ' · ', meta.day_of_week || '—'),
-      h('span', {class:'meta-tag mono dim'}, generatedLabel),
-      dataAgeEl,
-      h('span', {class:'now-label'}, 'NOW'),
+      // Day chip — small, dim, far-left of the right-side cluster.
+      h('span', {class:'meta-tag mono'},
+        h('b', null, (meta.day_of_week || '—').slice(0, 3)), ' · ',
+        new Date(meta.date + 'T12:00:00Z').toLocaleDateString('en-US',
+          {month:'short', day:'numeric', timeZone:'America/New_York'})),
+      // Live clock — bigger, primary visual anchor.
       clockEl,
+      clockMeridiemEl,
       h('span', {class:'now-tz'}, 'ET'),
-      h('span', {class: 'pulse ' + pulseClass}, pulseText),
+      // Status pill cluster — left-to-right reads: market → feed → AI → plays.
+      // Briefing-age label sits at the end as small dim text.
+      h('span', {class:'pill-sep'}),
+      marketPill,
       livePill,
+      aiPill,
+      playsPill,
+      briefingAgeEl,
     );
+    // Initialise pills synchronously so they render correctly on first paint.
+    tickMarketState();
+    tickPlaysSummary();
+    window._setAiPillState(false, null);  // overridden by narrative poller
     if (window.BriefingTheme) window.BriefingTheme.mountToggle(topbar);
     app.appendChild(topbar);
 
@@ -2912,17 +3159,20 @@
       let lastSuccessAt = 0;
       let consecutiveFails = 0;
 
-      // Status pill UI
+      // Status pill UI — named pill always says "FEED"; the sub-line
+      // carries state + lag so the label/value distinction matches the
+      // other pills in the topbar (MARKET / AI / PLAYS).
       function setPill(state, lagSeconds) {
         livePill.className = 'live-pill ' + state;
-        const label = state.toUpperCase();
         let lag = '';
         if (lagSeconds != null) {
           lag = lagSeconds < 60
-            ? ` <span class="lag">${lagSeconds}s</span>`
-            : ` <span class="lag">${Math.floor(lagSeconds / 60)}m</span>`;
+            ? `${state} · ${lagSeconds}s`
+            : `${state} · ${Math.floor(lagSeconds / 60)}m`;
+        } else {
+          lag = state;
         }
-        livePill.innerHTML = `<span class="lbl">${label}</span>${lag}`;
+        livePill.innerHTML = `<span class="lbl">FEED</span><span class="lag">${lag}</span>`;
         livePill.title = state === 'live'
           ? `Live Databento feed via Fly.io · bar ${lagSeconds || '?'}s old`
           : state === 'stale'
@@ -3611,6 +3861,16 @@
             seenNarratives[event] = stamp;
             applyNarrativeUpdate(event, narr);
           });
+          // Reflect server-side enabled flag + most-recent narrative age
+          // in the top-bar AI pill.
+          if (typeof window._setAiPillState === 'function') {
+            const stamps = Object.values(narrs)
+              .map(n => n && n.generated_at_utc)
+              .filter(Boolean)
+              .sort();
+            const latest = stamps.length ? stamps[stamps.length - 1] : null;
+            window._setAiPillState(!!data.enabled, latest);
+          }
         } catch (_) { /* silent — best-effort */ }
       }
       // Pulse the timestamps every 30s so "updated N min ago" stays current
