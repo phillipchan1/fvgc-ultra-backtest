@@ -13,10 +13,8 @@
     "frequency": "~14/yr (~1.2/mo) — roughly 1 every 25 days. From 8yr backtest, 117 trades.",
     "pf_base": 2.31,
     "avg_mfe_r": 2.5,
-    "window": [
-      "9:30-9:45"
-    ],
-    "notion_url": "https://www.notion.so/M1-Long-Confluence-Model-365e2f0e77608154b4caca8dcc0a7c70",
+    "window": "[\"9:30-9:45\"]",
+    "notion_url": "https://www.notion.so/365e2f0e77608154b4caca8dcc0a7c70",
     "pre_market_factors": []
   },
   {
@@ -33,10 +31,8 @@
     "frequency": "~2.66 trades/month at 3+ confluence (after vetoes)",
     "pf_base": 2.26,
     "avg_mfe_r": 2,
-    "window": [
-      "10:00-10:15"
-    ],
-    "notion_url": "https://www.notion.so/M3-Long-Confluence-Model-361e2f0e7760819bbbc7ca78b9faa8f9",
+    "window": "[\"10:00-10:15\"]",
+    "notion_url": "https://www.notion.so/361e2f0e7760819bbbc7ca78b9faa8f9",
     "pre_market_factors": []
   },
   {
@@ -53,10 +49,8 @@
     "frequency": "~13/yr (~1.1/mo) — roughly 1 every 27 days. 4+ tier ONLY (Tier B size); 3+ tier no longer viable on 8yr.",
     "pf_base": 2.62,
     "avg_mfe_r": 2.5,
-    "window": [
-      "9:45-10:00"
-    ],
-    "notion_url": "https://www.notion.so/M2-Long-Confluence-Model-361e2f0e776081e69d5dfc696dbd5726",
+    "window": "[\"9:45-10:00\"]",
+    "notion_url": "https://www.notion.so/361e2f0e776081e69d5dfc696dbd5726",
     "pre_market_factors": []
   },
   {
@@ -73,10 +67,8 @@
     "frequency": "~13% of days have both OR sides swept by 10:00. Conservative estimate: 2–3 setups/month at most.",
     "pf_base": 1.28,
     "avg_mfe_r": 5.5,
-    "window": [
-      "10:00-10:15"
-    ],
-    "notion_url": "https://www.notion.so/M3-Short-Both-Swept-Carve-Out-Idea-35ce2f0e776081f1be39d7ff086ec51e",
+    "window": "[\"10:00-10:15\"]",
+    "notion_url": "https://www.notion.so/35ce2f0e776081f1be39d7ff086ec51e",
     "pre_market_factors": []
   },
   {
@@ -93,10 +85,8 @@
     "frequency": "~1.8 trades/month",
     "pf_base": 16.67,
     "avg_mfe_r": 9.11,
-    "window": [
-      "9:30-9:45"
-    ],
-    "notion_url": "https://www.notion.so/W1-Short-Post-Sweep-Continuation-351e2f0e77608114b4fef8eb95750312",
+    "window": "[\"9:30-9:45\"]",
+    "notion_url": "https://www.notion.so/351e2f0e77608114b4fef8eb95750312",
     "pre_market_factors": []
   },
   {
@@ -113,10 +103,8 @@
     "frequency": "~1-2/month, ~20/year",
     "pf_base": 3.61,
     "avg_mfe_r": 0.39,
-    "window": [
-      "9:30-9:45"
-    ],
-    "notion_url": "https://www.notion.so/Small-Gap-Fade-Long-9-31-Entry-Gap-25pts-34be2f0e7760819d9113f55043e98157",
+    "window": "[\"9:30-9:45\"]",
+    "notion_url": "https://www.notion.so/34be2f0e7760819d9113f55043e98157",
     "pre_market_factors": [
       "gap_down_ge_25pts",
       "gap_atr_ratio_lt_0.6",
@@ -137,10 +125,8 @@
     "frequency": "~1.4/mo (43 events / 30 months)",
     "pf_base": 2.3,
     "avg_mfe_r": 6.3,
-    "window": [
-      "10:00-10:15"
-    ],
-    "notion_url": "https://www.notion.so/Turtle-Soup-Short-Confluence-Model-34be2f0e77608138992df2f78bc84477",
+    "window": "[\"10:00-10:15\"]",
+    "notion_url": "https://www.notion.so/34be2f0e77608138992df2f78bc84477",
     "pre_market_factors": []
   },
   {
@@ -157,10 +143,8 @@
     "frequency": "~58 signals/yr (~15 distinct opps/yr)",
     "pf_base": 2.81,
     "avg_mfe_r": 2.3,
-    "window": [
-      "Any"
-    ],
-    "notion_url": "https://www.notion.so/IFVG-Reversal-v3-anchor-to-sweep-close-entry-344e2f0e77608185b832c8c131a35bce",
+    "window": "[\"Any\"]",
+    "notion_url": "https://www.notion.so/344e2f0e77608185b832c8c131a35bce",
     "pre_market_factors": []
   },
   {
@@ -177,10 +161,8 @@
     "frequency": "~12/month (~2.8/week). Active on 59% of trading days.",
     "pf_base": 2.61,
     "avg_mfe_r": 7,
-    "window": [
-      "Any"
-    ],
-    "notion_url": "https://www.notion.so/15m-FVG-Tap-Delivery-Reversal-344e2f0e776081878722e91f87533e3d",
+    "window": "[\"Any\"]",
+    "notion_url": "https://www.notion.so/344e2f0e776081878722e91f87533e3d",
     "pre_market_factors": []
   },
   {
@@ -197,10 +179,8 @@
     "frequency": "~4/month (~1/week). 15% of trading days.",
     "pf_base": 3.4,
     "avg_mfe_r": 6.4,
-    "window": [
-      "Any"
-    ],
-    "notion_url": "https://www.notion.so/15m-FVG-Reversal-Sweep-Inversion-343e2f0e776081f4880bff1c5bd10c76",
+    "window": "[\"Any\"]",
+    "notion_url": "https://www.notion.so/343e2f0e776081f4880bff1c5bd10c76",
     "pre_market_factors": []
   },
   {
@@ -217,11 +197,8 @@
     "frequency": "~3/month (clusters when VIXY is high regime; ~7 trades/month on active days)",
     "pf_base": 3.76,
     "avg_mfe_r": 3.59,
-    "window": [
-      "9:30-9:45",
-      "9:45-10:00"
-    ],
-    "notion_url": "https://www.notion.so/ON-Range-Bias-343e2f0e776081679327e2ce38aa621b",
+    "window": "[\"9:30-9:45\",\"9:45-10:00\"]",
+    "notion_url": "https://www.notion.so/343e2f0e776081679327e2ce38aa621b",
     "pre_market_factors": []
   },
   {
@@ -238,11 +215,8 @@
     "frequency": "~3/month (0.75/week) — R0≥10pt tier",
     "pf_base": 4.61,
     "avg_mfe_r": 2.5,
-    "window": [
-      "9:30-9:45",
-      "9:45-10:00"
-    ],
-    "notion_url": "https://www.notion.so/VWAP-Continuation-342e2f0e77608199821ecfbf57a1c591",
+    "window": "[\"9:30-9:45\",\"9:45-10:00\"]",
+    "notion_url": "https://www.notion.so/342e2f0e77608199821ecfbf57a1c591",
     "pre_market_factors": []
   },
   {
@@ -259,10 +233,8 @@
     "frequency": "~124 trades over dataset (high VIXY days only, W1 entries, <30% range used)",
     "pf_base": 1.65,
     "avg_mfe_r": null,
-    "window": [
-      "9:30-9:45"
-    ],
-    "notion_url": "https://www.notion.so/ATR-Range-Exhaustion-Filter-High-VIXY-342e2f0e7760816abc98f5a9af374523",
+    "window": "[\"9:30-9:45\"]",
+    "notion_url": "https://www.notion.so/342e2f0e7760816abc98f5a9af374523",
     "pre_market_factors": []
   },
   {
@@ -279,10 +251,8 @@
     "frequency": "~4.3 qualified setups/week (>2 PF combos); ~7.7 MACD-confirmed/week total",
     "pf_base": 2.43,
     "avg_mfe_r": 6.22,
-    "window": [
-      "Any"
-    ],
-    "notion_url": "https://www.notion.so/MACD-342e2f0e776081968dc8f38d9990703f",
+    "window": "[\"Any\"]",
+    "notion_url": "https://www.notion.so/342e2f0e776081968dc8f38d9990703f",
     "pre_market_factors": []
   },
   {
@@ -299,10 +269,8 @@
     "frequency": "~37/yr (~3.1/mo) — Thursdays only, so roughly 1 most Thursdays (sometimes multiple per Thursday). 21 months with data, only 3 losing months.",
     "pf_base": 2.89,
     "avg_mfe_r": null,
-    "window": [
-      "Any"
-    ],
-    "notion_url": "https://www.notion.so/Thursday-Inside-Value-Area-342e2f0e77608166bc8ed85bf46b2dca",
+    "window": "[\"Any\"]",
+    "notion_url": "https://www.notion.so/342e2f0e77608166bc8ed85bf46b2dca",
     "pre_market_factors": [
       "thursday",
       "entry_inside_prior_day_value_area"
@@ -322,10 +290,8 @@
     "frequency": "~23/yr (~1.9/mo) | ~1 every 10 days (median) | longest typical wait 38 days. NOTE: play status REJECTED — DO NOT TRADE.",
     "pf_base": 5.5,
     "avg_mfe_r": 9.44,
-    "window": [
-      "Any"
-    ],
-    "notion_url": "https://www.notion.so/15m-FVG-Breakout-Continuation-340e2f0e776081cd922adc681ab3fdb1",
+    "window": "[\"Any\"]",
+    "notion_url": "https://www.notion.so/340e2f0e776081cd922adc681ab3fdb1",
     "pre_market_factors": []
   },
   {
@@ -342,10 +308,8 @@
     "frequency": "Cadence not yet measured — trade list missing. Sample size 100 over backtest window.",
     "pf_base": 3.31,
     "avg_mfe_r": 6.4,
-    "window": [
-      "Any"
-    ],
-    "notion_url": "https://www.notion.so/HTF-Delivery-Draw-Reversal-340e2f0e7760813c8df9c4a25d4eb677",
+    "window": "[\"Any\"]",
+    "notion_url": "https://www.notion.so/340e2f0e7760813c8df9c4a25d4eb677",
     "pre_market_factors": []
   },
   {
@@ -362,10 +326,8 @@
     "frequency": "Post-veto: ~50/yr (~4/mo) | every 7-11 days. 2+ confluences: ~22/yr (~1.9/mo) | every 16 days. 4+ confluences: ~6/yr | every 61 days. 9:30-FVG premium sub-tier: ~7/yr | every 55 days.",
     "pf_base": 2.44,
     "avg_mfe_r": 4,
-    "window": [
-      "9:30-9:45"
-    ],
-    "notion_url": "https://www.notion.so/M1-Short-Confluence-Model-33de2f0e776081889879c4dcbd495996",
+    "window": "[\"9:30-9:45\"]",
+    "notion_url": "https://www.notion.so/33de2f0e776081889879c4dcbd495996",
     "pre_market_factors": []
   },
   {
@@ -383,7 +345,7 @@
     "pf_base": 4.09,
     "avg_mfe_r": 6.99,
     "window": [],
-    "notion_url": "https://www.notion.so/FVGC-Off-of-930-Candle-33de2f0e776081aa9c6bdc297e5fb68b",
+    "notion_url": "https://www.notion.so/33de2f0e776081aa9c6bdc297e5fb68b",
     "pre_market_factors": []
   },
   {
@@ -400,10 +362,8 @@
     "frequency": "30s primary: ~119/yr (~10/mo), mean 1.49 trades/day, 34% of days have 2+ fires (~half overlap within 5min). 1m alt: ~65/yr (~5.4/mo), 18% multi-fire days. Entry window 9:45-10:15 ET.",
     "pf_base": 1.78,
     "avg_mfe_r": null,
-    "window": [
-      "9:45-10:00"
-    ],
-    "notion_url": "https://www.notion.so/FVGC-To-Opening-Range-H-L-33de2f0e776080409d14f582b1868b64",
+    "window": "[\"9:45-10:00\"]",
+    "notion_url": "https://www.notion.so/33de2f0e776080409d14f582b1868b64",
     "pre_market_factors": []
   }
 ]
