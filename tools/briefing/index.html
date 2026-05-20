@@ -1332,6 +1332,41 @@
     border-left: 2px dashed var(--line-2);
     color: var(--text-mute); font-size: 10px; font-style: italic; letter-spacing: 0.3px;
   }
+  /* When the narrative was regenerated mid-session, the `.narrative` block
+     gets a structured header instead of the static ::before AI tag. We
+     hide the ::before in that case so it doesn't double up. */
+  .narrative[data-narr-generated]::before { display: none; }
+  .narr-tag {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 6px;
+    font-family: var(--mono);
+  }
+  .narr-pulse {
+    font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+    color: var(--violet);
+    padding: 1px 6px; border: 1px solid var(--violet);
+    border-radius: 2px;
+    background: var(--violet-dim);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .narr-trigger {
+    font-size: 9px; letter-spacing: 1px; color: var(--violet);
+    font-weight: 600;
+  }
+  .narr-age {
+    margin-left: auto;
+    font-size: 9px; color: var(--text-dim); letter-spacing: 0.5px;
+  }
+  .narr-body { /* inherits .narrative typography */ }
+  /* Brief glow when a narrative is freshly applied so the eye catches it. */
+  .narrative-just-updated {
+    animation: narr-flash 0.6s ease-out 0s 4;
+  }
+  @keyframes narr-flash {
+    0%   { box-shadow: 0 0 0 0 var(--violet); background-position: 0% 50%; }
+    50%  { box-shadow: 0 0 16px -2px var(--violet); }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
 
   /* ===== Chips ===== */
   .chip {
@@ -2339,6 +2374,17 @@
     const narrative = (text) => text
       ? h('div', {class: 'narrative', html: text})
       : h('div', {class: 'narrative-empty'}, 'AI NARRATIVE PENDING — edit briefing.json');
+    // Per-play narrative slot — tagged so the live narrative poller can
+    // replace the morning text with a freshly-regenerated paragraph when
+    // the play transitions to ARMED/MISSED/DONE during the session.
+    const playNarrative = (p) => {
+      const slot = p.narrative
+        ? h('div', {class:'narrative', 'data-narr-host':'play:' + p.name, html: p.narrative})
+        : h('div', {class:'narrative narrative-empty',
+                    'data-narr-host':'play:' + p.name},
+            'AI NARRATIVE PENDING — fires on first ARMED/MISSED/DONE.');
+      return slot;
+    };
 
     // Time-window helpers (used by column-2 grouping + column-3 detail).
     // Declared up here so they're initialized before any render function calls them
@@ -2822,6 +2868,9 @@
               dAct.className = 'dsb-action ' + st.cls;
               dAct.textContent = st.action;
             }
+            // Catches DONE transitions driven purely by time (window
+            // passed without confluence resolution). Idempotent on server.
+            maybeTriggerPlayNarrative(p, st);
           } else {
             // Playbook: ticker controls label; preserve any live verdict
             // (set by applyLivePlaybookVerdicts) — those win over WAIT/LIVE.
@@ -2853,7 +2902,10 @@
 
     function setupLiveOverlay({ livePill }) {
       const LIVE_API = 'https://nq-live-snapshot.fly.dev/api/live';
+      const NARR_API = 'https://nq-live-snapshot.fly.dev/api/narratives';
+      const NARR_TRIGGER_API = 'https://nq-live-snapshot.fly.dev/api/narrative-trigger';
       const POLL_INTERVAL_MS = 7000;          // every 7s
+      const NARR_POLL_MS     = 30000;         // every 30s — slower, AI re-narrate
       const STALE_SECONDS = 90;               // > 90s old = STALE pill
       const OFFLINE_AFTER_FAILS = 3;          // 3 consecutive failures → OFFLINE
       let liveData = null;
@@ -3074,6 +3126,9 @@
           dbChip.textContent = st.label;
           dbAction.className = 'dsb-action ' + st.cls;
           dbAction.textContent = st.action;
+          // First time we observe a terminal state for this play today —
+          // ping Fly.io to regenerate the play's narrative.
+          maybeTriggerPlayNarrative(p, st);
           // Count: "<liveCount>/<max>  · +<unknown>"
           const unknownCount = pending.length - firedIds.size - missedIds.size;
           dbCount.innerHTML =
@@ -3537,6 +3592,136 @@
 
       pollOnce();
       setInterval(pollOnce, POLL_INTERVAL_MS);
+
+      // ====== AI narrative polling ======
+      // Pulls Fly.io's regenerated narratives every 30s and slots them into
+      // the matching DOM sections. Each known-applied narrative is recorded
+      // in `seenNarratives` so re-application is a no-op until a fresher
+      // generated_at_utc shows up.
+      const seenNarratives = {};   // event -> generated_at_utc string
+      async function pollNarratives() {
+        try {
+          const resp = await fetch(NARR_API, { cache: 'no-store' });
+          if (!resp.ok) return;
+          const data = await resp.json();
+          const narrs = data.narratives || {};
+          Object.entries(narrs).forEach(([event, narr]) => {
+            const stamp = narr.generated_at_utc || '';
+            if (seenNarratives[event] === stamp) return;
+            seenNarratives[event] = stamp;
+            applyNarrativeUpdate(event, narr);
+          });
+        } catch (_) { /* silent — best-effort */ }
+      }
+      // Pulse the timestamps every 30s so "updated N min ago" stays current
+      // even on a quiet news day where no new narrative arrives.
+      function tickNarrativeAges() {
+        document.querySelectorAll('[data-narr-generated]').forEach(el => {
+          const ts = el.dataset.narrGenerated;
+          if (!ts) return;
+          const mins = Math.max(0, Math.floor((Date.now() - new Date(ts).getTime()) / 60000));
+          const ageEl = el.querySelector('.narr-age');
+          if (ageEl) {
+            ageEl.textContent = mins === 0 ? 'just now' : `${mins} min ago`;
+          }
+        });
+      }
+      pollNarratives();
+      setInterval(pollNarratives,  NARR_POLL_MS);
+      setInterval(tickNarrativeAges, NARR_POLL_MS);
+    }
+
+    // Resolve which DOM element should host a given narrative event.
+    //   or_5min_lock / or_15min_lock / or_45min_lock → Range Briefing card
+    //   play:<name>:<state>                          → detail pane narrative
+    //                                                  for that play (if open)
+    function _narrativeTarget(event) {
+      if (event === 'or_5min_lock' || event === 'or_15min_lock' || event === 'or_45min_lock') {
+        const card = document.querySelector('.range-card');
+        if (!card) return null;
+        // Reuse the morning .narrative slot if present, else create one and
+        // pin it just before the .range-action block.
+        let host = card.querySelector('[data-narr-host="range_briefing"]');
+        if (!host) {
+          host = document.createElement('div');
+          host.dataset.narrHost = 'range_briefing';
+          host.className = 'narrative';
+          const anchor = card.querySelector('.range-action');
+          if (anchor) card.insertBefore(host, anchor);
+          else card.appendChild(host);
+        }
+        return host;
+      }
+      if (event.startsWith('play:')) {
+        const name = event.split(':', 3)[1];
+        // The detail pane has the AI narrative div as the last `.narrative`
+        // inside the active matrix-detail. We tag the .narrative produced by
+        // renderMatrixDetail with the play name (see narrative() helper).
+        const safe = (window.CSS && CSS.escape) ? CSS.escape(name) : name;
+        return document.querySelector(`[data-narr-host="play:${safe}"]`);
+      }
+      return null;
+    }
+
+    // Render a narrative into its target host. The host gets:
+    //   - the fresh prose
+    //   - a "✨ AI · updated N min ago · <trigger>" tag
+    //   - a brief glow animation so the user notices the swap
+    function applyNarrativeUpdate(event, narr) {
+      const host = _narrativeTarget(event);
+      if (!host) return;
+      const triggerLabel = ({
+        'or_5min_lock':  '5-min OR locked',
+        'or_15min_lock': '15-min OR locked',
+        'or_45min_lock': '45-min OR locked',
+      })[event] || (event.startsWith('play:') ? 'play state changed' : event);
+      const generatedAt = narr.generated_at_utc || new Date().toISOString();
+      const mins = Math.max(0, Math.floor((Date.now() - new Date(generatedAt).getTime()) / 60000));
+      const ageTxt = mins === 0 ? 'just now' : `${mins} min ago`;
+      host.dataset.narrGenerated = generatedAt;
+      host.innerHTML = `
+        <div class="narr-tag">
+          <span class="narr-pulse">✨ AI</span>
+          <span class="narr-trigger">${triggerLabel}</span>
+          <span class="narr-age mute mono">${ageTxt}</span>
+        </div>
+        <div class="narr-body">${narr.text || ''}</div>
+      `;
+      host.classList.add('narrative-just-updated');
+      setTimeout(() => host.classList.remove('narrative-just-updated'), 4000);
+    }
+
+    // Per-play narrative trigger — fires when the dashboard detects a play
+    // transition into ARMED / MISSED / DONE. Posts to Fly.io which enqueues
+    // a regen. Idempotent on the server side (same event for the day = no-op).
+    const _playEventSent = {};
+    function maybeTriggerPlayNarrative(p, st) {
+      if (!st || !st.label) return;
+      // Only fire on meaningful destination states.
+      const stable = ['ARMED', 'MISSED', 'DONE', 'DONE · ARMED'];
+      if (!stable.includes(st.label)) return;
+      const key = `play:${p.name}:${st.label}`;
+      if (_playEventSent[key]) return;
+      _playEventSent[key] = true;
+      const NARR_TRIGGER_API = 'https://nq-live-snapshot.fly.dev/api/narrative-trigger';
+      const fired  = (p._fired_factor_ids  || []);
+      const missed = (p._missed_factor_ids || []);
+      const proj   = p.projection || {};
+      const liveCount = p._live_count != null ? p._live_count : p.preopen_count;
+      fetch(NARR_TRIGGER_API, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          event: key,
+          extra: {
+            count: liveCount,
+            max: proj.max_count,
+            fired_factors: fired,
+            missed_factors: missed,
+            action: proj.max_tier?.action || '',
+          },
+        }),
+      }).catch(() => { /* silent — best-effort */ });
     }
 
     // ========================================================
@@ -3919,7 +4104,7 @@
             h('span', {class:'meta'}, v.id)))));
         if (p.extra_note) wrap.appendChild(h('div', {class:'extra-note'}, p.extra_note));
         if (p.notion_url) wrap.appendChild(h('a', {class:'play-link', href: p.notion_url, target:'_blank'}, '→ PLAYBOOK'));
-        wrap.appendChild(narrative(p.narrative));
+        wrap.appendChild(playNarrative(p));
         return wrap;
       }
 
@@ -4033,7 +4218,7 @@
 
       if (p.extra_note) wrap.appendChild(h('div', {class:'extra-note'}, p.extra_note));
       if (p.notion_url) wrap.appendChild(h('a', {class:'play-link', href: p.notion_url, target:'_blank'}, '→ PLAYBOOK'));
-      wrap.appendChild(narrative(p.narrative));
+      wrap.appendChild(playNarrative(p));
       return wrap;
     }
 

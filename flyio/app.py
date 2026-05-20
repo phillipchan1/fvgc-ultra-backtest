@@ -26,6 +26,10 @@ import logging
 import os
 import threading
 import time as time_module
+import json as _json
+import queue
+import urllib.error
+import urllib.request
 from collections import deque
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
@@ -33,7 +37,7 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 import databento as db
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 # ---------------------------------------------------------------------------
@@ -73,6 +77,21 @@ ALLOWED_ORIGINS = [
     "http://127.0.0.1:8765",
 ]
 
+# Intra-day narrative regeneration (event-driven, GPT-5 Nano).
+# Fly.io watches for state transitions (OR locks; play arming via dashboard
+# webhook) and refreshes the relevant narrative blocks. Cheap (~$0.01-0.05/day)
+# but only useful if OPENAI_API_KEY is set and BRIEFING_URL is reachable.
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-5-nano")
+BRIEFING_URL = os.environ.get(
+    "BRIEFING_URL",
+    "https://phillipchan1.github.io/fvgc-ultra-backtest/briefing.json",
+)
+# Optional shared secret for the POST /api/narrative-trigger endpoint. If
+# unset, the endpoint trusts any caller (relies on CORS to gate). Setting
+# it is recommended for production.
+NARRATIVE_TRIGGER_SECRET = os.environ.get("NARRATIVE_TRIGGER_SECRET")
+
 # ---------------------------------------------------------------------------
 # Shared state
 # ---------------------------------------------------------------------------
@@ -87,7 +106,21 @@ state: dict[str, Any] = {
     "started_at": datetime.now(timezone.utc),
     "bar_count": 0,
     "reconnect_count": 0,
+    # Narrative store — keyed by event id ('or_5min_lock', 'or_15min_lock',
+    # 'or_45min_lock', 'play:M1 Long:ARMED', etc). Each value: {text,
+    # generated_at_utc, trigger, model}.
+    "narratives": {},
+    "briefing_context": None,                # cached briefing.json
+    "briefing_context_fetched_at": None,     # datetime
 }
+
+# Module-level cursors for event detection. Updated by _check_narrative_events
+# from inside state_lock so they're consistent with the snapshot they read.
+_prev_or5_complete = False
+_prev_or15_complete = False
+_prev_or45_complete = False
+# Background work queue for narrative generation.
+_narrative_queue: "queue.Queue[dict]" = queue.Queue(maxsize=32)
 
 log = logging.getLogger("nq-live")
 logging.basicConfig(
@@ -146,6 +179,7 @@ def _ingest_bar(bar: dict[str, Any]) -> None:
         state["last_record_at"] = datetime.now(timezone.utc)
         state["bar_count"] = len(bars)
         state["snapshot"] = _compute_snapshot()
+        _check_narrative_events(state["snapshot"])
 
 
 def _compute_snapshot() -> dict[str, Any] | None:
@@ -437,6 +471,258 @@ def _compute_intraday_factors(
 
 
 # ---------------------------------------------------------------------------
+# Narrative generation (event-driven AI re-narration)
+# ---------------------------------------------------------------------------
+# Pattern: detect state transitions (OR(5m) locked, OR(15m) locked, OR(45m)
+# locked, a play armed/missed/done) → push a regen request onto
+# _narrative_queue → background worker calls GPT-5 Nano → result lands in
+# state["narratives"][event_id]. Dashboard polls /api/narratives every 30s
+# and slots fresh narratives into the corresponding section, with a
+# "✨ updated N min ago" tag.
+#
+# Cost budget: GPT-5 Nano @ ~$0.05 / 1M input + $0.40 / 1M output. Each
+# narrative ≈ 400 in + 200 out = ~$0.0001 / call. Even with 30 events/day
+# we're under a penny.
+
+
+def _fetch_briefing_context() -> dict | None:
+    """Pull briefing.json from GitHub Pages so the narrative generator has
+    morning context. Called at startup and re-called on stale cache."""
+    try:
+        req = urllib.request.Request(BRIEFING_URL, headers={
+            "Cache-Control": "no-cache",
+            "User-Agent": "nq-live-snapshot/0.1",
+        })
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = _json.loads(resp.read())
+        log.info("Fetched briefing context (date=%s, narratives in sections: %d)",
+                 (data.get("meta") or {}).get("date"),
+                 sum(1 for k in data
+                     if isinstance(data.get(k), dict)
+                     and data[k].get("narrative")))
+        return data
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as e:
+        log.warning("briefing.json fetch failed: %s", e)
+        return None
+    except Exception:
+        log.exception("briefing.json parse failed")
+        return None
+
+
+def _openai_chat(prompt: str, max_tokens: int = 500, timeout: int = 60) -> str | None:
+    """One-shot OpenAI chat completion. Returns the response text or None.
+
+    Mirrors the implementation in tools/morning_briefing.py so prompt + voice
+    stay consistent. urllib-only — no extra Python dep."""
+    if not OPENAI_API_KEY:
+        log.warning("OPENAI_API_KEY not set — narrative regen disabled")
+        return None
+    payload: dict[str, Any] = {
+        "model": OPENAI_MODEL,
+        "messages": [{"role": "user", "content": prompt}],
+        "max_completion_tokens": max_tokens,
+    }
+    if "gpt-5" in OPENAI_MODEL or OPENAI_MODEL.startswith("o1") \
+            or OPENAI_MODEL.startswith("o3"):
+        payload["reasoning_effort"] = "minimal"
+    body = _json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(
+        "https://api.openai.com/v1/chat/completions",
+        data=body, method="POST",
+        headers={
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
+            "Content-Type": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            payload = _json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        err = e.read().decode("utf-8", errors="replace")[:300]
+        log.warning("OpenAI HTTP %s: %s", e.code, err)
+        return None
+    except (urllib.error.URLError, TimeoutError) as e:
+        log.warning("OpenAI network error: %s", e)
+        return None
+    try:
+        out = payload["choices"][0]["message"]["content"]
+        return out.strip() if out else None
+    except (KeyError, IndexError, AttributeError):
+        return None
+
+
+def _build_narrative_prompt(event: str, snap: dict, extra: dict | None = None) -> str | None:
+    """Construct the per-event prompt. Returns None if context insufficient."""
+    ctx = state.get("briefing_context") or {}
+    fc = ctx.get("or_forecast") or {}
+    morning = fc.get("narrative") or "(no morning narrative cached)"
+    sw = fc.get("stepwise") or {}
+    forecast_pts = fc.get("point_pts")
+    forecast_q = (fc.get("quintile") or "?").split(" ", 1)[0]
+
+    def _q(width: float, cuts: list) -> str:
+        if not cuts:
+            return "?"
+        for i, c in enumerate(cuts):
+            if width <= c:
+                return f"Q{i+1}"
+        return "Q5"
+
+    if event == "or_5min_lock":
+        or5 = (snap.get("or_5min") or {})
+        w = or5.get("width", 0)
+        q_5 = _q(w, (sw.get("thresholds") or {}).get("or_5min") or [])
+        return (
+            "You are writing a 1-2 sentence intra-session update for a NQ futures "
+            "trader using the FVGC model. Plain prose. No headers, no bullets, "
+            "no emoji. Match the calm voice of the morning context.\n\n"
+            "MORNING CONTEXT (written ~6:10 AM ET):\n"
+            f"{morning}\n\n"
+            "WHAT JUST HAPPENED (9:35 ET):\n"
+            f"- 5-min OR locked at {w:.0f} pts ({q_5}).\n"
+            f"- Cold-start forecast was {forecast_pts} pts ({forecast_q}).\n\n"
+            "Write 1-2 sentences on the first stepwise refinement: how today's "
+            "5-min OR compares to the morning forecast and what it implies for "
+            "the 45-min OR. Don't repeat the morning context."
+        )
+
+    if event == "or_15min_lock":
+        or5 = (snap.get("or_5min") or {})
+        or15 = (snap.get("or_15min") or {})
+        w15 = or15.get("width", 0)
+        q_15 = _q(w15, (sw.get("thresholds") or {}).get("or_15min") or [])
+        sweep_bits = []
+        if or15.get("high_swept"): sweep_bits.append("OR.H swept")
+        if or15.get("low_swept"):  sweep_bits.append("OR.L swept")
+        sweep = ", ".join(sweep_bits) if sweep_bits else "neither side swept"
+        return (
+            "You are writing a 1-2 sentence intra-session update for a NQ futures "
+            "trader using the FVGC model. Plain prose, no headers, no emoji.\n\n"
+            "MORNING CONTEXT:\n"
+            f"{morning}\n\n"
+            "WHAT JUST HAPPENED (9:45 ET):\n"
+            f"- 15-min OR locked at {w15:.0f} pts ({q_15}).\n"
+            f"- 5-min OR was {or5.get('width', 0):.0f} pts.\n"
+            f"- Cold-start forecast: {forecast_pts} pts ({forecast_q}).\n"
+            f"- {sweep}.\n"
+            f"- FVGC To OR H/L kill switches: width>150 = veto, both swept = veto.\n\n"
+            "Write 1-2 sentences on what the 15-min OR tells us about today's "
+            "regime + any actionable implication for FVGC To OR H/L. Concrete, "
+            "no fluff."
+        )
+
+    if event == "or_45min_lock":
+        or45 = (snap.get("opening_range") or {})
+        w45 = or45.get("width", 0)
+        q_45 = _q(w45, (sw.get("thresholds") or {}).get("or_45min") or [])
+        return (
+            "You are writing a 1-2 sentence intra-session update for a NQ futures "
+            "trader using the FVGC model. Plain prose.\n\n"
+            "MORNING CONTEXT:\n"
+            f"{morning}\n\n"
+            "WHAT JUST HAPPENED (10:15 ET):\n"
+            f"- 45-min OR locked at {w45:.0f} pts ({q_45}).\n"
+            f"- Cold-start forecast: {forecast_pts} pts ({forecast_q}).\n\n"
+            "Write 1-2 sentences on the locked regime and what it means for "
+            "the rest of the session — sizing, target multiples, trades to "
+            "favor / skip. No bullets."
+        )
+
+    if event.startswith("play:"):
+        # Format: "play:<name>:<new_state>". Dashboard POSTs these with extra
+        # = {play, fired_factors, missed_factors, count, max, action}.
+        parts = event.split(":", 2)
+        if len(parts) < 3:
+            return None
+        play_name = parts[1]
+        new_state = parts[2]
+        extra = extra or {}
+        # Look up morning narrative for this play.
+        morning_play = None
+        for p in (ctx.get("matrix_plays") or []):
+            if p.get("name") == play_name:
+                morning_play = p
+                break
+        morning_text = (morning_play or {}).get("narrative") or "(no morning narrative for this play)"
+        fired = ", ".join(extra.get("fired_factors") or []) or "(none)"
+        missed = ", ".join(extra.get("missed_factors") or []) or "(none)"
+        action = extra.get("action") or ""
+        return (
+            "You are writing a 1-2 sentence intra-session update on a specific "
+            "NQ futures play for a trader using the FVGC model.\n\n"
+            f"PLAY: {play_name}\n"
+            f"NEW STATE: {new_state}\n\n"
+            "MORNING CONTEXT (written ~6:10 AM ET):\n"
+            f"{morning_text}\n\n"
+            "CURRENT STATE:\n"
+            f"- Confluence count: {extra.get('count', '?')}/{extra.get('max', '?')}\n"
+            f"- Fired factors: {fired}\n"
+            f"- Missed factors: {missed}\n"
+            f"- Recommended action: {action}\n\n"
+            "Write 1-2 sentences on what just changed and exactly what to do "
+            "next (size, target, kill conditions if relevant). No filler."
+        )
+
+    return None
+
+
+def _narrative_worker() -> None:
+    """Background worker — pulls regen requests off the queue, calls OpenAI,
+    stores result in state["narratives"]. Single-threaded (one outstanding
+    OpenAI call at a time) to keep cost predictable + avoid races."""
+    while True:
+        try:
+            req = _narrative_queue.get(timeout=300)
+        except queue.Empty:
+            continue
+        event = req.get("event", "")
+        snap = req.get("snap") or {}
+        extra = req.get("extra") or {}
+        log.info("narrative: regenerating for event=%s", event)
+        prompt = _build_narrative_prompt(event, snap, extra)
+        if not prompt:
+            log.info("narrative: no prompt for event=%s — skipped", event)
+            continue
+        text = _openai_chat(prompt)
+        if not text:
+            log.warning("narrative: OpenAI returned empty for event=%s", event)
+            continue
+        with state_lock:
+            state["narratives"][event] = {
+                "text": text,
+                "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+                "trigger": event,
+                "model": OPENAI_MODEL,
+            }
+        log.info("narrative: stored %s (%d chars)", event, len(text))
+
+
+def _check_narrative_events(snap: dict) -> None:
+    """Detect OR-lock transitions and queue narrative regen.
+    Called from inside state_lock by _ingest_bar/_bulk_ingest right after
+    state["snapshot"] is updated. Per-play events come in via the POST
+    /api/narrative-trigger endpoint — the dashboard owns the play state
+    machine and pings Fly when transitions fire there."""
+    global _prev_or5_complete, _prev_or15_complete, _prev_or45_complete
+    or5_c  = bool((snap.get("or_5min") or {}).get("complete"))
+    or15_c = bool((snap.get("or_15min") or {}).get("complete"))
+    or45_c = bool((snap.get("opening_range") or {}).get("complete"))
+
+    def _q(ev: str) -> None:
+        try:
+            _narrative_queue.put_nowait({"event": ev, "snap": snap})
+        except queue.Full:
+            log.warning("narrative queue full — dropped event %s", ev)
+
+    if or5_c  and not _prev_or5_complete:  _q("or_5min_lock")
+    if or15_c and not _prev_or15_complete: _q("or_15min_lock")
+    if or45_c and not _prev_or45_complete: _q("or_45min_lock")
+    _prev_or5_complete  = or5_c
+    _prev_or15_complete = or15_c
+    _prev_or45_complete = or45_c
+
+
+# ---------------------------------------------------------------------------
 # Historical backfill (run once on startup)
 # ---------------------------------------------------------------------------
 
@@ -471,6 +757,14 @@ def _bulk_ingest(new_bars: list[dict[str, Any]]) -> int:
         state["bar_count"] = len(bars)
         # Single snapshot recompute at end.
         state["snapshot"] = _compute_snapshot()
+        # Sync narrative-event cursors silently to current state so the
+        # backfill doesn't trigger a spurious regen storm for OR-lock events
+        # that already happened earlier today.
+        global _prev_or5_complete, _prev_or15_complete, _prev_or45_complete
+        snap = state["snapshot"] or {}
+        _prev_or5_complete  = bool((snap.get("or_5min") or {}).get("complete"))
+        _prev_or15_complete = bool((snap.get("or_15min") or {}).get("complete"))
+        _prev_or45_complete = bool((snap.get("opening_range") or {}).get("complete"))
         return len(bars)
 
 
@@ -595,6 +889,20 @@ async def lifespan(app: FastAPI):
         t = threading.Thread(target=live_thread, daemon=True, name="databento-live")
         t.start()
         log.info("Started Databento Live thread")
+
+    # Narrative regen — non-blocking, degrades gracefully without the key.
+    if OPENAI_API_KEY:
+        ctx = _fetch_briefing_context()
+        if ctx:
+            with state_lock:
+                state["briefing_context"] = ctx
+                state["briefing_context_fetched_at"] = datetime.now(timezone.utc)
+        nt = threading.Thread(target=_narrative_worker, daemon=True,
+                              name="narrative-worker")
+        nt.start()
+        log.info("Started narrative worker (model=%s)", OPENAI_MODEL)
+    else:
+        log.info("OPENAI_API_KEY not set — intraday narrative regen disabled")
     yield
 
 
@@ -602,7 +910,7 @@ app = FastAPI(title="NQ Live Snapshot", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -640,10 +948,90 @@ def api_live(response: Response) -> dict[str, Any]:
     return snap
 
 
+@app.get("/api/narratives")
+def api_narratives(response: Response) -> dict[str, Any]:
+    """Return the current narrative store. Dashboard polls this every 30s
+    and slots fresh narratives into the matching DOM blocks."""
+    with state_lock:
+        # Shallow copy so the response is decoupled from future mutations.
+        narrs = dict(state["narratives"])
+        ctx_at = state.get("briefing_context_fetched_at")
+        has_key = bool(OPENAI_API_KEY)
+    response.headers["Cache-Control"] = "no-store"
+    return {
+        "narratives": narrs,
+        "enabled": has_key,
+        "briefing_context_fetched_at_utc":
+            ctx_at.isoformat() if ctx_at else None,
+        "model": OPENAI_MODEL,
+    }
+
+
+@app.post("/api/narrative-trigger")
+async def api_narrative_trigger(req: Request) -> dict[str, Any]:
+    """Dashboard pings here when it detects a play state transition
+    (WAIT→LIVE / LIVE→ARMED / →MISSED / →DONE). Fly enqueues a regen.
+
+    Expected JSON body:
+      {
+        "event": "play:M1 Long:ARMED",
+        "extra": {
+          "count": 4, "max": 4,
+          "fired_factors": ["no_pre_rth_news", "prior_day_mid", "dow_wednesday", "variant_no_fvg"],
+          "missed_factors": [],
+          "action": "TAKE full size, BE@1R -> 3R fixed"
+        }
+      }
+    """
+    # Optional shared-secret gate.
+    if NARRATIVE_TRIGGER_SECRET:
+        if req.headers.get("X-Trigger-Secret") != NARRATIVE_TRIGGER_SECRET:
+            return {"error": "unauthorized"}
+
+    try:
+        body = await req.json()
+    except Exception:
+        return {"error": "invalid json"}
+
+    event = (body or {}).get("event")
+    if not event or not isinstance(event, str):
+        return {"error": "missing event"}
+    extra = (body or {}).get("extra") or {}
+
+    # Idempotency: don't re-regen if we already have a fresh narrative for
+    # this exact event. Same-day same-state = same story.
+    with state_lock:
+        existing = state["narratives"].get(event)
+    if existing:
+        return {"ok": True, "status": "already_generated",
+                "generated_at_utc": existing.get("generated_at_utc")}
+
+    # Refresh briefing context if it's stale (>4h) — covers the case where
+    # the morning cron published a new briefing after Fly already started.
+    with state_lock:
+        ctx_at = state.get("briefing_context_fetched_at")
+    if ctx_at is None or (datetime.now(timezone.utc) - ctx_at) > timedelta(hours=4):
+        ctx = _fetch_briefing_context()
+        if ctx:
+            with state_lock:
+                state["briefing_context"] = ctx
+                state["briefing_context_fetched_at"] = datetime.now(timezone.utc)
+
+    # Take a current snapshot to include in the prompt.
+    with state_lock:
+        snap = state.get("snapshot") or {}
+
+    try:
+        _narrative_queue.put_nowait({"event": event, "snap": snap, "extra": extra})
+    except queue.Full:
+        return {"error": "queue full"}
+    return {"ok": True, "status": "queued", "event": event}
+
+
 @app.get("/")
 def root() -> dict[str, Any]:
     return {
         "service": "nq-live-snapshot",
-        "endpoints": ["/health", "/api/live"],
+        "endpoints": ["/health", "/api/live", "/api/narratives", "/api/narrative-trigger"],
         "source": "databento-live",
     }
