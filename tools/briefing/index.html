@@ -406,6 +406,117 @@
   .factor-line.missed .marker { color: var(--red); }
   .factor-line.missed .lift   { color: var(--red); text-decoration: line-through; }
   .factor-line.missed .desc   { text-decoration: line-through; color: var(--text-dim); }
+  /* Make factor rows safe against long descriptions (e.g. "Prior day close in
+     middle 1/3 (no narrative)"). Constrain the desc column to the remaining
+     space and wrap there instead of overflowing the panel. */
+  .factor-line .desc { min-width: 0; overflow-wrap: anywhere; }
+  .factor-line .meta { min-width: 0; overflow-wrap: anywhere; }
+
+  /* ===== Detail State Banner (col 3 hero) =====
+     Mirror of the col-2 card state — but bigger and surfaced first so
+     the trader sees current state + confluence progress + recommended
+     action without scrolling. */
+  .detail-state-banner {
+    margin: 10px 0 14px;
+    padding: 10px 12px;
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    border-left: 3px solid var(--line-2);
+    transition: border-color 0.4s ease, background 0.4s ease;
+  }
+  .detail-state-banner.wait   { border-left-color: var(--text-mute); }
+  .detail-state-banner.live   { border-left-color: var(--cyan);
+                                background: linear-gradient(90deg, var(--cyan-dim), var(--bg-3) 40%); }
+  .detail-state-banner.missed { border-left-color: var(--red);
+                                background: linear-gradient(90deg, var(--red-dim), var(--bg-3) 40%);
+                                opacity: 0.85; }
+  .detail-state-banner.veto   { border-left-color: var(--red);
+                                background: linear-gradient(90deg, var(--red-dim), var(--bg-3) 40%); }
+  .dsb-top {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .dsb-chip {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 2px; padding: 4px 8px; border-radius: 3px;
+    border: 1px solid currentColor;
+  }
+  .dsb-chip.wait   { color: var(--text-mute); }
+  .dsb-chip.live   { color: var(--cyan);  background: var(--cyan-dim);
+                     box-shadow: 0 0 10px -2px var(--cyan-glow);
+                     animation: pulse 2s ease-in-out infinite; }
+  .dsb-chip.missed { color: var(--red);   background: var(--red-dim); }
+  .dsb-chip.veto   { color: var(--red);   background: var(--red-dim); }
+  .dsb-count {
+    font-size: 13px; color: var(--text-dim); letter-spacing: 0.5px;
+  }
+  .dsb-count b { color: var(--text); font-weight: 700; font-size: 16px; }
+  .dsb-count .dim { color: var(--text-mute); }
+  .dsb-action {
+    font-size: 12px; line-height: 1.4; color: var(--text);
+    padding: 6px 8px; background: rgba(0,0,0,0.18); border-radius: 3px;
+    border-left: 2px solid var(--line);
+  }
+  .detail-state-banner.live   .dsb-action { border-left-color: var(--cyan); }
+  .detail-state-banner.missed .dsb-action { border-left-color: var(--red); color: var(--text-dim); }
+  .detail-state-banner.veto   .dsb-action { border-left-color: var(--red); color: var(--red); font-weight: 600; }
+  .detail-state-banner.wait   .dsb-action { color: var(--text-dim); }
+
+  /* Big confluence dots — same visual language as .conf-mini .dd in col 2
+     but sized up for detail-pane prominence. */
+  .conf-tracker { display: flex; gap: 4px; margin-left: auto; }
+  .conf-tracker .dd.big {
+    width: 13px; height: 13px; border-radius: 50%;
+    border: 2px solid var(--line-2); background: transparent;
+  }
+  .conf-tracker .dd.big.on {
+    background: var(--cyan); border-color: var(--cyan);
+    box-shadow: 0 0 6px var(--cyan);
+  }
+  .conf-tracker .dd.big.maybe {
+    border-style: dashed; border-color: var(--cyan);
+  }
+  .conf-tracker .dd.big.missed {
+    border-color: var(--red); background: var(--red-dim);
+    position: relative;
+  }
+  .conf-tracker .dd.big.missed::after {
+    content: "✕"; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 9px; color: var(--red); font-weight: 700;
+    line-height: 1;
+  }
+
+  /* ===== Execution Guide — actionable checklist ===== */
+  .exec-checklist {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .ex-row {
+    display: grid; grid-template-columns: 28px 1fr;
+    gap: 10px; align-items: start;
+    padding: 8px 10px;
+    background: rgba(0,0,0,0.18);
+    border-radius: 3px;
+    border-left: 2px solid var(--cyan-dim);
+  }
+  .ex-num {
+    font-size: 14px; font-weight: 700; color: var(--cyan);
+    text-align: center;
+    background: var(--cyan-dim);
+    border: 1px solid var(--cyan);
+    border-radius: 50%;
+    width: 22px; height: 22px; line-height: 20px;
+  }
+  .ex-body { min-width: 0; }
+  .ex-label {
+    font-size: 9px; letter-spacing: 1.5px; font-weight: 700;
+    color: var(--cyan); margin-bottom: 3px;
+  }
+  .ex-text {
+    font-size: 12px; line-height: 1.45; color: var(--text);
+    overflow-wrap: anywhere; word-break: break-word;
+  }
   .pulse::before {
     content: ""; width: 6px; height: 6px;
     border-radius: 50%; background: currentColor;
@@ -1366,11 +1477,14 @@
   }
   .proj-card {
     flex: 1;
+    min-width: 0;                    /* prevent flex-item from overflowing */
     background: var(--bg-3);
     border: 1px solid var(--line);
     border-radius: 3px;
     padding: 9px 11px;
     position: relative;
+    overflow-wrap: anywhere;         /* wrap long tokens like (n=1) */
+    word-break: break-word;
   }
   .proj-card.active {
     border-color: var(--cyan);
@@ -2621,6 +2735,26 @@
           stateEl.className = 'pstate ' + cls;
           stateEl.textContent = label;
         }
+        // Mirror to the detail-pane state banner if this play is shown.
+        // Matrix plays handle this themselves in updateMatrixCardLive; the
+        // mirror here is for playbook plays where the time-state ticker
+        // is the primary state driver.
+        if (kind === 'playbook') {
+          const chipSel = `[data-detail-state-chip="${cssEscape(name)}"]`;
+          const banSel  = `[data-detail-play="${cssEscape(name)}"]`;
+          const dChip = document.querySelector(chipSel);
+          const dBan  = document.querySelector(banSel);
+          if (dChip && dBan) {
+            // Map ticker label → banner classes/labels.
+            const bClass = label === 'WAIT' ? 'wait'
+                         : label === 'DONE' ? 'wait'
+                         : label === 'LIVE' ? 'live'
+                         : 'wait';
+            dBan.className  = 'detail-state-banner ' + bClass;
+            dChip.className = 'dsb-chip ' + bClass;
+            dChip.textContent = label;
+          }
+        }
         // Sync card-level class for opacity dimming, etc.
         card.classList.remove('passed', 'wait');
         if (timeState === 'passed') card.classList.add('passed');
@@ -2834,6 +2968,62 @@
         p._live_count = liveCount;
         p._fired_factor_ids = [...firedIds];
         p._missed_factor_ids = [...missedIds];
+
+        // 5. Detail pane mirror — if this play is currently shown in
+        //    column 3, flip the state banner in place so the user sees
+        //    the same WAIT → LIVE → ARMED/MISSED transitions there too.
+        const dbChip   = document.querySelector(`[data-detail-state-chip="${cssEscape(p.name)}"]`);
+        const dbCount  = document.querySelector(`[data-detail-state-count="${cssEscape(p.name)}"]`);
+        const dbAction = document.querySelector(`[data-detail-state-action="${cssEscape(p.name)}"]`);
+        const dbBanner = document.querySelector(`[data-detail-play="${cssEscape(p.name)}"]`);
+        if (dbChip && dbCount && dbAction && dbBanner) {
+          // Recompute the same state machine used in renderMatrixDetail.
+          let stateKey, stateLabel, stateCls, actionLine;
+          if (p.veto_active) {
+            stateKey='VETO'; stateLabel='VETOED'; stateCls='veto';
+            actionLine = `Skip ${p.name} today — veto overrides any confluence.`;
+          } else if (liveCount >= projMax && (p.projection?.max_tier?.action || '').toUpperCase().includes('TAKE')) {
+            stateKey='ARMED'; stateLabel='ARMED'; stateCls='live';
+            actionLine = p.projection.max_tier.action;
+          } else if (!canStillReachTake && missedIds.size > 0) {
+            stateKey='MISSED'; stateLabel='MISSED'; stateCls='missed';
+            actionLine = 'Confluence threshold unreachable — stand down.';
+          } else if (firedIds.size > 0) {
+            stateKey='LIVE'; stateLabel='LIVE · BUILDING'; stateCls='live';
+            actionLine = `Currently ${liveCount}/${p.max_preopen} — ` +
+                         `need ${Math.max(0, projMax - liveCount)} more for TAKE.`;
+          } else {
+            stateKey='WAIT'; stateLabel='WAIT'; stateCls='wait';
+            actionLine = `Watch ${p.window} for first signal.`;
+          }
+          dbBanner.className = 'detail-state-banner ' + stateCls;
+          dbChip.className   = 'dsb-chip ' + stateCls;
+          dbChip.textContent = stateLabel;
+          dbAction.className = 'dsb-action ' + stateCls;
+          dbAction.textContent = actionLine;
+          // Count: "<liveCount>/<max>  · +<unknown>"
+          const unknownCount = pending.length - firedIds.size - missedIds.size;
+          dbCount.innerHTML =
+            `<b>${liveCount}</b>/${p.max_preopen}` +
+            (unknownCount > 0 ? `<span class="dim"> · +${unknownCount}</span>` : '');
+          // Tracker dots live inside the banner — already updated by the
+          // .conf-tracker .dd[data-pending-factor] sweep below.
+        }
+
+        // Update the big tracker dots in the detail banner (sibling of
+        // the .conf-mini sweep above, but with .conf-tracker selector).
+        document.querySelectorAll('.conf-tracker .dd[data-pending-factor]').forEach(d => {
+          const fid = d.dataset.pendingFactor;
+          if (firedIds.has(fid))      { d.classList.remove('maybe','missed'); d.classList.add('on'); }
+          else if (missedIds.has(fid)) { d.classList.remove('maybe','on');     d.classList.add('missed'); }
+        });
+      }
+
+      // Tiny helper so the querySelector escaping isn't open-coded in
+      // five places. CSS.escape is widely supported but missing on
+      // ancient browsers; fall through to the raw string when absent.
+      function cssEscape(s) {
+        return (window.CSS && CSS.escape) ? CSS.escape(s) : s;
       }
 
       // -------- Tier 2: playbook play live kill-switches --------
@@ -2901,6 +3091,29 @@
           stateEl.textContent = verdict;
           // Apply card-level dimming for VETOED.
           card.classList.toggle('veto', cls === 'veto');
+
+          // Mirror to detail-pane state banner if open.
+          const dChip = document.querySelector(`[data-detail-state-chip="${cssEscape(p.name)}"]`);
+          const dBan  = document.querySelector(`[data-detail-play="${cssEscape(p.name)}"]`);
+          const dAct  = document.querySelector(`[data-detail-state-action="${cssEscape(p.name)}"]`);
+          if (dChip && dBan && dAct) {
+            // Map card pstate cls (live/veto/wait) → banner cls.
+            const banCls = cls === 'veto' ? 'veto' : cls === 'live' ? 'live' : 'wait';
+            dBan.className  = 'detail-state-banner ' + banCls;
+            dChip.className = 'dsb-chip ' + banCls;
+            dChip.textContent = verdict;
+            // Map verdict → an action sentence.
+            const actionMap = {
+              'VETOED · OR > 150':   'OR width above the 150-pt kill line. Skip.',
+              'VETOED · BOTH SWEPT': 'Both OR sides swept — no clean direction. Skip.',
+              'SHORTS ONLY':         'OR.H taken — trade toward OR.L only.',
+              'LONGS ONLY':          'OR.L taken — trade toward OR.H only.',
+              'PRIME':               'Width 60–100, OR locked, no sweep — best-zone setup.',
+              'ELIGIBLE':            'OR locked, no sweep — trade per FVGC signal.',
+            };
+            dAct.className = 'dsb-action ' + banCls;
+            dAct.textContent = actionMap[verdict] || verdict;
+          }
         });
       }
 
@@ -3547,10 +3760,26 @@
       return wrap;
     }
 
+    // ====== PLAY DETAIL — actionable trade guide (col 3) ======
+    // Layout, top to bottom:
+    //   1. Detail head — name, direction badge, window, veto chip if any
+    //   2. STATE BANNER — current play state (WAIT/LIVE/ARMED/MISSED/DONE/
+    //      VETO) + confluence dot tracker mirroring col-2's mini dots
+    //      (bigger), big-letter count "X/Y", and the recommended ACTION
+    //      string from the relevant projection tier.
+    //   3. CONFLUENCE CHECKLIST — single ordered list of all factors with
+    //      live state per row (✓ fired / ○ pending / ✕ missed). Replaces
+    //      the previous "Active Pre-Open" + "Pending Post-Open" split.
+    //   4. PROJECTION strip — IF/IF cards (unchanged shape, overflow fixed)
+    //   5. EXECUTION GUIDE — derived actionable checklist: window, size,
+    //      management (parsed from action string), kill switches.
+    //   6. EXPECTANCY — unchanged
+    //   7. Note / Playbook link / AI narrative
     function renderMatrixDetail(p) {
       const wrap = h('div');
       const dir = (p.direction || 'both').toLowerCase();
 
+      // -------- Head --------
       wrap.appendChild(h('div', {class:'detail-head'},
         h('div', {class:'detail-title'}, p.name),
         h('div', {class:'detail-sub'},
@@ -3559,6 +3788,73 @@
           p.veto_active ? h('span', {class:'chip veto'}, '🚫 VETO') : null,
           h('span', {class:'mute'}, `${p.preopen_count}/${p.max_preopen} pre-open`))));
 
+      // -------- State banner (live-updatable) --------
+      // Compute current state from persisted live-update results when present,
+      // otherwise from pre-open baseline.
+      const firedSet  = new Set(p._fired_factor_ids  || []);
+      const missedSet = new Set(p._missed_factor_ids || []);
+      const liveCount = p._live_count != null ? p._live_count : p.preopen_count;
+      const pending   = p.post_pending || [];
+      const unknownPending = pending.filter(f =>
+        !firedSet.has(f.id) && !missedSet.has(f.id));
+      const proj = p.projection || {};
+      const projMax = proj.max_count ?? 0;
+      const maxAction = (proj.max_tier?.action || '').toUpperCase();
+      const canStillReachTake =
+        (liveCount + unknownPending.length) >= projMax
+        && maxAction.includes('TAKE');
+
+      // Pick the live state — same logic as updateMatrixCardLive.
+      let stateKey, stateLabel, stateCls, actionLine;
+      if (p.veto_active) {
+        stateKey = 'VETO'; stateLabel = 'VETOED'; stateCls = 'veto';
+        actionLine = `Skip ${p.name} today — veto overrides any confluence.`;
+      } else if (liveCount >= projMax && maxAction.includes('TAKE')) {
+        stateKey = 'ARMED'; stateLabel = 'ARMED'; stateCls = 'live';
+        actionLine = proj.max_tier?.action || 'TAKE per playbook';
+      } else if (!canStillReachTake && missedSet.size > 0) {
+        stateKey = 'MISSED'; stateLabel = 'MISSED'; stateCls = 'missed';
+        actionLine = 'Confluence threshold unreachable — stand down.';
+      } else if (firedSet.size > 0) {
+        stateKey = 'LIVE'; stateLabel = 'LIVE · BUILDING'; stateCls = 'live';
+        actionLine = `Currently ${liveCount}/${p.max_preopen} — ` +
+                     `need ${Math.max(0, projMax - liveCount)} more for TAKE.`;
+      } else {
+        stateKey = 'WAIT'; stateLabel = 'WAIT'; stateCls = 'wait';
+        actionLine = `Watch ${p.window} for first signal.`;
+      }
+
+      // Confluence dot tracker — mirrors the mini dots in col 2 but bigger.
+      // Renders ALL factors (preopen + pending) so the tracker is visually
+      // identical to what's shown on the card.
+      const trackerDots = h('div', {class:'conf-tracker'});
+      (p.preopen_active || []).forEach(_ => {
+        trackerDots.appendChild(h('span', {class:'dd big on'}));
+      });
+      pending.forEach(f => {
+        let cls = 'dd big maybe';
+        if (firedSet.has(f.id))  cls = 'dd big on';
+        if (missedSet.has(f.id)) cls = 'dd big missed';
+        trackerDots.appendChild(h('span', {class: cls, 'data-pending-factor': f.id}));
+      });
+
+      const stateBanner = h('div', {
+        class:'detail-state-banner ' + stateCls,
+        'data-detail-play': p.name,
+      },
+        h('div', {class:'dsb-top'},
+          h('span', {class:'dsb-chip ' + stateCls, 'data-detail-state-chip': p.name}, stateLabel),
+          h('span', {class:'dsb-count mono', 'data-detail-state-count': p.name},
+            h('b', null, String(liveCount)), '/', String(p.max_preopen),
+            unknownPending.length > 0
+              ? h('span', {class:'dim'}, ` · +${unknownPending.length}`)
+              : null),
+          trackerDots),
+        h('div', {class:'dsb-action ' + stateCls, 'data-detail-state-action': p.name},
+          actionLine));
+      wrap.appendChild(stateBanner);
+
+      // -------- Veto factor list (if vetoed) --------
       if (p.veto_active) {
         wrap.appendChild(h('div', {class:'detail-section'},
           h('div', {class:'detail-label'}, 'ACTIVE VETOES'),
@@ -3567,56 +3863,53 @@
             h('span', {class:'lift'}, `${v.lift_pp > 0 ? '+' : ''}${v.lift_pp}pp`),
             h('span', {class:'desc'}, v.desc),
             h('span', {class:'meta'}, v.id)))));
-        wrap.appendChild(h('div', {class:'extra-note'},
-          `Skip ${p.name} today — veto overrides any confluence count.`));
         if (p.extra_note) wrap.appendChild(h('div', {class:'extra-note'}, p.extra_note));
         if (p.notion_url) wrap.appendChild(h('a', {class:'play-link', href: p.notion_url, target:'_blank'}, '→ PLAYBOOK'));
         wrap.appendChild(narrative(p.narrative));
         return wrap;
       }
 
-      // Active factors
-      if ((p.preopen_active || []).length) {
-        const sec = h('div', {class:'detail-section'},
-          h('div', {class:'detail-label'}, `ACTIVE PRE-OPEN · ${p.preopen_active.length}`));
-        p.preopen_active.forEach(f => sec.appendChild(h('div', {class:'factor-line on'},
-          h('span', {class:'marker'}, '✓'),
-          h('span', {class:'lift'}, `+${f.lift_pp}pp`),
-          h('span', {class:'desc'}, f.desc),
-          h('span', {class:'meta'}, f.id))));
-        wrap.appendChild(sec);
-      }
-
-      // Pending factors — each row tagged with data-pending-factor so the
-      // live overlay can flip pending → on as factors fire.
-      if ((p.post_pending || []).length) {
-        const sec = h('div', {class:'detail-section'},
-          h('div', {class:'detail-label'}, `PENDING POST-OPEN · ${p.post_pending.length}`));
-        p.post_pending.forEach(f => sec.appendChild(h('div', {
-          class:'factor-line pending',
-          'data-pending-factor': f.id,
+      // -------- Confluence checklist (unified) --------
+      // Single ordered list. data-pending-factor on every row (including
+      // already-fired ones, harmlessly idempotent) so the live updater
+      // hits any row when its factor resolves.
+      const checklist = h('div', {class:'detail-section'},
+        h('div', {class:'detail-label'},
+          `CONFLUENCE CHECKLIST · ${(p.preopen_active||[]).length + pending.length}`));
+      const rows = [];
+      (p.preopen_active || []).forEach(f => rows.push({
+        f, state: 'on', marker: '✓', whenTxt: 'pre-open',
+      }));
+      pending.forEach(f => {
+        if (firedSet.has(f.id))       rows.push({f, state: 'on',      marker: '✓', whenTxt: 'fired'});
+        else if (missedSet.has(f.id)) rows.push({f, state: 'missed',  marker: '✕', whenTxt: 'missed'});
+        else                          rows.push({f, state: 'pending', marker: '○', whenTxt: f.when || 'live'});
+      });
+      rows.forEach(r => {
+        const row = h('div', {
+          class: `factor-line ${r.state}`,
+          'data-pending-factor': r.f.id,
         },
-          h('span', {class:'marker'}, '○'),
-          h('span', {class:'lift'}, `+${f.lift_pp}pp`),
-          h('span', {class:'desc'}, f.desc),
+          h('span', {class:'marker'}, r.marker),
+          h('span', {class:'lift'}, `${r.f.lift_pp >= 0 ? '+' : ''}${r.f.lift_pp}pp`),
+          h('span', {class:'desc'}, r.f.desc),
           h('span', {class:'meta'},
-            h('span', {class:'when'}, f.when), f.id))));
-        wrap.appendChild(sec);
-      }
+            h('span', {class:'when'}, r.whenTxt), r.f.id));
+        checklist.appendChild(row);
+      });
+      wrap.appendChild(checklist);
 
-      // Projection
-      const proj = p.projection || {};
-      const minAction = (proj.min_tier?.action || '').toUpperCase();
-      const maxAction = (proj.max_tier?.action || '').toUpperCase();
+      // -------- Projection strip --------
       const cls = (action) => action.includes('TAKE') ? 'take' : 'skip';
+      const minActionUC = (proj.min_tier?.action || '').toUpperCase();
       const projStrip = h('div', {class:'projection-strip'});
       if (proj.locked) {
-        projStrip.appendChild(h('div', {class:'proj-card ' + cls(minAction) + ' active'},
+        projStrip.appendChild(h('div', {class:'proj-card ' + cls(minActionUC) + ' active'},
           h('div', {class:'pl'}, `COUNT ${proj.min_count}`),
           h('div', {class:'pa'}, proj.min_tier.action),
           h('div', {class:'pn'}, proj.min_tier.note || '')));
       } else {
-        projStrip.appendChild(h('div', {class:'proj-card ' + cls(minAction)},
+        projStrip.appendChild(h('div', {class:'proj-card ' + cls(minActionUC)},
           h('div', {class:'pl'}, `IF ${proj.min_count}`),
           h('div', {class:'pa'}, proj.min_tier.action),
           h('div', {class:'pn'}, proj.min_tier.note || '')));
@@ -3629,7 +3922,44 @@
         h('div', {class:'detail-label'}, 'PROJECTION'),
         projStrip));
 
-      // Expectancy
+      // -------- Execution guide --------
+      // Actionable checklist parsed from the available play data. Some of
+      // these come from string-parsing the projection action — not ideal
+      // long-term; the cleaner version waits on a Notion schema bump that
+      // adds entry/stop/target/kill fields per play. For now we extract
+      // what we can so the trader has the whole "how to take this trade"
+      // surface in one place.
+      const exec = h('div', {class:'detail-section'},
+        h('div', {class:'detail-label'}, 'HOW TO TAKE THIS TRADE'));
+      const execList = h('div', {class:'exec-checklist'});
+
+      // 1. WINDOW
+      execList.appendChild(_execRow('1', 'WINDOW',
+        `Entry window: ${p.window}. Wait for FVGC engine signal in this band.`));
+
+      // 2. DIRECTION + SIZE — derived from projection.max_tier
+      const sizeBits = _parseSizeFromAction(proj.max_tier?.action || '');
+      execList.appendChild(_execRow('2', 'SIZE & DIRECTION',
+        `${dir.toUpperCase()} · ${sizeBits.size}` +
+        (sizeBits.scaleNote ? ` (${sizeBits.scaleNote})` : '')));
+
+      // 3. MANAGEMENT — stop/BE/target rules parsed from action string
+      const mgmt = _parseManagementFromAction(proj.max_tier?.action || '');
+      execList.appendChild(_execRow('3', 'MANAGEMENT', mgmt));
+
+      // 4. THRESHOLD — confluence count needed (mirror of state action)
+      execList.appendChild(_execRow('4', 'THRESHOLD',
+        `Need ${projMax}/${p.max_preopen} confluence to fire ` +
+        `(currently ${liveCount}). Below tier = SKIP.`));
+
+      // 5. KILL SWITCHES — vetoes + common kill phrases from extra_note
+      const kills = _extractKills(p);
+      execList.appendChild(_execRow('5', 'KILL SWITCHES', kills));
+
+      exec.appendChild(execList);
+      wrap.appendChild(exec);
+
+      // -------- Expectancy --------
       if (p.expectancy) {
         const e = p.expectancy;
         wrap.appendChild(h('div', {class:'detail-section'},
@@ -3653,6 +3983,55 @@
       return wrap;
     }
 
+    // ---- Helpers for the EXECUTION GUIDE ----
+    function _execRow(num, label, body) {
+      return h('div', {class:'ex-row'},
+        h('span', {class:'ex-num mono'}, num),
+        h('div', {class:'ex-body'},
+          h('div', {class:'ex-label mono'}, label),
+          h('div', {class:'ex-text'}, body)));
+    }
+    function _parseSizeFromAction(action) {
+      // Examples seen in projection.action:
+      //   "TAKE full size, BE@1R -> 3R fixed"
+      //   "TAKE same size — do NOT scale up"
+      //   "TAKE full size, runner mode (TP@5R no-BE)"
+      const a = (action || '').toLowerCase();
+      let size = 'Per playbook';
+      let scaleNote = '';
+      if (a.includes('full size'))       size = 'Full size';
+      else if (a.includes('half size'))  size = 'Half size';
+      else if (a.includes('same size'))  size = 'Same size as min tier';
+      else if (a.includes('min size'))   size = 'Minimum size';
+      if (a.includes('do not scale') || a.includes("don't scale"))
+        scaleNote = 'do NOT scale up';
+      else if (a.includes('runner mode')) scaleNote = 'runner mode';
+      return {size, scaleNote};
+    }
+    function _parseManagementFromAction(action) {
+      // Pull the bits after the size token. Falls back to the raw string.
+      if (!action) return 'Per playbook — manage by FVGC engine signal.';
+      const a = action.trim();
+      // Strip the leading "TAKE <something>, " prefix to surface the
+      // management portion: "BE@1R -> 3R fixed" / "runner mode (TP@5R no-BE)" / etc.
+      const stripped = a.replace(/^TAKE\s+[^,\—]+[,\—]\s*/i, '');
+      if (stripped && stripped !== a) return stripped + '.';
+      return a + '.';
+    }
+    function _extractKills(p) {
+      // Surface the most actionable kill conditions:
+      //   - any active vetoes (won't apply if veto_active was false but
+      //     a row may be lurking with lift_pp neutral)
+      //   - simple keyword scrape of extra_note for kill phrases
+      const bits = [];
+      (p.active_vetoes || []).forEach(v => bits.push(`${v.id} (${v.desc})`));
+      const note = (p.extra_note || '').toLowerCase();
+      if (/avoid|skip|kill|stand[- ]?down/.test(note))
+        bits.push('See note below for skip conditions');
+      if (!bits.length) bits.push('Standard FVGC kills: news hit, OR locks Q1/Q2, both OR sides swept.');
+      return bits.join(' · ');
+    }
+
     function renderPlaybookDetail(p) {
       const wrap = h('div');
       const dir = (p.direction || 'both').toLowerCase();
@@ -3666,6 +4045,38 @@
           p.tier ? h('span', {class:'chip'}, 'Tier ' + p.tier) : null,
           h('span', {class:'mute mono'},
             (normalizeWindows(p)).join(', ')))));
+
+      // -------- State banner --------
+      // Playbook plays don't have confluence factors so no dot tracker —
+      // just the live state chip + an action sentence. Initial state from
+      // the time ticker; live updaters (updatePlayTimeStates, applyLive-
+      // PlaybookVerdicts) flip it in place via [data-detail-state-chip].
+      const ts = timeStateForPlay(p);
+      let initStateCls, initStateLabel, initAction;
+      if (p.veto_active) {
+        initStateCls = 'veto'; initStateLabel = 'VETOED';
+        initAction = 'Kill switch active — skip.';
+      } else if (ts === 'wait') {
+        initStateCls = 'wait'; initStateLabel = 'WAIT';
+        initAction = `Pre-window. Watch ${(normalizeWindows(p)).join(', ')}.`;
+      } else if (ts === 'passed') {
+        initStateCls = 'wait'; initStateLabel = 'DONE';
+        initAction = 'Window has passed.';
+      } else {
+        initStateCls = status === 'verified' ? 'live' : 'wait';
+        initStateLabel = status === 'verified' ? 'LIVE' :
+                         status === 'backtesting' ? 'BACKTEST' :
+                         (p.status || 'idea').toUpperCase();
+        initAction = 'In window — trade per the playbook below.';
+      }
+      wrap.appendChild(h('div', {
+        class:'detail-state-banner ' + initStateCls,
+        'data-detail-play': p.name,
+      },
+        h('div', {class:'dsb-top'},
+          h('span', {class:'dsb-chip ' + initStateCls, 'data-detail-state-chip': p.name}, initStateLabel)),
+        h('div', {class:'dsb-action ' + initStateCls, 'data-detail-state-action': p.name},
+          initAction)));
 
       // Stats row
       const stats = [];
