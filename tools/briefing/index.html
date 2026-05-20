@@ -629,6 +629,17 @@
   }
   .play-card.veto::before { background: var(--red); }
   .play-card.veto:hover { opacity: 0.9; }
+  /* DONE state — window has closed; play is informational only. */
+  .play-card.passed { opacity: 0.55; }
+  .play-card.passed::before { background: var(--text-mute); box-shadow: none; }
+  .play-card.passed:hover { opacity: 0.85; }
+  .play-card.passed .conf-mini .dd.on {
+    background: var(--text-mute); border-color: var(--text-mute); box-shadow: none;
+  }
+  .play-card .pstate.passed {
+    color: var(--text-mute); border-color: var(--line-2);
+    background: var(--bg-2);
+  }
   .play-card .ph {
     display: flex; align-items: center; gap: 8px; justify-content: space-between;
   }
@@ -2078,6 +2089,49 @@
       return wins[0] || 'Any';
     }
 
+    // ============ Time-aware play state ============
+    // Compares the play's window against the current ET time AND the
+    // briefing date. Returns one of: 'wait' | 'in_window' | 'passed'.
+    // 'Any'-window plays use the standard RTH session (9:30-16:00 ET).
+    function parseWindow(windowStr) {
+      if (!windowStr) return null;
+      if (windowStr === 'Any') return {startMin: 9*60+30, endMin: 16*60};
+      const m = String(windowStr).match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
+      if (!m) return null;
+      return {
+        startMin: parseInt(m[1], 10) * 60 + parseInt(m[2], 10),
+        endMin:   parseInt(m[3], 10) * 60 + parseInt(m[4], 10),
+      };
+    }
+    function getETNowParts() {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/New_York',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false,
+      }).formatToParts(new Date());
+      const p = Object.fromEntries(parts.map(x => [x.type, x.value]));
+      const hour = parseInt(p.hour, 10) % 24;
+      return {
+        dateStr: `${p.year}-${p.month}-${p.day}`,
+        minOfDay: hour * 60 + parseInt(p.minute, 10),
+      };
+    }
+    function timeStateForPlay(p) {
+      const briefingDate = window.BRIEFING_DATA?.meta?.date;
+      if (!briefingDate) return null;
+      const win = parseWindow(primaryWindow(p));
+      if (!win) return null;
+      const {dateStr, minOfDay} = getETNowParts();
+      // Briefing is from a past date → everything is DONE (windows long over).
+      if (dateStr > briefingDate) return 'passed';
+      // Briefing is for a future date (shouldn't really happen) → WAIT.
+      if (dateStr < briefingDate) return 'wait';
+      // Same ET date — straight time comparison.
+      if (minOfDay < win.startMin) return 'wait';
+      if (minOfDay < win.endMin)   return 'in_window';
+      return 'passed';
+    }
+
     // ============ Compute Primary Read ============
     function computePrimary() {
       const fc = d.or_forecast || {};
@@ -2341,6 +2395,67 @@
     } else {
       livePill.innerHTML = '<span class="lbl">demo</span>';
       livePill.classList.add('offline');
+    }
+
+    // Time-state ticker — recomputes WAIT/LIVE/DONE on each play card based
+    // on current ET time vs the play's window. Runs unconditionally (even
+    // in demo mode) so badges transition naturally through the trading day.
+    // 30s interval is fine — windows are minute-resolution.
+    updatePlayTimeStates();
+    setInterval(updatePlayTimeStates, 30000);
+
+    function updatePlayTimeStates() {
+      document.querySelectorAll('.play-card[data-key]').forEach(card => {
+        const key = card.dataset.key;
+        const idx = key.indexOf(':');
+        if (idx < 0) return;
+        const kind = key.slice(0, idx);
+        const name = key.slice(idx + 1);
+
+        const list = kind === 'matrix'
+          ? (window.BRIEFING_DATA?.matrix_plays || [])
+          : (window.BRIEFING_DATA?.active_plays || []);
+        const p = list.find(x => x.name === name);
+        if (!p) return;
+        if (p.veto_active) return;  // VETO is sticky regardless of time
+
+        const stateEl = card.querySelector('.pstate');
+        if (!stateEl) return;
+
+        // Don't downgrade ARMED unless the window has actually passed.
+        const cur = stateEl.textContent.trim();
+        const isArmed = cur === 'ARMED' || card.classList.contains('armed');
+
+        const timeState = timeStateForPlay(p);
+        let cls, label;
+        if (timeState === 'wait')        { cls = 'wait';   label = 'WAIT'; }
+        else if (timeState === 'passed') { cls = 'passed'; label = 'DONE'; }
+        else {
+          // in window — preserve ARMED if it was set by live overlay
+          if (isArmed) return;
+          if (kind === 'matrix') {
+            const maxAction = (p.projection?.max_tier?.action || '').toUpperCase();
+            cls = maxAction.includes('TAKE') ? 'live' : 'wait';
+            label = maxAction.includes('TAKE') ? 'LIVE' : 'WAIT';
+          } else {
+            const s = (p.status || 'idea').toLowerCase();
+            cls = s === 'verified' ? 'live' : 'wait';
+            label = s === 'verified' ? 'LIVE'
+                    : s === 'backtesting' ? 'BACKTEST'
+                    : (p.status || 'idea').toUpperCase();
+          }
+        }
+
+        // Apply (skip if unchanged).
+        if (label !== cur || !stateEl.classList.contains(cls)) {
+          stateEl.className = 'pstate ' + cls;
+          stateEl.textContent = label;
+        }
+        // Sync card-level class for opacity dimming, etc.
+        card.classList.remove('passed', 'wait');
+        if (timeState === 'passed') card.classList.add('passed');
+        else if (cls === 'wait')    card.classList.add('wait');
+      });
     }
 
     function setupLiveOverlay({ livePill }) {
@@ -2818,22 +2933,39 @@
       const isVeto = !!p.veto_active;
       const isMatrix = p._kind === 'matrix';
 
+      // State badge — time-aware. Order of precedence:
+      //   1. Hard veto (regardless of time) wins.
+      //   2. Time bucket relative to play's window:
+      //      - 'wait'      → WAIT     (pre-window or future briefing)
+      //      - 'passed'    → DONE     (window already closed for the day)
+      //      - 'in_window' → LIVE / ARMED based on confluence
       let stateClass, stateLabel;
-      if (isVeto) { stateClass = 'veto'; stateLabel = 'VETO'; }
-      else if (isMatrix) {
-        const maxAction = (p.projection?.max_tier?.action || '').toUpperCase();
-        if (maxAction.includes('TAKE')) { stateClass = 'live'; stateLabel = 'LIVE'; }
-        else { stateClass = 'wait'; stateLabel = 'WAIT'; }
-      }
-      else {
-        // playbook: state by status
-        const s = (p.status || 'idea').toLowerCase();
-        if (s === 'verified')         { stateClass = 'live'; stateLabel = 'VERIFIED'; }
-        else if (s === 'backtesting') { stateClass = 'wait'; stateLabel = 'BACKTEST'; }
-        else                          { stateClass = 'wait'; stateLabel = (p.status || 'idea').toUpperCase(); }
+      const timeState = timeStateForPlay(p);
+      if (isVeto) {
+        stateClass = 'veto'; stateLabel = 'VETO';
+      } else if (timeState === 'wait') {
+        stateClass = 'wait'; stateLabel = 'WAIT';
+      } else if (timeState === 'passed') {
+        stateClass = 'passed'; stateLabel = 'DONE';
+      } else {
+        // In window (or timeState couldn't be computed — treat as in-window)
+        if (isMatrix) {
+          const maxAction = (p.projection?.max_tier?.action || '').toUpperCase();
+          if (maxAction.includes('TAKE')) { stateClass = 'live'; stateLabel = 'LIVE'; }
+          else { stateClass = 'wait'; stateLabel = 'WAIT'; }
+        } else {
+          // Playbook in-window — uses Notion status
+          const s = (p.status || 'idea').toLowerCase();
+          if (s === 'verified')         { stateClass = 'live'; stateLabel = 'LIVE'; }
+          else if (s === 'backtesting') { stateClass = 'wait'; stateLabel = 'BACKTEST'; }
+          else                          { stateClass = 'wait'; stateLabel = (p.status || 'idea').toUpperCase(); }
+        }
       }
 
-      const cardCls = 'play-card ' + (isVeto ? 'veto' : stateClass === 'wait' ? 'wait' : '');
+      const cardCls = 'play-card '
+        + (isVeto ? 'veto'
+           : stateClass === 'passed' ? 'passed'
+           : stateClass === 'wait' ? 'wait' : '');
       const card = h('div', {class: cardCls, 'data-key': playKey(p)});
 
       const dir = (p.direction || 'both').toLowerCase();
