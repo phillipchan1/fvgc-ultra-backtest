@@ -387,6 +387,25 @@
   .play-card.armed .pstate {
     animation: pulse 1.8s ease-in-out infinite;
   }
+
+  /* MISSED — post-open factor failed, threshold unreachable. Card visually
+     deflates but stays readable (you might still want to see why it missed). */
+  .play-card.missed { opacity: 0.6; }
+  .play-card.missed::before { background: var(--text-mute); box-shadow: none; }
+  .play-card .pstate.missed {
+    color: var(--text-mute); border-color: var(--text-mute);
+    background: var(--bg-2);
+  }
+  /* Dot for a definitively-failed factor — muted red with a tiny ✕ glyph. */
+  .conf-mini .dd.missed {
+    background: var(--red); border-color: var(--red);
+    opacity: 0.35; box-shadow: none; position: relative;
+  }
+  /* Factor-line in the detail view when its factor failed. */
+  .factor-line.missed { opacity: 0.55; }
+  .factor-line.missed .marker { color: var(--red); }
+  .factor-line.missed .lift   { color: var(--red); text-decoration: line-through; }
+  .factor-line.missed .desc   { text-decoration: line-through; color: var(--text-dim); }
   .pulse::before {
     content: ""; width: 6px; height: 6px;
     border-radius: 50%; background: currentColor;
@@ -2433,17 +2452,20 @@
         const stateEl = card.querySelector('.pstate');
         if (!stateEl) return;
 
-        // Don't downgrade ARMED unless the window has actually passed.
+        // Don't downgrade ARMED or MISSED unless the window has actually
+        // passed — these are decisive states set by the live overlay and
+        // shouldn't get clobbered by a generic time-state tick.
         const cur = stateEl.textContent.trim();
-        const isArmed = cur === 'ARMED' || card.classList.contains('armed');
+        const isArmed  = cur === 'ARMED'  || card.classList.contains('armed');
+        const isMissed = cur === 'MISSED' || card.classList.contains('missed');
 
         const timeState = timeStateForPlay(p);
         let cls, label;
         if (timeState === 'wait')        { cls = 'wait';   label = 'WAIT'; }
         else if (timeState === 'passed') { cls = 'passed'; label = 'DONE'; }
         else {
-          // in window — preserve ARMED if it was set by live overlay
-          if (isArmed) return;
+          // in window — preserve ARMED / MISSED if set by live overlay
+          if (isArmed || isMissed) return;
           if (kind === 'matrix') {
             const maxAction = (p.projection?.max_tier?.action || '').toUpperCase();
             cls = maxAction.includes('TAKE') ? 'live' : 'wait';
@@ -2571,75 +2593,103 @@
       }
 
       function updateMatrixCardLive(card, p, factors) {
-        // Which pending factors have fired this session?
+        // Three-state factor evaluation:
+        //   true   — fired (cyan dot, ✓ marker, counts toward confluence)
+        //   false  — definitively didn't fire (red ✕, line-through; killed)
+        //   null   — still unknown (dashed cyan, pending)
         const pending = p.post_pending || [];
-        const fired = pending.filter(f => factors[f.id] === true);
-        const firedIds = new Set(fired.map(f => f.id));
-        const stillPendingIds = new Set(
-          pending.filter(f => factors[f.id] !== true).map(f => f.id)
-        );
-        const liveCount = p.preopen_count + fired.length;
+        const firedIds   = new Set(pending.filter(f => factors[f.id] === true).map(f => f.id));
+        const missedIds  = new Set(pending.filter(f => factors[f.id] === false).map(f => f.id));
+        const unknownCount = pending.length - firedIds.size - missedIds.size;
+        const liveCount = p.preopen_count + firedIds.size;
+        const maxPossible = liveCount + unknownCount;
+        const projMax = p.projection?.max_count ?? 0;
+        const canStillReachTake =
+          maxPossible >= projMax
+          && (p.projection?.max_tier?.action || '').toUpperCase().includes('TAKE');
 
-        // 1. Compact card dots — flip "maybe" dots tagged with fired factor
-        //    ids into "on" dots. Pulse on transition.
+        // 1. Compact card dots — flip to on (fired), missed (false), or
+        //    leave as maybe (unknown).
         card.querySelectorAll('.conf-mini .dd[data-pending-factor]').forEach(d => {
-          if (firedIds.has(d.dataset.pendingFactor) && d.classList.contains('maybe')) {
-            d.classList.remove('maybe');
-            d.classList.add('on');
-            d.classList.add('live-just-fired');
+          const fid = d.dataset.pendingFactor;
+          if (firedIds.has(fid) && !d.classList.contains('on')) {
+            d.classList.remove('maybe', 'missed');
+            d.classList.add('on', 'live-just-fired');
             setTimeout(() => d.classList.remove('live-just-fired'), 1200);
+          } else if (missedIds.has(fid) && !d.classList.contains('missed')) {
+            d.classList.remove('maybe', 'on');
+            d.classList.add('missed');
           }
         });
 
-        // 2. Counter text in compact pbody: "1/5 · +2" → "3/5 · +0"
+        // 2. Counter text in compact pbody: "1/5 · +2" reflects remaining
+        //    UNKNOWN, not still-pending including missed (which are killed).
         const pmeta = card.querySelector('.pmeta');
         if (pmeta && !p.veto_active) {
-          const stillPending = stillPendingIds.size;
           pmeta.textContent =
             `${liveCount}/${p.max_preopen}` +
-            (stillPending > 0 ? ` · +${stillPending}` : '');
+            (unknownCount > 0 ? ` · +${unknownCount}` : '');
         }
 
-        // 3. State badge — flip WAIT/LIVE → ARMED when live confluence crosses
-        //    the play's "TAKE"-tier threshold. We treat anything that turns
-        //    the max-tier into a TAKE outcome (factor count >= proj.max_count
-        //    threshold) as ARMED. Conservative: also keep LIVE if not yet at
-        //    that threshold but at least one post factor fired.
-        if (!p.veto_active && fired.length > 0) {
+        // 3. State badge transitions. Priority order:
+        //    a. ARMED — live count crosses TAKE threshold (sticky).
+        //    b. MISSED — confluence can no longer reach TAKE threshold
+        //                (no unknowns left + below proj_max), AND at least
+        //                one factor failed. Play is effectively dead for
+        //                this window.
+        //    c. LIVE — at least one factor fired but not yet armed.
+        //    d. WAIT — no factors decided yet (handled by time-state ticker).
+        if (!p.veto_active) {
           const stateEl = card.querySelector('.pstate');
-          const projMax = p.projection?.max_count ?? 0;
-          if (liveCount >= projMax && (p.projection?.max_tier?.action || '').toUpperCase().includes('TAKE')) {
-            if (stateEl && stateEl.textContent !== 'ARMED') {
+          const cur = stateEl?.textContent;
+          if (liveCount >= projMax
+              && (p.projection?.max_tier?.action || '').toUpperCase().includes('TAKE')) {
+            if (cur !== 'ARMED') {
               stateEl.textContent = 'ARMED';
-              stateEl.classList.add('live');
+              stateEl.className = 'pstate live';
               card.classList.add('armed');
+              card.classList.remove('missed');
             }
-          } else if (liveCount > p.preopen_count) {
-            // Some progress but not max — keep LIVE.
-            if (stateEl && stateEl.classList.contains('wait')) {
-              stateEl.classList.remove('wait');
-              stateEl.classList.add('live');
+          } else if (!canStillReachTake && missedIds.size > 0) {
+            // No path to ARMED anymore — play missed for this window.
+            if (cur !== 'MISSED' && cur !== 'ARMED') {
+              stateEl.textContent = 'MISSED';
+              stateEl.className = 'pstate missed';
+              card.classList.add('missed');
+              card.classList.remove('armed');
+            }
+          } else if (firedIds.size > 0 && cur !== 'ARMED' && cur !== 'MISSED') {
+            // Partial progress, still possible to arm.
+            if (stateEl.classList.contains('wait')) {
+              stateEl.className = 'pstate live';
               stateEl.textContent = 'LIVE';
             }
           }
         }
 
-        // 4. Detail view (column 3 if selected) — pending factor lines flip to active.
-        document.querySelectorAll(`.factor-line.pending[data-pending-factor]`).forEach(row => {
-          if (firedIds.has(row.dataset.pendingFactor)) {
-            row.classList.remove('pending');
+        // 4. Detail view (column 3 if selected) — pending factor lines
+        //    transition to active or missed.
+        document.querySelectorAll('.factor-line[data-pending-factor]').forEach(row => {
+          const fid = row.dataset.pendingFactor;
+          if (firedIds.has(fid) && !row.classList.contains('on')) {
+            row.classList.remove('pending', 'missed');
             row.classList.add('on', 'live-just-fired');
             const marker = row.querySelector('.marker');
             if (marker) marker.textContent = '✓';
             setTimeout(() => row.classList.remove('live-just-fired'), 1200);
+          } else if (missedIds.has(fid) && !row.classList.contains('missed')) {
+            row.classList.remove('pending', 'on');
+            row.classList.add('missed');
+            const marker = row.querySelector('.marker');
+            if (marker) marker.textContent = '✕';
           }
         });
 
-        // Persist computed live count on the play object so subsequent
-        // re-renders (e.g. detail-pane re-render on selection change) start
-        // from the correct state.
+        // Persist computed state on play object so detail-pane re-renders
+        // (on selection change) start from the correct state.
         p._live_count = liveCount;
         p._fired_factor_ids = [...firedIds];
+        p._missed_factor_ids = [...missedIds];
       }
 
       // -------- Tier 2: playbook play live kill-switches --------
