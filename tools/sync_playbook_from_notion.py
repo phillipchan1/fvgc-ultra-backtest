@@ -95,6 +95,31 @@ def page_id(url: str | None) -> str | None:
     return m.group(1) if m else None
 
 
+def _as_list(v) -> list:
+    """Defensive list coercion. Notion's MCP path sometimes returns
+    multi_select fields as a JSON-encoded string (e.g. '["9:45-10:00"]')
+    rather than a real list. Without this guard the bad shape persists
+    through plays.json → briefing.json → dashboard, where it causes
+    silent play drops because window-bucketing groups become unknown
+    keys. Accepts list, stringified-JSON-list, single string, or None.
+    """
+    if v is None:
+        return []
+    if isinstance(v, list):
+        return v
+    if isinstance(v, str):
+        s = v.strip()
+        if s.startswith('['):
+            try:
+                parsed = json.loads(s)
+                if isinstance(parsed, list):
+                    return parsed
+            except json.JSONDecodeError:
+                pass
+        return [v] if v else []
+    return []
+
+
 def normalize_play(n: dict) -> dict:
     """Map a Notion row to a plays.json entry. pre_market_factors is filled
     in separately by the caller (it's preserved from existing plays.json)."""
@@ -125,7 +150,7 @@ def normalize_play(n: dict) -> dict:
         'frequency': n.get('Frequency'),
         'pf_base': n.get('Best PF'),
         'avg_mfe_r': n.get('Avg MFE (R)'),
-        'window': n.get('Macro') or [],
+        'window': _as_list(n.get('Macro')),
         'notion_url': n.get('url'),
         'pre_market_factors': [],  # filled in by caller
     }

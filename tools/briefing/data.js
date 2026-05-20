@@ -702,7 +702,9 @@ window.BRIEFING_DATA = {
       "frequency": "~14/yr (~1.2/mo) \u2014 roughly 1 every 25 days. From 8yr backtest, 117 trades.",
       "pf_base": 2.31,
       "avg_mfe_r": 2.5,
-      "window": "[\"9:30-9:45\"]",
+      "window": [
+        "9:30-9:45"
+      ],
       "pre_met": [],
       "pre_missing": [],
       "match_status": "always"
@@ -722,7 +724,9 @@ window.BRIEFING_DATA = {
       "frequency": "~2.66 trades/month at 3+ confluence (after vetoes)",
       "pf_base": 2.26,
       "avg_mfe_r": 2,
-      "window": "[\"10:00-10:15\"]",
+      "window": [
+        "10:00-10:15"
+      ],
       "pre_met": [],
       "pre_missing": [],
       "match_status": "always"
@@ -742,7 +746,9 @@ window.BRIEFING_DATA = {
       "frequency": "~13/yr (~1.1/mo) \u2014 roughly 1 every 27 days. 4+ tier ONLY (Tier B size); 3+ tier no longer viable on 8yr.",
       "pf_base": 2.62,
       "avg_mfe_r": 2.5,
-      "window": "[\"9:45-10:00\"]",
+      "window": [
+        "9:45-10:00"
+      ],
       "pre_met": [],
       "pre_missing": [],
       "match_status": "always"
@@ -762,7 +768,9 @@ window.BRIEFING_DATA = {
       "frequency": "~13% of days have both OR sides swept by 10:00. Conservative estimate: 2\u20133 setups/month at most.",
       "pf_base": 1.28,
       "avg_mfe_r": 5.5,
-      "window": "[\"10:00-10:15\"]",
+      "window": [
+        "10:00-10:15"
+      ],
       "pre_met": [],
       "pre_missing": [],
       "match_status": "always"
@@ -782,7 +790,9 @@ window.BRIEFING_DATA = {
       "frequency": "~58 signals/yr (~15 distinct opps/yr)",
       "pf_base": 2.81,
       "avg_mfe_r": 2.3,
-      "window": "[\"Any\"]",
+      "window": [
+        "Any"
+      ],
       "pre_met": [],
       "pre_missing": [],
       "match_status": "always"
@@ -802,7 +812,10 @@ window.BRIEFING_DATA = {
       "frequency": "~3/month (clusters when VIXY is high regime; ~7 trades/month on active days)",
       "pf_base": 3.76,
       "avg_mfe_r": 3.59,
-      "window": "[\"9:30-9:45\",\"9:45-10:00\"]",
+      "window": [
+        "9:30-9:45",
+        "9:45-10:00"
+      ],
       "pre_met": [],
       "pre_missing": [],
       "match_status": "always"
@@ -822,7 +835,10 @@ window.BRIEFING_DATA = {
       "frequency": "~3/month (0.75/week) \u2014 R0\u226510pt tier",
       "pf_base": 4.61,
       "avg_mfe_r": 2.5,
-      "window": "[\"9:30-9:45\",\"9:45-10:00\"]",
+      "window": [
+        "9:30-9:45",
+        "9:45-10:00"
+      ],
       "pre_met": [],
       "pre_missing": [],
       "match_status": "always"
@@ -842,7 +858,9 @@ window.BRIEFING_DATA = {
       "frequency": "~124 trades over dataset (high VIXY days only, W1 entries, <30% range used)",
       "pf_base": 1.65,
       "avg_mfe_r": null,
-      "window": "[\"9:30-9:45\"]",
+      "window": [
+        "9:30-9:45"
+      ],
       "pre_met": [],
       "pre_missing": [],
       "match_status": "always"
@@ -862,7 +880,9 @@ window.BRIEFING_DATA = {
       "frequency": "~4.3 qualified setups/week (>2 PF combos); ~7.7 MACD-confirmed/week total",
       "pf_base": 2.43,
       "avg_mfe_r": 6.22,
-      "window": "[\"Any\"]",
+      "window": [
+        "Any"
+      ],
       "pre_met": [],
       "pre_missing": [],
       "match_status": "always"
@@ -882,7 +902,9 @@ window.BRIEFING_DATA = {
       "frequency": "~23/yr (~1.9/mo) | ~1 every 10 days (median) | longest typical wait 38 days. NOTE: play status REJECTED \u2014 DO NOT TRADE.",
       "pf_base": 5.5,
       "avg_mfe_r": 9.44,
-      "window": "[\"Any\"]",
+      "window": [
+        "Any"
+      ],
       "pre_met": [],
       "pre_missing": [],
       "match_status": "always"
@@ -902,7 +924,9 @@ window.BRIEFING_DATA = {
       "frequency": "Post-veto: ~50/yr (~4/mo) | every 7-11 days. 2+ confluences: ~22/yr (~1.9/mo) | every 16 days. 4+ confluences: ~6/yr | every 61 days. 9:30-FVG premium sub-tier: ~7/yr | every 55 days.",
       "pf_base": 2.44,
       "avg_mfe_r": 4,
-      "window": "[\"9:30-9:45\"]",
+      "window": [
+        "9:30-9:45"
+      ],
       "pre_met": [],
       "pre_missing": [],
       "match_status": "always"
@@ -922,7 +946,9 @@ window.BRIEFING_DATA = {
       "frequency": "30s primary: ~119/yr (~10/mo), mean 1.49 trades/day, 34% of days have 2+ fires (~half overlap within 5min). 1m alt: ~65/yr (~5.4/mo), 18% multi-fire days. Entry window 9:45-10:15 ET.",
       "pf_base": 1.78,
       "avg_mfe_r": null,
-      "window": "[\"9:45-10:00\"]",
+      "window": [
+        "9:45-10:00"
+      ],
       "pre_met": [],
       "pre_missing": [],
       "match_status": "always"

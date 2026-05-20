@@ -2077,8 +2077,19 @@
     // (function declarations are hoisted; const is not).
     const WINDOW_ORDER = ['9:30-9:45', '9:45-10:00', '10:00-10:15', 'Any'];
     function normalizeWindows(p) {
-      if (typeof p.window === 'string') return [p.window];
-      if (Array.isArray(p.window) && p.window.length) return p.window;
+      let w = p.window;
+      // Defensive: some sync paths produce stringified JSON arrays
+      // (e.g. '["9:45-10:00"]') instead of real arrays. Parse those
+      // back into arrays here so the rest of the pipeline never sees
+      // the bad shape.
+      if (typeof w === 'string' && w.trim().startsWith('[')) {
+        try {
+          const parsed = JSON.parse(w);
+          if (Array.isArray(parsed)) w = parsed;
+        } catch (e) { /* fall through to single-string branch */ }
+      }
+      if (typeof w === 'string') return [w];
+      if (Array.isArray(w) && w.length) return w;
       return ['Any'];
     }
     function primaryWindow(p) {
