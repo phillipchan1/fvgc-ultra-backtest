@@ -151,6 +151,13 @@ def normalize_play(n: dict) -> dict:
         'pf_base': n.get('Best PF'),
         'avg_mfe_r': n.get('Avg MFE (R)'),
         'window': _as_list(n.get('Macro')),
+        # Optional Notion property — bar interval the play's FVGC engine
+        # should run on (e.g. "30s", "1m", "2m", "5m", "15m"). Read by the
+        # Fly.io play-history endpoint to run the engine at the right TF
+        # and match signals only against same-TF plays. Falls back to
+        # "30s" server-side when absent — that's the 8yr-validated default
+        # for the M1/M2/M3 matrix plays.
+        'timeframe': (n.get('Timeframe') or n.get('Chart TF') or '').strip() or None,
         'notion_url': n.get('url'),
         'pre_market_factors': [],  # filled in by caller
     }
@@ -313,6 +320,12 @@ def _notion_page_to_play_row(page: dict) -> dict:
         'Best PF': _number('Best PF'),
         'Avg MFE (R)': _number('Avg MFE (R)'),
         'Macro': _multi('Macro'),
+        # Bar interval the FVGC engine should run on for this play.
+        # Optional in Notion — falls back to 30s server-side. Common
+        # values: "30s", "1m", "2m", "3m", "5m", "15m". Accepted as
+        # either a select option or a plain text field.
+        'Timeframe': _select('Timeframe') or _text('Timeframe'),
+        'Chart TF':  _select('Chart TF')  or _text('Chart TF'),
         'Manual Backtest Notes': _text('Manual Backtest Notes'),
         'Analysis': _url('Analysis'),
         'Trade List': _url('Trade List'),

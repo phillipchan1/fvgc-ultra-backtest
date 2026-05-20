@@ -920,10 +920,38 @@ def _parse_play_window(win_str: str) -> dict | None:
         return None
 
 
-def _aggregate_session_to_30s(session_bars: list[dict]) -> "Any":
-    """Bucket 1s OHLCV dicts into 30s candles in the shape fvgc expects:
+# Pandas .floor() accepts shorthand strings — same vocabulary the engine
+# uses. We accept the same syntax for the play's `timeframe` field.
+_TF_FLOOR_MAP = {
+    "30s": "30s", "30sec": "30s", "30 seconds": "30s",
+    "1m":  "1min", "1min": "1min", "1 min": "1min", "1minute": "1min",
+    "2m":  "2min", "2min": "2min",
+    "3m":  "3min", "3min": "3min",
+    "5m":  "5min", "5min": "5min",
+    "15m": "15min", "15min": "15min",
+    "30m": "30min", "30min": "30min",
+}
+DEFAULT_PLAY_TF = "30s"  # matrix plays per project memory — 8yr validated
+
+
+def _normalize_tf(tf_value: Any) -> str:
+    """Coerce a play.timeframe field to a pandas-friendly freq string.
+    Falls back to DEFAULT_PLAY_TF for missing / unparseable values."""
+    if not tf_value:
+        return _TF_FLOOR_MAP[DEFAULT_PLAY_TF]
+    s = str(tf_value).strip().lower()
+    if s in _TF_FLOOR_MAP:
+        return _TF_FLOOR_MAP[s]
+    return _TF_FLOOR_MAP[DEFAULT_PLAY_TF]
+
+
+def _aggregate_session_to_tf(session_bars: list[dict], freq: str) -> "Any":
+    """Bucket 1s OHLCV dicts into `freq` candles in the shape fvgc expects:
     columns timestamp_utc (tz-aware UTC), timestamp_ny (tz-aware NY),
-    open/high/low/close/volume. Sorted by time, no gaps within session."""
+    open/high/low/close/volume.
+
+    freq is a pandas frequency string ('30s', '1min', '2min', '5min', etc.).
+    Returns None when pandas isn't available or there are no bars."""
     if _pd is None or not session_bars:
         return None
     rows = [{
@@ -934,9 +962,9 @@ def _aggregate_session_to_30s(session_bars: list[dict]) -> "Any":
     } for b in session_bars]
     df = _pd.DataFrame(rows)
     df = df.sort_values("timestamp_utc").reset_index(drop=True)
-    ts30 = df["timestamp_utc"].dt.floor("30s")
+    ts_buckets = df["timestamp_utc"].dt.floor(freq)
     agg = (
-        df.groupby(ts30)
+        df.groupby(ts_buckets)
         .agg(open=("open", "first"), high=("high", "max"),
              low=("low", "min"), close=("close", "last"),
              volume=("volume", "sum"))
@@ -948,10 +976,10 @@ def _aggregate_session_to_30s(session_bars: list[dict]) -> "Any":
     return agg
 
 
-def _signal_to_json(s: dict) -> dict:
+def _signal_to_json(s: dict, timeframe: str = "30s") -> dict:
     """Convert a raw FVGC signal dict into a JSON-friendly + display-ready
-    structure. The engine returns timestamps as pandas Timestamps in NY tz;
-    we serialise to ISO and split out a human time string."""
+    structure. Tagged with `timeframe` so the dashboard can disambiguate
+    when multiple TFs are scanned in the same session."""
     ts = s.get("timestamp")
     ts_iso = ts.isoformat() if ts is not None else None
     ts_human = ts.strftime("%-I:%M:%S %p") if ts is not None else None
@@ -962,6 +990,7 @@ def _signal_to_json(s: dict) -> dict:
     return {
         "timestamp_et": ts_iso,
         "time_et_human": ts_human,
+        "timeframe": timeframe,
         "direction": s.get("direction"),
         "variant": s.get("variant"),
         "entry_price": _num(s.get("entry_price")),
@@ -976,59 +1005,66 @@ def _signal_to_json(s: dict) -> dict:
     }
 
 
-def _match_signals_to_plays(signals: list[dict], matrix_plays: list[dict],
+def _match_signal_for_play(p: dict, signals_by_tf: dict, now_min: int) -> tuple:
+    """Find the first matching signal for play `p`. Returns
+    (matched_signal_dict_or_None, status_str, play_tf, play_variants)."""
+    win = _parse_play_window(p.get("window", ""))
+    direction = p.get("direction")
+    play_tf = _normalize_tf(p.get("timeframe"))
+    # Required variants from post_pending IDs (e.g. variant_no_fvg).
+    play_variants = [
+        f.get("id", "").replace("variant_", "")
+        for f in (p.get("post_pending") or [])
+        if isinstance(f.get("id"), str) and f["id"].startswith("variant_")
+    ]
+    candidate_signals = signals_by_tf.get(play_tf, [])
+    matched = None
+    for s in candidate_signals:
+        if direction and s["direction"] != direction:
+            continue
+        sig_iso = s.get("timestamp_et")
+        if not sig_iso:
+            continue
+        try:
+            sig_dt = datetime.fromisoformat(sig_iso)
+        except ValueError:
+            continue
+        sig_min = sig_dt.hour * 60 + sig_dt.minute
+        if win and (sig_min < win["start_min"] or sig_min > win["end_min"]):
+            continue
+        if play_variants and s.get("variant") not in play_variants:
+            continue
+        matched = s
+        break
+    # Status — window-aware. "pending" while window is still open; once it
+    # closes without a matching signal, it's a definitive "no_signal".
+    if p.get("veto_active"):
+        status = "vetoed"
+    elif matched is not None:
+        status = "fired"
+    elif win and now_min < win["end_min"]:
+        status = "pending"
+    else:
+        status = "no_signal"
+    return matched, status, play_tf, play_variants
+
+
+def _match_signals_to_plays(signals_by_tf: dict, matrix_plays: list[dict],
                             now_et: datetime) -> list[dict]:
-    """For each matrix play, find the best-matching signal (direction +
-    variant + window). Returns one entry per play with status:
-      - vetoed       — play.veto_active is True; never tradeable today
-      - fired        — engine emitted a matching signal during window
-      - no_signal    — window has passed, no matching signal
-      - pending      — window still open
-    Signals can match multiple plays (variant + direction overlap)."""
+    """For each matrix play, find the best-matching signal in the play's
+    timeframe (direction + variant + window). signals_by_tf is keyed by
+    pandas freq string ('30s', '1min', etc.) — each play matches only
+    against signals from its own timeframe."""
     now_min = now_et.hour * 60 + now_et.minute
     out = []
     for p in matrix_plays:
-        win = _parse_play_window(p.get("window", ""))
-        direction = p.get("direction")
-        # Required variants from post_pending IDs (e.g. variant_no_fvg).
-        play_variants = [
-            f.get("id", "").replace("variant_", "")
-            for f in (p.get("post_pending") or [])
-            if isinstance(f.get("id"), str) and f["id"].startswith("variant_")
-        ]
-        matched = None
-        # First-in-window match wins (signals are time-ordered).
-        for s in signals:
-            if direction and s["direction"] != direction:
-                continue
-            sig_iso = s.get("timestamp_et")
-            if not sig_iso:
-                continue
-            try:
-                sig_dt = datetime.fromisoformat(sig_iso)
-            except ValueError:
-                continue
-            sig_min = sig_dt.hour * 60 + sig_dt.minute
-            if win and (sig_min < win["start_min"] or sig_min > win["end_min"]):
-                continue
-            if play_variants and s.get("variant") not in play_variants:
-                continue
-            matched = s
-            break
-        # Status — window-aware so a play that hasn't run yet shows "pending"
-        # not "no_signal".
-        if p.get("veto_active"):
-            status = "vetoed"
-        elif matched is not None:
-            status = "fired"
-        elif win and now_min < win["end_min"]:
-            status = "pending"
-        else:
-            status = "no_signal"
+        matched, status, play_tf, play_variants = _match_signal_for_play(
+            p, signals_by_tf, now_min)
         out.append({
             "name": p.get("name"),
             "window": p.get("window"),
-            "direction": direction,
+            "direction": p.get("direction"),
+            "timeframe": play_tf,
             "status": status,
             "veto_active": bool(p.get("veto_active")),
             "matched_signal": matched,
@@ -1038,24 +1074,42 @@ def _match_signals_to_plays(signals: list[dict], matrix_plays: list[dict],
 
 
 def _compute_play_history() -> dict:
-    """Run the FVGC engine on today's session and return a retrospective.
+    """Run the FVGC engine across every timeframe present in today's
+    matrix plays and return a playbook-only retrospective.
+
+    Multi-TF: each matrix play declares a `timeframe` (defaulting to 30s
+    per the 8yr-validated memory note). We aggregate session bars to
+    every unique TF and run generate_signals once per TF. Plays match
+    only signals from their own TF — a 1m FVG doesn't validate a 30s
+    play and vice versa.
+
+    Filtering: we ONLY return signals that matched a playbook play.
+    Raw "all FVGC signals today" was noise — the trader cares about
+    playbook validation, not engine output. The total raw signal count
+    is reported as `raw_signal_count` for diagnostic.
 
     Output shape:
       {
-        "as_of_utc":     ISO timestamp,
-        "session_date_et": "2026-05-20",
-        "engine_available": bool,
-        "signal_count":  int,
-        "signals":       [ ...one entry per signal... ],
-        "plays":         [ ...one entry per matrix play with status... ],
+        "as_of_utc":         ISO timestamp,
+        "session_date_et":   "2026-05-20",
+        "engine_available":  bool,
+        "timeframes_run":    ["30s", "1min"],
+        "raw_signal_count":  int,      # total engine output across all TFs
+        "signal_count":      int,      # signals matched to a play
+        "signals":           [ ...playbook-matched signals (with play_name + tf)... ],
+        "plays":             [ ...one entry per matrix play with status... ],
+        "candle_counts":     {"30s": 590, "1min": 295},
       }
     """
     out_base: dict[str, Any] = {
         "as_of_utc": datetime.now(timezone.utc).isoformat(),
         "engine_available": _FVGC_AVAILABLE,
+        "timeframes_run": [],
         "signals": [],
         "plays": [],
         "signal_count": 0,
+        "raw_signal_count": 0,
+        "candle_counts": {},
     }
     if not _FVGC_AVAILABLE:
         out_base["error"] = f"fvgc engine import failed: {_FVGC_IMPORT_ERROR}"
@@ -1081,27 +1135,69 @@ def _compute_play_history() -> dict:
         out_base["note"] = "session hasn't started yet"
         return out_base
 
-    df = _aggregate_session_to_30s(session_bars)
-    if df is None or df.empty:
-        out_base["error"] = "aggregation produced empty frame"
-        return out_base
-
-    try:
-        signals, _fvgs = _fvgc_generate_signals(df)
-    except Exception as e:
-        log.exception("FVGC signal generation failed")
-        out_base["error"] = f"engine error: {e}"
-        return out_base
-
-    signals_json = [_signal_to_json(s) for s in signals]
     matrix_plays = (ctx or {}).get("matrix_plays") or []
-    plays_matched = _match_signals_to_plays(signals_json, matrix_plays, now_et)
+    if not matrix_plays:
+        out_base["error"] = "no matrix plays in briefing context"
+        return out_base
+
+    # Discover every TF that any play needs. Default fall-through is 30s.
+    play_tfs = {_normalize_tf(p.get("timeframe")) for p in matrix_plays}
+    out_base["timeframes_run"] = sorted(play_tfs)
+
+    # Run engine once per TF. Cache results by TF for play matching below.
+    signals_by_tf: dict[str, list] = {}
+    candle_counts: dict[str, int] = {}
+    for tf in play_tfs:
+        df = _aggregate_session_to_tf(session_bars, tf)
+        if df is None or df.empty:
+            signals_by_tf[tf] = []
+            continue
+        try:
+            sigs_raw, _fvgs = _fvgc_generate_signals(df)
+        except Exception as e:
+            log.exception("FVGC signal generation failed for tf=%s", tf)
+            out_base.setdefault("warnings", []).append(
+                f"engine error tf={tf}: {e}")
+            signals_by_tf[tf] = []
+            continue
+        signals_by_tf[tf] = [_signal_to_json(s, timeframe=tf) for s in sigs_raw]
+        candle_counts[tf] = int(len(df))
+
+    raw_count = sum(len(v) for v in signals_by_tf.values())
+    plays_matched = _match_signals_to_plays(signals_by_tf, matrix_plays, now_et)
+
+    # Filtered signal list — only the ones that validated at least one
+    # playbook play. Each signal gets a `play_names` array showing which
+    # plays it lit up (a single signal can validate multiple plays).
+    sig_to_plays: dict[tuple, list[str]] = {}
+    for p in plays_matched:
+        m = p.get("matched_signal")
+        if not m:
+            continue
+        key = (m.get("timestamp_et"), m.get("timeframe"), m.get("direction"),
+               m.get("variant"))
+        sig_to_plays.setdefault(key, []).append(p["name"])
+    playbook_signals = []
+    seen_keys = set()
+    for p in plays_matched:
+        m = p.get("matched_signal")
+        if not m:
+            continue
+        key = (m.get("timestamp_et"), m.get("timeframe"), m.get("direction"),
+               m.get("variant"))
+        if key in seen_keys:
+            continue
+        seen_keys.add(key)
+        playbook_signals.append({**m, "play_names": sig_to_plays[key]})
+    # Chronological order.
+    playbook_signals.sort(key=lambda s: s.get("timestamp_et") or "")
 
     out_base.update({
-        "signals": signals_json,
-        "signal_count": len(signals_json),
+        "signals": playbook_signals,
+        "signal_count": len(playbook_signals),
+        "raw_signal_count": raw_count,
         "plays": plays_matched,
-        "candle_count": int(len(df)),
+        "candle_counts": candle_counts,
     })
     return out_base
 

@@ -1604,6 +1604,24 @@
   .sr-pdetail {
     font-size: 10px; color: var(--text-dim);
   }
+  .sr-tf {
+    font-size: 9px; font-weight: 600; letter-spacing: 0.5px;
+    color: var(--text-mute);
+    padding: 0 4px; margin-left: 4px;
+    background: var(--bg-3); border: 1px solid var(--line);
+    border-radius: 2px;
+  }
+  .sr-plays-tag {
+    margin-left: 6px;
+    font-size: 9px; letter-spacing: 0.5px;
+  }
+  .sr-noise {
+    margin-top: 10px;
+    font-size: 9px; letter-spacing: 0.5px;
+    color: var(--text-mute);
+    padding-top: 8px;
+    border-top: 1px dashed var(--line);
+  }
 
   /* ===== Chips ===== */
   .chip {
@@ -4095,7 +4113,10 @@
           </div>`;
         return;
       }
-      if (statusEl) statusEl.textContent = `engine: live · ${data.candle_count || 0} candles`;
+      const tfs = (data.timeframes_run || []).join(', ');
+      const candleTotal = Object.values(data.candle_counts || {}).reduce((a,b) => a + b, 0);
+      if (statusEl) statusEl.textContent =
+        `engine: live · TFs ${tfs || '—'} · ${candleTotal} candles`;
       if (dotEl) dotEl.className = 'sr-dot good';
       if (ageEl) {
         const ts = data.as_of_utc ? new Date(data.as_of_utc).getTime() : Date.now();
@@ -4103,36 +4124,55 @@
         ageEl.textContent = ageS < 60 ? `${ageS}s ago` : `${Math.floor(ageS/60)}m ago`;
       }
 
+      // `signals` is now the playbook-filtered list (only signals that
+      // validated at least one play). `raw_signal_count` is the engine
+      // total across all TFs — shown as a small diagnostic.
       const signals = data.signals || [];
-      const plays = data.plays || [];
+      const plays = sortPlaysForReplay(data.plays || []);
+      const rawCount = data.raw_signal_count || 0;
+      const extraNoise = Math.max(0, rawCount - signals.length);
 
-      // Build signal list (chronological).
-      const sigHtml = signals.length
-        ? signals.map(s => _signalRowHtml(s)).join('')
-        : `<div class="sr-empty">No FVGC signals yet today.
-             <span class="mute">Signals fire when the engine detects an FVG re-tap inside the 9:30–10:15 window.</span>
-           </div>`;
-
-      // Per-play match table.
+      // Per-play match table — primary view.
       const playRows = plays.map(p => _playMatchRowHtml(p)).join('');
+
+      // Playbook signals — secondary, only shown if any matched.
+      const sigSection = signals.length ? `
+        <div class="sr-section">
+          <div class="sr-section-h mono">
+            <span>PLAYBOOK SIGNALS</span>
+            <span class="sr-count mono">${signals.length}</span>
+          </div>
+          <div class="sr-signal-list">${signals.map(s => _signalRowHtml(s)).join('')}</div>
+        </div>` : '';
 
       body.innerHTML = `
         <div class="sr-section">
           <div class="sr-section-h mono">
-            <span>SIGNALS</span>
-            <span class="sr-count mono">${signals.length}</span>
+            <span>PLAYBOOK MATCH</span>
+            <span class="sr-count mono">${plays.length}</span>
           </div>
-          <div class="sr-signal-list">${sigHtml}</div>
+          <div class="sr-play-list">${playRows}</div>
         </div>
-        ${plays.length ? `
-          <div class="sr-section">
-            <div class="sr-section-h mono">
-              <span>PLAYBOOK MATCH</span>
-              <span class="sr-count mono">${plays.length}</span>
-            </div>
-            <div class="sr-play-list">${playRows}</div>
+        ${sigSection}
+        ${extraNoise > 0 ? `
+          <div class="sr-noise mono mute">
+            engine emitted ${extraNoise} other FVGC signal${extraNoise===1?'':'s'}
+            today (no playbook match — wrong direction, variant, window or TF)
           </div>` : ''}
       `;
+    }
+
+    // Sort plays for the replay panel: FIRED first (action happened),
+    // then PENDING (still possible), then NO SIGNAL (done, nothing
+    // happened), then VETOED last (was off-limits anyway).
+    function sortPlaysForReplay(plays) {
+      const order = {fired: 0, pending: 1, no_signal: 2, vetoed: 3};
+      return [...plays].sort((a, b) => {
+        const oa = order[a.status] != null ? order[a.status] : 99;
+        const ob = order[b.status] != null ? order[b.status] : 99;
+        if (oa !== ob) return oa - ob;
+        return (a.name || '').localeCompare(b.name || '');
+      });
     }
 
     function _signalRowHtml(s) {
@@ -4144,13 +4184,16 @@
       const sl = s.sl != null ? s.sl.toFixed(2) : '—';
       const tp = s.tp != null ? s.tp.toFixed(2) : '—';
       const sld = s.sl_dist != null ? `${s.sl_dist.toFixed(1)}pt` : '';
+      const tf = s.timeframe || '';
+      const playNames = (s.play_names || []).join(' · ');
       return `
         <div class="sr-signal ${dirCls}">
           <span class="sr-time mono">${time}</span>
           <span class="sr-dir mono">${dirArrow} ${(s.direction || '?').toUpperCase()}</span>
-          <span class="sr-variant mono">${variant}</span>
+          <span class="sr-variant mono">${variant} <span class="sr-tf">${tf}</span></span>
           <span class="sr-prices mono">
             entry <b>${entry}</b> · SL <b>${sl}</b> ${sld ? `(${sld})` : ''} · TP <b>${tp}</b>
+            ${playNames ? `<span class="sr-plays-tag mute">→ ${playNames}</span>` : ''}
           </span>
         </div>`;
     }
@@ -4163,21 +4206,26 @@
         vetoed:    {cls:'bad',  label:'VETOED',    icon:'⊘'},
       })[p.status] || {cls:'mute', label:p.status || '?', icon:'·'};
       const matched = p.matched_signal;
+      const tf = p.timeframe || '';
       const detail = matched
-        ? `<span class="sr-pdetail mono">${matched.time_et_human || ''}
-             · ${matched.variant || ''}
-             · entry ${matched.entry_price != null ? matched.entry_price.toFixed(2) : '—'}</span>`
+        ? `<span class="sr-pdetail mono">
+             ${matched.time_et_human || ''} ·
+             ${matched.variant || ''} ·
+             entry <b>${matched.entry_price != null ? matched.entry_price.toFixed(2) : '—'}</b>
+             ${matched.sl != null ? ` · SL ${matched.sl.toFixed(2)}` : ''}
+             ${matched.tp != null ? ` · TP ${matched.tp.toFixed(2)}` : ''}
+           </span>`
         : p.status === 'pending'
           ? `<span class="sr-pdetail mute mono">window still open</span>`
           : p.status === 'no_signal'
-            ? `<span class="sr-pdetail mute mono">no FVGC signal in ${p.window || 'window'}</span>`
+            ? `<span class="sr-pdetail mute mono">no ${tf} FVGC signal in ${p.window || 'window'}</span>`
             : p.status === 'vetoed'
               ? `<span class="sr-pdetail mute mono">kill switch active</span>`
               : '';
       return `
         <div class="sr-play ${statusInfo.cls}">
           <span class="sr-picon mono">${statusInfo.icon}</span>
-          <span class="sr-pname mono">${p.name || '?'}</span>
+          <span class="sr-pname mono">${p.name || '?'} <span class="sr-tf">${tf}</span></span>
           <span class="sr-pstatus mono ${statusInfo.cls}">${statusInfo.label}</span>
           ${detail}
         </div>`;

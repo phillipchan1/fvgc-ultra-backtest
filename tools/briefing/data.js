@@ -6,8 +6,8 @@ window.BRIEFING_DATA = {
   "meta": {
     "date": "2026-05-20",
     "day_of_week": "Wednesday",
-    "generated_at_et": "2026-05-20T10:24:20.505754-04:00",
-    "generated_at_pt": "2026-05-20T07:24:20.505754-07:00",
+    "generated_at_et": "2026-05-20T15:58:01.022887-04:00",
+    "generated_at_pt": "2026-05-20T12:58:01.022887-07:00",
     "mode": "live"
   },
   "freshness": [],
@@ -15,7 +15,7 @@ window.BRIEFING_DATA = {
     "available": true,
     "point_pts": 215.4,
     "lo80_pts": 140.2,
-    "hi80_pts": 327.0,
+    "hi80_pts": 327.1,
     "baseline_pts": 117.6,
     "quintile": "Q4 (70th pct)",
     "tier_label": "Wide \u2014 favor full size on confluence setups",
@@ -292,6 +292,18 @@ window.BRIEFING_DATA = {
         "wr_as_magnet_pct": 48.7,
         "pf_as_magnet": 0.86,
         "below_baseline": true
+      },
+      {
+        "group": "htf_fvg_15m",
+        "label": "15m FVG (bullish)",
+        "price": 29173.0,
+        "distance_pts": 99.0,
+        "direction": "above",
+        "tier": "A",
+        "hit_rate_45m_pct": 26.2,
+        "wr_as_magnet_pct": 58.4,
+        "pf_as_magnet": 1.51,
+        "below_baseline": false
       }
     ],
     "below": [
@@ -525,6 +537,7 @@ window.BRIEFING_DATA = {
       "name": "M1 Short",
       "direction": "short",
       "window": "9:30-9:45",
+      "timeframe": "30s",
       "veto_active": false,
       "active_vetoes": [],
       "preopen_count": 0,
@@ -573,6 +586,7 @@ window.BRIEFING_DATA = {
       "name": "M1 Long",
       "direction": "long",
       "window": "9:30-9:45",
+      "timeframe": "30s",
       "veto_active": false,
       "active_vetoes": [],
       "preopen_count": 3,
@@ -624,6 +638,7 @@ window.BRIEFING_DATA = {
       "name": "M2 Long",
       "direction": "long",
       "window": "9:45-10:00",
+      "timeframe": "30s",
       "veto_active": true,
       "active_vetoes": [
         {
@@ -695,6 +710,7 @@ window.BRIEFING_DATA = {
       "name": "M3 Long",
       "direction": "long",
       "window": "10:00-10:15",
+      "timeframe": "30s",
       "veto_active": true,
       "active_vetoes": [
         {

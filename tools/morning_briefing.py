@@ -2051,6 +2051,12 @@ def build_briefing_dict(
                 'name': name,
                 'direction': play['direction'],
                 'window': play['window'],
+                # Bar interval the FVGC engine should run on for this play.
+                # MATRIX_PLAYS hardcodes are all 30s per the 8yr validation
+                # (see project memory: cross-TF audit showed M1/M2/M3 don't
+                # carry to 1m/2m/3m). Future plays can override via
+                # play.get('timeframe').
+                'timeframe': play.get('timeframe', '30s'),
                 'veto_active': bool(active_vetoes),
                 'active_vetoes': active_vetoes,
                 'preopen_count': preopen_count,
