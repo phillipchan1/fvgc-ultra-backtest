@@ -1452,6 +1452,30 @@
   .range-ci {
     font-size: 11px; color: var(--text-dim); letter-spacing: 0.5px;
   }
+  /* Hero badge — tags the big number with its provenance so the user
+     can instantly tell prediction from reality. Three states:
+       .forecast — pre-open, cold-start model output
+       .live     — session in progress, OR still building
+       .locked   — 45-min OR has closed, value is final */
+  .hero-badge {
+    display: inline-block; margin-left: 10px;
+    font-family: var(--mono); font-size: 9px; font-weight: 700;
+    letter-spacing: 1.5px; padding: 2px 6px; border-radius: 2px;
+    vertical-align: middle; line-height: 1.2;
+    border: 1px solid currentColor;
+  }
+  .hero-badge.forecast { color: var(--cyan); background: var(--cyan-dim); }
+  .hero-badge.live     { color: var(--cyan); background: var(--cyan-dim);
+                         box-shadow: 0 0 12px -2px var(--cyan-glow);
+                         animation: pulse 2s ease-in-out infinite; }
+  .hero-badge.locked   { color: var(--green); background: var(--green-dim); }
+  .hero-header { transition: color 0.4s ease; }
+
+  /* Q-bar highlights in ACTUAL mode — solid border ring + extra glow so
+     it visibly differs from the cold-start forecast highlight. */
+  .q-seg.actual-live { outline: 2px solid white; outline-offset: 1px; }
+  .q-seg.actual-locked { outline: 2px solid white; outline-offset: 1px;
+                         box-shadow: 0 0 18px currentColor, 0 0 4px white inset; }
 
   .q-bar {
     display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;
@@ -2680,13 +2704,16 @@
           setLiveField('prior_rth_close',
             snap.prior_rth.close.toFixed(2), null);
         }
-        // Evolving forecast (cold → 5min → 15min → final). Must render
-        // before the Live OR section so the section order stays:
-        //   quintile bar → evolving forecast → live OR build → action.
+        // Promote ACTUAL OR width to the Range Briefing hero once the
+        // session starts; demote the cold-start forecast to a subtitle.
+        // Must run before renderEvolvingForecast so the trajectory below
+        // reads as a refinement of the displayed actual.
+        updateRangeHero(snap);
+        // Evolving forecast (cold → 5min → 15min → final). Section order:
+        //   hero (actual or forecast) → quintile bar → evolving forecast → action.
         renderEvolvingForecast(snap);
-        // Live OR section (in Range Briefing). Render conditionally based on
-        // snap.opening_range.
-        renderLiveORSection(snap);
+        // (Live OR sub-card removed — its data moved into the hero above
+        // and the EVOLVING FORECAST trajectory below.)
         // Matrix play cards — re-evaluate confluence + state from live factors.
         applyLiveMatrixUpdates(snap);
         // Playbook play live kill-switches (FVGC To OR H/L, etc).
@@ -2875,6 +2902,103 @@
           // Apply card-level dimming for VETOED.
           card.classList.toggle('veto', cls === 'veto');
         });
+      }
+
+      // ====== HERO STATE ======
+      // Range Briefing hero auto-flips between two modes:
+      //   FORECAST  (pre-open)   — cold-start prediction is the big number;
+      //                            badge says "FORECAST".
+      //   ACTUAL    (session)    — real OR width is the big number; the
+      //                            cold-start gets demoted to a subtitle
+      //                            ("forecast was 212 · Q4 (−26 tighter)").
+      // The flip is keyed off snap.opening_range — once Fly.io serves a
+      // non-empty width (i.e. the session has begun and bars exist for
+      // 9:30+), ACTUAL takes the hero spot. The top-right header tag
+      // moves from "45-MIN OR FORECAST" → "LIVE · BUILDING" → "LIVE · LOCKED".
+      function updateRangeHero(snap) {
+        const fc = window.BRIEFING_DATA?.or_forecast;
+        const sw = fc?.stepwise;
+        const card = document.querySelector('.range-card');
+        if (!card || !fc?.available) return;
+
+        const head     = card.querySelector('.range-head');
+        const qEl      = card.querySelector('[data-hero-q]');
+        const ptsEl    = card.querySelector('[data-hero-pts]');
+        const ciEl     = card.querySelector('[data-hero-ci]');
+        const headerEl = card.querySelector('[data-hero-header]');
+        if (!head || !qEl || !ptsEl || !ciEl) return;
+
+        const or45 = snap?.opening_range;
+        const heroIsActual = !!(snap?.in_session && or45 && or45.width > 0);
+
+        // Cold-start refs — needed in both branches (delta line + restore).
+        const coldQ   = ((fc.quintile || '').split(' ', 1)[0] || '').toUpperCase();
+        const coldQCls = _qClass(coldQ);
+        const coldPts = Math.round(fc.point_pts);
+
+        if (!heroIsActual) {
+          // Restore FORECAST mode (covers offline → online transitions).
+          if (head.dataset.heroMode === 'actual') {
+            head.dataset.heroMode = 'forecast';
+            qEl.className = 'range-quintile ' + coldQCls;
+            qEl.textContent = coldQ || '—';
+            ptsEl.innerHTML =
+              `${coldPts}<span class="unit">pts</span>` +
+              `<span class="hero-badge forecast">FORECAST</span>`;
+            ciEl.textContent =
+              `${fc.lo80_pts}–${fc.hi80_pts} · ${fc.quintile || ''} · cold-start`;
+            if (headerEl) headerEl.textContent = '45-MIN OR FORECAST';
+            card.querySelectorAll('.q-seg').forEach(s => s.classList.remove('actual'));
+            const lit = card.querySelector(`.q-seg.${(coldQ||'').toLowerCase()}`);
+            if (lit) lit.classList.add('on');
+          }
+          return;
+        }
+
+        // ACTUAL mode — real OR width drives the hero.
+        const w = or45.width;
+        const complete = !!or45.complete;
+        let actualQ = '—';
+        let actualQCls = '';
+        if (sw?.thresholds?.or_45min) {
+          const q = _bucketize(w, sw.thresholds.or_45min);
+          actualQ = `Q${q}`;
+          actualQCls = _qClass(actualQ);
+        }
+
+        // Delta — sign w.r.t. cold-start point estimate.
+        const delta = Math.round(w - coldPts);
+        const onTrack = (actualQ && coldQ && actualQ === coldQ);
+        let deltaTxt;
+        if (delta === 0)       deltaTxt = 'on target';
+        else if (delta < 0)    deltaTxt = `${Math.abs(delta)} tighter`;
+        else                   deltaTxt = `${delta} wider`;
+        const trackTag = onTrack ? ' · on track' : '';
+
+        head.dataset.heroMode = 'actual';
+        qEl.className = 'range-quintile ' + actualQCls;
+        qEl.textContent = actualQ;
+
+        const badgeCls  = complete ? 'locked' : 'live';
+        const badgeText = complete ? 'ACTUAL · LOCKED' : 'ACTUAL · BUILDING';
+        ptsEl.innerHTML =
+          `${Math.round(w)}<span class="unit">pts</span>` +
+          `<span class="hero-badge ${badgeCls}">${badgeText}</span>`;
+        ciEl.textContent =
+          `forecast was ${coldPts} · ${coldQ} (${deltaTxt}${trackTag})`;
+        if (headerEl) {
+          headerEl.textContent = complete ? 'LIVE · LOCKED' : 'LIVE · BUILDING';
+          headerEl.style.color = complete ? 'var(--green)' : 'var(--cyan)';
+        }
+
+        // Quintile bar: clear stale highlights, light the ACTUAL segment.
+        // (Cold-start lit segment came from initial render; we move the
+        // .on glow to actualQ so the bar always reflects truth-of-the-day.)
+        card.querySelectorAll('.q-seg').forEach(s => {
+          s.classList.remove('on', 'actual', 'live-locked');
+        });
+        const seg = card.querySelector(`.q-seg.${actualQ.toLowerCase()}`);
+        if (seg) seg.classList.add('on', complete ? 'actual-locked' : 'actual-live');
       }
 
       // ====== EVOLVING FORECAST ======
@@ -3083,90 +3207,19 @@
         `;
       }
 
-      function renderLiveORSection(snap) {
-        let container = document.getElementById('or-live-section');
-        const range = snap?.opening_range;
-        // Hide section entirely if not in session OR no OR data.
-        if (!snap?.in_session || !range || range.high == null) {
-          if (container) container.style.display = 'none';
-          return;
-        }
-        if (!container) {
-          // Inject after the existing quintile bar — find the Range Briefing card
-          const rangeCard = document.querySelector('.range-card');
-          if (!rangeCard) return;
-          container = document.createElement('div');
-          container.id = 'or-live-section';
-          // Insert after the quintile bar / labels — before TODAY'S ACTION block.
-          const actionBlock = rangeCard.querySelector('.range-action');
-          if (actionBlock) {
-            rangeCard.insertBefore(container, actionBlock);
-          } else {
-            rangeCard.appendChild(container);
-          }
-        }
-        container.style.display = '';
-
-        // Classify live OR width into a quintile using approximate boundaries
-        // (matches the validated insight's reference: Q1-Q2 = <125, Q3-Q4
-        // = 125-205, Q5 = ≥205 pts).
-        const w = range.width || 0;
-        let qLive, qClass, qVerdict, qLabel;
-        if (w >= 225) { qLive = 'Q5'; qClass = 'good'; qLabel = 'WIDE / UPSIZE'; }
-        else if (w >= 180) { qLive = 'Q4'; qClass = 'good'; qLabel = 'WIDE'; }
-        else if (w >= 125) { qLive = 'Q3'; qClass = 'cool'; qLabel = 'STANDARD'; }
-        else if (w >= 65)  { qLive = 'Q2'; qClass = 'warn'; qLabel = 'BELOW / TIGHTEN'; }
-        else               { qLive = 'Q1'; qClass = 'bad';  qLabel = 'TIGHT / SKIP'; }
-
-        const minsElapsed = range.minutes_elapsed || 0;
-        const timePct = Math.min(100, (minsElapsed / 45) * 100);
-        const complete = !!range.complete;
-
-        // Build card. Single-render then update text on subsequent polls.
-        container.innerHTML = `
-          <div class="or-live-card ${complete ? 'locked' : ''}">
-            <div class="r-label">
-              LIVE OPENING RANGE
-              <span class="r-tag">${complete ? 'LOCKED' : 'BUILDING'}</span>
-            </div>
-            <div class="or-live-stats">
-              <div class="or-live-stat width">
-                <div class="lbl">WIDTH</div>
-                <div class="val">${Math.round(w)} pts</div>
-              </div>
-              <div class="or-live-stat">
-                <div class="lbl">H / L</div>
-                <div class="val" style="font-size:12px;line-height:1.2;">
-                  ${range.high?.toFixed(2)}<br>${range.low?.toFixed(2)}
-                </div>
-              </div>
-              <div class="or-live-stat">
-                <div class="lbl">QUINTILE</div>
-                <div class="val">${qLive}</div>
-              </div>
-            </div>
-            <div class="or-time-bar"><i style="width:${timePct}%"></i></div>
-            <div class="or-time-label">
-              ${minsElapsed}/45 min ${complete ? '· complete' : 'elapsed'}
-            </div>
-            <div class="or-live-verdict ${qClass}">
-              Currently <b>${qLive} (${qLabel})</b> ·
-              ${qLive === 'Q1' || qLive === 'Q2'
-                ? 'Negative-EV territory at every target. <b>Stand down</b> if OR locks here.'
-                : qLive === 'Q5'
-                ? 'Premium <b>upsize</b> tier per validated insight. PF 2.02 at 4R target.'
-                : 'Default size, target 3-4R.'}
-            </div>
-          </div>
-        `;
-
-        // Also light up the matching live quintile segment in the static
-        // forecast bar so the user sees actual vs forecast at a glance.
-        if (complete) {
-          document.querySelectorAll('.q-seg').forEach(seg => seg.classList.remove('live-locked'));
-          const seg = document.querySelector(`.q-seg.${qLive.toLowerCase()}`);
-          if (seg) seg.classList.add('live-locked');
-        }
+      // DEPRECATED — kept as a no-op for backward compatibility. The
+      // live OR width and quintile are now surfaced as the hero of the
+      // Range Briefing card (see updateRangeHero), and the build
+      // trajectory lives in the EVOLVING FORECAST block. Anything that
+      // calls this just hides the legacy container if it exists.
+      // DEPRECATED — the live OR width and quintile are now the hero of
+      // the Range Briefing card (see updateRangeHero), and the build
+      // trajectory lives in the EVOLVING FORECAST block. Kept as a
+      // hide-only stub in case anything (a cached page, a future caller)
+      // still references it.
+      function renderLiveORSection(_snap) {
+        const container = document.getElementById('or-live-section');
+        if (container) container.style.display = 'none';
       }
 
       async function pollOnce() {
@@ -4049,10 +4102,13 @@
     function renderRangeBriefing(fc, intel) {
       const card = h('div', {class:'card range-card'});
 
-      // Header
+      // Header — tag with data-hero-header so updateRangeHero() can flip
+      // it from "45-MIN OR FORECAST" to "LIVE · BUILDING" / "LIVE · LOCKED"
+      // once the session is underway.
       card.appendChild(h('div', {class:'card-h'},
         h('span', {class:'card-t'}, 'Range Briefing'),
-        h('span', {class:'mono', style:'color:var(--cyan);font-size:10px;letter-spacing:1.5px;'},
+        h('span', {class:'mono hero-header', 'data-hero-header': '',
+                   style:'color:var(--cyan);font-size:10px;letter-spacing:1.5px;'},
           '45-MIN OR FORECAST')));
 
       if (!fc || !fc.available) {
@@ -4069,14 +4125,20 @@
                     : tier === 'stand_down' ? 'bad'
                     : '';
 
-      // Headline forecast row
-      card.appendChild(h('div', {class:'range-head'},
-        h('div', {class:'range-quintile ' + tierCls}, qLetter || '—'),
+      // Headline hero row. Renders FORECAST mode by default; once the
+      // session starts and Fly.io serves a non-empty opening_range,
+      // updateRangeHero() flips this in place to ACTUAL mode (real width
+      // as the big number, cold-start gets demoted to a subtitle).
+      // data-hero-* hooks let the live updater swap text/classes without
+      // re-rendering the card.
+      card.appendChild(h('div', {class:'range-head', 'data-hero-mode':'forecast'},
+        h('div', {class:'range-quintile ' + tierCls, 'data-hero-q':''}, qLetter || '—'),
         h('div', {class:'range-main'},
-          h('div', {class:'range-pts mono'},
-            Math.round(fc.point_pts), h('span', {class:'unit'}, 'pts')),
-          h('div', {class:'range-ci mono'},
-            `${fc.lo80_pts}–${fc.hi80_pts} · ${fc.quintile || ''}`)),
+          h('div', {class:'range-pts mono', 'data-hero-pts':''},
+            Math.round(fc.point_pts), h('span', {class:'unit'}, 'pts'),
+            h('span', {class:'hero-badge forecast'}, 'FORECAST')),
+          h('div', {class:'range-ci mono', 'data-hero-ci':''},
+            `${fc.lo80_pts}–${fc.hi80_pts} · ${fc.quintile || ''} · cold-start`)),
       ));
 
       // Quintile bar (Q1-Q5)
