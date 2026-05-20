@@ -72,8 +72,11 @@ export default {
     }
 
     // GET /api/refresh — manual trigger for debugging. Polls Databento now.
+    // Append ?debug=1 to include the raw first bar in the response, useful
+    // when the JSON shape is unexpected (e.g. nested headers).
     if (url.pathname === '/api/refresh' && request.method === 'GET') {
-      const result = await pollAndStore(env, 'manual');
+      const debug = url.searchParams.get('debug') === '1';
+      const result = await pollAndStore(env, 'manual', { debug });
       return json(result, { status: result.error ? 500 : 200, cors });
     }
 
@@ -99,7 +102,7 @@ export default {
 // Poll + store
 // ---------------------------------------------------------------------------
 
-async function pollAndStore(env, cronOrTrigger) {
+async function pollAndStore(env, cronOrTrigger, opts = {}) {
   if (!env.DATABENTO_API_KEY) {
     const err = { error: 'DATABENTO_API_KEY secret not set', source: cronOrTrigger };
     console.error(err.error);
@@ -108,9 +111,13 @@ async function pollAndStore(env, cronOrTrigger) {
 
   const start = Date.now();
   try {
-    const snapshot = await fetchSnapshot(env.DATABENTO_API_KEY);
+    const result = await fetchSnapshot(env.DATABENTO_API_KEY, opts);
+    const snapshot = result.snapshot;
     snapshot.trigger = cronOrTrigger;
     snapshot.poll_duration_ms = Date.now() - start;
+    if (opts.debug) {
+      snapshot._debug_sample_bar = result.sampleBar;
+    }
 
     await env.SNAPSHOT_KV.put(SNAPSHOT_KEY, JSON.stringify(snapshot), {
       expirationTtl: KV_TTL_SECONDS,
@@ -124,7 +131,9 @@ async function pollAndStore(env, cronOrTrigger) {
   } catch (e) {
     // Don't overwrite KV on failure — last good snapshot stays.
     console.error('pollAndStore error:', e.message);
-    return { error: e.message, trigger: cronOrTrigger, failed_at_utc: new Date().toISOString() };
+    const errOut = { error: e.message, trigger: cronOrTrigger, failed_at_utc: new Date().toISOString() };
+    if (opts.debug && e.sampleBar) errOut._debug_sample_bar = e.sampleBar;
+    return errOut;
   }
 }
 
@@ -132,7 +141,17 @@ async function pollAndStore(env, cronOrTrigger) {
 // Databento client
 // ---------------------------------------------------------------------------
 
-async function fetchSnapshot(apiKey) {
+// Defensive field extractors — Databento's JSON encoding nests some fields
+// under `hd` (record header). Schema details: https://databento.com/docs/
+function getTs(bar) {
+  return bar?.hd?.ts_event ?? bar?.ts_event;
+}
+function getField(bar, name) {
+  // Price + volume fields are typically flat on OHLCV records but be safe.
+  return bar?.[name] ?? bar?.hd?.[name];
+}
+
+async function fetchSnapshot(apiKey, opts = {}) {
   // Fetch last ~6 hours of 1-min bars, ending at `now - availability_lag`.
   // The lag avoids 422 errors when querying ahead of the feed's published edge.
   // Covers overnight + opening-range with margin. Trimmed by Databento if
@@ -173,26 +192,41 @@ async function fetchSnapshot(apiKey) {
 
   if (bars.length === 0) {
     return {
-      error: 'no bars in window',
-      fetched_at_utc: now.toISOString(),
-      bar_count: 0,
+      snapshot: {
+        error: 'no bars in window',
+        fetched_at_utc: now.toISOString(),
+        bar_count: 0,
+      },
+      sampleBar: null,
     };
+  }
+
+  // Fail fast with the raw shape attached so we can adapt if Databento's
+  // JSON encoding differs from what we expect.
+  if (getTs(bars[0]) == null) {
+    const err = new Error(
+      `bar shape unexpected — no ts_event at top or hd.ts_event. ` +
+      `Top-level keys: ${Object.keys(bars[0]).join(',')}`
+    );
+    err.sampleBar = bars[0];
+    throw err;
   }
 
   // Sort ascending by ts_event (string -> BigInt for accurate compare).
   bars.sort((a, b) => {
-    const ta = BigInt(a.ts_event);
-    const tb = BigInt(b.ts_event);
+    const ta = BigInt(getTs(a));
+    const tb = BigInt(getTs(b));
     return ta < tb ? -1 : ta > tb ? 1 : 0;
   });
 
-  return computeSnapshot(bars, now);
+  return { snapshot: computeSnapshot(bars, now), sampleBar: bars[0] };
 }
 
 function computeSnapshot(bars, nowUTC) {
-  const px = (b, field) => Number(b[field]) / PRICE_SCALE;
+  const px = (b, field) => Number(getField(b, field)) / PRICE_SCALE;
 
   const last = bars[bars.length - 1];
+  const lastTsNanos = BigInt(getTs(last));
   const currentPrice = px(last, 'close');
 
   // Determine today's session windows in ET.
@@ -208,7 +242,8 @@ function computeSnapshot(bars, nowUTC) {
   const sessionBars = [];
 
   for (const b of bars) {
-    const et = barET(b);
+    const tsNanos = BigInt(getTs(b));
+    const et = toET(new Date(Number(tsNanos / 1_000_000n)));
     if (et.dateStr === todayET) {
       const m = et.h * 60 + et.m;
       if (m < minOpen) {
@@ -223,12 +258,12 @@ function computeSnapshot(bars, nowUTC) {
     }
   }
 
-  const lastBarMs = Number(BigInt(last.ts_event) / 1_000_000n);
+  const lastBarMs = Number(lastTsNanos / 1_000_000n);
   const lagSeconds = Math.max(0, Math.round((nowUTC.getTime() - lastBarMs) / 1000));
 
   const snap = {
     current_price: currentPrice,
-    current_ts_utc: nanosToIso(BigInt(last.ts_event)),
+    current_ts_utc: nanosToIso(lastTsNanos),
     fetched_at_utc: nowUTC.toISOString(),
     fetched_at_et: toET(nowUTC).iso,
     // How far behind real-time the latest bar is. Reflects Databento's
@@ -290,11 +325,6 @@ function toET(d) {
     s: parseInt(p.second, 10),
     iso: `${p.year}-${p.month}-${p.day}T${String(hour).padStart(2,'0')}:${p.minute}:${p.second} ET`,
   };
-}
-
-function barET(b) {
-  const ms = Number(BigInt(b.ts_event) / 1_000_000n);
-  return toET(new Date(ms));
 }
 
 function nanosToIso(nanos) {
