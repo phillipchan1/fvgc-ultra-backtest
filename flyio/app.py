@@ -785,17 +785,16 @@ def _bulk_ingest(new_bars: list[dict[str, Any]]) -> int:
         return len(bars)
 
 
-# How far back to backfill on startup. 18h covers today's full 9:30 open
-# even from a worst-case late-night restart at ~11 PM ET (reaches back
-# to 5 AM ET). The FVGC engine only fires inside 9:30-10:15 ET, so this
-# window is critical for the play-history retrospective — if we backfill
-# less, signals fired before the backfill cutoff are silently missing.
-# 18h × 3600 = 65k 1s bars ≈ 6.5MB — well inside memory budget. The
-# overnight session (16:00 prior → 9:30 today) is intentionally NOT
-# covered — that's what the morning briefing's prior_rth in briefing.json
-# is for, and the VP-grid computation does its own targeted Historical
-# fetch (see _refresh_vp_grid).
-BACKFILL_HOURS = 18
+# How far back to backfill on startup. 12h is the sweet spot for the
+# shared-cpu-1x VM: enough to cover today's 9:30 open from any restart
+# up to ~9:30 PM ET, but small enough that the snapshot-recompute pass
+# (which iterates every bar in the buffer on each 1s bar ingestion)
+# stays under the 1Hz tick budget on a single shared CPU. 12h × 3600 =
+# 43k 1s bars ≈ 4MB. Going higher (e.g. 18h) doubles the per-tick scan
+# cost and starves the FastAPI event loop, failing Fly's health check.
+# Late-day restart edge case: Fly running through the morning is the
+# normal operating mode — live stream accumulates 9:30 onward naturally.
+BACKFILL_HOURS = 12
 
 
 def historical_backfill() -> None:
