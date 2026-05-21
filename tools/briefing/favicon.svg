@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!--
+    NQ Briefing favicon — matches the ◤ + NQ brand mark in the topbar.
+    Dark navy background, cyan corner triangle (the brand glyph), with
+    a soft glow to hint at the dashboard's tactical-HUD aesthetic.
+    Pure SVG so it stays crisp at any DPR and supports prefers-color-
+    scheme without a separate dark/light file.
+  -->
+  <defs>
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="65%">
+      <stop offset="0%"   stop-color="#0d1424"/>
+      <stop offset="100%" stop-color="#06090f"/>
+    </radialGradient>
+    <linearGradient id="tri" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#0891b2"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect x="0" y="0" width="32" height="32" rx="5" fill="url(#bgGlow)"/>
+
+  <!-- The ◤ corner triangle, the brand mark -->
+  <path d="M 5 5 L 22 5 L 5 22 Z"
+        fill="url(#tri)"
+        filter="url(#glow)"/>
+
+  <!-- Tiny "NQ" tag in the bottom-right corner so it reads as
+       NQ Briefing, not just an abstract triangle -->
+  <text x="27" y="28" text-anchor="end"
+        font-family="ui-monospace, Menlo, Consolas, monospace"
+        font-size="9" font-weight="700"
+        fill="#22d3ee" opacity="0.85"
+        letter-spacing="0.5">NQ</text>
+</svg>
