@@ -784,15 +784,17 @@ def _bulk_ingest(new_bars: list[dict[str, Any]]) -> int:
         return len(bars)
 
 
-# How far back to backfill on startup. 8h covers most of overnight session
-# from a morning start (e.g. 9 AM ET → fetches back to 1 AM ET). The full
-# overnight (16:00 prior day → 9:30 today) requires 17h+; we skip the
-# earlier half to keep startup fast. The morning briefing's prior_rth in
-# briefing.json is the canonical source the dashboard falls back to.
-# (VP-grid computation does its own targeted Historical fetch — see
-# _refresh_vp_grid() — so the live buffer doesn't need to cover the
-# prior RTH session.)
-BACKFILL_HOURS = 8
+# How far back to backfill on startup. 12h covers the full RTH session
+# even if Fly restarts mid-afternoon (e.g. 4 PM ET → reaches back to
+# 4 AM ET, covering today's 9:30 open). Critical for the play-history
+# retrospective — if we backfill less than the session length, signals
+# fired before the backfill cutoff are silently missing from the replay.
+# 12h × 3600 = 43k 1s bars ≈ 4MB — well inside memory budget. The full
+# overnight session (16:00 prior → 9:30 today) is intentionally NOT
+# covered — that's what the morning briefing's prior_rth in briefing.json
+# is for, and the VP-grid computation does its own targeted Historical
+# fetch (see _refresh_vp_grid).
+BACKFILL_HOURS = 12
 
 
 def historical_backfill() -> None:
@@ -953,11 +955,14 @@ def _refresh_vp_grid() -> dict | None:
 
     try:
         client = db.Historical(key=API_KEY)
+        # Databento schemas are ohlcv-1s/1m/1h/1d; no native 30s. 1m is
+        # plenty for VP — the 1.0pt price-bucket math doesn't get sharper
+        # with 30s data, and 1m is 60× lighter on the wire (~390 bars
+        # for a full RTH session vs ~780).
         df = client.timeseries.get_range(
             dataset=DATASET,
             symbols=SYMBOL,
-            schema="ohlcv-30s",   # 30s matches the build_volume_profile.py
-                                  # reference; bucket_size=1.0 pt + 70% VA.
+            schema="ohlcv-1m",
             stype_in=STYPE_IN,
             start=open_dt_et.astimezone(timezone.utc),
             end=close_dt_et.astimezone(timezone.utc),
