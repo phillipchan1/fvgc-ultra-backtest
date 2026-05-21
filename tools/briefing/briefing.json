@@ -3,8 +3,8 @@
   "meta": {
     "date": "2026-05-21",
     "day_of_week": "Thursday",
-    "generated_at_et": "2026-05-21T09:59:33.320229-04:00",
-    "generated_at_pt": "2026-05-21T06:59:33.320229-07:00",
+    "generated_at_et": "2026-05-21T10:23:21.796504-04:00",
+    "generated_at_pt": "2026-05-21T07:23:21.796504-07:00",
     "mode": "live"
   },
   "freshness": [],
@@ -12,7 +12,7 @@
     "available": true,
     "point_pts": 189.6,
     "lo80_pts": 123.4,
-    "hi80_pts": 288.0,
+    "hi80_pts": 287.9,
     "baseline_pts": 117.6,
     "quintile": "Q3 typical (57th pct)",
     "tier_label": "Normal day \u2014 trade per playbook",
@@ -82,7 +82,7 @@
       "model": "cold_start",
       "n_features": "17"
     },
-    "narrative": "Today\u2019s OR-width forecast and sizing tier data aren\u2019t available yet. With <b>no forecast points</b> and <b>no sizing tier</b> defined, expect execution to rely on standard pre-market levels and your existing risk settings until new inputs load. Monitor for updates this morning to adjust order sizing and potential stop placement once the OR-width forecast and tier are provided.",
+    "narrative": "Today\u2019s OR-width forecast points to an expected range of about <b>123.4</b> to <b>287.9</b> points with a central forecast of <b>189.6</b> pts, placing the day in the <b>Q3 typical (57th percentile)</b> and a <b>Normal day \u2014 trade per playbook</b> sizing tier. The model suggests a ~<b>189.6</b> point move as the most likely outcome, with the initial 45-minute OR thresholds around <b>78.5</b> to <b>171.5</b> in the stepwise view, guiding early entry/exit sizing and risk. Since the data is labeled stale and overrides are active, rely on live overnight and intraday updates for final execution, but current framing implies a cautious, normal-day approach with defined OR targets and tiered sizing.",
     "stepwise": {
       "available": true,
       "sample_size": 1393,
@@ -232,7 +232,7 @@
         "currency": ""
       }
     ],
-    "narrative": "Today is a Thursday with historically strong intraday activity, so expect amplified moves if price interacts with yesterday\u2019s value area; prioritize trades that trigger inside prior day\u2019s VAL-VAH to leverage the <b>73.7% WR</b> and ~<b>2.89 PF</b> potential, while keeping an eye on the prior day VP levels. The economic calendar features <b>Philly Fed Manufacturing Index</b> and <b>Unemployment Claims</b> at 12:30 ET, with <b>Flash Manufacturing PMI</b> and <b>Flash Services PMI</b> at 13:45 ET, each with <b>Medium</b> impact\u2014expect tighter price action around these releases and use smaller sizing if volatility spikes. This is not FOMC week, so no specific FOMC-driven risk drift is expected, but be prepared for standard Thursday-volume amplification around data prints."
+    "narrative": "Today is a Thursday, the strongest trading day in our sample, with the expected intraday performance skewed toward volume and volatility around the prior day\u2019s value area. Expect medium-impact data at 12:30 ET (Philly Fed Manufacturing Index and Unemployment Claims) and 13:45 ET (Flash Manufacturing PMI and Flash Services PMI) to cue moves; if price trades inside yesterday\u2019s Value Area, anticipate a higher win rate around <b>73.7%</b> with a <b>2.89</b> pullback filter, so predefine intraday VAH/VAL levels from yesterday to guide entries and exits. This is not FOMC week, so adjust risk modestly while remaining agile for the data cadence today."
   },
   "pre_open": {
     "current_price": 29216.0,
@@ -267,36 +267,11 @@
       "direction": "gap_down"
     },
     "data_notes": [],
-    "narrative": "This morning the market is trading below yesterday\u2019s RTH close, with a <b>gap down</b> of <b>-201.75 pts</b> or about <b>-0.69%</b> open, signaling selling pressure into the pre-market. The <b>overnight range</b> spanned <b>29113.0\u201329464.5</b>, placing current price at <b>29194.25</b> and just inside the lower half of that range, suggesting the opening could lean toward a firmer bid if early support holds; otherwise expect continued volatility as the day session attempts to rediscover value near yesterday\u2019s <b>open</b> around <b>29073.75</b> and <b>high</b> near <b>29396.75</b>. Consider tighter risk controls and be prepared for quick re-entries as price tests key levels near yesterday\u2019s <b>low</b> 29008.5 and <b>high</b> 29396.75."
+    "narrative": "Tonight's action shows a <b>gap down of -180.0 points</b> from yesterday's close, with the <b>overnight range</b> spanning <b>29113.0 to 29464.5</b> and the <b>overnight direction</b> being <b>down</b>. At the open, expect potential test of the <b>prior RTH low</b> near <b>29073.75</b> or a move back toward the <b>prior day close</b> around <b>29396.0</b>, with volatility implied by the wide overnight range. If price approaches the <b>gap level</b> around <b>29134</b> (roughly gap-closure) monitor for early liquidity and possible mini-ranges as traders define value for today."
   },
   "levels": {
     "scope_pts": 100,
-    "above": [
-      {
-        "group": "htf_fvg_1H",
-        "label": "1H FVG (bearish)",
-        "price": 29293.75,
-        "distance_pts": 77.75,
-        "direction": "above",
-        "tier": "A",
-        "hit_rate_45m_pct": 22.5,
-        "wr_as_magnet_pct": 64.2,
-        "pf_as_magnet": 2.16,
-        "below_baseline": false
-      },
-      {
-        "group": "htf_fvg_15m",
-        "label": "15m FVG (bearish)",
-        "price": 29296.75,
-        "distance_pts": 80.75,
-        "direction": "above",
-        "tier": "A",
-        "hit_rate_45m_pct": 26.2,
-        "wr_as_magnet_pct": 58.4,
-        "pf_as_magnet": 1.51,
-        "below_baseline": false
-      }
-    ],
+    "above": [],
     "below": [
       {
         "group": "london",
@@ -323,7 +298,7 @@
         "below_baseline": false
       }
     ],
-    "narrative": "Today's near-term liquidity sits with <b>London low</b> at <b>29192.25</b> (about <b>2.0 points below</b> the current price) and <b>Overnight low</b> at <b>29113.0</b> (about <b>81.25 points below</b>). A notable resistance above is the <b>1H FVG (bearish)</b> at <b>29293.75</b>, roughly <b>99.5 points above</b> current, suggesting potential selling pressure if price moves up to that level. Overall, expect liquidity clustering below current price with risk of continued downside bias toward the <b>Asia low</b> at <b>29164.0</b>, about <b>30.25 points</b> away, unless price quickly reverses."
+    "narrative": "Today, expect nearby liquidity to sit just below current price with two key anchors: <b>London low at 29192.25</b> (about <b>-23.75 pts</b>) and <b>Asia low at 29164.00</b> (about <b>-52.00 pts</b>). The deeper below-baseline node is <b>London low</b> with a 54.3% hit rate over 45 minutes and a magnet strength near <b>0.95</b>, while the Asia low shows a higher 59.2% hit rate and a magnet strength of <b>1.22</b> but is <b>false</b> on baseline. Consider targeting fills near these levels if price drifts lower, recognizing Asia\u2019s level may offer more persistent pull but London\u2019s level aligns closer to recent structure for potential quick taps."
   },
   "factors": {
     "active": [
@@ -354,7 +329,7 @@
       "wednesday"
     ],
     "unknown": [],
-    "narrative": "Today is a <b>gap-down</b> morning with <b>overnight_down</b> pressure already in the books and <b>no_pre_rth_news</b> driving returns. With <b>prior_day_up</b> and <b>thursday</b> as active factors, expect continued cautious pre-market action into regular session, as the market may test yesterday\u2019s lower levels. Since we\u2019re not in <b>fomc_week</b> and there\u2019s <b>no_red_folder</b>, risk is more aligned to price structure than surprise catalysts, so honor tighter risk checks and look for clean, low-variance entries if you see a defined early reversion or continuation setup."
+    "narrative": "Today\u2019s pre-market backdrop shows <b>elevated VIX-y</b> and <b>overnight down</b> momentum with a <b>gap down</b>, plus a <b>wide overnight</b> price range. With <b>no pre-RTH news</b> and <b>not FOMC week</b>, expect tighter guidance than usual once regular hours open, but maintain cautious sizing given the elevated risk signal from the VIXy and the prior day\u2019s <b>up move</b> into Thursday. Position management should prioritize quick stops and limited exposure until price action confirms intraday direction, as today sits in a <b>Normal day</b> sizing tier and a <b>Q3 typical</b> context."
   },
   "armed_edges": [],
   "watch_list": [
@@ -589,7 +564,7 @@
       },
       "extra_note": "RUNNER EXIT DOCTRINE: TP@5R no-BE is the optimal exit (PF 3+). BE management caps the edge. Do not apply M2/M3 long-style BE@1R here.",
       "notion_url": "https://www.notion.so/33de2f0e776081889879c4dcbd495996",
-      "narrative": "For today\u2019s pre-market M1 Short window (9:30\u20139:45, 30s cadence), the setup is active with a <b>gap_large_down</b> preopen flag and a projected edge to take on a full-size, runner-mode exit near <b>73% WR</b> with a <b>PF 2.71</b> expectation, provided you ride the bear signal through the open. Anticipate immediate post-open moves: a <b>bear_930</b> cue at 9:31 with ~<b>21.3 pts</b> lift potential, and a secondary cue if the 9:30 candle sits in the top quartile (\u2248<b>23 pts</b> body) at 9:31, offering about <b>15.6 pts</b> of edge. Given the <b>RUNNER EXIT DOCTRINE</b>, target a take-profit at 5R with strict BE-free management, and avoid M2/M3 BE angles for this session."
+      "narrative": "Today, M1 Short targets a quick pre-market setup in the 9:30\u20139:45 window with a <b>bearish bias</b> if the 9:30 candle prints in the <b>top quartile</b> of its range or a <b>bearish 1-minute candle</b> appears at 9:31, offering a potential <b>full-size, runner-mode</b> entry with an expected win rate around <b>73% WR</b> and a profitable target around <b>PF 2.71</b>, capped by BE management. A large preopen gap (<b>gap < -100 pts</b>) increases the edge, but note that the optimal exit follows the <b>TP@5R no-BE</b> rule, while BE use is limited. Overall, run with a <b>fire rate ~21%</b> today and be prepared to skip if the edge fails to materialize."
     },
     {
       "name": "M1 Long",
@@ -636,7 +611,7 @@
       "expectancy": null,
       "extra_note": "8yr-validated (n=117): IS 59.8% / OOS 55.0% @ 3+, regime spread 9.4pp, year-floor 50%. Gap-down quiet bounce: when sellers gap it large-down without fresh catalyst, vol normal, prior close non-committal \u2014 fade the gap-down via no_fvg long in M1.",
       "notion_url": "https://www.notion.so/365e2f0e77608154b4caca8dcc0a7c70",
-      "narrative": "Today\u2019s M1 Long setup targets the 9:30\u20139:45 window with a focus on a clean signal and limited preopen noise. With <b>preopen</b> signals counting up to <b>2</b> (out of a possible <b>6</b>) and the strongest factor being \u201cNo pre-RTH news\u201d (lift_pp <b>21.1</b>), the plan leans toward taking <b>full size</b> if the signal confirms, aiming for <b>BE@1R \u2192 3R</b> trades when the max tier conditions are met (roughly a <b>59%</b> WR and <b>EV +0.54R</b>). If the variant is no_fvg at signal, anticipate a favorable lift of <b>8.0</b> in post-pending timing, but otherwise manage risk with the current <b>9:30\u20139:45</b> cadence and a skip if no setup is present."
+      "narrative": "Today\u2019s M1 Long setup trades the 9:30\u20139:45 window on a clean, no-preopen-news backdrop. With no pre-RTH catalysts and a potential large-down gap read, the favorable lift from a clean FVGC signal (FVGC variant is no_fvg) supports taking full size on a BE@1R to 3R target, aiming for a roughly <b>59%</b> win-rate context and an expected EV uplift of <b>+0.54R</b> if the 2\u20133 bar projection lands. Execute only if you see the no_fvg long signal materialize within the 30s frame, otherwise skip."
     },
     {
       "name": "M2 Long",
@@ -702,7 +677,7 @@
       },
       "extra_note": "TIER B / CONFIDENCE LOW. 8yr re-val: year-floor 26.7% (2021), 16.7% (2023). Trade 4+ tier ONLY, capped size. Stand aside in melt-up (NQ >+15% 60d AND VIX<15) or chop years. No robust replacement stack found in re-mining.",
       "notion_url": "https://www.notion.so/361e2f0e776081e69d5dfc696dbd5726",
-      "narrative": "Today, the M2 Long window from <b>9:45\u201310:00</b> is active with a <b>long</b> orientation and a limited <b>30s</b> cadence, but the setup is considered <b>TIER B / CONFIDENCE LOW</b> and should only trade with <b>4+ tier</b> size cap and <b>capped</b> risk. The post-event signals favoring execution are Fed by a <b>bullish 9:30 1-min candle</b> (lift <b>+20.6</b>), plus potential <b>>=2 FVGs</b> printed in 9:30\u20139:45 (lift <b>+9.4</b>) and a counter-intuitive <b>bearish 5m FVG</b> signal (lift <b>+7.6</b>), but with regime fragility\u2014consider standing aside if melt-up conditions occur (NQ >+15% 60d and VIX <15). Execute only if you accept the <b>min 1 / max 4</b> count constraint, and favor taking the <b>Tier B fixed</b> size target around the 1R\u20133R level if the setup fires."
+      "narrative": "Today\u2019s M2 Long setup targets a 9:45\u201310:00 window with a 30-second cadence. Execution is cautious: <b>Tier B</b> size only, and avoid trades if NQ is ripping into a melt-up (NQ up >5% over 60 days with VIX below 15), as the narrative notes a <b>low confidence</b> and \u201cstand aside\u201d stance in strong upswings; otherwise, expect to take 4+ tier opportunities with capped risk, aiming for modest payoff given the current regime. The premarket read shows a bullish tilt with a favorable post at 9:30\u20139:45 macro signals (\u22652 FVGs) and a recent bullish 9:30 candle, but be mindful the implied expectancy is tempered by regime fragility."
     },
     {
       "name": "M3 Long",
@@ -763,7 +738,7 @@
       },
       "extra_note": "8yr-validated Tier A (n=264, 5/5 gates): IS 65.4% / OOS 61.6% @ 3+, year-floor 47.8%, regime spread 1.8pp \u2014 most regime-robust cell in the matrix. Thesis: Mon/Fri prior-weak no-bull-FVG mean-reversion. Magnet gate no longer required (8yr re-mine confirmed edge holds without it).",
       "notion_url": "https://www.notion.so/361e2f0e7760819bbbc7ca78b9faa8f9",
-      "narrative": "Today\u2019s M3 Long setup for 10:00\u201310:15 on a 30-second window signals a favorable long edge with <b>1\u20134</b> projected entries and a cap to <b>4+/5+</b> OOS activity\u2014the system remains <b>not vetoed</b> and currently <b>preopen_active</b> with a lift to <b>7.4</b>. Expect a clean signal when the post-open context aligns with the <b>FVGC variant no_fvg</b> or the first-5-minute FVG print, where the two post-pending signals carry lifts of <b>8.1</b> and <b>6.8</b> respectively; if a bullish FVG fails to appear in the first 5 minutes, the <b>no_5m_bull_fvg</b> path is favored. Trade entries, if triggered, should be taken at the same size with no scaling beyond the current size, as the projection notes caution against escalations beyond 4\u20135+ OOS."
+      "narrative": "For today, the <b>M3 Long</b> setup in the 10:00\u201310:15 window remains your long, 30s timeframe entry with <b>no vetoes</b> and a single preopen tick so far, with the preopen lift potential from NOT FOMC WEEK at <b>7.4</b>. Expectation suggests you can take <b>1\u20134 tick counts</b> max per the projection, and if you see a clean signal with the FVGC variant or a first-5min bullish FVG absent, consider a full <b>same-size</b> entry rather than scaling up, since 4+/5+ OOS scenarios tend to weaken by <b>-17pp</b> and <b>-23pp</b> respectively. Overall, the system indicates a current <b>fire rate ~30%</b> with a robust 8-year validation underpinning the edge, so execute only on confirming intra-10:00\u201310:15 signal and avoid over-sizing on marginal setups."
     }
   ],
   "avoid": {
@@ -884,7 +859,7 @@
         ]
       }
     ],
-    "narrative": "Today\u2019s signals show a cautious posture: overall factor signals are mixed with <b>prior_day_up</b> near-neutral odds (<b>pf 0.99</b>, <b>wr_pct 48.8</b> but <b>lift_pp -2.9</b>), and multiple combo signals are in <b>watch</b> with a shared HARD stand-down threshold on the <b>45-min OR</b> signal, specifically in the <b>bottom 20%</b>. Expect potential soft topside participation and ready to stand down if the <b>tight_45min_or</b> condition triggers; avoid aggressive longs unless we see a bullish 9:30 close or a clear reversion above the <b>45-min OR bottom-20%</b> zone. In practice, favor tight stops and readiness to reduce risk on any break below the <b>tight_45min_or</b> line."
+    "narrative": "Today\u2019s signals show no active kill-switch, but several \u201cwatch\u201d combos keep risk in mind: the strongest soft constraint is a HARD stand-down when the 45-minute opening range is in the bottom 20%, flagged across multiple combos (e.g., <b>n=47</b> with <b>pf=0.33</b> and <b>post_needed</b> for <b>tight_45min_or</b>). With the prior-day up showing a narrow edge in likelihood but modest uplift (<b>wr_pct 48.8</b>, <b>lift_pp -2.9</b>), remain cautious near the <b>45-min OR</b> window and avoid aggressive entries if the 45-min OR remains weak. Overall, expect a cautious open with elevated readiness to pause on any bottom-20% OR signal."
   },
   "active_plays": [
     {
@@ -1226,21 +1201,9 @@
         "price": 29164.0,
         "distance_pts": -52.0,
         "direction": "below"
-      },
-      {
-        "label": "1H FVG (bearish)",
-        "price": 29293.75,
-        "distance_pts": 77.75,
-        "direction": "above"
-      },
-      {
-        "label": "15m FVG (bearish)",
-        "price": 29296.75,
-        "distance_pts": 80.75,
-        "direction": "above"
       }
     ],
-    "narrative": "Today hinges on the <b>Thursday VP play</b> signals: pull up last session\u2019s volume profile to read <b>VAH</b> and <b>VAL</b> and consider entries between them if <b>FVGC</b> entries form, with  <b>73.7% WR</b> and <b>2.89 PF</b> across <b>76 trades</b>; the strongest window is <b>MW2 9:45\u201310:00</b>, with a potential trailing to <b>2R</b> if the <b>bearish 9:30 candle</b> triggers. Verify the <b>9:30 candle direction</b> and watch the <b>45-min OR width</b> by <b>10:15</b>\u2014<b>WIDE</b> means go, <b>TIGHT</b> means stand down. Potential targets in play are near the <b>London low</b> at <b>29192.25</b> (below), the <b>Asia low</b> at <b>29164.0</b> (below), and a bearish <b>1H FVG</b> at <b>29293.75</b> (above) for a defined risk-reward setup today."
+    "narrative": "Today\u2019s plan anchors on the <b>Thursday VP play</b> using yesterday\u2019s volume profile; if <b>FVGC entries</b> appear between <b>VAL</b> and <b>VAH</b>, strike in with a long or short as indicated. Expect strength from <b>MW2 (9:45\u201310:00)</b> and watch for a bearish <b>930 candle</b> to potentially trail to <b>2R</b>; the current edge is supported by a <b>73.7% WR</b> on <b>76 trades</b> (p=0.0002). Monitor the <b>9:30 candle direction</b> for high-edge confirmations and use <b>45-min OR width</b> by <b>10:15</b> to gauge risk: a <b>WIDE</b> width means green light, a <b>TIGHT</b> width means stand down. Target the near-term anchors: <b>London low</b> at <b>29192.25</b> (<b>\u221223.75</b> pts) and <b>Asia low</b> at <b>29164.0</b> (<b>\u221252.0</b> pts)."
   },
   "unknown_factors": [
     {
