@@ -1622,6 +1622,33 @@
     padding-top: 8px;
     border-top: 1px dashed var(--line);
   }
+  /* VP overlay grade badge — A+, A, B, SKIP. A+ is the only tradeable
+     grade for VP Magnet; others are diagnostic. */
+  .sr-grade {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
+    padding: 0 5px; margin-left: 4px;
+    border: 1px solid currentColor; border-radius: 2px;
+  }
+  .sr-grade.good { color: var(--green); background: var(--green-dim); }
+  .sr-grade.cool { color: var(--cyan);  background: var(--cyan-dim); }
+  .sr-grade.warn { color: var(--amber); background: var(--amber-dim); }
+  .sr-grade.bad  { color: var(--red);   background: var(--red-dim); }
+  .sr-grade.mute { color: var(--text-mute); }
+  .sr-vp {
+    font-size: 9px; letter-spacing: 0.5px; margin-left: 6px;
+  }
+  /* Source tag — backtesting plays are flagged as "monitor" so the user
+     knows they're under live observation, not promoted to tradeable. */
+  .sr-source-tag {
+    font-size: 8px; letter-spacing: 1px; font-weight: 700;
+    color: var(--amber); background: var(--amber-dim);
+    padding: 0 4px; margin-left: 4px; border-radius: 2px;
+    border: 1px solid var(--amber);
+  }
+  .sr-grade-req {
+    font-size: 8px; letter-spacing: 0.5px; color: var(--text-mute);
+    margin-left: 4px;
+  }
 
   /* ===== Chips ===== */
   .chip {
@@ -4186,13 +4213,26 @@
       const sld = s.sl_dist != null ? `${s.sl_dist.toFixed(1)}pt` : '';
       const tf = s.timeframe || '';
       const playNames = (s.play_names || []).join(' · ');
+      // VP overlay badge (when VP grid available).
+      const grade = s.vp_grade;
+      const gradeCls = grade === 'A+' ? 'good' :
+                       grade === 'A'  ? 'cool' :
+                       grade === 'B'  ? 'warn' :
+                       grade === 'SKIP' ? 'bad' : 'mute';
+      const gradeBadge = grade
+        ? `<span class="sr-grade ${gradeCls} mono">${grade}</span>`
+        : '';
+      const vpDetail = (s.n_vp_targets != null && s.n_vp_targets > 0)
+        ? `<span class="sr-vp mute mono">VP×${s.n_vp_targets}${s.va_edge_ahead ? ' + VA-edge' : ''}</span>`
+        : '';
       return `
         <div class="sr-signal ${dirCls}">
           <span class="sr-time mono">${time}</span>
           <span class="sr-dir mono">${dirArrow} ${(s.direction || '?').toUpperCase()}</span>
-          <span class="sr-variant mono">${variant} <span class="sr-tf">${tf}</span></span>
+          <span class="sr-variant mono">${variant} <span class="sr-tf">${tf}</span> ${gradeBadge}</span>
           <span class="sr-prices mono">
             entry <b>${entry}</b> · SL <b>${sl}</b> ${sld ? `(${sld})` : ''} · TP <b>${tp}</b>
+            ${vpDetail}
             ${playNames ? `<span class="sr-plays-tag mute">→ ${playNames}</span>` : ''}
           </span>
         </div>`;
@@ -4206,11 +4246,21 @@
         vetoed:    {cls:'bad',  label:'VETOED',    icon:'⊘'},
       })[p.status] || {cls:'mute', label:p.status || '?', icon:'·'};
       const matched = p.matched_signal;
-      const tf = p.timeframe || '';
+      // Multi-TF plays show all TFs they scan (e.g. "30s · 1m · 2m · 3m").
+      const tfs = (p.timeframes && p.timeframes.length)
+        ? p.timeframes.join('·') : '';
+      // Status source: backtesting plays are marked so the user knows
+      // they're in live-monitoring mode, not promoted to tradeable yet.
+      const sourceTag = (p.status_source || '').toLowerCase() === 'backtesting'
+        ? `<span class="sr-source-tag mono">monitor</span>` : '';
+      const gradeReq = p.required_vp_grade
+        ? `<span class="sr-grade-req mono">requires ${p.required_vp_grade}</span>` : '';
       const detail = matched
         ? `<span class="sr-pdetail mono">
              ${matched.time_et_human || ''} ·
              ${matched.variant || ''} ·
+             ${matched.timeframe ? `<span class="sr-tf">${matched.timeframe}</span> · ` : ''}
+             ${matched.vp_grade ? `<b class="${matched.vp_grade==='A+'?'good':matched.vp_grade==='A'?'cool':'mute'}">${matched.vp_grade}</b> · ` : ''}
              entry <b>${matched.entry_price != null ? matched.entry_price.toFixed(2) : '—'}</b>
              ${matched.sl != null ? ` · SL ${matched.sl.toFixed(2)}` : ''}
              ${matched.tp != null ? ` · TP ${matched.tp.toFixed(2)}` : ''}
@@ -4218,14 +4268,14 @@
         : p.status === 'pending'
           ? `<span class="sr-pdetail mute mono">window still open</span>`
           : p.status === 'no_signal'
-            ? `<span class="sr-pdetail mute mono">no ${tf} FVGC signal in ${p.window || 'window'}</span>`
+            ? `<span class="sr-pdetail mute mono">no qualifying FVGC signal</span>`
             : p.status === 'vetoed'
               ? `<span class="sr-pdetail mute mono">kill switch active</span>`
               : '';
       return `
         <div class="sr-play ${statusInfo.cls}">
           <span class="sr-picon mono">${statusInfo.icon}</span>
-          <span class="sr-pname mono">${p.name || '?'} <span class="sr-tf">${tf}</span></span>
+          <span class="sr-pname mono">${p.name || '?'} <span class="sr-tf">${tfs}</span> ${sourceTag} ${gradeReq}</span>
           <span class="sr-pstatus mono ${statusInfo.cls}">${statusInfo.label}</span>
           ${detail}
         </div>`;

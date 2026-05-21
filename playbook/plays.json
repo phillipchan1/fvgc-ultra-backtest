@@ -1,5 +1,28 @@
 [
   {
+    "name": "VP Magnet Play (A+) — n_vp≥2 + VA-Edge",
+    "direction": "both",
+    "status": "backtesting",
+    "wr_base": "83% at +3R (81% OOS); 9/9 yrs positive; multi-TF (30s+1m+2m+3m)",
+    "sample_size": 208,
+    "description": null,
+    "pre_market_conditions": "Compute prior-RTH (9:30-16:00 ET previous session) POC, VAH, VAL from 30s NQ candles (1.0 pt buckets, 70% value area). Levels are KNOWN by 4:00pm ET the prior day. By 9:30 you should have a printout: POC=, VAH=, VAL=__, and where current price sits relative to them.",
+    "action_plan": "Watch 30s + 1m + 2m + 3m simultaneously 9:30-10:15 ET. On EVERY FVGC fire from ANY TF: 1) variant must be bos, ifvg, or no_fvg (NOT PS); 2) n_vp_targets >= 2 (POC/VAH/VAL in trade direction within 0.5R-3R); 3) direction-matched VA-edge ahead (VAL for long, VAH for short within 0.5-3R); 4) within 9:30-10:15 window. All YES from ANY TF -> take at 1.5x size, stop -1R, fixed TP +3R, no BE. SUBSEQUENT same-day same-direction fires on slower TFs are re-confirmations only -- already in trade, no action. Median gap between first and second fire when multi-TF triggers same direction: 2.5 min, 65% within 5 min.\n\nExit Strategy: Stop −1R (FVG geometry). Fixed TP +3R. NO BE move (BE clips runners — see RM section). Max consecutive losers in 9yr sample: 2. Max yearly DD: −2R.",
+    "tier": "A",
+    "confidence": "high",
+    "frequency": "~23/year (~2/month) under multi-TF rule. Median gap between setups: 9 trading days. p95 gap: 49 days. Max gap (9yr sample): 95 days (~4.5 months).",
+    "pf_base": 13.41,
+    "avg_mfe_r": 4.63,
+    "window": [
+      "9:30-9:45",
+      "9:45-10:00",
+      "10:00-10:15"
+    ],
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/VP-Magnet-Play-A-n_vp-2-VA-Edge-367e2f0e7760811aa7b0efd3aff8024e",
+    "pre_market_factors": []
+  },
+  {
     "name": "M1 Long — Confluence Model",
     "direction": "long",
     "status": "verified",
@@ -16,7 +39,8 @@
     "window": [
       "9:30-9:45"
     ],
-    "notion_url": "https://www.notion.so/365e2f0e77608154b4caca8dcc0a7c70",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/M1-Long-Confluence-Model-365e2f0e77608154b4caca8dcc0a7c70",
     "pre_market_factors": []
   },
   {
@@ -36,7 +60,8 @@
     "window": [
       "10:00-10:15"
     ],
-    "notion_url": "https://www.notion.so/361e2f0e7760819bbbc7ca78b9faa8f9",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/M3-Long-Confluence-Model-361e2f0e7760819bbbc7ca78b9faa8f9",
     "pre_market_factors": []
   },
   {
@@ -56,7 +81,8 @@
     "window": [
       "9:45-10:00"
     ],
-    "notion_url": "https://www.notion.so/361e2f0e776081e69d5dfc696dbd5726",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/M2-Long-Confluence-Model-361e2f0e776081e69d5dfc696dbd5726",
     "pre_market_factors": []
   },
   {
@@ -76,7 +102,8 @@
     "window": [
       "10:00-10:15"
     ],
-    "notion_url": "https://www.notion.so/35ce2f0e776081f1be39d7ff086ec51e",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/M3-Short-Both-Swept-Carve-Out-Idea-35ce2f0e776081f1be39d7ff086ec51e",
     "pre_market_factors": []
   },
   {
@@ -96,7 +123,8 @@
     "window": [
       "9:30-9:45"
     ],
-    "notion_url": "https://www.notion.so/351e2f0e77608114b4fef8eb95750312",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/W1-Short-Post-Sweep-Continuation-351e2f0e77608114b4fef8eb95750312",
     "pre_market_factors": []
   },
   {
@@ -116,7 +144,8 @@
     "window": [
       "9:30-9:45"
     ],
-    "notion_url": "https://www.notion.so/34be2f0e7760819d9113f55043e98157",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/Small-Gap-Fade-Long-9-31-Entry-Gap-25pts-34be2f0e7760819d9113f55043e98157",
     "pre_market_factors": [
       "gap_down_ge_25pts",
       "gap_atr_ratio_lt_0.6",
@@ -140,7 +169,8 @@
     "window": [
       "10:00-10:15"
     ],
-    "notion_url": "https://www.notion.so/34be2f0e77608138992df2f78bc84477",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/Turtle-Soup-Short-Confluence-Model-34be2f0e77608138992df2f78bc84477",
     "pre_market_factors": []
   },
   {
@@ -160,7 +190,8 @@
     "window": [
       "Any"
     ],
-    "notion_url": "https://www.notion.so/344e2f0e77608185b832c8c131a35bce",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/IFVG-Reversal-v3-anchor-to-sweep-close-entry-344e2f0e77608185b832c8c131a35bce",
     "pre_market_factors": []
   },
   {
@@ -180,7 +211,8 @@
     "window": [
       "Any"
     ],
-    "notion_url": "https://www.notion.so/344e2f0e776081878722e91f87533e3d",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/15m-FVG-Tap-Delivery-Reversal-344e2f0e776081878722e91f87533e3d",
     "pre_market_factors": []
   },
   {
@@ -200,7 +232,8 @@
     "window": [
       "Any"
     ],
-    "notion_url": "https://www.notion.so/343e2f0e776081f4880bff1c5bd10c76",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/15m-FVG-Reversal-Sweep-Inversion-343e2f0e776081f4880bff1c5bd10c76",
     "pre_market_factors": []
   },
   {
@@ -221,7 +254,8 @@
       "9:30-9:45",
       "9:45-10:00"
     ],
-    "notion_url": "https://www.notion.so/343e2f0e776081679327e2ce38aa621b",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/ON-Range-Bias-343e2f0e776081679327e2ce38aa621b",
     "pre_market_factors": []
   },
   {
@@ -242,7 +276,8 @@
       "9:30-9:45",
       "9:45-10:00"
     ],
-    "notion_url": "https://www.notion.so/342e2f0e77608199821ecfbf57a1c591",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/VWAP-Continuation-342e2f0e77608199821ecfbf57a1c591",
     "pre_market_factors": []
   },
   {
@@ -262,7 +297,8 @@
     "window": [
       "9:30-9:45"
     ],
-    "notion_url": "https://www.notion.so/342e2f0e7760816abc98f5a9af374523",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/ATR-Range-Exhaustion-Filter-High-VIXY-342e2f0e7760816abc98f5a9af374523",
     "pre_market_factors": []
   },
   {
@@ -282,7 +318,8 @@
     "window": [
       "Any"
     ],
-    "notion_url": "https://www.notion.so/342e2f0e776081968dc8f38d9990703f",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/MACD-342e2f0e776081968dc8f38d9990703f",
     "pre_market_factors": []
   },
   {
@@ -302,7 +339,8 @@
     "window": [
       "Any"
     ],
-    "notion_url": "https://www.notion.so/342e2f0e77608166bc8ed85bf46b2dca",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/Thursday-Inside-Value-Area-342e2f0e77608166bc8ed85bf46b2dca",
     "pre_market_factors": [
       "thursday",
       "entry_inside_prior_day_value_area"
@@ -325,7 +363,8 @@
     "window": [
       "Any"
     ],
-    "notion_url": "https://www.notion.so/340e2f0e776081cd922adc681ab3fdb1",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/15m-FVG-Breakout-Continuation-340e2f0e776081cd922adc681ab3fdb1",
     "pre_market_factors": []
   },
   {
@@ -345,7 +384,8 @@
     "window": [
       "Any"
     ],
-    "notion_url": "https://www.notion.so/340e2f0e7760813c8df9c4a25d4eb677",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/HTF-Delivery-Draw-Reversal-340e2f0e7760813c8df9c4a25d4eb677",
     "pre_market_factors": []
   },
   {
@@ -365,7 +405,8 @@
     "window": [
       "9:30-9:45"
     ],
-    "notion_url": "https://www.notion.so/33de2f0e776081889879c4dcbd495996",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/M1-Short-Confluence-Model-33de2f0e776081889879c4dcbd495996",
     "pre_market_factors": []
   },
   {
@@ -383,7 +424,8 @@
     "pf_base": 4.09,
     "avg_mfe_r": 6.99,
     "window": [],
-    "notion_url": "https://www.notion.so/33de2f0e776081aa9c6bdc297e5fb68b",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/FVGC-Off-of-930-Candle-33de2f0e776081aa9c6bdc297e5fb68b",
     "pre_market_factors": []
   },
   {
@@ -403,7 +445,8 @@
     "window": [
       "9:45-10:00"
     ],
-    "notion_url": "https://www.notion.so/33de2f0e776080409d14f582b1868b64",
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/FVGC-To-Opening-Range-H-L-33de2f0e776080409d14f582b1868b64",
     "pre_market_factors": []
   }
 ]

@@ -32,7 +32,7 @@ import urllib.error
 import urllib.request
 from collections import deque
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, time as dtime, timedelta, timezone
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -46,11 +46,13 @@ from fastapi.middleware.cors import CORSMiddleware
 try:
     import pandas as _pd
     from fvgc.model import generate_signals as _fvgc_generate_signals
+    from fvgc.volume_profile import compute_volume_profile as _fvgc_volume_profile
     _FVGC_AVAILABLE = True
     _FVGC_IMPORT_ERROR: str | None = None
 except Exception as _fvgc_err:  # pragma: no cover — diagnostic path only
     _pd = None
     _fvgc_generate_signals = None
+    _fvgc_volume_profile = None
     _FVGC_AVAILABLE = False
     _FVGC_IMPORT_ERROR = repr(_fvgc_err)
 
@@ -787,6 +789,9 @@ def _bulk_ingest(new_bars: list[dict[str, Any]]) -> int:
 # overnight (16:00 prior day → 9:30 today) requires 17h+; we skip the
 # earlier half to keep startup fast. The morning briefing's prior_rth in
 # briefing.json is the canonical source the dashboard falls back to.
+# (VP-grid computation does its own targeted Historical fetch — see
+# _refresh_vp_grid() — so the live buffer doesn't need to cover the
+# prior RTH session.)
 BACKFILL_HOURS = 8
 
 
@@ -888,6 +893,150 @@ def live_thread() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Daily Volume Profile (POC / VAH / VAL) — for VP Magnet A+ filter
+# ---------------------------------------------------------------------------
+# The VP Magnet play needs prior-RTH POC/VAH/VAL to evaluate two factors per
+# FVGC signal: `n_vp_targets` (count of {POC, VAH, VAL} ahead within 0.5R-3R)
+# and `va_edge_ahead` (VAL-for-long or VAH-for-short ahead).
+#
+# Compute strategy: dedicated Historical fetch of yesterday's 9:30-16:00 ET
+# bars on startup + once per ET calendar day. We don't reuse the live bar
+# buffer because keeping ~70h of 1s bars in memory (worst case: Friday
+# session needed on Monday morning) would balloon the snapshot recompute
+# loop. A targeted fetch + small cached dict is far cheaper.
+#
+# Falls back to the static `data/levels/daily_volume_profile.csv` if the
+# Historical fetch fails — that CSV is rebuilt nightly by the backtest
+# tooling and committed to the repo.
+
+_vp_grid_cache: dict | None = None
+_vp_grid_cache_date_et: str | None = None  # YYYY-MM-DD of the SESSION the
+                                             # VP describes (i.e. yesterday's
+                                             # RTH date in ET)
+
+
+def _prior_rth_date_et(now_et: datetime) -> datetime:
+    """Return the ET datetime of yesterday's RTH OPEN — handles weekends so
+    Monday morning correctly looks back to Friday's session, not Saturday."""
+    d = now_et.date()
+    # Step back 1 day; on Mon (weekday 0) step back to Fri (weekday 4).
+    delta = 1
+    candidate = d - timedelta(days=delta)
+    while candidate.weekday() >= 5:  # 5=Sat, 6=Sun
+        delta += 1
+        candidate = d - timedelta(days=delta)
+    return datetime.combine(candidate, dtime(9, 30), tzinfo=NY_TZ)
+
+
+def _refresh_vp_grid() -> dict | None:
+    """Compute yesterday's POC/VAH/VAL via dedicated Databento Historical
+    fetch + fvgc.volume_profile.compute_volume_profile.
+
+    Returns a dict {poc, vah, val, va_width, total_volume, session_date_et}
+    or None on failure. Cached in _vp_grid_cache; refreshed on day rollover
+    or when the cache is empty."""
+    global _vp_grid_cache, _vp_grid_cache_date_et
+    if _pd is None or _fvgc_volume_profile is None:
+        log.info("VP grid: fvgc package not available — skipping")
+        return None
+    if not API_KEY:
+        log.warning("VP grid: DATABENTO_API_KEY not set")
+        return None
+
+    now_et = datetime.now(NY_TZ)
+    open_dt_et = _prior_rth_date_et(now_et)
+    close_dt_et = open_dt_et.replace(hour=16, minute=0)
+    session_key = open_dt_et.strftime("%Y-%m-%d")
+
+    if _vp_grid_cache is not None and _vp_grid_cache_date_et == session_key:
+        return _vp_grid_cache  # still fresh
+
+    try:
+        client = db.Historical(key=API_KEY)
+        df = client.timeseries.get_range(
+            dataset=DATASET,
+            symbols=SYMBOL,
+            schema="ohlcv-30s",   # 30s matches the build_volume_profile.py
+                                  # reference; bucket_size=1.0 pt + 70% VA.
+            stype_in=STYPE_IN,
+            start=open_dt_et.astimezone(timezone.utc),
+            end=close_dt_et.astimezone(timezone.utc),
+        ).to_df()
+    except Exception as e:
+        log.exception("VP grid: Historical fetch failed for %s", session_key)
+        return None
+
+    if df.empty:
+        log.warning("VP grid: empty Historical response for %s", session_key)
+        return None
+
+    # Databento OHLCV columns: ts_event index, open/high/low/close/volume.
+    # compute_volume_profile() wants columns high, low, volume.
+    candles = df.reset_index().rename(columns={"ts_event": "timestamp_utc"})
+    if "high" not in candles.columns:
+        log.warning("VP grid: response missing high column")
+        return None
+
+    vp = _fvgc_volume_profile(candles, bucket_size=1.0, value_area_pct=0.70)
+    if not vp:
+        log.warning("VP grid: compute_volume_profile returned None")
+        return None
+
+    result = {
+        "session_date_et": session_key,
+        "poc": float(vp["poc"]),
+        "vah": float(vp["vah"]),
+        "val": float(vp["val"]),
+        "va_width": float(vp["va_width"]),
+        "total_volume": float(vp["total_volume"]),
+        "computed_at_utc": datetime.now(timezone.utc).isoformat(),
+    }
+    _vp_grid_cache = result
+    _vp_grid_cache_date_et = session_key
+    log.info("VP grid for %s: POC=%.2f VAH=%.2f VAL=%.2f width=%.1f",
+             session_key, result["poc"], result["vah"], result["val"],
+             result["va_width"])
+    return result
+
+
+def _compute_n_vp_targets(entry_price: float, sl_dist: float,
+                          direction: str, vp_grid: dict | None,
+                          r_low: float = 0.5, r_high: float = 3.0) -> dict:
+    """For a signal at `entry_price` with stop-distance `sl_dist`, count how
+    many of {POC, VAH, VAL} sit AHEAD in the trade direction within
+    [r_low*R, r_high*R] (R = sl_dist). Returns:
+      {
+        'n_vp_targets': int,
+        'va_edge_ahead': bool,  # VAL ahead for long, VAH ahead for short
+        'targets_ahead': [{'level_name', 'price', 'r_distance'}, ...],
+      }
+    """
+    out = {"n_vp_targets": 0, "va_edge_ahead": False, "targets_ahead": []}
+    if not vp_grid or sl_dist is None or sl_dist <= 0:
+        return out
+    sign = 1 if direction == "long" else -1
+    lo_r = r_low * sl_dist * sign
+    hi_r = r_high * sl_dist * sign
+    band = (entry_price + min(lo_r, hi_r), entry_price + max(lo_r, hi_r))
+    for level_name in ("poc", "vah", "val"):
+        price = vp_grid.get(level_name)
+        if price is None:
+            continue
+        if band[0] <= price <= band[1]:
+            r_dist = (price - entry_price) / sl_dist * sign
+            out["n_vp_targets"] += 1
+            out["targets_ahead"].append({
+                "level_name": level_name.upper(),
+                "price": price,
+                "r_distance": round(r_dist, 2),
+            })
+            if (direction == "long"  and level_name == "val") or \
+               (direction == "short" and level_name == "vah"):
+                out["va_edge_ahead"] = True
+    return out
+
+
+# ---------------------------------------------------------------------------
 # Play history — retrospective view ("did the FVGC engine emit a signal?")
 # ---------------------------------------------------------------------------
 # Pattern: aggregate today's session bars (1s) into 30s candles → feed to
@@ -945,6 +1094,56 @@ def _normalize_tf(tf_value: Any) -> str:
     return _TF_FLOOR_MAP[DEFAULT_PLAY_TF]
 
 
+def _resolve_play_tfs(play: dict) -> list[str]:
+    """Per-play TF resolver. Reads the play's `timeframe` field first; if
+    absent, applies known-play fallbacks (VP Magnet → multi-TF per spec).
+    Always returns a non-empty list."""
+    tf = play.get("timeframe")
+    if not tf:
+        name_lc = (play.get("name") or "").lower()
+        if "vp magnet" in name_lc:
+            # VP Magnet spec — watch 30s + 1m + 2m + 3m simultaneously,
+            # first-fire wins. Hardcoded fallback until the Notion DB
+            # gains an explicit Timeframe property.
+            tf = "multi"
+    return _normalize_tfs(tf)
+
+
+def _normalize_tfs(tf_value: Any) -> list[str]:
+    """Same as _normalize_tf but returns a LIST. Accepts:
+      - None              → [DEFAULT_PLAY_TF]
+      - "30s"             → ["30s"]
+      - "30s,1m,2m,3m"    → ["30s","1min","2min","3min"]
+      - "multi"           → ["30s","1min","2min","3min"]   (VP Magnet shorthand)
+      - ["30s","1m"]      → ["30s","1min"]
+    Deduped, ordered by ascending bucket size (shortest TF first)."""
+    if tf_value is None or tf_value == "":
+        return [_TF_FLOOR_MAP[DEFAULT_PLAY_TF]]
+    items: list[str] = []
+    if isinstance(tf_value, str):
+        s = tf_value.strip().lower()
+        if s == "multi":
+            items = ["30s", "1min", "2min", "3min"]
+        else:
+            items = [p.strip() for p in s.split(",") if p.strip()]
+    elif isinstance(tf_value, (list, tuple)):
+        items = [str(p).strip().lower() for p in tf_value if str(p).strip()]
+    else:
+        return [_TF_FLOOR_MAP[DEFAULT_PLAY_TF]]
+    out: list[str] = []
+    seen = set()
+    # Order: 30s < 1m < 2m < 3m < 5m < 15m < 30m
+    order_rank = {"30s":0,"1min":1,"2min":2,"3min":3,"5min":4,"15min":5,"30min":6}
+    resolved = []
+    for raw in items:
+        canonical = _TF_FLOOR_MAP.get(raw)
+        if canonical and canonical not in seen:
+            seen.add(canonical)
+            resolved.append(canonical)
+    resolved.sort(key=lambda x: order_rank.get(x, 99))
+    return resolved or [_TF_FLOOR_MAP[DEFAULT_PLAY_TF]]
+
+
 def _aggregate_session_to_tf(session_bars: list[dict], freq: str) -> "Any":
     """Bucket 1s OHLCV dicts into `freq` candles in the shape fvgc expects:
     columns timestamp_utc (tz-aware UTC), timestamp_ny (tz-aware NY),
@@ -976,10 +1175,15 @@ def _aggregate_session_to_tf(session_bars: list[dict], freq: str) -> "Any":
     return agg
 
 
-def _signal_to_json(s: dict, timeframe: str = "30s") -> dict:
+def _signal_to_json(s: dict, timeframe: str = "30s",
+                    vp_grid: dict | None = None) -> dict:
     """Convert a raw FVGC signal dict into a JSON-friendly + display-ready
     structure. Tagged with `timeframe` so the dashboard can disambiguate
-    when multiple TFs are scanned in the same session."""
+    when multiple TFs are scanned in the same session.
+
+    If `vp_grid` is provided, also enriches the signal with VP-Magnet
+    factors: n_vp_targets, va_edge_ahead, targets_ahead (which of the
+    POC/VAH/VAL are ahead-in-trade-direction within 0.5R-3R)."""
     ts = s.get("timestamp")
     ts_iso = ts.isoformat() if ts is not None else None
     ts_human = ts.strftime("%-I:%M:%S %p") if ts is not None else None
@@ -987,40 +1191,109 @@ def _signal_to_json(s: dict, timeframe: str = "30s") -> dict:
         if x in ("", None): return None
         try: return float(x)
         except (TypeError, ValueError): return None
-    return {
+    entry_price = _num(s.get("entry_price"))
+    sl_dist     = _num(s.get("sl_dist"))
+    direction   = s.get("direction")
+    out = {
         "timestamp_et": ts_iso,
         "time_et_human": ts_human,
         "timeframe": timeframe,
-        "direction": s.get("direction"),
+        "direction": direction,
         "variant": s.get("variant"),
-        "entry_price": _num(s.get("entry_price")),
+        "entry_price": entry_price,
         "sl": _num(s.get("sl")),
         "tp": _num(s.get("tp")),
-        "sl_dist": _num(s.get("sl_dist")),
+        "sl_dist": sl_dist,
         "fvg_top": _num(s.get("fvg_top")),
         "fvg_bottom": _num(s.get("fvg_bottom")),
         "fvg_mid": _num(s.get("fvg_mid")),
         "fvg_direction": s.get("fvg_direction"),
         "fvg_id": s.get("fvg_id"),
     }
+    if vp_grid and entry_price and sl_dist and direction in ("long", "short"):
+        vp_eval = _compute_n_vp_targets(entry_price, sl_dist, direction, vp_grid)
+        out["n_vp_targets"] = vp_eval["n_vp_targets"]
+        out["va_edge_ahead"] = vp_eval["va_edge_ahead"]
+        out["vp_targets_ahead"] = vp_eval["targets_ahead"]
+        # A+ grade per the VP Magnet spec: variant!=PS + n_vp>=2 + VA-edge.
+        variant_ok = s.get("variant") in ("bos", "ifvg", "no_fvg")
+        if variant_ok and vp_eval["n_vp_targets"] >= 2 and vp_eval["va_edge_ahead"]:
+            out["vp_grade"] = "A+"
+        elif variant_ok and vp_eval["n_vp_targets"] >= 2:
+            out["vp_grade"] = "A"
+        elif variant_ok and vp_eval["n_vp_targets"] == 1:
+            out["vp_grade"] = "B"
+        elif variant_ok:
+            out["vp_grade"] = "SKIP"
+        else:
+            out["vp_grade"] = "n/a"  # protected_swing — overlay doesn't apply
+    return out
+
+
+def _normalize_play_windows(p: dict) -> list[dict]:
+    """Plays.json `window` may be a single string ("9:30-9:45") or a list
+    (["9:30-9:45","9:45-10:00"]). Return a list of parsed dicts; empty when
+    none parseable. Multi-window plays match if ANY window contains the
+    signal."""
+    raw = p.get("window")
+    items: list[str] = []
+    if isinstance(raw, str):
+        items = [raw]
+    elif isinstance(raw, (list, tuple)):
+        items = [str(x) for x in raw if x]
+    parsed = []
+    for s in items:
+        win = _parse_play_window(s)
+        if win:
+            parsed.append(win)
+    return parsed
+
+
+def _play_requires_vp_grade(play_name: str) -> str | None:
+    """Returns the required vp_grade for plays that have an explicit VP
+    overlay (currently just VP Magnet — its name varies slightly so we
+    match by case-insensitive substring). Returns None for plays that
+    don't have a VP grade requirement."""
+    if not play_name:
+        return None
+    lower = play_name.lower()
+    if "vp magnet" in lower and "a+" in lower:
+        return "A+"
+    return None
 
 
 def _match_signal_for_play(p: dict, signals_by_tf: dict, now_min: int) -> tuple:
-    """Find the first matching signal for play `p`. Returns
-    (matched_signal_dict_or_None, status_str, play_tf, play_variants)."""
-    win = _parse_play_window(p.get("window", ""))
+    """Find the first matching signal for play `p` across all its
+    timeframes. "First-fire wins" per the VP Magnet multi-TF spec:
+    subsequent same-day same-direction fires from slower TFs are
+    re-confirmations, not new entries.
+
+    Returns (matched_signal_dict_or_None, status_str, play_tfs_list,
+    play_variants_list)."""
+    play_tfs = _resolve_play_tfs(p)
+    wins = _normalize_play_windows(p)
     direction = p.get("direction")
-    play_tf = _normalize_tf(p.get("timeframe"))
     # Required variants from post_pending IDs (e.g. variant_no_fvg).
     play_variants = [
         f.get("id", "").replace("variant_", "")
         for f in (p.get("post_pending") or [])
         if isinstance(f.get("id"), str) and f["id"].startswith("variant_")
     ]
-    candidate_signals = signals_by_tf.get(play_tf, [])
+    # VP-grade requirement (VP Magnet A+).
+    required_vp_grade = _play_requires_vp_grade(p.get("name", ""))
+
+    # Pool ALL signals from the play's TFs, sort by time, scan for the
+    # first match.
+    pooled: list[dict] = []
+    for tf in play_tfs:
+        pooled.extend(signals_by_tf.get(tf, []))
+    pooled.sort(key=lambda s: s.get("timestamp_et") or "")
+
     matched = None
-    for s in candidate_signals:
-        if direction and s["direction"] != direction:
+    for s in pooled:
+        # Direction filter — "both" matches any direction; otherwise must
+        # match exactly. (Playbook plays often declare direction="both".)
+        if direction and direction != "both" and s["direction"] != direction:
             continue
         sig_iso = s.get("timestamp_et")
         if not sig_iso:
@@ -1030,45 +1303,61 @@ def _match_signal_for_play(p: dict, signals_by_tf: dict, now_min: int) -> tuple:
         except ValueError:
             continue
         sig_min = sig_dt.hour * 60 + sig_dt.minute
-        if win and (sig_min < win["start_min"] or sig_min > win["end_min"]):
-            continue
+        # Window match — any of the play's windows is fine.
+        if wins:
+            if not any(w["start_min"] <= sig_min <= w["end_min"] for w in wins):
+                continue
+        # Variant filter — only enforced when play declares variant_* in
+        # its post_pending. For playbook plays without that, any variant
+        # is OK (the VP grade filter below catches the protected_swing
+        # exclusion when applicable).
         if play_variants and s.get("variant") not in play_variants:
+            continue
+        # VP-grade gate — only enforced when play requires it.
+        if required_vp_grade and s.get("vp_grade") != required_vp_grade:
             continue
         matched = s
         break
-    # Status — window-aware. "pending" while window is still open; once it
-    # closes without a matching signal, it's a definitive "no_signal".
+
+    # Status — window-aware. "pending" while at least one window is still
+    # open; once all close without a matching signal, "no_signal".
     if p.get("veto_active"):
         status = "vetoed"
     elif matched is not None:
         status = "fired"
-    elif win and now_min < win["end_min"]:
+    elif wins and any(now_min < w["end_min"] for w in wins):
+        status = "pending"
+    elif not wins:
+        # Play with no window constraint — still "pending" if no signal yet.
         status = "pending"
     else:
         status = "no_signal"
-    return matched, status, play_tf, play_variants
+    return matched, status, play_tfs, play_variants
 
 
-def _match_signals_to_plays(signals_by_tf: dict, matrix_plays: list[dict],
+def _match_signals_to_plays(signals_by_tf: dict, plays: list[dict],
                             now_et: datetime) -> list[dict]:
-    """For each matrix play, find the best-matching signal in the play's
-    timeframe (direction + variant + window). signals_by_tf is keyed by
-    pandas freq string ('30s', '1min', etc.) — each play matches only
-    against signals from its own timeframe."""
+    """For each play, find the best-matching signal across all its
+    timeframes. signals_by_tf is keyed by pandas freq string ('30s',
+    '1min', etc.). Plays declare which TFs to scan via their `timeframe`
+    field (comma-separated or 'multi')."""
     now_min = now_et.hour * 60 + now_et.minute
     out = []
-    for p in matrix_plays:
-        matched, status, play_tf, play_variants = _match_signal_for_play(
+    for p in plays:
+        matched, status, play_tfs, play_variants = _match_signal_for_play(
             p, signals_by_tf, now_min)
         out.append({
             "name": p.get("name"),
             "window": p.get("window"),
             "direction": p.get("direction"),
-            "timeframe": play_tf,
+            "timeframes": play_tfs,
+            "status_source": p.get("status") or "verified",
+            "tier": p.get("tier"),
             "status": status,
             "veto_active": bool(p.get("veto_active")),
             "matched_signal": matched,
             "required_variants": play_variants,
+            "required_vp_grade": _play_requires_vp_grade(p.get("name", "")),
         })
     return out
 
@@ -1135,14 +1424,39 @@ def _compute_play_history() -> dict:
         out_base["note"] = "session hasn't started yet"
         return out_base
 
+    # Combined playbook = matrix scorecards + active_plays from Notion.
+    # active_plays at backtesting status are included so the user can
+    # live-monitor them before promoting to verified (per the VP Magnet
+    # spec's "Live monitoring required before promoting" gate).
     matrix_plays = (ctx or {}).get("matrix_plays") or []
-    if not matrix_plays:
-        out_base["error"] = "no matrix plays in briefing context"
+    active_plays = (ctx or {}).get("active_plays") or []
+    # Filter active_plays: include verified + backtesting (for monitoring).
+    # Exclude idea / rejected so the retrospective isn't noisy.
+    monitor_statuses = {"verified", "backtesting"}
+    playbook_extras = [
+        p for p in active_plays
+        if (p.get("status") or "").lower() in monitor_statuses
+        # Skip duplicates of matrix scorecards (matrix M1 Long != playbook M1 Long entry).
+        and not any((p.get("name") or "").startswith(mp.get("name", ""))
+                    for mp in matrix_plays)
+    ]
+    all_plays = matrix_plays + playbook_extras
+
+    if not all_plays:
+        out_base["error"] = "no plays in briefing context"
         return out_base
 
-    # Discover every TF that any play needs. Default fall-through is 30s.
-    play_tfs = {_normalize_tf(p.get("timeframe")) for p in matrix_plays}
+    # Discover every TF that any play needs. Multi-TF per play supported
+    # via comma-separated string or "multi" shorthand (see _resolve_play_tfs).
+    play_tfs: set[str] = set()
+    for p in all_plays:
+        play_tfs.update(_resolve_play_tfs(p))
     out_base["timeframes_run"] = sorted(play_tfs)
+
+    # Refresh VP grid (cached for the day). Required to enrich signals
+    # with n_vp_targets + va_edge_ahead — drives VP Magnet's A+ filter.
+    vp_grid = _refresh_vp_grid()
+    out_base["vp_grid"] = vp_grid
 
     # Run engine once per TF. Cache results by TF for play matching below.
     signals_by_tf: dict[str, list] = {}
@@ -1160,11 +1474,14 @@ def _compute_play_history() -> dict:
                 f"engine error tf={tf}: {e}")
             signals_by_tf[tf] = []
             continue
-        signals_by_tf[tf] = [_signal_to_json(s, timeframe=tf) for s in sigs_raw]
+        signals_by_tf[tf] = [
+            _signal_to_json(s, timeframe=tf, vp_grid=vp_grid)
+            for s in sigs_raw
+        ]
         candle_counts[tf] = int(len(df))
 
     raw_count = sum(len(v) for v in signals_by_tf.values())
-    plays_matched = _match_signals_to_plays(signals_by_tf, matrix_plays, now_et)
+    plays_matched = _match_signals_to_plays(signals_by_tf, all_plays, now_et)
 
     # Filtered signal list — only the ones that validated at least one
     # playbook play. Each signal gets a `play_names` array showing which
