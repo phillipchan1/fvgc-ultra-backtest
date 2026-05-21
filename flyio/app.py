@@ -172,18 +172,23 @@ def _record_to_bar(rec) -> dict[str, Any] | None:
 
 
 def _ingest_bar(bar: dict[str, Any]) -> None:
-    """Add a bar to the buffer (dedupe + trim) and recompute snapshot."""
+    """Append (or dedupe-update) a bar in the buffer. Does NOT recompute
+    snapshot — that runs on a separate 1Hz background thread to avoid
+    blocking ingestion on a slow O(n) re-scan of the entire buffer.
+
+    With 12h of 1s bars (~43k entries), inline recompute on every bar
+    overran the 1Hz live-tick budget on shared-cpu-1x, starving Fly's
+    HTTP event loop and failing health checks. Decoupling keeps the lock
+    short — append/dedupe only — and the snapshot loop sees the new bar
+    on its next tick (≤1s freshness, well under the 7s dashboard poll)."""
     with state_lock:
         # Dedupe by timestamp (Live + Historical can deliver the same minute)
         for existing in reversed(bars):
             if existing["ts"] == bar["ts"]:
-                # Update in place (the newer one is usually authoritative)
                 existing.update(bar)
-                state["snapshot"] = _compute_snapshot()
                 return
             if existing["ts"] < bar["ts"]:
                 break
-        # Append + sort if out of order (rare)
         bars.append(bar)
         if len(bars) >= 2 and bars[-1]["ts"] < bars[-2]["ts"]:
             sorted_bars = sorted(bars, key=lambda b: b["ts"])
@@ -195,8 +200,29 @@ def _ingest_bar(bar: dict[str, Any]) -> None:
             bars.popleft()
         state["last_record_at"] = datetime.now(timezone.utc)
         state["bar_count"] = len(bars)
-        state["snapshot"] = _compute_snapshot()
-        _check_narrative_events(state["snapshot"])
+
+
+def _snapshot_loop() -> None:
+    """Background thread — recompute snapshot once per second.
+    Decoupled from bar ingestion so the live stream can never starve.
+    Holds the lock only briefly to copy bar references; the actual
+    compute runs without the lock so ingestion stays unblocked."""
+    import time
+    while True:
+        try:
+            with state_lock:
+                bars_count = len(bars)
+            if bars_count > 0:
+                # _compute_snapshot iterates `bars` (the module global)
+                # without the lock — safe because deque is thread-safe
+                # for left/right ops and our compute is read-only.
+                snap = _compute_snapshot()
+                with state_lock:
+                    state["snapshot"] = snap
+                _check_narrative_events(snap or {})
+        except Exception as e:
+            log.exception("snapshot_loop error: %s", e)
+        time.sleep(1.0)
 
 
 def _compute_snapshot() -> dict[str, Any] | None:
@@ -772,17 +798,21 @@ def _bulk_ingest(new_bars: list[dict[str, Any]]) -> int:
             bars.popleft()
         state["last_record_at"] = datetime.now(timezone.utc)
         state["bar_count"] = len(bars)
-        # Single snapshot recompute at end.
-        state["snapshot"] = _compute_snapshot()
-        # Sync narrative-event cursors silently to current state so the
-        # backfill doesn't trigger a spurious regen storm for OR-lock events
-        # that already happened earlier today.
-        global _prev_or5_complete, _prev_or15_complete, _prev_or45_complete
-        snap = state["snapshot"] or {}
-        _prev_or5_complete  = bool((snap.get("or_5min") or {}).get("complete"))
-        _prev_or15_complete = bool((snap.get("or_15min") or {}).get("complete"))
-        _prev_or45_complete = bool((snap.get("opening_range") or {}).get("complete"))
-        return len(bars)
+    # Snapshot recompute is owned by the background _snapshot_loop;
+    # bulk_ingest just leaves the bars in place. The first loop tick
+    # after backfill picks them up.
+    # Sync narrative-event cursors NOW (outside the lock — safe because
+    # they're only mutated by _check_narrative_events on the same thread)
+    # so the snapshot loop's first tick doesn't fire stale OR-lock events
+    # for sessions that already happened earlier today.
+    global _prev_or5_complete, _prev_or15_complete, _prev_or45_complete
+    snap = _compute_snapshot() or {}
+    _prev_or5_complete  = bool((snap.get("or_5min") or {}).get("complete"))
+    _prev_or15_complete = bool((snap.get("or_15min") or {}).get("complete"))
+    _prev_or45_complete = bool((snap.get("opening_range") or {}).get("complete"))
+    with state_lock:
+        state["snapshot"] = snap
+    return len(bars)
 
 
 # How far back to backfill on startup. 12h is the sweet spot for the
@@ -1540,6 +1570,11 @@ async def lifespan(app: FastAPI):
         t = threading.Thread(target=live_thread, daemon=True, name="databento-live")
         t.start()
         log.info("Started Databento Live thread")
+        # Snapshot recompute thread — runs at 1Hz independent of bar
+        # ingest. Critical: without this nothing else updates state["snapshot"].
+        st = threading.Thread(target=_snapshot_loop, daemon=True, name="snapshot-loop")
+        st.start()
+        log.info("Started snapshot-loop thread (1Hz)")
 
     # Briefing context (matrix_plays definitions, morning narratives) —
     # always fetch, even without OPENAI_API_KEY. Used by:
