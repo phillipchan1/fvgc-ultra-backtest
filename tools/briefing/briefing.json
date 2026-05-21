@@ -3,15 +3,203 @@
   "meta": {
     "date": "2026-05-21",
     "day_of_week": "Thursday",
-    "generated_at_et": "2026-05-21T09:35:17.088499-04:00",
-    "generated_at_pt": "2026-05-21T06:35:17.088499-07:00",
+    "generated_at_et": "2026-05-21T09:59:33.320229-04:00",
+    "generated_at_pt": "2026-05-21T06:59:33.320229-07:00",
     "mode": "live"
   },
   "freshness": [],
   "or_forecast": {
-    "available": false,
+    "available": true,
+    "point_pts": 189.6,
+    "lo80_pts": 123.4,
+    "hi80_pts": 288.0,
+    "baseline_pts": 117.6,
+    "quintile": "Q3 typical (57th pct)",
+    "tier_label": "Normal day \u2014 trade per playbook",
+    "tier_level": "normal",
+    "feature_date": "2026-02-20",
+    "is_stale": true,
+    "overrides": [
+      "overnight_range",
+      "gap_abs",
+      "gap_atr_ratio",
+      "prior_day_range",
+      "prior_day_close_position",
+      "atr_5d",
+      "atr_20d",
+      "atr_ratio_5_20",
+      "pdr_pctile_20d",
+      "nr4_flag",
+      "nr7_flag",
+      "vixy_prior_close",
+      "vix_5d_chg"
+    ],
+    "drivers": [
+      {
+        "factor": "overnight_range",
+        "value": 351.5,
+        "z": 1.7,
+        "delta_pts": 44.1
+      },
+      {
+        "factor": "atr_20d",
+        "value": 368.988,
+        "z": 1.33,
+        "delta_pts": 31.4
+      },
+      {
+        "factor": "atr_5d",
+        "value": 422.75,
+        "z": 1.47,
+        "delta_pts": -9.7
+      },
+      {
+        "factor": "gap_abs",
+        "value": 180.0,
+        "z": 0.88,
+        "delta_pts": -7.6
+      },
+      {
+        "factor": "prior_day_close_position",
+        "value": 0.998,
+        "z": 1.4,
+        "delta_pts": -5.5
+      },
+      {
+        "factor": "atr_ratio_5_20",
+        "value": 1.146,
+        "z": 0.56,
+        "delta_pts": 5.4
+      }
+    ],
+    "perf": {
+      "n": "712",
+      "mae_pts": "43.77574530141055",
+      "mape_pct": "32.486884988393626",
+      "r2": "0.11249480347027607",
+      "spearman_rho": "0.5988155638556552",
+      "interval_coverage_80": "0.7415730337078652",
+      "model": "cold_start",
+      "n_features": "17"
+    },
     "narrative": "Today\u2019s OR-width forecast and sizing tier data aren\u2019t available yet. With <b>no forecast points</b> and <b>no sizing tier</b> defined, expect execution to rely on standard pre-market levels and your existing risk settings until new inputs load. Monitor for updates this morning to adjust order sizing and potential stop placement once the OR-width forecast and tier are provided.",
-    "stepwise": null
+    "stepwise": {
+      "available": true,
+      "sample_size": 1393,
+      "thresholds": {
+        "or_5min": [
+          35.5,
+          44.75,
+          55.75,
+          72.0
+        ],
+        "or_15min": [
+          51.25,
+          66.0,
+          84.25,
+          111.75
+        ],
+        "or_45min": [
+          78.5,
+          102.5,
+          130.25,
+          171.5
+        ]
+      },
+      "transition_5_to_45": [
+        [
+          0.5461,
+          0.2482,
+          0.1348,
+          0.0567,
+          0.0142
+        ],
+        [
+          0.3022,
+          0.2914,
+          0.1978,
+          0.1439,
+          0.0647
+        ],
+        [
+          0.1295,
+          0.2842,
+          0.2662,
+          0.223,
+          0.0971
+        ],
+        [
+          0.0319,
+          0.1525,
+          0.2376,
+          0.3085,
+          0.2695
+        ],
+        [
+          0.0073,
+          0.0147,
+          0.1465,
+          0.2711,
+          0.5604
+        ]
+      ],
+      "transition_15_to_45": [
+        [
+          0.6608,
+          0.2049,
+          0.0848,
+          0.0389,
+          0.0106
+        ],
+        [
+          0.296,
+          0.3249,
+          0.2347,
+          0.1119,
+          0.0325
+        ],
+        [
+          0.058,
+          0.3551,
+          0.3152,
+          0.2065,
+          0.0652
+        ],
+        [
+          0.0,
+          0.1111,
+          0.3047,
+          0.3548,
+          0.2294
+        ],
+        [
+          0.0,
+          0.0,
+          0.0468,
+          0.2914,
+          0.6619
+        ]
+      ],
+      "ratio_5_to_45": {
+        "median": 2.259,
+        "q25": 1.804,
+        "q75": 2.915,
+        "q10": 1.498,
+        "q90": 3.612
+      },
+      "ratio_15_to_45": {
+        "median": 1.489,
+        "q25": 1.242,
+        "q75": 1.824,
+        "q10": 1.084,
+        "q90": 2.278
+      },
+      "pearson": {
+        "5_to_15": 0.814,
+        "5_to_45": 0.652,
+        "15_to_45": 0.775
+      }
+    }
   },
   "calendar": {
     "day_of_week": "Thursday",
@@ -47,8 +235,8 @@
     "narrative": "Today is a Thursday with historically strong intraday activity, so expect amplified moves if price interacts with yesterday\u2019s value area; prioritize trades that trigger inside prior day\u2019s VAL-VAH to leverage the <b>73.7% WR</b> and ~<b>2.89 PF</b> potential, while keeping an eye on the prior day VP levels. The economic calendar features <b>Philly Fed Manufacturing Index</b> and <b>Unemployment Claims</b> at 12:30 ET, with <b>Flash Manufacturing PMI</b> and <b>Flash Services PMI</b> at 13:45 ET, each with <b>Medium</b> impact\u2014expect tighter price action around these releases and use smaller sizing if volatility spikes. This is not FOMC week, so no specific FOMC-driven risk drift is expected, but be prepared for standard Thursday-volume amplification around data prints."
   },
   "pre_open": {
-    "current_price": 29194.25,
-    "current_price_ts": "09:25 ET",
+    "current_price": 29216.0,
+    "current_price_ts": "09:29 ET",
     "prior_rth": {
       "close": 29396.0,
       "open": 29073.75,
@@ -63,7 +251,7 @@
       "range": 351.5,
       "direction": "down",
       "tight": false,
-      "wide": false
+      "wide": true
     },
     "asia": {
       "high": 29439.75,
@@ -74,8 +262,8 @@
       "low": 29192.25
     },
     "gap": {
-      "pts": -201.75,
-      "pct": -0.6863178663763778,
+      "pts": -180.0,
+      "pct": -0.6123282079194449,
       "direction": "gap_down"
     },
     "data_notes": [],
@@ -88,12 +276,24 @@
         "group": "htf_fvg_1H",
         "label": "1H FVG (bearish)",
         "price": 29293.75,
-        "distance_pts": 99.5,
+        "distance_pts": 77.75,
         "direction": "above",
         "tier": "A",
         "hit_rate_45m_pct": 22.5,
         "wr_as_magnet_pct": 64.2,
         "pf_as_magnet": 2.16,
+        "below_baseline": false
+      },
+      {
+        "group": "htf_fvg_15m",
+        "label": "15m FVG (bearish)",
+        "price": 29296.75,
+        "distance_pts": 80.75,
+        "direction": "above",
+        "tier": "A",
+        "hit_rate_45m_pct": 26.2,
+        "wr_as_magnet_pct": 58.4,
+        "pf_as_magnet": 1.51,
         "below_baseline": false
       }
     ],
@@ -102,7 +302,7 @@
         "group": "london",
         "label": "London low",
         "price": 29192.25,
-        "distance_pts": -2.0,
+        "distance_pts": -23.75,
         "direction": "below",
         "tier": "C",
         "hit_rate_45m_pct": 54.3,
@@ -114,41 +314,30 @@
         "group": "asia",
         "label": "Asia low",
         "price": 29164.0,
-        "distance_pts": -30.25,
+        "distance_pts": -52.0,
         "direction": "below",
         "tier": "A",
         "hit_rate_45m_pct": 59.2,
         "wr_as_magnet_pct": 54.2,
         "pf_as_magnet": 1.22,
         "below_baseline": false
-      },
-      {
-        "group": "overnight",
-        "label": "Overnight low",
-        "price": 29113.0,
-        "distance_pts": -81.25,
-        "direction": "below",
-        "tier": "C",
-        "hit_rate_45m_pct": 41.1,
-        "wr_as_magnet_pct": 48.7,
-        "pf_as_magnet": 0.86,
-        "below_baseline": true
       }
     ],
     "narrative": "Today's near-term liquidity sits with <b>London low</b> at <b>29192.25</b> (about <b>2.0 points below</b> the current price) and <b>Overnight low</b> at <b>29113.0</b> (about <b>81.25 points below</b>). A notable resistance above is the <b>1H FVG (bearish)</b> at <b>29293.75</b>, roughly <b>99.5 points above</b> current, suggesting potential selling pressure if price moves up to that level. Overall, expect liquidity clustering below current price with risk of continued downside bias toward the <b>Asia low</b> at <b>29164.0</b>, about <b>30.25 points</b> away, unless price quickly reverses."
   },
   "factors": {
     "active": [
+      "elevated_vixy",
       "gap_down",
       "no_pre_rth_news",
       "no_red_folder",
       "not_fomc_week",
       "overnight_down",
       "prior_day_up",
-      "thursday"
+      "thursday",
+      "wide_overnight"
     ],
     "inactive": [
-      "elevated_vixy",
       "entry_inside_prior_day_value_area",
       "friday",
       "gap_up",
@@ -162,8 +351,7 @@
       "prior_day_down",
       "tight_overnight",
       "tuesday",
-      "wednesday",
-      "wide_overnight"
+      "wednesday"
     ],
     "unknown": [],
     "narrative": "Today is a <b>gap-down</b> morning with <b>overnight_down</b> pressure already in the books and <b>no_pre_rth_news</b> driving returns. With <b>prior_day_up</b> and <b>thursday</b> as active factors, expect continued cautious pre-market action into regular session, as the market may test yesterday\u2019s lower levels. Since we\u2019re not in <b>fomc_week</b> and there\u2019s <b>no_red_folder</b>, risk is more aligned to price structure than surprise catalysts, so honor tighter risk checks and look for clean, low-variance entries if you see a defined early reversion or continuation setup."
@@ -315,19 +503,25 @@
     {
       "stars": "\u2605\u2605",
       "factors": [
-        "bullish_930",
-        "long_only",
-        "macro_w2"
+        "bearish_930",
+        "large_930_candle",
+        "wide_overnight"
       ],
-      "n": 135,
-      "wr_pct": 66.7,
-      "pf": 1.63,
-      "p_wr": 0.0,
-      "pre_matched": [],
+      "n": 61,
+      "wr_pct": 67.2,
+      "pf": 2.24,
+      "p_wr": 0.01,
+      "pre_matched": [
+        "wide_overnight"
+      ],
       "post_needed": [
         {
-          "factor": "bullish_930",
-          "desc": "9:30 candle closed bullish"
+          "factor": "bearish_930",
+          "desc": "9:30 candle closed bearish"
+        },
+        {
+          "factor": "large_930_candle",
+          "desc": "9:30 candle range in top 20%"
         }
       ]
     }
@@ -451,13 +645,18 @@
       "timeframe": "30s",
       "veto_active": false,
       "active_vetoes": [],
-      "preopen_count": 1,
+      "preopen_count": 2,
       "max_preopen": 4,
       "preopen_active": [
         {
           "id": "dow_thursday",
           "desc": "Day is Thursday",
           "lift_pp": 10.0
+        },
+        {
+          "id": "regime_bull",
+          "desc": "60d NQ return > +5% (bull macro)",
+          "lift_pp": 9.4
         }
       ],
       "post_pending": [
@@ -481,8 +680,8 @@
         }
       ],
       "projection": {
-        "min_count": 1,
-        "max_count": 4,
+        "min_count": 2,
+        "max_count": 5,
         "min_tier": {
           "action": "SKIP",
           "note": "3+ tier no longer viable on 8yr"
@@ -498,7 +697,7 @@
         "setup_pct_of_all_days": 31.3,
         "fire_rate_pct": 30.1,
         "ev_per_setup_day_R": 0.277,
-        "fire_rate_now_pct": 29.6,
+        "fire_rate_now_pct": 30.7,
         "fire_rate_max_pct": 36.6
       },
       "extra_note": "TIER B / CONFIDENCE LOW. 8yr re-val: year-floor 26.7% (2021), 16.7% (2023). Trade 4+ tier ONLY, capped size. Stand aside in melt-up (NQ >+15% 60d AND VIX<15) or chop years. No robust replacement stack found in re-mining.",
@@ -1019,19 +1218,25 @@
       {
         "label": "London low",
         "price": 29192.25,
-        "distance_pts": -2.0,
+        "distance_pts": -23.75,
         "direction": "below"
       },
       {
         "label": "Asia low",
         "price": 29164.0,
-        "distance_pts": -30.25,
+        "distance_pts": -52.0,
         "direction": "below"
       },
       {
         "label": "1H FVG (bearish)",
         "price": 29293.75,
-        "distance_pts": 99.5,
+        "distance_pts": 77.75,
+        "direction": "above"
+      },
+      {
+        "label": "15m FVG (bearish)",
+        "price": 29296.75,
+        "distance_pts": 80.75,
         "direction": "above"
       }
     ],

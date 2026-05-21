@@ -65,6 +65,15 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+          # IMPORTANT: studies/or_width_predictor/results/features.csv (and
+          # other *.csv data files) are tracked via Git LFS. Without this
+          # flag, the runner only gets the 3-line LFS pointer file, which
+          # silently breaks load_or_forecast() — every date.fromisoformat
+          # fails inside the row-parse loop, `rows` ends up empty, and the
+          # function returns None → or_forecast.available = False on the
+          # rendered dashboard. Diagnosed 2026-05-21 when the manual
+          # workflow run produced "OR forecast unavailable today."
+          lfs: true
 
       - name: Skip-guard — only the first run of the day proceeds
         id: guard
