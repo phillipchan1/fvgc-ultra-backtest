@@ -784,17 +784,17 @@ def _bulk_ingest(new_bars: list[dict[str, Any]]) -> int:
         return len(bars)
 
 
-# How far back to backfill on startup. 12h covers the full RTH session
-# even if Fly restarts mid-afternoon (e.g. 4 PM ET → reaches back to
-# 4 AM ET, covering today's 9:30 open). Critical for the play-history
-# retrospective — if we backfill less than the session length, signals
-# fired before the backfill cutoff are silently missing from the replay.
-# 12h × 3600 = 43k 1s bars ≈ 4MB — well inside memory budget. The full
+# How far back to backfill on startup. 18h covers today's full 9:30 open
+# even from a worst-case late-night restart at ~11 PM ET (reaches back
+# to 5 AM ET). The FVGC engine only fires inside 9:30-10:15 ET, so this
+# window is critical for the play-history retrospective — if we backfill
+# less, signals fired before the backfill cutoff are silently missing.
+# 18h × 3600 = 65k 1s bars ≈ 6.5MB — well inside memory budget. The
 # overnight session (16:00 prior → 9:30 today) is intentionally NOT
 # covered — that's what the morning briefing's prior_rth in briefing.json
 # is for, and the VP-grid computation does its own targeted Historical
 # fetch (see _refresh_vp_grid).
-BACKFILL_HOURS = 12
+BACKFILL_HOURS = 18
 
 
 def historical_backfill() -> None:
