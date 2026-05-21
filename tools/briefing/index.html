@@ -1261,6 +1261,30 @@
   .pb-status.idea        { color: var(--text-dim); border-color: var(--line-2); background: var(--bg-2); }
   .pb-status.under_review{ color: var(--violet); border-color: var(--violet); background: var(--violet-dim); }
   .pb-status.rejected    { color: var(--red); border-color: var(--red); background: var(--red-dim); opacity: 0.6; }
+
+  /* Backtesting plays in col-2 — distinct visual so trader instantly
+     knows "engine is watching, do NOT put real risk on yet." Dashed
+     amber border + smaller MONITOR pip next to the play name. */
+  .play-card.monitor {
+    border-style: dashed;
+    border-color: var(--amber);
+    background: linear-gradient(180deg,
+      rgba(245, 158, 11, 0.04) 0%, transparent 60%);
+  }
+  .play-card.monitor:hover {
+    border-color: var(--amber);
+    background: linear-gradient(180deg,
+      rgba(245, 158, 11, 0.08) 0%, transparent 60%);
+  }
+  .monitor-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 0 5px;
+    font-size: 8px; font-weight: 700; letter-spacing: 1.5px;
+    color: var(--amber); background: var(--amber-dim);
+    border: 1px solid var(--amber); border-radius: 2px;
+    vertical-align: 1px;
+  }
   .pb-strip-h {
     display: flex; align-items: center; gap: 10px;
     font-family: var(--mono); font-size: 10px; letter-spacing: 2.5px;
@@ -3093,9 +3117,18 @@
         _sample_size: pb?.sample_size ?? null,
       });
     });
+    // Playbook plays surface in two cohorts:
+    //   verified    — fully tradeable; styled normally
+    //   backtesting — live-monitoring only (still validating); styled with
+    //                 a "MONITOR" badge + dashed border so the trader sees
+    //                 the engine signal but knows not to put real risk on
+    //                 yet. The VP Magnet play spec explicitly calls for
+    //                 this monitoring phase before promoting to verified.
+    // Anything at status idea/rejected stays hidden — too noisy.
+    const surfaceStatuses = new Set(['verified', 'backtesting']);
     apAll
       .filter(p => !/Confluence Model/i.test(p.name || ''))
-      .filter(p => (p.status || '').toLowerCase() === 'verified')
+      .filter(p => surfaceStatuses.has((p.status || '').toLowerCase()))
       .forEach(p => allCandidates.push({...p, _kind: 'playbook'}));
 
     // Selection state — single source of truth
@@ -4552,19 +4585,27 @@
         }
       }
 
+      // Backtesting cohort gets a distinct visual treatment so the trader
+      // can tell at a glance "engine is watching this, but don't risk
+      // capital yet." Same applies to the state badge below.
+      const isMonitoring = !isMatrix
+        && (p.status || '').toLowerCase() === 'backtesting';
       const cardCls = 'play-card '
         + (isVeto ? 'veto'
            : stateClass === 'passed' ? 'passed'
-           : stateClass === 'wait' ? 'wait' : '');
+           : stateClass === 'wait' ? 'wait' : '')
+        + (isMonitoring ? ' monitor' : '');
       const card = h('div', {class: cardCls, 'data-key': playKey(p)});
 
       const dir = (p.direction || 'both').toLowerCase();
 
-      // Header row
+      // Header row — backtesting plays get a MONITOR pip next to the name
+      // so the user reads "this is observation-only" before reading state.
       card.appendChild(h('div', {class:'ph'},
         h('div', {class:'pname'},
           h('span', {class: 'badge-dir ' + dir, style:'font-size:8px;'}, dir.toUpperCase()),
-          h('span', null, p.name)),
+          h('span', null, p.name),
+          isMonitoring ? h('span', {class:'monitor-tag mono'}, 'MONITOR') : null),
         h('span', {class: 'pstate ' + stateClass}, stateLabel)));
 
       // ===== Standardized body: [indicator] [meta] [stats] =====
