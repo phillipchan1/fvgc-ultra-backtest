@@ -38,6 +38,7 @@ from zoneinfo import ZoneInfo
 
 import databento as db
 from fastapi import FastAPI, Request, Response
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 
 # FVGC engine — imported lazily inside the play-history compute path so a
@@ -1686,19 +1687,22 @@ async def api_narrative_trigger(req: Request) -> dict[str, Any]:
 
 
 @app.get("/api/play-history")
-def api_play_history(response: Response) -> dict[str, Any]:
+async def api_play_history(response: Response) -> dict[str, Any]:
     """Today's playbook retrospective: which FVGC signals fired, which
     plays they validated, which plays didn't get a signal in their window.
 
     Cached for PLAY_HISTORY_TTL_SEC since bar cadence is 30s — recomputing
-    more often is wasted work."""
+    more often is wasted work. The compute itself runs in a thread-pool
+    worker so the FastAPI event loop stays free for /health, /api/live,
+    and /api/narratives polls during the multi-TF engine run (which can
+    take ~5-10s when scanning 30s/1m/2m/3m simultaneously)."""
     global _play_history_cache, _play_history_cache_at
     now = datetime.now(timezone.utc)
     if (_play_history_cache_at is not None and _play_history_cache is not None
             and (now - _play_history_cache_at).total_seconds() < PLAY_HISTORY_TTL_SEC):
         response.headers["Cache-Control"] = "no-store"
         return {**_play_history_cache, "from_cache": True}
-    result = _compute_play_history()
+    result = await run_in_threadpool(_compute_play_history)
     _play_history_cache = result
     _play_history_cache_at = now
     response.headers["Cache-Control"] = "no-store"
