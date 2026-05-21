@@ -2647,26 +2647,46 @@
   (async function () {
     const app = document.getElementById('app');
 
-    // ===== Data loading: prefer a fresh fetch of briefing.json over the
-    // script-tag-loaded data.js so a normal browser refresh always shows
-    // current data. Fallback chain:
-    //   1. fetch('briefing.json', {cache: 'no-store'}) — works on http(s),
-    //      bypasses the GitHub Pages 10-min cache-control on data.js.
-    //   2. window.BRIEFING_DATA from <script src="data.js"> — needed for
-    //      file:// local opens where fetch() is blocked by the browser.
-    //   3. window.BRIEFING_DEMO inline fallback — when nothing else works.
+    // ===== Data loading. Fallback chain (try in order, first hit wins):
+    //   1. Fly.io /api/briefing — primary source. Fly now runs the
+    //      morning briefing pipeline directly (replaces GH Actions),
+    //      so this is the freshest data and reflects today's Notion
+    //      sync without needing a git push + Pages deploy.
+    //   2. fetch('briefing.json', {cache: 'no-store'}) — fallback to
+    //      the static file on GH Pages. Covers the case where Fly is
+    //      down or the user opens the dashboard before today's cron
+    //      has run.
+    //   3. window.BRIEFING_DATA from <script src="data.js"> — needed
+    //      for file:// local opens where fetch() is blocked.
+    //   4. window.BRIEFING_DEMO inline fallback — last resort.
     let d = null;
     let isDemo = false;
+    let dataSource = null;
     try {
-      const url = 'briefing.json?t=' + Date.now();
-      const resp = await fetch(url, {cache: 'no-store'});
-      if (resp.ok) d = await resp.json();
+      const resp = await fetch('https://nq-live-snapshot.fly.dev/api/briefing',
+                               {cache: 'no-store'});
+      if (resp.ok) {
+        const body = await resp.json();
+        if (body && body.or_forecast) { d = body; dataSource = 'fly'; }
+      }
     } catch (e) {
-      // fetch unavailable (file://) or network failed — fall through
+      // Fly unreachable — fall through
     }
-    if (!d) d = window.BRIEFING_DATA;
-    if (!d) { d = window.BRIEFING_DEMO; isDemo = true; }
+    if (!d) {
+      try {
+        const url = 'briefing.json?t=' + Date.now();
+        const resp = await fetch(url, {cache: 'no-store'});
+        if (resp.ok) { d = await resp.json(); dataSource = 'pages'; }
+      } catch (e) {
+        // fetch unavailable (file://) or network failed — fall through
+      }
+    }
+    if (!d) { d = window.BRIEFING_DATA; if (d) dataSource = 'data.js'; }
+    if (!d) { d = window.BRIEFING_DEMO; isDemo = true; dataSource = 'demo'; }
     if (!d) return;
+    // Expose for debugging — open console + `window.__BRIEFING_SOURCE`
+    // tells you which path won.
+    window.__BRIEFING_SOURCE = dataSource;
 
     const loading = document.getElementById('loading');
     if (loading) loading.remove();
