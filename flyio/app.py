@@ -109,6 +109,18 @@ BRIEFING_URL = os.environ.get(
 # it is recommended for production.
 NARRATIVE_TRIGGER_SECRET = os.environ.get("NARRATIVE_TRIGGER_SECRET")
 
+# Morning-briefing watchdog — GitHub Actions free-tier scheduled runs are
+# routinely delayed or skipped under load. This service runs 24/7 on a
+# reliable schedule, so it can act as a fallback trigger: check whether
+# today's briefing has been published, and if not, fire the workflow via
+# repository_dispatch. Requires a PAT with `actions:write` scope set as
+# the GH_ACTIONS_TOKEN Fly secret:
+#   fly secrets set GH_ACTIONS_TOKEN="ghp_..."
+# (Disabled silently if the token isn't set.)
+GH_ACTIONS_TOKEN = os.environ.get("GH_ACTIONS_TOKEN")
+GH_REPO          = os.environ.get("GH_REPO", "phillipchan1/fvgc-ultra-backtest")
+GH_WORKFLOW_FILE = os.environ.get("GH_WORKFLOW_FILE", "morning-briefing.yml")
+
 # ---------------------------------------------------------------------------
 # Shared state
 # ---------------------------------------------------------------------------
@@ -925,6 +937,125 @@ def live_thread() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Morning-briefing watchdog — fallback trigger when GH Actions cron skips
+# ---------------------------------------------------------------------------
+# GitHub free-tier scheduled workflows are best-effort and routinely
+# delayed or dropped under load. The morning-briefing.yml workflow has
+# 5 backup crons at +10/+20/+30/+40/+50 min, but those all live in the
+# same scheduler — when it's overloaded, none fire.
+#
+# Fly.io runs 24/7 on a reliable schedule, so we use it as the safety net:
+# every minute during the 13:10-13:55 UTC window on weekdays, check if
+# today's briefing.json has been published to GitHub Pages. If not, fire
+# the workflow via `POST /repos/{owner}/{repo}/actions/workflows/{file}/dispatches`.
+#
+# Idempotency: only attempts once every 10 minutes per day, and only when
+# the published briefing date is NOT today. The workflow's own skip-guard
+# handles the case where two paths race.
+
+_last_morning_trigger_utc: datetime | None = None
+
+
+def _fetch_briefing_date_from_pages() -> str | None:
+    """Return briefing.json meta.date from GH Pages, or None on failure."""
+    try:
+        req = urllib.request.Request(
+            BRIEFING_URL, headers={"Cache-Control": "no-cache"}
+        )
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            data = _json.loads(resp.read())
+        return (data.get("meta") or {}).get("date")
+    except Exception as e:
+        log.warning("morning-trigger: briefing fetch failed: %s", e)
+        return None
+
+
+def _dispatch_morning_workflow() -> bool:
+    """Fire GitHub's workflow_dispatch for morning-briefing.yml.
+    Returns True on 2xx response."""
+    if not GH_ACTIONS_TOKEN:
+        return False
+    url = (f"https://api.github.com/repos/{GH_REPO}"
+           f"/actions/workflows/{GH_WORKFLOW_FILE}/dispatches")
+    body = _json.dumps({"ref": "master"}).encode("utf-8")
+    req = urllib.request.Request(
+        url, data=body, method="POST",
+        headers={
+            "Authorization": f"Bearer {GH_ACTIONS_TOKEN}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "Content-Type": "application/json",
+            "User-Agent": "nq-live-snapshot/0.1",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            log.info("morning-trigger: dispatched (status %s)", resp.status)
+        return True
+    except urllib.error.HTTPError as e:
+        err = e.read().decode("utf-8", errors="replace")[:300]
+        log.error("morning-trigger: HTTP %s: %s", e.code, err)
+        return False
+    except Exception as e:
+        log.exception("morning-trigger: dispatch failed")
+        return False
+
+
+def _morning_trigger_loop() -> None:
+    """Background watchdog. Wakes every minute; only acts during the
+    13:10-13:55 UTC weekday window AND only when today's briefing
+    hasn't landed yet. Throttled to one dispatch per 10 min."""
+    import time
+    global _last_morning_trigger_utc
+
+    if not GH_ACTIONS_TOKEN:
+        log.info("morning-trigger: GH_ACTIONS_TOKEN not set — watchdog disabled")
+        return
+
+    log.info("morning-trigger watchdog started — window 13:10-13:55 UTC Mon-Fri, "
+             "repo=%s, workflow=%s", GH_REPO, GH_WORKFLOW_FILE)
+
+    while True:
+        try:
+            now_utc = datetime.now(timezone.utc)
+            now_et  = now_utc.astimezone(NY_TZ)
+            today_et = now_et.strftime("%Y-%m-%d")
+
+            is_weekday = now_et.weekday() < 5
+            # The 13:10–13:55 UTC window matches the cron schedule's first
+            # and last firing slots — by 13:55 the primary + 4 backups
+            # should have all attempted, and any single one of them would
+            # have published the briefing if successful.
+            in_window  = (now_utc.hour == 13 and 10 <= now_utc.minute <= 55)
+
+            if not (is_weekday and in_window):
+                time.sleep(60)
+                continue
+
+            # Did the workflow already publish today's briefing?
+            existing_date = _fetch_briefing_date_from_pages()
+            if existing_date == today_et:
+                time.sleep(60)
+                continue
+
+            # Throttle: one dispatch attempt every 10 minutes.
+            if _last_morning_trigger_utc is not None \
+                    and (now_utc - _last_morning_trigger_utc).total_seconds() < 600:
+                time.sleep(60)
+                continue
+
+            log.warning(
+                "morning-trigger: briefing stale (pages=%s, expected=%s) — firing workflow",
+                existing_date, today_et,
+            )
+            _dispatch_morning_workflow()
+            _last_morning_trigger_utc = now_utc
+        except Exception:
+            log.exception("morning-trigger loop iteration failed")
+        time.sleep(60)
+
+
+# ---------------------------------------------------------------------------
 # Daily Volume Profile (POC / VAH / VAL) — for VP Magnet A+ filter
 # ---------------------------------------------------------------------------
 # The VP Magnet play needs prior-RTH POC/VAH/VAL to evaluate two factors per
@@ -1595,6 +1726,11 @@ async def lifespan(app: FastAPI):
         log.info("Started narrative worker (model=%s)", OPENAI_MODEL)
     else:
         log.info("OPENAI_API_KEY not set — intraday narrative regen disabled")
+
+    # Morning-briefing watchdog — fires GH Actions workflow if scheduler skipped.
+    mt = threading.Thread(target=_morning_trigger_loop, daemon=True,
+                          name="morning-trigger")
+    mt.start()
     yield
 
 
