@@ -27,6 +27,25 @@ COPY flyio/app.py .
 # matches the backtest behavior bit-for-bit.
 COPY fvgc/ ./fvgc/
 
+# Morning briefing pipeline — moved from GH Actions to Fly.io for
+# reliable scheduling. The script + its non-CSV dependencies total
+# ~2MB; we copy only the paths morning_briefing.py actually reads
+# (NOT the huge nq_1m_csv / liquidity_levels.csv from briefing_config —
+# those are config-declared but unreferenced).
+COPY tools/                                              ./tools/
+COPY playbook/                                           ./playbook/
+COPY analysis/results/combo_top_results.txt              ./analysis/results/
+COPY studies/factor_importance/results/factor_importance_report.txt \
+                                                         ./studies/factor_importance/results/
+COPY studies/or_width_predictor/results/features.csv     ./studies/or_width_predictor/results/
+COPY studies/or_width_predictor/results/model_cold_start.json \
+                                                         ./studies/or_width_predictor/results/
+COPY studies/or_width_predictor/results/walkforward_performance.csv \
+                                                         ./studies/or_width_predictor/results/
+COPY studies/multi_cell_confluence/results/              ./studies/multi_cell_confluence/results/
+COPY data/raw/market_high_volume_events_2020_2025.csv    ./data/raw/
+COPY data/trading_days/trading_days.csv                  ./data/trading_days/
+
 # Fly's default internal port is 8080 — keep that convention.
 EXPOSE 8080
 

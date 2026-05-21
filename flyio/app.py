@@ -33,6 +33,7 @@ import urllib.request
 from collections import deque
 from contextlib import asynccontextmanager
 from datetime import datetime, time as dtime, timedelta, timezone
+from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -937,84 +938,142 @@ def live_thread() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Morning-briefing watchdog — fallback trigger when GH Actions cron skips
+# Morning briefing — local cron (replaces GitHub Actions)
 # ---------------------------------------------------------------------------
-# GitHub free-tier scheduled workflows are best-effort and routinely
-# delayed or dropped under load. The morning-briefing.yml workflow has
-# 5 backup crons at +10/+20/+30/+40/+50 min, but those all live in the
-# same scheduler — when it's overloaded, none fire.
+# Runs the morning briefing pipeline (Notion sync + briefing.py) directly
+# on Fly.io instead of via GitHub Actions. Fly's cron is reliable (24/7
+# uptime, no scheduler queue), so we don't need GH Actions' multi-retry
+# backup schedule or the workflow_dispatch watchdog.
 #
-# Fly.io runs 24/7 on a reliable schedule, so we use it as the safety net:
-# every minute during the 13:10-13:55 UTC window on weekdays, check if
-# today's briefing.json has been published to GitHub Pages. If not, fire
-# the workflow via `POST /repos/{owner}/{repo}/actions/workflows/{file}/dispatches`.
+# Flow:
+#   1. Cron fires at 13:10 UTC weekdays (+ backup at 13:20 in case the
+#      first run errors mid-script).
+#   2. _run_morning_briefing() spawns two subprocesses:
+#        sync_playbook_from_notion.py --from-api      (Notion → plays.json)
+#        morning_briefing.py --export-dashboard …     (writes briefing.json)
+#   3. The resulting briefing.json is loaded into state["briefing"] and
+#      served via GET /api/briefing.
+#   4. The dashboard polls /api/briefing instead of loading the static
+#      data.js from GitHub Pages.
 #
-# Idempotency: only attempts once every 10 minutes per day, and only when
-# the published briefing date is NOT today. The workflow's own skip-guard
-# handles the case where two paths race.
+# No git commit, no GH Pages deploy — Fly is the source of truth. The
+# repo still has briefing.json checked in but it's only a historical
+# snapshot, no longer the live data source.
 
-_last_morning_trigger_utc: datetime | None = None
+import subprocess
+
+_briefing_lock = threading.Lock()
+_last_briefing_run_date_et: str | None = None
+_briefing_run_in_progress = False
+_briefing_dir = Path("/app/tools/briefing")  # where morning_briefing.py writes
+_repo_root    = Path("/app")                  # CWD for subprocess calls
 
 
-def _fetch_briefing_date_from_pages() -> str | None:
-    """Return briefing.json meta.date from GH Pages, or None on failure."""
+def _load_existing_briefing() -> dict | None:
+    """Read the on-disk briefing.json into memory (if any). Used on
+    startup to surface yesterday's briefing immediately, even before
+    today's cron has run."""
+    json_path = _briefing_dir / "briefing.json"
+    if not json_path.exists():
+        return None
     try:
-        req = urllib.request.Request(
-            BRIEFING_URL, headers={"Cache-Control": "no-cache"}
-        )
-        with urllib.request.urlopen(req, timeout=8) as resp:
-            data = _json.loads(resp.read())
-        return (data.get("meta") or {}).get("date")
-    except Exception as e:
-        log.warning("morning-trigger: briefing fetch failed: %s", e)
+        return _json.loads(json_path.read_text())
+    except Exception:
+        log.exception("Failed to parse existing briefing.json")
         return None
 
 
-def _dispatch_morning_workflow() -> bool:
-    """Fire GitHub's workflow_dispatch for morning-briefing.yml.
-    Returns True on 2xx response."""
-    if not GH_ACTIONS_TOKEN:
-        return False
-    url = (f"https://api.github.com/repos/{GH_REPO}"
-           f"/actions/workflows/{GH_WORKFLOW_FILE}/dispatches")
-    body = _json.dumps({"ref": "master"}).encode("utf-8")
-    req = urllib.request.Request(
-        url, data=body, method="POST",
-        headers={
-            "Authorization": f"Bearer {GH_ACTIONS_TOKEN}",
-            "Accept": "application/vnd.github+json",
-            "X-GitHub-Api-Version": "2022-11-28",
-            "Content-Type": "application/json",
-            "User-Agent": "nq-live-snapshot/0.1",
-        },
-    )
+def _run_morning_briefing(force: bool = False) -> tuple[bool, str]:
+    """Run sync_playbook_from_notion.py + morning_briefing.py in sequence.
+    Returns (ok, message). Loads the resulting briefing.json into
+    state["briefing"] on success.
+
+    Idempotent — if today's briefing is already in memory and force=False,
+    no-op. The morning_briefing.py script itself preserves AI narratives
+    across re-runs."""
+    global _last_briefing_run_date_et, _briefing_run_in_progress
+
+    now_et = datetime.now(NY_TZ)
+    today_et = now_et.strftime("%Y-%m-%d")
+
+    with _briefing_lock:
+        if _briefing_run_in_progress:
+            return False, "already running"
+        if not force and _last_briefing_run_date_et == today_et:
+            return True, "already ran today"
+        _briefing_run_in_progress = True
+
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            log.info("morning-trigger: dispatched (status %s)", resp.status)
-        return True
-    except urllib.error.HTTPError as e:
-        err = e.read().decode("utf-8", errors="replace")[:300]
-        log.error("morning-trigger: HTTP %s: %s", e.code, err)
-        return False
-    except Exception as e:
-        log.exception("morning-trigger: dispatch failed")
-        return False
+        env = os.environ.copy()
+        # NOTION_API_TOKEN may or may not be set — sync script degrades
+        # gracefully (logs warning, keeps existing plays.json).
+        notion_token = env.get("NOTION_API_TOKEN", "")
+
+        # Step 1: Notion sync (only if token set)
+        if notion_token:
+            log.info("morning-briefing: syncing playbook from Notion...")
+            sync_result = subprocess.run(
+                ["python", "tools/sync_playbook_from_notion.py", "--from-api"],
+                cwd=str(_repo_root), env=env, capture_output=True,
+                text=True, timeout=120,
+            )
+            if sync_result.returncode != 0:
+                log.warning("morning-briefing: Notion sync exit=%d\nSTDERR: %s",
+                            sync_result.returncode, (sync_result.stderr or "")[:500])
+            else:
+                log.info("morning-briefing: Notion sync OK")
+        else:
+            log.info("morning-briefing: NOTION_API_TOKEN not set — skipping sync, using committed plays.json")
+
+        # Step 2: run morning_briefing.py
+        log.info("morning-briefing: running briefing pipeline...")
+        ai_flags = ["--ai-narratives"] if OPENAI_API_KEY else []
+        result = subprocess.run(
+            ["python", "tools/morning_briefing.py", "--export-dashboard", *ai_flags],
+            cwd=str(_repo_root), env=env, capture_output=True,
+            text=True, timeout=300,
+        )
+        if result.returncode != 0:
+            err = (result.stderr or "")[:800]
+            log.error("morning-briefing: briefing exit=%d\nSTDERR: %s",
+                      result.returncode, err)
+            return False, f"briefing exit={result.returncode}: {err[:200]}"
+
+        # Step 3: load the result
+        loaded = _load_existing_briefing()
+        if loaded is None:
+            return False, "briefing.json not found after run"
+
+        with state_lock:
+            state["briefing"] = loaded
+            # Mirror the old field for backward compat with existing readers
+            # (narrative worker, play-history matcher) — they all read from
+            # state["briefing_context"], so keep that pointer in sync.
+            state["briefing_context"] = loaded
+            state["briefing_generated_at_utc"] = datetime.now(timezone.utc).isoformat()
+
+        with _briefing_lock:
+            _last_briefing_run_date_et = today_et
+
+        signal_summary = (
+            f"date={loaded.get('meta',{}).get('date')} · "
+            f"or_forecast.available={loaded.get('or_forecast',{}).get('available')} · "
+            f"plays={len(loaded.get('matrix_plays') or [])}+{len(loaded.get('active_plays') or [])}"
+        )
+        log.info("morning-briefing: OK — %s", signal_summary)
+        return True, "ok"
+    finally:
+        with _briefing_lock:
+            _briefing_run_in_progress = False
 
 
-def _morning_trigger_loop() -> None:
-    """Background watchdog. Wakes every minute; only acts during the
-    13:10-13:55 UTC weekday window AND only when today's briefing
-    hasn't landed yet. Throttled to one dispatch per 10 min."""
+def _morning_briefing_cron_loop() -> None:
+    """Background scheduler. Wakes every minute; fires the briefing once
+    per ET trading day, at the first matching slot in the 13:10-13:55
+    UTC window (so the same 5-backup-cron behaviour, no external scheduler
+    needed)."""
     import time
-    global _last_morning_trigger_utc
-
-    if not GH_ACTIONS_TOKEN:
-        log.info("morning-trigger: GH_ACTIONS_TOKEN not set — watchdog disabled")
-        return
-
-    log.info("morning-trigger watchdog started — window 13:10-13:55 UTC Mon-Fri, "
-             "repo=%s, workflow=%s", GH_REPO, GH_WORKFLOW_FILE)
-
+    log.info("morning-briefing cron started — window 13:10-13:55 UTC Mon-Fri")
     while True:
         try:
             now_utc = datetime.now(timezone.utc)
@@ -1022,36 +1081,16 @@ def _morning_trigger_loop() -> None:
             today_et = now_et.strftime("%Y-%m-%d")
 
             is_weekday = now_et.weekday() < 5
-            # The 13:10–13:55 UTC window matches the cron schedule's first
-            # and last firing slots — by 13:55 the primary + 4 backups
-            # should have all attempted, and any single one of them would
-            # have published the briefing if successful.
             in_window  = (now_utc.hour == 13 and 10 <= now_utc.minute <= 55)
 
-            if not (is_weekday and in_window):
-                time.sleep(60)
-                continue
+            with _briefing_lock:
+                already_ran_today = (_last_briefing_run_date_et == today_et)
 
-            # Did the workflow already publish today's briefing?
-            existing_date = _fetch_briefing_date_from_pages()
-            if existing_date == today_et:
-                time.sleep(60)
-                continue
-
-            # Throttle: one dispatch attempt every 10 minutes.
-            if _last_morning_trigger_utc is not None \
-                    and (now_utc - _last_morning_trigger_utc).total_seconds() < 600:
-                time.sleep(60)
-                continue
-
-            log.warning(
-                "morning-trigger: briefing stale (pages=%s, expected=%s) — firing workflow",
-                existing_date, today_et,
-            )
-            _dispatch_morning_workflow()
-            _last_morning_trigger_utc = now_utc
+            if is_weekday and in_window and not already_ran_today:
+                ok, msg = _run_morning_briefing(force=False)
+                log.info("morning-briefing cron tick: %s", msg)
         except Exception:
-            log.exception("morning-trigger loop iteration failed")
+            log.exception("morning-briefing cron iteration failed")
         time.sleep(60)
 
 
@@ -1707,17 +1746,31 @@ async def lifespan(app: FastAPI):
         st.start()
         log.info("Started snapshot-loop thread (1Hz)")
 
-    # Briefing context (matrix_plays definitions, morning narratives) —
-    # always fetch, even without OPENAI_API_KEY. Used by:
-    #   - narrative worker (when key is set) for prompt context
-    #   - play-history endpoint to match FVGC signals to matrix plays
-    ctx = _fetch_briefing_context()
-    if ctx:
+    # Morning briefing — Fly now owns the pipeline (replaced GH Actions).
+    # On startup we (a) load yesterday's briefing.json from disk so the
+    # dashboard has SOMETHING immediately, and (b) if today's briefing
+    # hasn't been computed yet, kick off a fresh run in the background.
+    existing = _load_existing_briefing()
+    if existing:
         with state_lock:
-            state["briefing_context"] = ctx
-            state["briefing_context_fetched_at"] = datetime.now(timezone.utc)
-    else:
-        log.info("briefing context unavailable — play-history will lack play matches")
+            state["briefing"] = existing
+            state["briefing_context"] = existing  # alias for legacy readers
+            state["briefing_generated_at_utc"] = datetime.now(timezone.utc).isoformat()
+        log.info("morning-briefing: loaded existing briefing.json (date=%s)",
+                 (existing.get("meta") or {}).get("date"))
+
+    now_et = datetime.now(NY_TZ)
+    today_et_str = now_et.strftime("%Y-%m-%d")
+    existing_date = (existing or {}).get("meta", {}).get("date") if existing else None
+    if existing_date != today_et_str:
+        # Spawn the briefing run in the background so startup isn't blocked
+        # by the ~30-60s subprocess.
+        def _startup_briefing():
+            log.info("morning-briefing: startup run (current on-disk is %s, need %s)",
+                     existing_date, today_et_str)
+            _run_morning_briefing(force=True)
+        threading.Thread(target=_startup_briefing, daemon=True,
+                         name="briefing-startup").start()
 
     if OPENAI_API_KEY:
         nt = threading.Thread(target=_narrative_worker, daemon=True,
@@ -1727,9 +1780,9 @@ async def lifespan(app: FastAPI):
     else:
         log.info("OPENAI_API_KEY not set — intraday narrative regen disabled")
 
-    # Morning-briefing watchdog — fires GH Actions workflow if scheduler skipped.
-    mt = threading.Thread(target=_morning_trigger_loop, daemon=True,
-                          name="morning-trigger")
+    # Local morning-briefing cron — replaces the GH Actions workflow.
+    mt = threading.Thread(target=_morning_briefing_cron_loop, daemon=True,
+                          name="morning-briefing-cron")
     mt.start()
     yield
 
@@ -1879,6 +1932,42 @@ async def api_play_history(response: Response) -> dict[str, Any]:
     return result
 
 
+@app.get("/api/briefing")
+def api_briefing(response: Response) -> dict[str, Any]:
+    """The morning briefing JSON — same shape the GH Pages data.js used
+    to carry. Dashboard loads this at startup instead of fetching the
+    static file from GitHub Pages."""
+    with state_lock:
+        briefing = state.get("briefing")
+        generated_at = state.get("briefing_generated_at_utc")
+    response.headers["Cache-Control"] = "no-store"
+    if briefing is None:
+        response.status_code = 503
+        return {"error": "briefing not yet computed",
+                "running": _briefing_run_in_progress}
+    # Annotate with our generated_at timestamp so the dashboard can
+    # show "briefing generated at HH:MM" without relying on the
+    # meta.generated_at_et embedded in the JSON (which is the source
+    # time, not the fetch time).
+    return {**briefing, "_served_at_utc": generated_at}
+
+
+@app.post("/api/briefing/refresh")
+async def api_briefing_refresh(req: Request) -> dict[str, Any]:
+    """Force-rerun the morning briefing pipeline. Useful for ad-hoc
+    refreshes (e.g. after the user edits a Notion play and wants the
+    dashboard to pick it up immediately, or to retry after a transient
+    failure). Same shared-secret gate as the narrative-trigger endpoint."""
+    if NARRATIVE_TRIGGER_SECRET:
+        if req.headers.get("X-Trigger-Secret") != NARRATIVE_TRIGGER_SECRET:
+            return {"error": "unauthorized"}
+    # Run in a threadpool so the response isn't blocked for ~30-60s.
+    def _go():
+        return _run_morning_briefing(force=True)
+    ok, msg = await run_in_threadpool(_go)
+    return {"ok": ok, "msg": msg}
+
+
 @app.get("/")
 def root() -> dict[str, Any]:
     return {
@@ -1886,7 +1975,9 @@ def root() -> dict[str, Any]:
         "endpoints": [
             "/health", "/api/live", "/api/narratives",
             "/api/narrative-trigger", "/api/play-history",
+            "/api/briefing", "/api/briefing/refresh",
         ],
         "source": "databento-live",
         "fvgc_engine": _FVGC_AVAILABLE,
+        "briefing_loaded": (state.get("briefing") is not None),
     }

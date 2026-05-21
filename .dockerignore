@@ -1,0 +1,60 @@
+# Fly.io build-context filter. The Dockerfile lives at flyio/Dockerfile
+# with the build context set to the repo root (so it can pull both
+# flyio/* AND the fvgc/ + tools/ + playbook/ + studies/ trees). Without
+# this filter, the 3.9GB data/ tree (raw 1m CSVs, consolidated data,
+# 43MB liquidity_levels.csv) would be uploaded on every deploy, making
+# each push minutes-slow over the wire.
+#
+# Strategy: deny-by-default for the heavy data trees, then explicitly
+# allow back the small files the morning briefing pipeline actually
+# reads. Mirror the Dockerfile's COPY list so they stay in sync.
+
+# Repo-wide noise
+.git
+.gitignore
+.github
+.gitattributes
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+.claude
+.DS_Store
+*.swp
+*.tmp
+node_modules
+
+# Worktrees Claude maintains locally — must never enter the Fly image
+.claude/worktrees
+
+# Bulk data trees — deny-all then re-allow specific files below.
+data/**
+!data/raw/market_high_volume_events_2020_2025.csv
+!data/trading_days/trading_days.csv
+
+# Studies — most are research output we don't need at runtime.
+studies/**
+!studies/factor_importance/results/factor_importance_report.txt
+!studies/or_width_predictor/results/features.csv
+!studies/or_width_predictor/results/model_cold_start.json
+!studies/or_width_predictor/results/walkforward_performance.csv
+!studies/multi_cell_confluence/results/
+!studies/multi_cell_confluence/results/**
+
+# Backtest results — only combo_top_results.txt is read by briefing.
+analysis/**
+!analysis/results/combo_top_results.txt
+
+# Notebooks + research scratch
+*.ipynb
+.ipynb_checkpoints
+docs
+
+# Tests + dev tools
+tests
+pytest.ini
+ruff.toml
+
+# Worker (Cloudflare worker — separate stack)
+worker
