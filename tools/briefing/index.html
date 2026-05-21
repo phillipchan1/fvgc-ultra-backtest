@@ -1907,6 +1907,25 @@
   .range-ci {
     font-size: 11px; color: var(--text-dim); letter-spacing: 0.5px;
   }
+  /* Plain-English Q meaning under the points number — tells the user
+     what Q4/Q5/etc means in practical terms (WIDE / STANDARD / SKIP
+     + the historical PF stat). Color tracks the tier (good/cool/warn/bad). */
+  .range-meaning {
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    margin-top: 1px;
+  }
+  .range-meaning.good { color: var(--green); }
+  .range-meaning.cool { color: var(--cyan); }
+  .range-meaning.warn { color: var(--amber); }
+  .range-meaning.bad  { color: var(--red); }
+  /* Sub-label rendered under EVOLVING FORECAST etc. — one-liner that
+     explains what the section is showing. Tighter than .narrative. */
+  .r-sublabel {
+    font-size: 10px; letter-spacing: 0.3px;
+    line-height: 1.45;
+    margin: -2px 0 8px;
+    color: var(--text-mute);
+  }
   /* Hero badge — tags the big number with its provenance so the user
      can instantly tell prediction from reality. Three states:
        .forecast — pre-open, cold-start model output
@@ -3117,18 +3136,14 @@
         _sample_size: pb?.sample_size ?? null,
       });
     });
-    // Playbook plays surface in two cohorts:
-    //   verified    — fully tradeable; styled normally
-    //   backtesting — live-monitoring only (still validating); styled with
-    //                 a "MONITOR" badge + dashed border so the trader sees
-    //                 the engine signal but knows not to put real risk on
-    //                 yet. The VP Magnet play spec explicitly calls for
-    //                 this monitoring phase before promoting to verified.
-    // Anything at status idea/rejected stays hidden — too noisy.
-    const surfaceStatuses = new Set(['verified', 'backtesting']);
+    // Only verified plays surface as candidates in col 2. Backtesting
+    // plays still appear in the session-replay card below (so the user
+    // can monitor engine signals on plays-in-validation) but they don't
+    // crowd the trade-action column. Promotion to verified in Notion
+    // flips them in here automatically on the next sync.
     apAll
       .filter(p => !/Confluence Model/i.test(p.name || ''))
-      .filter(p => surfaceStatuses.has((p.status || '').toLowerCase()))
+      .filter(p => (p.status || '').toLowerCase() === 'verified')
       .forEach(p => allCandidates.push({...p, _kind: 'playbook'}));
 
     // Selection state — single source of truth
@@ -3755,6 +3770,7 @@
         const qEl      = card.querySelector('[data-hero-q]');
         const ptsEl    = card.querySelector('[data-hero-pts]');
         const ciEl     = card.querySelector('[data-hero-ci]');
+        const meanEl   = card.querySelector('[data-hero-meaning]');
         const headerEl = card.querySelector('[data-hero-header]');
         if (!head || !qEl || !ptsEl || !ciEl) return;
 
@@ -3775,6 +3791,10 @@
             ptsEl.innerHTML =
               `${coldPts}<span class="unit">pts</span>` +
               `<span class="hero-badge forecast">FORECAST</span>`;
+            if (meanEl) {
+              meanEl.className = 'range-meaning mono ' + coldQCls;
+              meanEl.textContent = _qMeaning(coldQ);
+            }
             ciEl.textContent =
               `${fc.lo80_pts}–${fc.hi80_pts} · ${fc.quintile || ''} · cold-start`;
             if (headerEl) headerEl.textContent = '45-MIN OR FORECAST';
@@ -3814,6 +3834,10 @@
         ptsEl.innerHTML =
           `${Math.round(w)}<span class="unit">pts</span>` +
           `<span class="hero-badge ${badgeCls}">${badgeText}</span>`;
+        if (meanEl) {
+          meanEl.className = 'range-meaning mono ' + actualQCls;
+          meanEl.textContent = _qMeaning(actualQ);
+        }
         ciEl.textContent =
           `forecast was ${coldPts} · ${coldQ} (${deltaTxt}${trackTag})`;
         if (headerEl) {
@@ -3879,6 +3903,23 @@
           default:   return '';
         }
       }
+      // Plain-English meaning of each 45-min OR quintile per the validated
+      // FVGC insight ("Range Determines Reach"). The numbers here come from
+      // studies/range_determines_reach/ — Q5 is genuinely a different
+      // economics regime than Q1/Q2, and the trader needs to read off the
+      // chip what the quintile MEANS for sizing, not just see "Q4". One-
+      // liners only — full breakdown lives in the "WHY THIS MATTERS" card
+      // below.
+      function _qMeaning(qLetter) {
+        switch ((qLetter || '').toUpperCase()) {
+          case 'Q5': return 'WIDE+ · upsize tier · PF 2.02, E[R] +0.68R @ 4R';
+          case 'Q4': return 'WIDE · default size · target 3-4R · PF ~1.8';
+          case 'Q3': return 'STANDARD · default size · target 3-4R';
+          case 'Q2': return 'BELOW · skip — negative EV at every target';
+          case 'Q1': return 'TIGHT · skip — FVGC structurally fails here';
+          default:   return '';
+        }
+      }
       function renderEvolvingForecast(snap) {
         const fc = window.BRIEFING_DATA?.or_forecast;
         const sw = fc?.stepwise;
@@ -3912,10 +3953,10 @@
         const or15 = snap?.or_15min;
         const or45 = snap?.opening_range;
 
-        // STEP 1 — COLD START (always shown; model output)
+        // STEP 1 — pre-open MODEL output (always shown)
         const coldQ = ((fc.quintile || '').split(' ', 1)[0] || '').toUpperCase();
         const coldRow = {
-          stage: 'COLD START',
+          stage: 'PRE-OPEN MODEL',
           time: '9:29',
           state: 'locked',          // model output, never changes intraday
           quintile: coldQ || '—',
@@ -3923,11 +3964,11 @@
           point_pts: fc.point_pts,
           lo_pts: fc.lo80_pts,
           hi_pts: fc.hi80_pts,
-          basis: 'model · 13 features',
+          basis: 'from 13 features',
         };
 
-        // STEP 2 — AFTER 5-MIN OR (locks 9:35)
-        let step5 = { stage: '+5 MIN', time: '9:35', state: 'waiting' };
+        // STEP 2 — refined by 5-min OR (locks 9:35)
+        let step5 = { stage: 'AFTER 5-MIN OR', time: '9:35', state: 'waiting' };
         if (or5 && or5.width > 0) {
           const q5 = _bucketize(or5.width, sw.thresholds.or_5min);
           const row = sw.transition_5_to_45[q5 - 1];
@@ -3940,8 +3981,8 @@
           });
         }
 
-        // STEP 3 — AFTER 15-MIN OR (locks 9:45)
-        let step15 = { stage: '+15 MIN', time: '9:45', state: 'waiting' };
+        // STEP 3 — refined by 15-min OR (locks 9:45)
+        let step15 = { stage: 'AFTER 15-MIN OR', time: '9:45', state: 'waiting' };
         if (or15 && or15.width > 0) {
           const q15 = _bucketize(or15.width, sw.thresholds.or_15min);
           const row = sw.transition_15_to_45[q15 - 1];
@@ -3954,12 +3995,12 @@
           });
         }
 
-        // STEP 4 — ACTUAL (45-min OR locked)
-        let stepFinal = { stage: 'ACTUAL', time: '10:15', state: 'waiting' };
+        // STEP 4 — observed final (45-min OR locked at 10:15)
+        let stepFinal = { stage: 'OBSERVED (LOCKED)', time: '10:15', state: 'waiting' };
         if (or45 && or45.complete && or45.width > 0) {
           const qFinal = _bucketize(or45.width, sw.thresholds.or_45min);
           stepFinal = {
-            stage: 'ACTUAL',
+            stage: 'OBSERVED (LOCKED)',
             time: '10:15',
             state: 'locked',
             quintile: `Q${qFinal}`,
@@ -3967,7 +4008,7 @@
             point_pts: or45.width,
             lo_pts: or45.width,
             hi_pts: or45.width,
-            basis: 'OR(45m) locked',
+            basis: 'OR(45m) locked — actual',
             source_width: or45.width,
           };
         }
@@ -4029,8 +4070,13 @@
 
         container.innerHTML = `
           <div class="r-label">
-            EVOLVING FORECAST
+            FORECAST TRAJECTORY
             <span class="r-tag">stepwise · n=${sw.sample_size}</span>
+          </div>
+          <div class="r-sublabel mono mute">
+            Each row predicts where the 45-min OR will land, using the
+            evidence available at that point in the session. Refines as
+            5-min and 15-min OR lock.
           </div>
           <div class="ef-rows">${stepHtml}</div>
           ${drift}
@@ -5478,6 +5524,11 @@
           h('div', {class:'range-pts mono', 'data-hero-pts':''},
             Math.round(fc.point_pts), h('span', {class:'unit'}, 'pts'),
             h('span', {class:'hero-badge forecast'}, 'FORECAST')),
+          // Plain-English Q meaning — the chip alone is meaningless without
+          // it. Lives between the big number and the CI line so the eye
+          // reads: how big · what that means · forecast context.
+          h('div', {class:'range-meaning mono ' + tierCls, 'data-hero-meaning':''},
+            _qMeaning(qLetter)),
           h('div', {class:'range-ci mono', 'data-hero-ci':''},
             `${fc.lo80_pts}–${fc.hi80_pts} · ${fc.quintile || ''} · cold-start`)),
       ));
