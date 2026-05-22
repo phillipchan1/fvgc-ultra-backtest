@@ -54,6 +54,90 @@ TF_TO_EVERY = {
 NY_TZ = "America/New_York"
 
 
+# --- Reusable pipeline helpers (importable) -----------------------------------
+# These operate on in-memory polars DataFrames and are shared with
+# tools/update_data.py, which appends a small delta without re-scanning the
+# full 12 GB raw archive.
+
+def pick_front_month(daily_vol: pl.DataFrame, *, jitter: bool = True) -> pl.DataFrame:
+    """
+    Given a frame with columns (_date, symbol, daily_vol), return one row per
+    _date with the front-month symbol (max daily volume), optionally smoothed
+    by a 1-day jitter filter so a single anomalous day doesn't fragment rolls.
+
+    The jitter filter needs at least 3 dates of context; with fewer dates it
+    is a no-op.
+    """
+    front = (
+        daily_vol
+        .sort(["_date", "daily_vol"], descending=[False, True])
+        .group_by("_date", maintain_order=True)
+        .agg(pl.col("symbol").first().alias("front_month"))
+        .sort("_date")
+    )
+
+    if jitter and len(front) >= 3:
+        syms = front["front_month"].to_list()
+        smoothed = syms.copy()
+        for i in range(1, len(syms) - 1):
+            if syms[i - 1] == syms[i + 1] and syms[i] != syms[i - 1]:
+                smoothed[i] = syms[i - 1]
+        front = front.with_columns(pl.Series("front_month", smoothed))
+
+    return front
+
+
+def apply_outlier_filter(
+    df: pl.DataFrame,
+    *,
+    threshold_pts: float = OUTLIER_THRESHOLD,
+    bucket: str = "30s",
+) -> pl.DataFrame:
+    """
+    Drop rows whose (open+close)/2 deviates more than `threshold_pts` from the
+    median mid within the same `bucket` (default 30s) window. Operates on a
+    1s OHLCV frame with a `ts_event` column (datetime).
+    """
+    with_mid = df.with_columns(
+        ((pl.col("open") + pl.col("close")) / 2.0).alias("_mid"),
+        pl.col("ts_event").dt.truncate(bucket).alias("_bucket"),
+    )
+    with_med = with_mid.with_columns(
+        pl.col("_mid").median().over("_bucket").alias("_med")
+    )
+    return (
+        with_med
+        .filter((pl.col("_mid") - pl.col("_med")).abs() <= threshold_pts)
+        .drop(["_mid", "_bucket", "_med"])
+    )
+
+
+def aggregate_timeframe(df: pl.DataFrame, tf: str, *, ny_tz: str = NY_TZ) -> pl.DataFrame:
+    """
+    Aggregate a clean 1s OHLCV frame to the target timeframe. Output columns:
+    timestamp_utc, timestamp_ny, open, high, low, close, volume. Matches the
+    schema of the existing consolidated parquets for 15s/30s/1m/2m/3m/5m/15m.
+    """
+    every = TF_TO_EVERY[tf]
+    return (
+        df
+        .with_columns(pl.col("ts_event").dt.truncate(every).alias("timestamp_utc"))
+        .group_by("timestamp_utc", maintain_order=False)
+        .agg(
+            pl.col("open").first().alias("open"),
+            pl.col("high").max().alias("high"),
+            pl.col("low").min().alias("low"),
+            pl.col("close").last().alias("close"),
+            pl.col("volume").sum().alias("volume"),
+        )
+        .sort("timestamp_utc")
+        .with_columns(
+            pl.col("timestamp_utc").dt.convert_time_zone(ny_tz).alias("timestamp_ny")
+        )
+        .select(["timestamp_utc", "timestamp_ny", "open", "high", "low", "close", "volume"])
+    )
+
+
 # --- Helpers ------------------------------------------------------------------
 
 def _t(msg: str, t0: float) -> None:
@@ -108,22 +192,7 @@ def build_front_month_schedule(files: list[Path], t0: float) -> pl.DataFrame:
 
     _t(f"  daily (date, symbol) rows: {len(daily):,}", t0)
 
-    front = (
-        daily
-        .group_by("_date", maintain_order=True)
-        .agg(pl.col("symbol").first().alias("front_month"))
-        .sort("_date")
-    )
-
-    # 1-day jitter smoother: if today's symbol differs from both yesterday and
-    # tomorrow (and those two agree), today was a glitch — overwrite with the
-    # surrounding symbol. Matches the original consolidate_data.py behavior.
-    syms = front["front_month"].to_list()
-    smoothed = syms.copy()
-    for i in range(1, len(syms) - 1):
-        if syms[i - 1] == syms[i + 1] and syms[i] != syms[i - 1]:
-            smoothed[i] = syms[i - 1]
-    front = front.with_columns(pl.Series("front_month", smoothed))
+    front = pick_front_month(daily, jitter=True)
 
     # Print the roll schedule (one line per contract change)
     print("\nFront-month roll schedule:")
@@ -191,19 +260,8 @@ def consolidate_to_timeframes(
     # Dynamic outlier filter: drop rows whose (open+close)/2 deviates >100pt
     # from the median mid within the same 30s bucket.
     _t("Applying outlier filter (>100pt from 30s median)...", t0)
-    with_mid = cleaned.with_columns(
-        ((pl.col("open") + pl.col("close")) / 2.0).alias("_mid"),
-        pl.col("ts_event").dt.truncate("30s").alias("_bucket"),
-    )
-    with_med = with_mid.with_columns(
-        pl.col("_mid").median().over("_bucket").alias("_med")
-    )
-    n_before = len(with_med)
-    cleaned = (
-        with_med
-        .filter((pl.col("_mid") - pl.col("_med")).abs() <= OUTLIER_THRESHOLD)
-        .drop(["_mid", "_bucket", "_med"])
-    )
+    n_before = len(cleaned)
+    cleaned = apply_outlier_filter(cleaned)
     _t(f"  dropped {n_before - len(cleaned):,} outliers; final 1s rows: {len(cleaned):,}", t0)
 
     # Optionally write the cleaned 1s frame too (handy for any sub-minute work)
@@ -216,25 +274,8 @@ def consolidate_to_timeframes(
     # Aggregate to each timeframe
     out: dict[str, pl.DataFrame] = {}
     for tf in TIMEFRAMES:
-        every = TF_TO_EVERY[tf]
         _t(f"Aggregating {tf}...", t0)
-        agg = (
-            cleaned
-            .with_columns(pl.col("ts_event").dt.truncate(every).alias("timestamp_utc"))
-            .group_by("timestamp_utc", maintain_order=False)
-            .agg(
-                pl.col("open").first().alias("open"),
-                pl.col("high").max().alias("high"),
-                pl.col("low").min().alias("low"),
-                pl.col("close").last().alias("close"),
-                pl.col("volume").sum().alias("volume"),
-            )
-            .sort("timestamp_utc")
-            .with_columns(
-                pl.col("timestamp_utc").dt.convert_time_zone(NY_TZ).alias("timestamp_ny")
-            )
-            .select(["timestamp_utc", "timestamp_ny", "open", "high", "low", "close", "volume"])
-        )
+        agg = aggregate_timeframe(cleaned, tf)
         out[tf] = agg
         _t(f"  {tf}: {len(agg):,} candles  "
            f"({agg['timestamp_utc'].min()} .. {agg['timestamp_utc'].max()})", t0)

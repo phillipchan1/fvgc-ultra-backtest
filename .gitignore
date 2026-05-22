@@ -1,5 +1,9 @@
 data/raw/glbx-mdp3-20231002-20251027.ohlcv-1s.csv
 data/raw/*.ohlcv-1s.csv
+# Consolidated NQ front-month files are rebuilt locally by tools/update_data.py
+# (or tools/consolidate_data.py for a full pass). They're large binaries and
+# should never live in git.
+data/consolidated/
 __pycache__/
 *.pyc
 logs/

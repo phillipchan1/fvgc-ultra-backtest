@@ -5,3 +5,5 @@ seaborn
 numpy
 polars>=1.0
 pyarrow
+databento>=0.40
+python-dotenv
