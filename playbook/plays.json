@@ -1,5 +1,27 @@
 [
   {
+    "name": "IFVG Reversal v1.0",
+    "direction": "both",
+    "status": "backtesting",
+    "wr_base": "55-60% on score≥5/6 (fixed-1R) / 35-40% under scaled exits",
+    "sample_size": 86,
+    "description": "Tempo-grounded IFVG reversal model. Direction-aware confluence (8 short + 8 long factors), 7 anti-pattern hard skips, regime-gated by opening range and prior-day character. 5yr backtest 2021-2026, OOS-validated, walk-forward stable in 53% of 6-month windows at PF ≥ 1.5.",
+    "pre_market_conditions": "Identify prior_day_type (trend/reversal up/down), prior_day_close_position, prior_day_range_atr_ratio (vol regime), distance to recent ATH. Mark all tracked levels: prev_day_high/low, overnight, asia, london highs/lows. Note calendar (FOMC week, opex Friday).",
+    "action_plan": "At 9:45: lock or_15min_range. Skip day if <67pt. At 10:15: lock or_45min_range (LONG needs ≥137). Anti-pattern check at sweep: not chop_day, not killzone_minute≥45, not ath_swept_today, body fraction ≤0.90, no magnets against. Score 8 direction-aware factors; SHORT ≥4 or LONG ≥5/6 = take.\n\nExit Strategy: Stop at gap edge + 2pt buffer. Scaled exit: 25/25/50 trim at 1R / 4R / 8R targets. After TP1 hits → move stop to BE. Soft stop on candle close re-inverting gap. EOD flat if open.",
+    "tier": "A",
+    "confidence": "medium",
+    "frequency": "~86 trades/yr at score≥6 | ~114/yr at score≥5",
+    "pf_base": 3.22,
+    "avg_mfe_r": 3.7,
+    "window": [
+      "9:30-9:45",
+      "9:45-10:00"
+    ],
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/368e2f0e776081f5bec2f8e56ce0d680",
+    "pre_market_factors": []
+  },
+  {
     "name": "VP Magnet Play (A+) — n_vp≥2 + VA-Edge",
     "direction": "both",
     "status": "backtesting",
@@ -19,7 +41,7 @@
       "10:00-10:15"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/VP-Magnet-Play-A-n_vp-2-VA-Edge-367e2f0e7760811aa7b0efd3aff8024e",
+    "notion_url": "https://www.notion.so/367e2f0e7760811aa7b0efd3aff8024e",
     "pre_market_factors": []
   },
   {
@@ -40,7 +62,7 @@
       "9:30-9:45"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/M1-Long-Confluence-Model-365e2f0e77608154b4caca8dcc0a7c70",
+    "notion_url": "https://www.notion.so/365e2f0e77608154b4caca8dcc0a7c70",
     "pre_market_factors": []
   },
   {
@@ -61,7 +83,7 @@
       "10:00-10:15"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/M3-Long-Confluence-Model-361e2f0e7760819bbbc7ca78b9faa8f9",
+    "notion_url": "https://www.notion.so/361e2f0e7760819bbbc7ca78b9faa8f9",
     "pre_market_factors": []
   },
   {
@@ -82,7 +104,7 @@
       "9:45-10:00"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/M2-Long-Confluence-Model-361e2f0e776081e69d5dfc696dbd5726",
+    "notion_url": "https://www.notion.so/361e2f0e776081e69d5dfc696dbd5726",
     "pre_market_factors": []
   },
   {
@@ -103,7 +125,7 @@
       "10:00-10:15"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/M3-Short-Both-Swept-Carve-Out-Idea-35ce2f0e776081f1be39d7ff086ec51e",
+    "notion_url": "https://www.notion.so/35ce2f0e776081f1be39d7ff086ec51e",
     "pre_market_factors": []
   },
   {
@@ -124,7 +146,7 @@
       "9:30-9:45"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/W1-Short-Post-Sweep-Continuation-351e2f0e77608114b4fef8eb95750312",
+    "notion_url": "https://www.notion.so/351e2f0e77608114b4fef8eb95750312",
     "pre_market_factors": []
   },
   {
@@ -145,7 +167,7 @@
       "9:30-9:45"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/Small-Gap-Fade-Long-9-31-Entry-Gap-25pts-34be2f0e7760819d9113f55043e98157",
+    "notion_url": "https://www.notion.so/34be2f0e7760819d9113f55043e98157",
     "pre_market_factors": [
       "gap_down_ge_25pts",
       "gap_atr_ratio_lt_0.6",
@@ -170,7 +192,7 @@
       "10:00-10:15"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/Turtle-Soup-Short-Confluence-Model-34be2f0e77608138992df2f78bc84477",
+    "notion_url": "https://www.notion.so/34be2f0e77608138992df2f78bc84477",
     "pre_market_factors": []
   },
   {
@@ -191,7 +213,7 @@
       "Any"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/IFVG-Reversal-v3-anchor-to-sweep-close-entry-344e2f0e77608185b832c8c131a35bce",
+    "notion_url": "https://www.notion.so/344e2f0e77608185b832c8c131a35bce",
     "pre_market_factors": []
   },
   {
@@ -212,7 +234,7 @@
       "Any"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/15m-FVG-Tap-Delivery-Reversal-344e2f0e776081878722e91f87533e3d",
+    "notion_url": "https://www.notion.so/344e2f0e776081878722e91f87533e3d",
     "pre_market_factors": []
   },
   {
@@ -233,20 +255,20 @@
       "Any"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/15m-FVG-Reversal-Sweep-Inversion-343e2f0e776081f4880bff1c5bd10c76",
+    "notion_url": "https://www.notion.so/343e2f0e776081f4880bff1c5bd10c76",
     "pre_market_factors": []
   },
   {
     "name": "ON Range Bias",
     "direction": "both",
-    "status": "idea",
-    "wr_base": "73.1% (all 4 factors, excl protected_swing)",
+    "status": "rejected",
+    "wr_base": "DISCONFIRMED — 73.1% IS, 48.6% OOS (see retest banner)",
     "sample_size": 94,
     "description": "FVGC entries with all 4 confluence factors produce 73.1% WR and 2.41+ PF (n=94, excl protected_swing). The model is binary — all 4 factors or skip. Factors: (A) ON level tested & bias confirmed, (B) VIXY high regime, (C) gap aligns with direction, (D) 9:30 candle aligns. W2 window (9:45-10:00) peaks at 79.1% WR, 3.76 PF. ON level test establishes directional bias; FVGC signal is the entry trigger.",
     "pre_market_conditions": "Check VIXY regime: must be 'high' — if not, no play today. Note gap direction from prior close. Check overnight range for high/low levels. 5 of 4 factors are knowable pre-market: VIXY high, gap aligned, ON high/low. Factor D (930 candle) is confirmed at 9:30:30. ON breakout state machine runs 9:30-10:15.",
     "action_plan": "All 4 must be TRUE: (A) ON level tested & bias confirmed — watch 30s closes through ONH/ONL, wait for price to return within 5 pts of level then re-confirm direction. (B) VIXY high (≥25.2). (C) Gap aligns with direction. (D) 9:30 candle direction matches. Then take bos/ifvg/no_fvg only — skip protected_swing always. Prefer W1-W2 (before 10:00). W3 acceptable but lower PF.\n\nExit Strategy: 73.4% hit 1R, 59.6% hit 2R, 45.7% hit 3R. Edge decays past 3R. Recommended: BE@1R → 2R (W2 optimal). W1 entries: BE@1R → 2.5R (75% hit 2R, 62% hit 3R). W3: standard 1R or BE@1R → 2R.",
     "tier": "B",
-    "confidence": "medium",
+    "confidence": "low",
     "frequency": "~3/month (clusters when VIXY is high regime; ~7 trades/month on active days)",
     "pf_base": 3.76,
     "avg_mfe_r": 3.59,
@@ -255,7 +277,7 @@
       "9:45-10:00"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/ON-Range-Bias-343e2f0e776081679327e2ce38aa621b",
+    "notion_url": "https://www.notion.so/343e2f0e776081679327e2ce38aa621b",
     "pre_market_factors": []
   },
   {
@@ -277,7 +299,7 @@
       "9:45-10:00"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/VWAP-Continuation-342e2f0e77608199821ecfbf57a1c591",
+    "notion_url": "https://www.notion.so/342e2f0e77608199821ecfbf57a1c591",
     "pre_market_factors": []
   },
   {
@@ -298,7 +320,7 @@
       "9:30-9:45"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/ATR-Range-Exhaustion-Filter-High-VIXY-342e2f0e7760816abc98f5a9af374523",
+    "notion_url": "https://www.notion.so/342e2f0e7760816abc98f5a9af374523",
     "pre_market_factors": []
   },
   {
@@ -309,7 +331,7 @@
     "sample_size": 922,
     "description": "At the moment of FVGC entry, check the MACD(12,26,9) histogram on the 5-minute chart. Only take the trade if the histogram is expanding in the trade direction AND on the correct side of zero (strict filter). This captures real-time momentum state that static pre-market factors miss. Confirmed trades jump from 51.7% → 61.1% WR and baseline PF 1.09 → 2.05 with runner management. Contracting histogram trades (25% WR, PF 0.33) should be skipped entirely. Shorts outperform longs across all variants. Runner profile is strong — median 2R arrival is only 10 minutes from entry.",
     "pre_market_conditions": "None specific — this is a pure intraday entry filter. Apply on top of any existing pre-market bias. Works across all macro windows and gap directions.",
-    "action_plan": "At the FVGC entry bar, switch to the 5-minute chart and check MACD(12,26,9) histogram:\n\nLONG — both required:\n• Histogram is positive (bar is above zero line)\n• Current bar histogram > previous bar histogram (expanding upward)\n\nSHORT — both required:\n• Histogram is negative (bar is below zero line)\n• Current bar histogram < previous bar histogram (expanding downward — more negative)\n\nIf either condition fails → skip the trade.\n\nBest setups (>2 PF with Strategy G runner):\n• Short + IFVG: 70.6% WR, PF 3.07 (~0.4/wk)\n• Short + Protected Swing: 65.4% WR, PF 2.42 (~0.7/wk)\n• Short + BOS: 63.4% WR, PF 2.33 (~1.1/wk)\n• Long + IFVG: 62.5% WR, PF 2.26 (~0.4/wk)\n• Long + No FVG: 63.1% WR, PF 2.14 (~1.7/wk)\n\nHistogram magnitude note: medium-sized histogram (abs value roughly 4–9 pts on NQ) has the highest WR at 65.6%. Very small histograms (<4 pts) = weakest confirmation at 56% WR.\n\nExit Strategy: Strategy G — Scale-Out Runner (PF 2.05, 89.3% positive months across 28-month sample):\n• At +1R: exit 33% of position, move stop to breakeven\n• At +2R: exit another 33%, move stop to +1R\n• At +3R: exit final 34%, or trail further if momentum still expanding\n\nTime guide (based on 30s-bar data, confirmed trades):\n• 1R reached at median 3.5 min from entry\n• 2R reached at median 10 min from entry\n• 3R reached at median 18.5 min from entry\n• If 2R not reached within ~20 min, tighten trail to +0.5R\n\nAlternative for higher raw PF: Fixed 3R (PF 2.43) — but higher monthly variance.\nConservative fallback: 50% at 1R + 50% trail to 2R or +0.5R (PF 1.98, lower stress).",
+    "action_plan": "At the FVGC entry bar, switch to the 5-minute chart and check MACD(12,26,9) histogram:\n\nLONG — both required:\n• Histogram is positive (bar is above zero line)\n• Current bar histogram > previous bar histogram (expanding upward)\n\nSHORT — both required:\n• Histogram is negative (bar is below zero line)\n• Current bar histogram < previous bar histogram (expanding downward — more negative)\n\nIf either condition fails → skip the trade.\n\nBest setups (>2 PF combos with Strategy G runner):\n• Short + IFVG: 70.6% WR, PF 3.07 (~0.4/wk)\n• Short + Protected Swing: 65.4% WR, PF 2.42 (~0.7/wk)\n• Short + BOS: 63.4% WR, PF 2.33 (~1.1/wk)\n• Long + IFVG: 62.5% WR, PF 2.26 (~0.4/wk)\n• Long + No FVG: 63.1% WR, PF 2.14 (~1.7/wk)\n\nHistogram magnitude note: medium-sized histogram (abs value roughly 4–9 pts on NQ) has the highest WR at 65.6%. Very small histograms (<4 pts) = weakest confirmation at 56% WR.\n\nExit Strategy: Strategy G — Scale-Out Runner (PF 2.05, 89.3% positive months across 28-month sample):\n• At +1R: exit 33% of position, move stop to breakeven\n• At +2R: exit another 33%, move stop to +1R\n• At +3R: exit final 34%, or trail further if momentum still expanding\n\nTime guide (based on 30s-bar data, confirmed trades):\n• 1R reached at median 3.5 min from entry\n• 2R reached at median 10 min from entry\n• 3R reached at median 18.5 min from entry\n• If 2R not reached within ~20 min, tighten trail to +0.5R\n\nAlternative for higher raw PF: Fixed 3R (PF 2.43) — but higher monthly variance.\nConservative fallback: 50% at 1R + 50% trail to 2R or +0.5R (PF 1.98, lower stress).",
     "tier": "B",
     "confidence": "medium",
     "frequency": "~4.3 qualified setups/week (>2 PF combos); ~7.7 MACD-confirmed/week total",
@@ -319,28 +341,28 @@
       "Any"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/MACD-342e2f0e776081968dc8f38d9990703f",
+    "notion_url": "https://www.notion.so/342e2f0e776081968dc8f38d9990703f",
     "pre_market_factors": []
   },
   {
     "name": "Thursday Inside Value Area",
     "direction": "both",
-    "status": "idea",
-    "wr_base": "73.7%",
-    "sample_size": 76,
-    "description": "On Thursdays, when the FVGC entry price falls inside the prior day's Value Area (between VAL and VAH), the model produces 73.7% WR and 2.89 PF on 76 trades. Highly significant (p=0.0002). Neither Thursday alone nor Inside VA alone is significant — the interaction is the edge. Thursdays see institutional rebalancing ahead of Friday expiration; inside the VA signals acceptance/balance, so FVGC entries catch clean rotations.",
+    "status": "rejected",
+    "wr_base": "INVALIDATED — 50.0% on 5.5yr holdout",
+    "sample_size": 271,
+    "description": "INVALIDATED 2026-05-22. The original 73.7% WR / 2.89 PF claim on n=76 (2023-10 → 2026-03) does not survive the full 8-year data. Holdout 2018-01 → 2023-09 (5.5yr, never seen by the original study): n=170, WR 50.0%, PF 0.97 — at baseline. Forward 2026-03-26 → 2026-05-15: n=8, WR 37.5%. The in-sample window reproduces, so the original wasn't a coding error — but it doesn't generalize. Multi-comparison artifact + small-sample + regime confound (FVGC model itself was 4.5pp less profitable in the holdout era). The lag-1 VP feature itself is causally clean — this is not a lookahead bug, just no real edge.",
     "pre_market_conditions": "Check calendar: is it Thursday? Night before, pull up prior day's volume profile on TradingView. Note VAH and VAL prices.",
     "action_plan": "FVGC entry price must fall between prior day's VAL and VAH (inside the 70% value area). Long or short — both work equally (73.8% / 73.5% WR). All macro windows MW1-MW3 are valid.\n\nExit Strategy: Primary: BE@1R → 2R — move stop to breakeven at +1R, hold for 2R target. 50% WR, 3.80 PF, +0.74R EV, 71% months profitable. Conservative alt: Fixed 1R (73.7% WR, +0.47R EV). Aggressive alt: BE@1R → 2.5R on bearish 930 candle days (+0.86R EV).",
     "tier": "B",
     "confidence": "low",
     "frequency": "~37/yr (~3.1/mo) — Thursdays only, so roughly 1 most Thursdays (sometimes multiple per Thursday). 21 months with data, only 3 losing months.",
-    "pf_base": 2.89,
+    "pf_base": 0.97,
     "avg_mfe_r": null,
     "window": [
       "Any"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/Thursday-Inside-Value-Area-342e2f0e77608166bc8ed85bf46b2dca",
+    "notion_url": "https://www.notion.so/342e2f0e77608166bc8ed85bf46b2dca",
     "pre_market_factors": [
       "thursday",
       "entry_inside_prior_day_value_area"
@@ -364,7 +386,7 @@
       "Any"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/15m-FVG-Breakout-Continuation-340e2f0e776081cd922adc681ab3fdb1",
+    "notion_url": "https://www.notion.so/340e2f0e776081cd922adc681ab3fdb1",
     "pre_market_factors": []
   },
   {
@@ -385,7 +407,7 @@
       "Any"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/HTF-Delivery-Draw-Reversal-340e2f0e7760813c8df9c4a25d4eb677",
+    "notion_url": "https://www.notion.so/340e2f0e7760813c8df9c4a25d4eb677",
     "pre_market_factors": []
   },
   {
@@ -406,7 +428,7 @@
       "9:30-9:45"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/M1-Short-Confluence-Model-33de2f0e776081889879c4dcbd495996",
+    "notion_url": "https://www.notion.so/33de2f0e776081889879c4dcbd495996",
     "pre_market_factors": []
   },
   {
@@ -425,7 +447,7 @@
     "avg_mfe_r": 6.99,
     "window": [],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/FVGC-Off-of-930-Candle-33de2f0e776081aa9c6bdc297e5fb68b",
+    "notion_url": "https://www.notion.so/33de2f0e776081aa9c6bdc297e5fb68b",
     "pre_market_factors": []
   },
   {
@@ -446,7 +468,7 @@
       "9:45-10:00"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/FVGC-To-Opening-Range-H-L-33de2f0e776080409d14f582b1868b64",
+    "notion_url": "https://www.notion.so/33de2f0e776080409d14f582b1868b64",
     "pre_market_factors": []
   }
 ]
