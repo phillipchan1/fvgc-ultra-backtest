@@ -4886,8 +4886,16 @@
       wrap.appendChild(checklist);
 
       // -------- Projection strip --------
+      // Both action strings need the UC version for cls() — earlier rewrite
+      // renamed minAction → minActionUC but missed declaring maxActionUC.
+      // Result: clicking any matrix play with proj.locked=false threw
+      // ReferenceError: maxAction is not defined, detail pane silently went
+      // blank, looked like the click was being ignored. (Observed 2026-05-26
+      // when M1 Short was the first matrix play whose projection was still
+      // in flux — vetoed/armed plays bypass this branch via earlier returns.)
       const cls = (action) => action.includes('TAKE') ? 'take' : 'skip';
       const minActionUC = (proj.min_tier?.action || '').toUpperCase();
+      const maxActionUC = (proj.max_tier?.action || '').toUpperCase();
       const projStrip = h('div', {class:'projection-strip'});
       if (proj.locked) {
         projStrip.appendChild(h('div', {class:'proj-card ' + cls(minActionUC) + ' active'},
@@ -4899,7 +4907,7 @@
           h('div', {class:'pl'}, `IF ${proj.min_count}`),
           h('div', {class:'pa'}, proj.min_tier.action),
           h('div', {class:'pn'}, proj.min_tier.note || '')));
-        projStrip.appendChild(h('div', {class:'proj-card ' + cls(maxAction) + ' active'},
+        projStrip.appendChild(h('div', {class:'proj-card ' + cls(maxActionUC) + ' active'},
           h('div', {class:'pl'}, `IF ${proj.max_count}`),
           h('div', {class:'pa'}, proj.max_tier.action),
           h('div', {class:'pn'}, proj.max_tier.note || '')));
