@@ -3927,33 +3927,9 @@
           hi_pts: width * ratio.q75,
         };
       }
-      function _qClass(qLetter) {
-        switch ((qLetter || '').toUpperCase()) {
-          case 'Q5': return 'good';
-          case 'Q4': return 'good';
-          case 'Q3': return 'cool';
-          case 'Q2': return 'warn';
-          case 'Q1': return 'bad';
-          default:   return '';
-        }
-      }
-      // Plain-English meaning of each 45-min OR quintile per the validated
-      // FVGC insight ("Range Determines Reach"). The numbers here come from
-      // studies/range_determines_reach/ — Q5 is genuinely a different
-      // economics regime than Q1/Q2, and the trader needs to read off the
-      // chip what the quintile MEANS for sizing, not just see "Q4". One-
-      // liners only — full breakdown lives in the "WHY THIS MATTERS" card
-      // below.
-      function _qMeaning(qLetter) {
-        switch ((qLetter || '').toUpperCase()) {
-          case 'Q5': return 'WIDE+ · upsize tier · PF 2.02, E[R] +0.68R @ 4R';
-          case 'Q4': return 'WIDE · default size · target 3-4R · PF ~1.8';
-          case 'Q3': return 'STANDARD · default size · target 3-4R';
-          case 'Q2': return 'BELOW · skip — negative EV at every target';
-          case 'Q1': return 'TIGHT · skip — FVGC structurally fails here';
-          default:   return '';
-        }
-      }
+      // _qClass + _qMeaning now live at outer scope (above renderRange-
+      // Briefing) so both the initial render AND the live hero updater
+      // can reach them without scope-walking inside setupLiveOverlay.
       function renderEvolvingForecast(snap) {
         const fc = window.BRIEFING_DATA?.or_forecast;
         const sw = fc?.stepwise;
@@ -5520,6 +5496,33 @@
     // ====== Range Briefing — uses or_forecast + validated insight intelligence
     // about how 45-min OR drives FVGC outcomes. Hardcoded for the Q1-Q5 narrative
     // (source: FVGC Insights — "Range Determines Reach", validated walk-forward).
+    // Quintile helpers — outer-scope so renderRangeBriefing (and the live
+    // hero updater) can both reach them. Were originally inside setupLive-
+    // Overlay; that broke renderRangeBriefing with "ReferenceError: _qMeaning
+    // is not defined" because outer-scope render code can't see inner-scope
+    // declarations. (Observed 2026-05-26 — silent dashboard render failure
+    // that took out the whole card.)
+    function _qClass(qLetter) {
+      switch ((qLetter || '').toUpperCase()) {
+        case 'Q5': return 'good';
+        case 'Q4': return 'good';
+        case 'Q3': return 'cool';
+        case 'Q2': return 'warn';
+        case 'Q1': return 'bad';
+        default:   return '';
+      }
+    }
+    function _qMeaning(qLetter) {
+      switch ((qLetter || '').toUpperCase()) {
+        case 'Q5': return 'WIDE+ · upsize tier · PF 2.02, E[R] +0.68R @ 4R';
+        case 'Q4': return 'WIDE · default size · target 3-4R · PF ~1.8';
+        case 'Q3': return 'STANDARD · default size · target 3-4R';
+        case 'Q2': return 'BELOW · skip — negative EV at every target';
+        case 'Q1': return 'TIGHT · skip — FVGC structurally fails here';
+        default:   return '';
+      }
+    }
+
     function renderRangeBriefing(fc, intel) {
       const card = h('div', {class:'card range-card'});
 
