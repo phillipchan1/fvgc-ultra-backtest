@@ -383,44 +383,50 @@
     "macro": "9:45-10:15",
     "timeframe": "30s primary (1.64x more $/yr, more stable IS/OOS); 1m alt for easier-execution",
     "validated_on": "2026-05-18 (8yr: 2018-01 to 2026-05, magnet-aligned framing)",
-    "sample_size": 1001,
-    "wr_base": "47%",
-    "pf_2r": 1.78,
-    "ev_r_per_trade_2r": 0.385,
+    "sample_size": 808,
+    "wr_base": "48.3%",
+    "pf_2r": 1.87,
+    "ev_r_per_trade_2r": 0.421,
     "validation": {
-      "data_window": "2018-01 .. 2026-05 (8.4yr, 2157 trading days)",
+      "data_window": "2018-02 .. 2026-04 (8.2yr)",
       "is_window": "2023-10-01 .. 2025-10-31",
       "primary_tf": "30s",
-      "30s_n": 1001,
-      "30s_pf_2r": 1.78,
-      "30s_ev_r": 0.385,
-      "30s_is_pf": 1.83,
-      "30s_oos_pf": 1.76,
-      "30s_drift": 0.07,
-      "30s_total_r_per_yr": 45.8,
-      "1m_n": 543,
-      "1m_pf_2r": 1.93,
-      "1m_ev_r": 0.433,
-      "1m_is_pf": 2.32,
-      "1m_oos_pf": 1.78,
-      "1m_drift": 0.35,
-      "1m_total_r_per_yr": 28.0,
-      "bootstrap_pf_95ci_universe": [
-        1.47,
-        2.21
-      ],
-      "winner_tf": "30s — same OOS PF, 1.84x more trades, 1.64x more $/yr, lower drift"
+      "is_pf_2r": 1.85,
+      "oos_pf_2r": 1.88,
+      "is_oos_drift_ev": 0.04,
+      "total_r_per_yr": 41.3,
+      "winning_months_pct": 76,
+      "losing_months": 12,
+      "total_months": 78,
+      "worst_month_r": -7,
+      "best_month_r": 18,
+      "mean_month_r": 4.36,
+      "sharpe_like": 0.86,
+      "yearly_track": {
+        "2018": "+19R (n=33, 53% WR)",
+        "2019": "-2R (n=3, tiny sample)",
+        "2020": "+23R (n=88, COVID year)",
+        "2021": "+33R (n=105)",
+        "2022": "+87R (n=191, best year)",
+        "2023": "+33R (n=76)",
+        "2024": "+44R (n=154)",
+        "2025": "+76R (n=137)",
+        "2026_ytd": "+27R (n=21, 76% WR)"
+      },
+      "years_profitable": "8 of 9 (2019 negative on tiny n=3)"
     },
     "pre_market_factors": [],
     "intraday_triggers": [
       "fvgc_entry_post_945_magnet_aligned"
     ],
     "hard_kill_switches": {
-      "or_too_wide": "OR range > 150 pts -> NO PLAY today (n=63, PF 0.92, EV -0.05R)",
-      "ifvg_variant": "variant = ifvg -> skip this fire (n=109, PF 1.54, weakest variant)",
-      "both_swept": "Both OR sides swept by entry time -> no magnet left, no entries (n=47, PF 1.23)",
-      "magnet_against": "Direction toward already-swept side -> skip (PF 1.47 vs 1.81 aligned)",
-      "window_close": "10:15 ET -> FVGC engine stops firing naturally"
+      "or_too_wide": "OR range > 150 pts -> NO PLAY today (PF 0.92)",
+      "ifvg_variant": "variant = ifvg -> skip (PF 1.54, weakest variant)",
+      "both_swept": "Both OR sides swept by entry time -> no magnet (PF 1.23)",
+      "magnet_against": "Direction toward already-swept side -> skip (PF 1.47)",
+      "vix_elevated": "VIXY regime = elevated (middle/indecision regime, NOT low or high) -> NO PLAY. Lifetime PF 1.45 in this cell. Removing: PF 1.78 -> 1.87, losing months 19 -> 12 (-37%), Sharpe 0.77 -> 0.86. Catches Jan 2026 (-5R, 0% long WR, 100% VIX-elevated days). Knowable pre-open from VIXY daily close.",
+      "window_close": "10:15 ET -> FVGC engine stops firing",
+      "5th_plus_trade": "Skip the 5th+ trade of the day (n=4, PF 0, EV -1.00R)."
     },
     "soft_cues_no_size_change": {
       "or_60_100pt": "Tight compressed OR, magnet pulls cleanly (PF 2.04)",
@@ -441,25 +447,21 @@
       "verdict": "Re-entries are STRONGER, not weaker. Take every qualifying fire."
     },
     "cadence_stats": {
-      "trades_per_yr": 64.6,
-      "trades_per_month": 5.4,
-      "median_gap_days": 6,
-      "p90_gap_days": 28,
-      "max_gap_days": 132,
-      "mean_trades_per_day": 1.2,
-      "pct_days_0_1_trades": 82,
-      "pct_days_2_plus_trades": 18,
-      "source": "computed_30s_primary_1m_alt",
-      "30s": {
-        "trades_per_yr": 119,
-        "trades_per_month": 9.9,
-        "median_gap_days": 4,
-        "mean_trades_per_day": 1.49
-      }
+      "trades_per_yr": 98,
+      "trades_per_month": 8.2,
+      "trades_per_week": 1.9,
+      "mean_fires_per_trade_day": 1.49,
+      "trade_days_pct_of_calendar": 26,
+      "pct_days_1_fire": 66,
+      "pct_days_2_fires": 22,
+      "pct_days_3_fires": 9,
+      "pct_days_4_fires": 2,
+      "pct_days_5_plus": 1,
+      "source": "computed_v5_with_vix_kill_switch"
     },
-    "cadence": "30s primary: ~119/yr (~10/mo), mean 1.5 trades/day. 34% of days have 2+ trades. 1m alt: ~65/yr (~5.4/mo). Entry window 9:45-10:15 ET.",
-    "description": "After 9:45, take 30s FVGCs pointing at an OR side that has NOT been swept yet. Target 2R, hold original SL. SIZING: 1st trade of day full size, 2nd-4th at half-size (concurrent positions are common on 30s and correlated). The OR is a magnet — 95% of days one side gets tested by 10:15. Kill switches: OR > 150pt | variant = ifvg | both OR sides already swept | direction toward already-swept side | trade #5+ of day. 8yr validated on 30s: n=1001, PF 1.78, OOS PF 1.76, drift 0.07 (very stable), EV +0.385R/trade, +45.8R/yr. 1m alt available for easier execution: n=543, PF 1.93, +28R/yr.",
-    "action_plan": "At 9:45 ET: mark OR.H and OR.L. If OR range > 150pt -> NO PLAY today. From 9:45-10:15, watch 30s bars (or 1m if 30s is too fast for you). On each FVGC: (1) variant != ifvg, (2) direction points at unswept OR side, (3) at least one OR side still unswept -> TAKE IT. SIZING: 1st trade of day = 1x full. 2nd/3rd/4th = 0.5x half. Skip 5th+. Same-day re-entries are real and +EV up to trade #4, but they overlap in time on 30s (48% within 5min) — half-sizing keeps correlated risk sane. Target 2R, hold original SL, NEVER move to BE. Day's done when both OR sides swept OR 10:15 ET.",
+    "cadence": "~98/yr (~8.2/mo, ~1.9/week). Mean 1.49 fires per trade day. 66% of trade days = 1 fire, 22% = 2, 9% = 3, 2% = 4. Trade window 9:45-10:15 ET. 26% of all trading days produce at least one fire.",
+    "description": "After 9:45, take 30s FVGCs pointing at an OR side that has NOT been swept yet. Target 2R, hold original SL. Kill switches: OR > 150pt | variant = ifvg | both OR sides swept | magnet-against direction | VIX regime = 'elevated' (NEW v5) | 5th+ trade of day. SIZING: 1st of day = 1x, 2nd-4th = 0.5x half. 8.2yr validated: n=808, PF 1.87, OOS PF 1.88 (drift 0.04 — essentially identical), EV +0.42R/trade, +41R/yr ($24,933 flat 1x / $20,851 sized). Monthly: 76% winning months, worst -7R, Sharpe 0.86. 8 of 9 years profitable.",
+    "action_plan": "PRE-MARKET (6am check): Look at VIXY regime in morning briefing. If regime = 'elevated' (NOT low, normal, or high — the middle indecision regime), SKIP THIS PLAY TODAY. AT 9:45: mark OR.H, OR.L. If OR > 150pt -> NO PLAY. From 9:45-10:15 watch 30s bars. On each FVGC: variant != ifvg AND direction points at unswept OR side AND at least one OR side still unswept -> TAKE. SIZING: 1st trade = 1x full. 2nd/3rd/4th = 0.5x half. Skip 5th+. Target 2R, hold original SL, never BE. Day's done when both OR sides swept OR 10:15 passes.",
     "trade_lists": {
       "all_trades_30s_primary": "studies/or_hl_play_8yr_validation/results/magnet_aligned_30s.csv (filter magnet='aligned' AND or_range<=150 AND variant!='ifvg')",
       "all_trades_1m_alt": "studies/or_hl_play_8yr_validation/results/magnet_aligned_1m.csv (same filters)",
@@ -469,9 +471,14 @@
     },
     "study_source": "studies/or_hl_play_8yr_validation/analysis.md",
     "sizing_rule": {
-      "on_30s": "1st trade of day: 1x full size. 2nd, 3rd, 4th trades: 0.5x (half-size). 34% of days have multi-fires; 48% of same-day pairs fire within 5 min (overlapping in time, correlated risk). Half-sizing keeps daily peak risk ~2.5R instead of 4R while preserving ~85% of edge.",
-      "on_1m": "Take every fire at 1x full size — 1m only has 18% multi-fire days, concurrent positions rare.",
-      "skip_5plus": "Skip the 5th+ trade of the day (only 0.7% of days, edge breaks down: PF 0 on n=5)."
+      "rationale": "Same-day re-entries are NOT marginal — Trade #1 PF 1.86, Trade #2 PF 1.88, Trade #3 PF 2.07. The OR magnet keeps drawing price; subsequent FVGCs ride the same edge. But 48% of same-day pairs fire within 5 min — concurrent positions create correlated risk.",
+      "rule": "1st trade of day = 1x full. 2nd/3rd/4th = 0.5x half. 5th+ = SKIP.",
+      "alternatives_tested": {
+        "take_all_1x": "$24,933/yr | 76% winning months | worst -7R | Sharpe 0.86 (max profit)",
+        "sized_rule": "$20,851/yr | 78% winning months | worst -4R | Sharpe 0.84 (recommended)",
+        "take_1st_only": "$16,768/yr | 74% winning months | worst -4R | Sharpe 0.73 (WORSE on every metric except worst month — counterintuitive: fewer trades = MORE losing months due to lower law-of-large-numbers smoothing)"
+      },
+      "why_not_take_1st_only": "Trade #1-only LOOKS safer but is mathematically worse. Same-day trades are SAME edge — skipping them throws away EV. Skipping reduces n which makes monthly variance HIGHER, not lower. The right risk control is half-sizing re-entries, not skipping them."
     },
     "same_day_distribution_30s": {
       "1_trade_days_pct": 66,
@@ -512,6 +519,18 @@
         "ev_r": -0.8,
         "note": "TINY SAMPLE, SKIP"
       }
+    },
+    "monthly_consistency": {
+      "filter_applied": "VIX != elevated (the key v5 addition)",
+      "winning_months_pct": 76,
+      "losing_months": 12,
+      "total_months": 78,
+      "worst_month_r": -7,
+      "best_month_r": 18,
+      "mean_month_r": 4.36,
+      "median_month_r": 4.0,
+      "std_dev_month_r": 5.08,
+      "vs_old_spec": "Old spec: 73% winning months, 19 losing months. New spec: 76% winning, 12 losing (-37%). Sharpe 0.77 -> 0.86. Trade-off: ~$2.7k/yr less ($27.5k -> $24.8k) for materially smoother equity."
     }
   },
   {
