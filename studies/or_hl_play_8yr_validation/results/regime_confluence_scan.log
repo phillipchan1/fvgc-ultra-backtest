@@ -1,0 +1,361 @@
+Universe: 30s magnet-aligned with kill switches = 1001 trades
+IS: 312    OOS: 689
+
+
+================================================================================
+  A. MULTI-WINDOW MOMENTUM (return direction × magnitude)
+================================================================================
+
+  5d return > +1%
+    IN:  n= 393  PF= 1.74  EV=+0.369R    IS: n= 129  PF= 1.75  EV=+0.380R    OOS: n= 264  PF= 1.74  EV=+0.364R
+    OUT: n= 608  PF= 1.81  EV=+0.395R    IS: n= 183  PF= 1.89  EV=+0.421R    OOS: n= 425  PF= 1.77  EV=+0.384R
+    LIFT (ALL/IS/OOS): -0.06 / -0.13 / -0.03    ≈ flat
+      long  IN: n= 194  PF= 2.78  EV=+0.680R              OUT: n= 330  PF= 1.73  EV=+0.352R              Δ +1.06
+      short IN: n= 199  PF= 1.11  EV=+0.065R              OUT: n= 278  PF= 1.90  EV=+0.446R              Δ -0.79
+
+  5d return < -1%
+    IN:  n= 322  PF= 1.88  EV=+0.422R    IS: n=  75  PF= 1.58  EV=+0.293R    OOS: n= 247  PF= 1.98  EV=+0.462R
+    OUT: n= 679  PF= 1.73  EV=+0.367R    IS: n= 237  PF= 1.91  EV=+0.439R    OOS: n= 442  PF= 1.64  EV=+0.328R
+    LIFT (ALL/IS/OOS): +0.15 / -0.33 / +0.34    ≈ flat
+      long  IN: n= 168  PF= 1.68  EV=+0.321R              OUT: n= 356  PF= 2.26  EV=+0.545R              Δ -0.58
+      short IN: n= 154  PF= 2.11  EV=+0.532R              OUT: n= 323  PF= 1.30  EV=+0.170R              Δ +0.81
+
+  10d return > +2%
+    IN:  n= 368  PF= 1.63  EV=+0.318R    IS: n= 119  PF= 1.33  EV=+0.185R    OOS: n= 249  PF= 1.79  EV=+0.382R
+    OUT: n= 633  PF= 1.88  EV=+0.423R    IS: n= 193  PF= 2.21  EV=+0.539R    OOS: n= 440  PF= 1.75  EV=+0.373R
+    LIFT (ALL/IS/OOS): -0.25 / -0.88 / +0.04    ✗ HURTS
+      long  IN: n= 187  PF= 2.33  EV=+0.561R              OUT: n= 337  PF= 1.92  EV=+0.424R              Δ +0.41
+      short IN: n= 181  PF= 1.11  EV=+0.066R              OUT: n= 296  PF= 1.83  EV=+0.422R              Δ -0.72
+
+  10d return < -2%
+    IN:  n= 239  PF= 2.29  EV=+0.556R    IS: n=  47  PF= 1.91  EV=+0.447R    OOS: n= 192  PF= 2.40  EV=+0.583R
+    OUT: n= 762  PF= 1.65  EV=+0.331R    IS: n= 265  PF= 1.81  EV=+0.396R    OOS: n= 497  PF= 1.56  EV=+0.296R
+    LIFT (ALL/IS/OOS): +0.65 / +0.10 / +0.84    ✓ HELPS
+      long  IN: n= 116  PF= 1.92  EV=+0.405R              OUT: n= 408  PF= 2.10  EV=+0.493R              Δ -0.18
+      short IN: n= 123  PF= 2.65  EV=+0.699R              OUT: n= 354  PF= 1.25  EV=+0.144R              Δ +1.41
+
+  20d return > +2% (Bull20)
+    IN:  n= 452  PF= 1.85  EV=+0.414R    IS: n= 151  PF= 2.27  EV=+0.563R    OOS: n= 301  PF= 1.66  EV=+0.339R
+    OUT: n= 549  PF= 1.73  EV=+0.361R    IS: n= 161  PF= 1.48  EV=+0.255R    OOS: n= 388  PF= 1.84  EV=+0.405R
+    LIFT (ALL/IS/OOS): +0.12 / +0.79 / -0.18    ≈ flat
+      long  IN: n= 245  PF= 2.42  EV=+0.604R              OUT: n= 279  PF= 1.77  EV=+0.358R              Δ +0.65
+      short IN: n= 207  PF= 1.33  EV=+0.188R              OUT: n= 270  PF= 1.69  EV=+0.363R              Δ -0.36
+
+  20d return < -2% (Bear20)
+    IN:  n= 284  PF= 2.14  EV=+0.518R    IS: n=  49  PF= 1.69  EV=+0.367R    OOS: n= 235  PF= 2.25  EV=+0.549R
+    OUT: n= 717  PF= 1.65  EV=+0.332R    IS: n= 263  PF= 1.86  EV=+0.411R    OOS: n= 454  PF= 1.55  EV=+0.286R
+    LIFT (ALL/IS/OOS): +0.49 / -0.16 / +0.71    ✓ HELPS
+      long  IN: n= 127  PF= 2.30  EV=+0.551R              OUT: n= 397  PF= 1.99  EV=+0.448R              Δ +0.31
+      short IN: n= 157  PF= 2.03  EV=+0.490R              OUT: n= 320  PF= 1.33  EV=+0.188R              Δ +0.70
+
+  60d return > +5%
+    IN:  n= 424  PF= 1.66  EV=+0.335R    IS: n= 159  PF= 1.95  EV=+0.453R    OOS: n= 265  PF= 1.50  EV=+0.264R
+    OUT: n= 577  PF= 1.88  EV=+0.421R    IS: n= 153  PF= 1.71  EV=+0.353R    OOS: n= 424  PF= 1.94  EV=+0.446R
+    LIFT (ALL/IS/OOS): -0.22 / +0.24 / -0.44    ✗ HURTS
+      long  IN: n= 243  PF= 1.91  EV=+0.432R              OUT: n= 281  PF= 2.20  EV=+0.509R              Δ -0.29
+      short IN: n= 181  PF= 1.37  EV=+0.204R              OUT: n= 296  PF= 1.63  EV=+0.338R              Δ -0.27
+
+  60d return < -5%
+    IN:  n= 189  PF= 1.67  EV=+0.339R    IS: n=  29  PF= 0.90  EV=-0.069R    OOS: n= 160  PF= 1.87  EV=+0.412R
+    OUT: n= 812  PF= 1.81  EV=+0.395R    IS: n= 283  PF= 1.97  EV=+0.452R    OOS: n= 529  PF= 1.73  EV=+0.365R
+    LIFT (ALL/IS/OOS): -0.14 / -1.07 / +0.14    ≈ flat
+      long  IN: n=  93  PF= 1.78  EV=+0.376R              OUT: n= 431  PF= 2.13  EV=+0.494R              Δ -0.35
+      short IN: n=  96  PF= 1.57  EV=+0.302R              OUT: n= 381  PF= 1.52  EV=+0.283R              Δ +0.05
+
+  20d return > +1.0 ATR (strong bull move)
+    IN:  n= 479  PF= 1.74  EV=+0.374R    IS: n= 176  PF= 2.07  EV=+0.500R    OOS: n= 303  PF= 1.57  EV=+0.300R
+    OUT: n= 522  PF= 1.82  EV=+0.395R    IS: n= 136  PF= 1.54  EV=+0.279R    OOS: n= 386  PF= 1.92  EV=+0.435R
+    LIFT (ALL/IS/OOS): -0.07 / +0.53 / -0.35    ≈ flat
+      long  IN: n= 265  PF= 2.12  EV=+0.506R              OUT: n= 259  PF= 2.00  EV=+0.440R              Δ +0.12
+      short IN: n= 214  PF= 1.37  EV=+0.210R              OUT: n= 263  PF= 1.67  EV=+0.350R              Δ -0.29
+
+  20d return < -1.0 ATR (strong bear move)
+    IN:  n= 294  PF= 2.04  EV=+0.483R    IS: n=  56  PF= 1.53  EV=+0.286R    OOS: n= 238  PF= 2.19  EV=+0.529R
+    OUT: n= 707  PF= 1.68  EV=+0.344R    IS: n= 256  PF= 1.90  EV=+0.430R    OOS: n= 451  PF= 1.57  EV=+0.295R
+    LIFT (ALL/IS/OOS): +0.36 / -0.37 / +0.62    ✓ HELPS
+      long  IN: n= 137  PF= 2.13  EV=+0.496R              OUT: n= 387  PF= 2.03  EV=+0.465R              Δ +0.10
+      short IN: n= 157  PF= 1.97  EV=+0.471R              OUT: n= 320  PF= 1.34  EV=+0.197R              Δ +0.63
+
+  Within 1% of 20d high
+    IN:  n= 389  PF= 1.75  EV=+0.375R    IS: n= 163  PF= 1.95  EV=+0.448R    OOS: n= 226  PF= 1.62  EV=+0.323R
+    OUT: n= 612  PF= 1.80  EV=+0.391R    IS: n= 149  PF= 1.71  EV=+0.356R    OOS: n= 463  PF= 1.83  EV=+0.402R
+    LIFT (ALL/IS/OOS): -0.05 / +0.24 / -0.21    ≈ flat
+      long  IN: n= 208  PF= 2.09  EV=+0.490R              OUT: n= 316  PF= 2.04  EV=+0.462R              Δ +0.04
+      short IN: n= 181  PF= 1.44  EV=+0.243R              OUT: n= 296  PF= 1.58  EV=+0.314R              Δ -0.14
+
+  Within 1% of 20d low
+    IN:  n= 170  PF= 1.83  EV=+0.394R    IS: n=  40  PF= 1.36  EV=+0.200R    OOS: n= 130  PF= 2.00  EV=+0.454R
+    OUT: n= 831  PF= 1.77  EV=+0.383R    IS: n= 272  PF= 1.91  EV=+0.434R    OOS: n= 559  PF= 1.71  EV=+0.358R
+    LIFT (ALL/IS/OOS): +0.06 / -0.54 / +0.29    ≈ flat
+      long  IN: n=  81  PF= 1.22  EV=+0.111R              OUT: n= 443  PF= 2.24  EV=+0.540R              Δ -1.02
+      short IN: n=  89  PF= 2.45  EV=+0.652R              OUT: n= 388  PF= 1.36  EV=+0.204R              Δ +1.09
+
+
+================================================================================
+  C. GAP FACTORS (pre-open)
+================================================================================
+
+  Gap > +0.3% (gap up)
+    IN:  n= 336  PF= 1.99  EV=+0.449R    IS: n= 105  PF= 1.96  EV=+0.419R    OOS: n= 231  PF= 2.00  EV=+0.463R
+    OUT: n= 665  PF= 1.69  EV=+0.352R    IS: n= 207  PF= 1.77  EV=+0.396R    OOS: n= 458  PF= 1.65  EV=+0.332R
+    LIFT (ALL/IS/OOS): +0.30 / +0.18 / +0.35    ✓ HELPS
+      long  IN: n= 184  PF= 1.95  EV=+0.418R              OUT: n= 340  PF= 2.12  EV=+0.503R              Δ -0.17
+      short IN: n= 152  PF= 2.03  EV=+0.487R              OUT: n= 325  PF= 1.34  EV=+0.194R              Δ +0.69
+
+  Gap < -0.3% (gap down)
+    IN:  n= 295  PF= 1.59  EV=+0.319R    IS: n=  60  PF= 1.75  EV=+0.400R    OOS: n= 235  PF= 1.56  EV=+0.298R
+    OUT: n= 706  PF= 1.87  EV=+0.412R    IS: n= 252  PF= 1.85  EV=+0.405R    OOS: n= 454  PF= 1.88  EV=+0.416R
+    LIFT (ALL/IS/OOS): -0.27 / -0.10 / -0.32    ✗ HURTS
+      long  IN: n= 142  PF= 2.61  EV=+0.669R              OUT: n= 382  PF= 1.87  EV=+0.401R              Δ +0.74
+      short IN: n= 153  PF= 0.99  EV=-0.007R              OUT: n= 324  PF= 1.86  EV=+0.426R              Δ -0.87
+
+  Gap > +0.5% (large gap up)
+    IN:  n= 250  PF= 1.98  EV=+0.456R    IS: n=  69  PF= 2.13  EV=+0.507R    OOS: n= 181  PF= 1.93  EV=+0.436R
+    OUT: n= 751  PF= 1.72  EV=+0.361R    IS: n= 243  PF= 1.75  EV=+0.374R    OOS: n= 508  PF= 1.70  EV=+0.354R
+    LIFT (ALL/IS/OOS): +0.26 / +0.38 / +0.23    ✓ HELPS
+      long  IN: n= 143  PF= 1.74  EV=+0.350R              OUT: n= 381  PF= 2.19  EV=+0.520R              Δ -0.46
+      short IN: n= 107  PF= 2.33  EV=+0.598R              OUT: n= 370  PF= 1.35  EV=+0.197R              Δ +0.99
+
+  Gap < -0.5% (large gap down)
+    IN:  n= 210  PF= 1.52  EV=+0.281R    IS: n=  34  PF= 1.40  EV=+0.235R    OOS: n= 176  PF= 1.55  EV=+0.290R
+    OUT: n= 791  PF= 1.86  EV=+0.412R    IS: n= 278  PF= 1.89  EV=+0.424R    OOS: n= 513  PF= 1.84  EV=+0.405R
+    LIFT (ALL/IS/OOS): -0.34 / -0.49 / -0.29    ✗ HURTS
+      long  IN: n= 102  PF= 2.17  EV=+0.529R              OUT: n= 422  PF= 2.03  EV=+0.460R              Δ +0.14
+      short IN: n= 108  PF= 1.07  EV=+0.046R              OUT: n= 369  PF= 1.69  EV=+0.358R              Δ -0.61
+
+
+================================================================================
+  D. PRIOR-DAY FACTORS
+================================================================================
+
+  Prior day type = reversal_down
+    IN:  n=  95  PF= 2.18  EV=+0.547R    IS: n=  17  PF= 2.86  EV=+0.765R    OOS: n=  78  PF= 2.05  EV=+0.500R
+    OUT: n= 906  PF= 1.74  EV=+0.368R    IS: n= 295  PF= 1.78  EV=+0.383R    OOS: n= 611  PF= 1.72  EV=+0.360R
+    LIFT (ALL/IS/OOS): +0.44 / +1.08 / +0.33    ★★★ ROBUST
+      long  IN: n=  56  PF= 2.50  EV=+0.643R              OUT: n= 468  PF= 2.01  EV=+0.453R              Δ +0.49
+      short IN: n=  39  PF= 1.80  EV=+0.410R              OUT: n= 438  PF= 1.51  EV=+0.276R              Δ +0.29
+
+  Prior day type = reversal_up
+    IN:  n= 131  PF= 2.10  EV=+0.496R    IS: n=  45  PF= 1.58  EV=+0.311R    OOS: n=  86  PF= 2.46  EV=+0.593R
+    OUT: n= 870  PF= 1.74  EV=+0.368R    IS: n= 267  PF= 1.88  EV=+0.419R    OOS: n= 603  PF= 1.68  EV=+0.345R
+    LIFT (ALL/IS/OOS): +0.36 / -0.29 / +0.78    ✓ HELPS
+      long  IN: n=  79  PF= 1.78  EV=+0.367R              OUT: n= 445  PF= 2.11  EV=+0.492R              Δ -0.33
+      short IN: n=  52  PF= 2.64  EV=+0.692R              OUT: n= 425  PF= 1.43  EV=+0.238R              Δ +1.21
+
+  Prior day type = other
+    IN:  n= 338  PF= 2.00  EV=+0.467R    IS: n= 101  PF= 2.32  EV=+0.574R    OOS: n= 237  PF= 1.88  EV=+0.422R
+    OUT: n= 663  PF= 1.68  EV=+0.342R    IS: n= 211  PF= 1.63  EV=+0.322R    OOS: n= 452  PF= 1.70  EV=+0.352R
+    LIFT (ALL/IS/OOS): +0.32 / +0.69 / +0.18    ★★★ ROBUST
+      long  IN: n= 160  PF= 2.56  EV=+0.625R              OUT: n= 364  PF= 1.87  EV=+0.407R              Δ +0.69
+      short IN: n= 178  PF= 1.62  EV=+0.326R              OUT: n= 299  PF= 1.48  EV=+0.264R              Δ +0.14
+
+  Prior day type = trend_down
+    IN:  n= 134  PF= 1.79  EV=+0.396R    IS: n=  50  PF= 2.00  EV=+0.480R    OOS: n=  84  PF= 1.67  EV=+0.345R
+    OUT: n= 867  PF= 1.78  EV=+0.383R    IS: n= 262  PF= 1.80  EV=+0.389R    OOS: n= 605  PF= 1.77  EV=+0.380R
+    LIFT (ALL/IS/OOS): +0.01 / +0.20 / -0.10    ≈ flat
+      long  IN: n=  77  PF= 2.36  EV=+0.584R              OUT: n= 447  PF= 2.01  EV=+0.454R              Δ +0.35
+      short IN: n=  57  PF= 1.24  EV=+0.140R              OUT: n= 420  PF= 1.57  EV=+0.307R              Δ -0.34
+
+  Prior day type = range
+    IN:  n= 183  PF= 1.23  EV=+0.131R    IS: n=  71  PF= 1.18  EV=+0.099R    OOS: n= 112  PF= 1.26  EV=+0.152R
+    OUT: n= 818  PF= 1.93  EV=+0.441R    IS: n= 241  PF= 2.05  EV=+0.494R    OOS: n= 577  PF= 1.88  EV=+0.419R
+    LIFT (ALL/IS/OOS): -0.70 / -0.87 / -0.62    ✗ HURTS
+      long  IN: n=  95  PF= 1.39  EV=+0.200R              OUT: n= 429  PF= 2.24  EV=+0.534R              Δ -0.85
+      short IN: n=  88  PF= 1.09  EV=+0.057R              OUT: n= 389  PF= 1.65  EV=+0.339R              Δ -0.56
+
+  Prior day type = trend_up
+    IN:  n= 120  PF= 1.54  EV=+0.275R    IS: n=  28  PF= 1.71  EV=+0.357R    OOS: n=  92  PF= 1.49  EV=+0.250R
+    OUT: n= 881  PF= 1.81  EV=+0.400R    IS: n= 284  PF= 1.84  EV=+0.408R    OOS: n= 597  PF= 1.80  EV=+0.395R
+    LIFT (ALL/IS/OOS): -0.27 / -0.13 / -0.31    ✗ HURTS
+      long  IN: n=  57  PF= 1.70  EV=+0.333R              OUT: n= 467  PF= 2.11  EV=+0.490R              Δ -0.40
+      short IN: n=  63  PF= 1.41  EV=+0.222R              OUT: n= 414  PF= 1.55  EV=+0.297R              Δ -0.13
+
+
+================================================================================
+  E. 9:30 CANDLE (intraday, knowable by 9:31)
+================================================================================
+
+  9:30 candle = bullish
+    IN:  n= 524  PF= 1.76  EV=+0.376R    IS: n= 154  PF= 1.89  EV=+0.429R    OOS: n= 370  PF= 1.71  EV=+0.354R
+    OUT: n= 477  PF= 1.80  EV=+0.394R    IS: n= 158  PF= 1.77  EV=+0.380R    OOS: n= 319  PF= 1.82  EV=+0.401R
+    LIFT (ALL/IS/OOS): -0.04 / +0.12 / -0.11    ≈ flat
+      long  IN: n= 267  PF= 2.12  EV=+0.491R              OUT: n= 257  PF= 2.00  EV=+0.455R              Δ +0.12
+      short IN: n= 257  PF= 1.46  EV=+0.257R              OUT: n= 220  PF= 1.61  EV=+0.323R              Δ -0.14
+
+  9:30 candle = bearish
+    IN:  n= 477  PF= 1.80  EV=+0.394R    IS: n= 158  PF= 1.77  EV=+0.380R    OOS: n= 319  PF= 1.82  EV=+0.401R
+    OUT: n= 524  PF= 1.76  EV=+0.376R    IS: n= 154  PF= 1.89  EV=+0.429R    OOS: n= 370  PF= 1.71  EV=+0.354R
+    LIFT (ALL/IS/OOS): +0.04 / -0.12 / +0.11    ≈ flat
+      long  IN: n= 257  PF= 2.00  EV=+0.455R              OUT: n= 267  PF= 2.12  EV=+0.491R              Δ -0.12
+      short IN: n= 220  PF= 1.61  EV=+0.323R              OUT: n= 257  PF= 1.46  EV=+0.257R              Δ +0.14
+
+
+================================================================================
+  F. 5min FVG COUNT (intraday, knowable by 9:35)
+================================================================================
+
+  NO FVGs in first 5min
+    IN:  n= 563  PF= 1.65  EV=+0.332R    IS: n= 193  PF= 1.64  EV=+0.326R    OOS: n= 370  PF= 1.65  EV=+0.335R
+    OUT: n= 438  PF= 1.97  EV=+0.452R    IS: n= 119  PF= 2.19  EV=+0.529R    OOS: n= 319  PF= 1.89  EV=+0.423R
+    LIFT (ALL/IS/OOS): -0.32 / -0.55 / -0.24    ✗ HURTS
+      long  IN: n= 296  PF= 1.97  EV=+0.453R              OUT: n= 228  PF= 2.19  EV=+0.500R              Δ -0.22
+      short IN: n= 267  PF= 1.35  EV=+0.199R              OUT: n= 210  PF= 1.78  EV=+0.400R              Δ -0.43
+
+  ≥1 FVG in first 5min
+    IN:  n= 438  PF= 1.97  EV=+0.452R    IS: n= 119  PF= 2.19  EV=+0.529R    OOS: n= 319  PF= 1.89  EV=+0.423R
+    OUT: n= 563  PF= 1.65  EV=+0.332R    IS: n= 193  PF= 1.64  EV=+0.326R    OOS: n= 370  PF= 1.65  EV=+0.335R
+    LIFT (ALL/IS/OOS): +0.32 / +0.55 / +0.24    ★★★ ROBUST
+      long  IN: n= 228  PF= 2.19  EV=+0.500R              OUT: n= 296  PF= 1.97  EV=+0.453R              Δ +0.22
+      short IN: n= 210  PF= 1.78  EV=+0.400R              OUT: n= 267  PF= 1.35  EV=+0.199R              Δ +0.43
+
+  ≥2 FVGs in first 5min
+    IN:  n=  76  PF= 1.78  EV=+0.382R    IS: n=  27  PF= 1.43  EV=+0.222R    OOS: n=  49  PF= 2.00  EV=+0.469R
+    OUT: n= 925  PF= 1.78  EV=+0.385R    IS: n= 285  PF= 1.87  EV=+0.421R    OOS: n= 640  PF= 1.74  EV=+0.369R
+    LIFT (ALL/IS/OOS): +0.00 / -0.44 / +0.26    ≈ flat
+      long  IN: n=  50  PF= 1.46  EV=+0.240R              OUT: n= 474  PF= 2.13  EV=+0.498R              Δ -0.67
+      short IN: n=  26  PF= 2.55  EV=+0.654R              OUT: n= 451  PF= 1.48  EV=+0.266R              Δ +1.06
+
+  ≥1 BULLISH FVG in first 5min
+    IN:  n= 232  PF= 1.96  EV=+0.453R    IS: n=  69  PF= 1.94  EV=+0.449R    OOS: n= 163  PF= 1.97  EV=+0.454R
+    OUT: n= 769  PF= 1.73  EV=+0.364R    IS: n= 243  PF= 1.80  EV=+0.391R    OOS: n= 526  PF= 1.70  EV=+0.352R
+    LIFT (ALL/IS/OOS): +0.23 / +0.14 / +0.28    ✓ HELPS
+      long  IN: n= 107  PF= 2.31  EV=+0.551R              OUT: n= 417  PF= 2.00  EV=+0.453R              Δ +0.31
+      short IN: n= 125  PF= 1.72  EV=+0.368R              OUT: n= 352  PF= 1.47  EV=+0.259R              Δ +0.25
+
+  ≥1 BEARISH FVG in first 5min
+    IN:  n= 220  PF= 1.88  EV=+0.418R    IS: n=  57  PF= 2.16  EV=+0.509R    OOS: n= 163  PF= 1.80  EV=+0.387R
+    OUT: n= 781  PF= 1.75  EV=+0.375R    IS: n= 255  PF= 1.76  EV=+0.380R    OOS: n= 526  PF= 1.75  EV=+0.373R
+    LIFT (ALL/IS/OOS): +0.13 / +0.40 / +0.05    ≈ flat
+      long  IN: n= 129  PF= 2.00  EV=+0.434R              OUT: n= 395  PF= 2.08  EV=+0.486R              Δ -0.08
+      short IN: n=  91  PF= 1.75  EV=+0.396R              OUT: n= 386  PF= 1.48  EV=+0.262R              Δ +0.27
+
+
+================================================================================
+  G. CALENDAR
+================================================================================
+
+  Day = Monday
+    IN:  n= 168  PF= 1.69  EV=+0.345R    IS: n=  47  PF= 1.28  EV=+0.149R    OOS: n= 121  PF= 1.86  EV=+0.421R
+    OUT: n= 833  PF= 1.80  EV=+0.393R    IS: n= 265  PF= 1.94  EV=+0.449R    OOS: n= 568  PF= 1.74  EV=+0.366R
+    LIFT (ALL/IS/OOS): -0.11 / -0.66 / +0.13    ≈ flat
+
+  Day = Tuesday
+    IN:  n= 225  PF= 1.69  EV=+0.351R    IS: n=  69  PF= 1.61  EV=+0.319R    OOS: n= 156  PF= 1.72  EV=+0.365R
+    OUT: n= 776  PF= 1.81  EV=+0.394R    IS: n= 243  PF= 1.90  EV=+0.428R    OOS: n= 533  PF= 1.77  EV=+0.379R
+    LIFT (ALL/IS/OOS): -0.12 / -0.29 / -0.05    ≈ flat
+
+  Day = Wednesday
+    IN:  n= 197  PF= 1.61  EV=+0.320R    IS: n=  58  PF= 2.23  EV=+0.552R    OOS: n= 139  PF= 1.40  EV=+0.223R
+    OUT: n= 804  PF= 1.83  EV=+0.400R    IS: n= 254  PF= 1.75  EV=+0.370R    OOS: n= 550  PF= 1.86  EV=+0.415R
+    LIFT (ALL/IS/OOS): -0.21 / +0.48 / -0.46    ✗ HURTS
+
+  Day = Thursday
+    IN:  n= 212  PF= 2.12  EV=+0.514R    IS: n=  73  PF= 2.45  EV=+0.616R    OOS: n= 139  PF= 1.97  EV=+0.460R
+    OUT: n= 789  PF= 1.70  EV=+0.350R    IS: n= 239  PF= 1.67  EV=+0.339R    OOS: n= 550  PF= 1.71  EV=+0.355R
+    LIFT (ALL/IS/OOS): +0.43 / +0.78 / +0.26    ★★★ ROBUST
+
+  Day = Friday
+    IN:  n= 199  PF= 1.81  EV=+0.382R    IS: n=  65  PF= 1.59  EV=+0.308R    OOS: n= 134  PF= 1.93  EV=+0.418R
+    OUT: n= 802  PF= 1.77  EV=+0.385R    IS: n= 247  PF= 1.90  EV=+0.429R    OOS: n= 555  PF= 1.72  EV=+0.366R
+    LIFT (ALL/IS/OOS): +0.03 / -0.31 / +0.21    ≈ flat
+
+  FOMC week
+    IN:  n= 140  PF= 1.37  EV=+0.207R    IS: n=  64  PF= 0.74  EV=-0.172R    OOS: n=  76  PF= 2.11  EV=+0.526R
+    OUT: n= 861  PF= 1.86  EV=+0.413R    IS: n= 248  PF= 2.26  EV=+0.552R    OOS: n= 613  PF= 1.72  EV=+0.357R
+    LIFT (ALL/IS/OOS): -0.49 / -1.51 / +0.39    ✗ HURTS
+      long  IN: n=  67  PF= 1.39  EV=+0.209R              OUT: n= 457  PF= 2.18  EV=+0.512R              Δ -0.79
+      short IN: n=  73  PF= 1.35  EV=+0.205R              OUT: n= 404  PF= 1.56  EV=+0.302R              Δ -0.22
+
+  OpEx week
+    IN:  n= 183  PF= 1.53  EV=+0.279R    IS: n=  81  PF= 1.30  EV=+0.173R    OOS: n= 102  PF= 1.73  EV=+0.363R
+    OUT: n= 818  PF= 1.84  EV=+0.408R    IS: n= 231  PF= 2.06  EV=+0.485R    OOS: n= 587  PF= 1.77  EV=+0.378R
+    LIFT (ALL/IS/OOS): -0.32 / -0.75 / -0.04    ✗ HURTS
+      long  IN: n=  93  PF= 1.29  EV=+0.161R              OUT: n= 431  PF= 2.27  EV=+0.541R              Δ -0.98
+      short IN: n=  90  PF= 1.78  EV=+0.400R              OUT: n= 387  PF= 1.47  EV=+0.261R              Δ +0.31
+
+  has_pre_rth_news
+    IN:  n=  57  PF= 1.77  EV=+0.351R    IS: n=  28  PF= 2.73  EV=+0.679R    OOS: n=  29  PF= 1.07  EV=+0.034R
+    OUT: n= 944  PF= 1.78  EV=+0.387R    IS: n= 284  PF= 1.76  EV=+0.377R    OOS: n= 660  PF= 1.79  EV=+0.391R
+    LIFT (ALL/IS/OOS): -0.01 / +0.97 / -0.72    ≈ flat
+      long  IN: n=  29  PF= 3.33  EV=+0.724R              OUT: n= 495  PF= 2.01  EV=+0.459R              Δ +1.32
+      short IN: n=  28  PF= 0.94  EV=-0.036R              OUT: n= 449  PF= 1.57  EV=+0.307R              Δ -0.63
+
+
+================================================================================
+  H. VIX REGIME
+================================================================================
+
+  VIX regime = high
+    IN:  n= 234  PF= 2.17  EV=+0.521R    IS: n= 141  PF= 1.97  EV=+0.447R    OOS: n=  93  PF= 2.51  EV=+0.634R
+    OUT: n= 767  PF= 1.68  EV=+0.343R    IS: n= 171  PF= 1.72  EV=+0.368R    OOS: n= 596  PF= 1.66  EV=+0.336R
+    LIFT (ALL/IS/OOS): +0.50 / +0.25 / +0.85    ★★★ ROBUST
+      long  IN: n= 143  PF= 2.48  EV=+0.601R              OUT: n= 381  PF= 1.92  EV=+0.425R              Δ +0.56
+      short IN: n=  91  PF= 1.78  EV=+0.396R              OUT: n= 386  PF= 1.47  EV=+0.262R              Δ +0.31
+
+  VIX regime = elevated
+    IN:  n= 193  PF= 1.45  EV=+0.233R    IS: n=  14  PF= 1.50  EV=+0.286R    OOS: n= 179  PF= 1.44  EV=+0.229R
+    OUT: n= 808  PF= 1.87  EV=+0.421R    IS: n= 298  PF= 1.85  EV=+0.409R    OOS: n= 510  PF= 1.88  EV=+0.427R
+    LIFT (ALL/IS/OOS): -0.42 / -0.35 / -0.44    ✗ HURTS
+      long  IN: n=  88  PF= 1.69  EV=+0.307R              OUT: n= 436  PF= 2.13  EV=+0.507R              Δ -0.44
+      short IN: n= 105  PF= 1.29  EV=+0.171R              OUT: n= 372  PF= 1.60  EV=+0.320R              Δ -0.31
+
+  VIX regime = low
+    IN:  n= 267  PF= 1.58  EV=+0.303R    IS: n= 107  PF= 1.42  EV=+0.234R    OOS: n= 160  PF= 1.70  EV=+0.350R
+    OUT: n= 734  PF= 1.86  EV=+0.414R    IS: n= 205  PF= 2.09  EV=+0.493R    OOS: n= 529  PF= 1.78  EV=+0.384R
+    LIFT (ALL/IS/OOS): -0.28 / -0.66 / -0.08    ✗ HURTS
+      long  IN: n= 147  PF= 1.77  EV=+0.374R              OUT: n= 377  PF= 2.18  EV=+0.512R              Δ -0.41
+      short IN: n= 120  PF= 1.38  EV=+0.217R              OUT: n= 357  PF= 1.58  EV=+0.311R              Δ -0.20
+
+  VIX regime = normal
+    IN:  n= 293  PF= 1.89  EV=+0.437R    IS: n=  48  PF= 2.50  EV=+0.625R    OOS: n= 245  PF= 1.79  EV=+0.400R
+    OUT: n= 708  PF= 1.74  EV=+0.363R    IS: n= 264  PF= 1.73  EV=+0.364R    OOS: n= 444  PF= 1.74  EV=+0.363R
+    LIFT (ALL/IS/OOS): +0.15 / +0.77 / +0.05    ≈ flat
+      long  IN: n= 142  PF= 2.15  EV=+0.535R              OUT: n= 382  PF= 2.02  EV=+0.450R              Δ +0.13
+      short IN: n= 151  PF= 1.67  EV=+0.344R              OUT: n= 326  PF= 1.47  EV=+0.261R              Δ +0.20
+
+
+================================================================================
+  I. OVERNIGHT DIRECTION
+================================================================================
+
+  Overnight = down
+    IN:  n= 415  PF= 1.52  EV=+0.277R    IS: n= 100  PF= 1.46  EV=+0.260R    OOS: n= 315  PF= 1.53  EV=+0.283R
+    OUT: n= 586  PF= 2.00  EV=+0.461R    IS: n= 212  PF= 2.04  EV=+0.472R    OOS: n= 374  PF= 1.98  EV=+0.455R
+    LIFT (ALL/IS/OOS): -0.48 / -0.58 / -0.44    ✗ HURTS
+      long  IN: n= 205  PF= 2.11  EV=+0.502R              OUT: n= 319  PF= 2.03  EV=+0.455R              Δ +0.08
+      short IN: n= 210  PF= 1.09  EV=+0.057R              OUT: n= 267  PF= 1.97  EV=+0.468R              Δ -0.88
+
+  Overnight = up
+    IN:  n= 438  PF= 2.13  EV=+0.505R    IS: n= 149  PF= 1.97  EV=+0.436R    OOS: n= 289  PF= 2.22  EV=+0.540R
+    OUT: n= 563  PF= 1.55  EV=+0.291R    IS: n= 163  PF= 1.72  EV=+0.374R    OOS: n= 400  PF= 1.48  EV=+0.258R
+    LIFT (ALL/IS/OOS): +0.58 / +0.25 / +0.74    ★★★ ROBUST
+      long  IN: n= 232  PF= 2.20  EV=+0.509R              OUT: n= 292  PF= 1.96  EV=+0.445R              Δ +0.25
+      short IN: n= 206  PF= 2.06  EV=+0.500R              OUT: n= 271  PF= 1.21  EV=+0.125R              Δ +0.85
+
+  Overnight = flat
+    IN:  n= 148  PF= 1.65  EV=+0.331R    IS: n=  63  PF= 2.21  EV=+0.556R    OOS: n=  85  PF= 1.30  EV=+0.165R
+    OUT: n= 853  PF= 1.80  EV=+0.394R    IS: n= 249  PF= 1.74  EV=+0.365R    OOS: n= 604  PF= 1.83  EV=+0.406R
+    LIFT (ALL/IS/OOS): -0.15 / +0.47 / -0.53    ≈ flat
+      long  IN: n=  87  PF= 1.63  EV=+0.310R              OUT: n= 437  PF= 2.16  EV=+0.506R              Δ -0.53
+      short IN: n=  61  PF= 1.69  EV=+0.361R              OUT: n= 416  PF= 1.51  EV=+0.276R              Δ +0.18
+
+
+================================================================================
+  RANKED SUMMARY — robust factors only (IS lift > +0.1 AND OOS lift > +0.1)
+================================================================================
+
+  Found 9 robust factors out of 44 tested.
+
+  Factor                                           PF_IN   OOS PF     LIFT     n
+  ─────────────────────────────────────────────────────────────────────────────────────
+  Overnight = up                                    2.13     2.22    +0.58   438
+  VIX regime = high                                 2.17     2.51    +0.50   234
+  Prior day type = reversal_down                    2.18     2.05    +0.44    95
+  Day = Thursday                                    2.12     1.97    +0.43   212
+  ≥1 FVG in first 5min                              1.97     1.89    +0.32   438
+  Prior day type = other                            2.00     1.88    +0.32   338
+  Gap > +0.3% (gap up)                              1.99     2.00    +0.30   336
+  Gap > +0.5% (large gap up)                        1.98     1.93    +0.26   250
+  ≥1 BULLISH FVG in first 5min                      1.96     1.97    +0.23   232
+
+  Wrote results/regime_confluence_scan.csv
