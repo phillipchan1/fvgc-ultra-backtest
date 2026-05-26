@@ -193,13 +193,36 @@ def sync(notion_rows: list[dict]) -> tuple[list[dict], list[dict]]:
                 return v
         return {}
 
+    # Fields that Notion is the source of truth for — these overwrite on
+    # every sync. Anything ELSE that already exists on the prior play
+    # (hard_kill_switches, validation, soft_cues_no_size_change, etc.)
+    # is hand-curated in plays.json and must survive the sync. Without
+    # this preservation, a Notion edit wipes the entire rich play schema
+    # the dashboard depends on.
+    NOTION_OWNED = {
+        'name', 'direction', 'status', 'wr_base', 'sample_size',
+        'description', 'pre_market_conditions', 'action_plan',
+        'tier', 'confidence', 'frequency', 'pf_base', 'avg_mfe_r',
+        'window', 'timeframe', 'notion_url', 'pre_market_factors',
+    }
+
     new_plays = []
     for n in notion_rows:
         p = normalize_play(n)
         if not p:
             continue
         prior = find_prior(p['name'], page_id(p.get('notion_url')))
+        # Preserve pre_market_factors (curated, not in Notion schema yet).
         p['pre_market_factors'] = list(prior.get('pre_market_factors', []))
+        # Merge any non-Notion-owned fields from the prior play forward.
+        # This is how hard_kill_switches survives — Notion never set it,
+        # but plays.json has it; without this loop, the sync silently
+        # drops it and the morning briefing's veto engine sees nothing.
+        for k, v in (prior or {}).items():
+            if k in NOTION_OWNED:
+                continue
+            if k not in p:
+                p[k] = v
         new_plays.append(p)
 
     notion_ids = {page_id(p['notion_url']) for p in new_plays if p.get('notion_url')}

@@ -660,6 +660,69 @@ class MatchedPlay:
     status: str  # 'active', 'partial', 'always'
 
 
+def compute_vixy_regime(csv_path: Path, target_date: date,
+                        vixy_close_override: float | None = None) -> tuple[str | None, float | None]:
+    """Classify yesterday's VIXY close into a 3-band regime that the playbook
+    vetoes can key off:
+      LOW       — vixy ≤ p25
+      ELEVATED  — p25 < vixy ≤ p75   (the "indecision middle" band; this is
+                                       what hard_kill_switches.vix_elevated
+                                       refers to in the FVGC To OR H/L play)
+      HIGH      — vixy > p75
+    Percentiles are computed from trading_days.csv's vixy_prior_close column.
+
+    Returns (regime, vixy_value). Either may be None if data unavailable.
+    Pass vixy_close_override to bypass the CSV lookup (used when live VIX
+    fetch already pulled today's prior-close from Yahoo)."""
+    vixy = vixy_close_override
+    if vixy is None:
+        prior_row = load_prior_trading_day_row(csv_path, target_date)
+        if prior_row and prior_row.get('vixy_prior_close'):
+            try:
+                vixy = float(prior_row['vixy_prior_close'])
+            except (TypeError, ValueError):
+                vixy = None
+    if vixy is None:
+        return None, None
+    vp25 = compute_percentile(csv_path, 'vixy_prior_close', 0.25)
+    vp75 = compute_percentile(csv_path, 'vixy_prior_close', 0.75)
+    if vp25 is None or vp75 is None:
+        return None, vixy
+    if vixy <= vp25:
+        return 'low', vixy
+    if vixy <= vp75:
+        return 'elevated', vixy
+    return 'high', vixy
+
+
+def compute_play_vetoes(play: dict, today_factors: dict[str, bool],
+                        vixy_regime: str | None) -> list[dict]:
+    """Read play.hard_kill_switches and resolve which ones fire today
+    based on pre-open-knowable factors. Returns a list of active veto
+    dicts: [{id, desc}, ...].
+
+    Live-only kill switches (or_too_wide, both_swept, ifvg_variant,
+    magnet_against, window_close, 5th_plus_trade) are NOT evaluated
+    here — they're enforced by the dashboard's applyLivePlaybookVerdicts
+    against the live Fly snapshot. This function handles the pre-open
+    set only: anything the morning briefing can know before 9:30 ET.
+
+    Supported pre-open veto IDs (extend this dispatch as we add more):
+      vix_elevated  — VIXY in middle/indecision band (p25–p75)
+    """
+    kill_switches = (play or {}).get('hard_kill_switches') or {}
+    if not isinstance(kill_switches, dict):
+        return []
+    active = []
+    for vid, desc in kill_switches.items():
+        if vid == 'vix_elevated' and vixy_regime == 'elevated':
+            active.append({'id': vid, 'desc': desc or 'VIX in middle/indecision band'})
+        # Add more pre-open veto IDs here as they're defined in Notion.
+        # Anything that requires intraday data stays in the dashboard's
+        # live verdict path (applyLivePlaybookVerdicts).
+    return active
+
+
 def match_plays(plays: list[dict], today_factors: dict[str, bool]) -> list[MatchedPlay]:
     results = []
     for play in plays:
@@ -1892,6 +1955,11 @@ def build_briefing_dict(
             'direction': gap_dir,
         },
         'data_notes': list(getattr(ctx, 'notes', []) or []),
+        # vixy_regime is computed below where the play vetoes are resolved;
+        # we patch it in after the fact so pre_open carries it for the UI.
+        # 'low' | 'elevated' | 'high' | None (when classifier had no data).
+        'vixy_regime': None,
+        'vixy_value':  None,
         'narrative': None,
     }
 
@@ -2145,8 +2213,23 @@ def build_briefing_dict(
     # ---- Playbook plays ----
     matched_plays = match_plays(plays, today_factors)
 
+    # VIX regime — 3-band classifier for the hard_kill_switches.vix_elevated
+    # veto on FVGC To OR H/L. Falls back through the existing live-VIX
+    # fetcher when trading_days.csv doesn't have today's prior row yet.
+    vixy_regime, vixy_value = compute_vixy_regime(csv_path, target_date)
+    if vixy_regime is None:
+        vix_live = fetch_vix_features_live()
+        if vix_live and vix_live.get('vixy_prior_close') is not None:
+            vixy_regime, vixy_value = compute_vixy_regime(
+                csv_path, target_date,
+                vixy_close_override=float(vix_live['vixy_prior_close']))
+    # Surface in pre_open so the dashboard can label MARKET STATE conditions.
+    pre_open_d['vixy_regime'] = vixy_regime
+    pre_open_d['vixy_value']  = vixy_value
+
     def _play_to_dict(mp) -> dict:
         p = mp.play
+        active_vetoes = compute_play_vetoes(p, today_factors, vixy_regime)
         return {
             'name': p.get('name'),
             'direction': p.get('direction'),
@@ -2166,6 +2249,12 @@ def build_briefing_dict(
             'pre_met': list(mp.pre_met),
             'pre_missing': list(mp.pre_missing),
             'match_status': mp.status,
+            # Notion-sourced kill switches — pass through so the dashboard
+            # can render the full list. Live kill switches stay in the
+            # client-side applyLivePlaybookVerdicts path.
+            'hard_kill_switches': p.get('hard_kill_switches') or {},
+            'active_vetoes': active_vetoes,
+            'veto_active': len(active_vetoes) > 0,
         }
 
     active_plays_d = [_play_to_dict(mp) for mp in matched_plays

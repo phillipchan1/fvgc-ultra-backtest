@@ -5049,7 +5049,14 @@
       let initStateCls, initStateLabel, initAction;
       if (p.veto_active) {
         initStateCls = 'veto'; initStateLabel = 'VETOED';
-        initAction = 'Kill switch active — skip.';
+        // Name the specific kill switch that fired (active_vetoes is
+        // populated by morning_briefing.py for hard_kill_switches that
+        // resolve pre-open — e.g. vix_elevated). Falls back to a
+        // generic message when the engine couldn't identify the cause.
+        const av = (p.active_vetoes || []).map(v => v.id || v.desc).filter(Boolean);
+        initAction = av.length
+          ? `Kill switch active: ${av.join(', ')} — skip today.`
+          : 'Kill switch active — skip.';
       } else if (ts === 'wait') {
         initStateCls = 'wait'; initStateLabel = 'WAIT';
         initAction = `Pre-window. Watch ${(normalizeWindows(p)).join(', ')}.`;
