@@ -2668,15 +2668,23 @@
     let d = null;
     let isDemo = false;
     let dataSource = null;
+    // 4s timeout on the Fly fetch — if Fly is down or load-balancer is
+    // failing, we'd otherwise hang on the default ~60-120s browser fetch
+    // timeout and never fall through to GH Pages. Observed 2026-05-22:
+    // Fly crashed overnight, dashboard sat on "Loading data.js…" for
+    // minutes because the in-flight fetch was blocking the fallback.
     try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 4000);
       const resp = await fetch('https://nq-live-snapshot.fly.dev/api/briefing',
-                               {cache: 'no-store'});
+                               {cache: 'no-store', signal: ctrl.signal});
+      clearTimeout(timer);
       if (resp.ok) {
         const body = await resp.json();
         if (body && body.or_forecast) { d = body; dataSource = 'fly'; }
       }
     } catch (e) {
-      // Fly unreachable — fall through
+      // Fly unreachable or timed out — fall through to GH Pages.
     }
     if (!d) {
       try {

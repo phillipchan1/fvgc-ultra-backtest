@@ -218,21 +218,28 @@ def _ingest_bar(bar: dict[str, Any]) -> None:
 def _snapshot_loop() -> None:
     """Background thread — recompute snapshot once per second.
     Decoupled from bar ingestion so the live stream can never starve.
-    Holds the lock only briefly to copy bar references; the actual
-    compute runs without the lock so ingestion stays unblocked."""
+
+    Compute runs UNDER state_lock — the original _compute_snapshot
+    contract. Earlier "release lock during compute" approach raced
+    against _ingest_bar's deque mutations and crashed the loop with
+    `RuntimeError: deque mutated during iteration`, taking the whole
+    service down (observed 2026-05-22: machine stayed in started
+    state but health checks failed because snapshot_loop was dead).
+
+    The lock is held for ~10-50ms per tick (a single compute pass
+    over the bar buffer). _ingest_bar briefly waits on it but never
+    stalls — the Databento client has its own receive buffer."""
     import time
     while True:
         try:
             with state_lock:
-                bars_count = len(bars)
-            if bars_count > 0:
-                # _compute_snapshot iterates `bars` (the module global)
-                # without the lock — safe because deque is thread-safe
-                # for left/right ops and our compute is read-only.
-                snap = _compute_snapshot()
-                with state_lock:
+                if bars:
+                    snap = _compute_snapshot()
                     state["snapshot"] = snap
-                _check_narrative_events(snap or {})
+                else:
+                    snap = None
+            if snap is not None:
+                _check_narrative_events(snap)
         except Exception as e:
             log.exception("snapshot_loop error: %s", e)
         time.sleep(1.0)
