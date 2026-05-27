@@ -234,7 +234,7 @@
       "Any"
     ],
     "timeframe": null,
-    "notion_url": "https://www.notion.so/344e2f0e776081878722e91f87533e3d",
+    "notion_url": "https://www.notion.so/344e2f0e776081878722a91f87533e3d",
     "pre_market_factors": []
   },
   {
@@ -452,15 +452,26 @@
   },
   {
     "name": "FVGC To Opening Range H/L",
-    "notion_url": "https://www.notion.so/33de2f0e776080409d14f582b1868b64",
-    "status": "verified",
-    "confidence": "high",
     "direction": "both",
-    "macro": "9:45-10:15",
-    "timeframe": "30s primary (1.64x more $/yr, more stable IS/OOS); 1m alt for easier-execution",
-    "validated_on": "2026-05-18 (8yr: 2018-01 to 2026-05, magnet-aligned framing)",
-    "sample_size": 995,
+    "status": "verified",
     "wr_base": "48%",
+    "sample_size": 995,
+    "description": "After 9:45, take 30s FVGCs pointing at an OR side that has NOT been swept yet. Target 2R, hold original SL. Kill switches: OR > 150pt | variant = ifvg | both OR sides swept | magnet-against | 5th+ trade of day. SIZING: 1st of day = 1x, 2nd-4th = 0.5x half. 8.2yr validated: n=995, PF 1.79, EV +0.40R/trade. Sized R/yr = +39.6 = $23,780. Monthly: 74.5% winning months, worst -5.5R, Sharpe 0.75. NO VIX FILTER (tested, p=0.057 — not significant). The sized rule alone provides risk management.",
+    "pre_market_conditions": "None required. This is an intraday-only setup. OR is set at 9:45 ET.",
+    "action_plan": "1. AT 9:45: mark OR.H, OR.L. If OR > 150pt → NO PLAY. 2. From 9:45-10:15, watch 30s bars. 3. On each FVGC: (a) variant != ifvg, (b) direction points at unswept OR side, (c) at least one OR side still unswept → TAKE IT. 4. SIZING: 1st fire = 1x. 2nd-4th = 0.5x. Skip 5th+. 5. Same-day re-entries have SAME edge as #1 (Trade #2 PF 1.73, #3 PF 1.89, #4 PF 2.00) — take them, half size for risk control. 6. Target 2R, hold SL. Day done when both OR swept OR 10:15.\n\nExit Strategy: Target = 2R. Hold ORIGINAL SL through any OR retest. Do NOT move to breakeven — 70-85% of OR touches retrace through entry before continuing; a BE stop gets hit. Data: of trades that touch the OR target, 72-83% blow through it to 2R; only 10-16% reverse. The runner past OR is where the edge concentrates. Avg excursion beyond OR target on continuations: +6R.",
+    "tier": "A",
+    "confidence": "high",
+    "frequency": "~121/yr (~10/mo, ~2.5/week). Mean 1.5 fires per trade day. 65% of trade days = 1 fire, 23% = 2, 9% = 3, 2% = 4. Window 9:45-10:15 ET.",
+    "pf_base": 1.79,
+    "avg_mfe_r": null,
+    "window": [
+      "9:45-10:00"
+    ],
+    "timeframe": null,
+    "notion_url": "https://www.notion.so/33de2f0e776080409d14f582b1868b64",
+    "pre_market_factors": [],
+    "macro": "9:45-10:15",
+    "validated_on": "2026-05-18 (8yr: 2018-01 to 2026-05, magnet-aligned framing)",
     "pf_2r": 1.79,
     "ev_r_per_trade_2r": 0.4,
     "validation": {
@@ -479,7 +490,6 @@
       "best_month_r": 18,
       "sharpe_like_sized": 0.75
     },
-    "pre_market_factors": [],
     "intraday_triggers": [
       "fvgc_entry_post_945_magnet_aligned"
     ],
@@ -517,8 +527,6 @@
       "source": "computed_option_E_sized_no_vix_filter"
     },
     "cadence": "~121/yr (~10/mo, ~2.5/week). Mean 1.5 fires per trade day. 65% of trade days = 1 fire, 23% = 2, 9% = 3, 2% = 4. Trade window 9:45-10:15 ET. 30% of all trading days produce at least one fire.",
-    "description": "After 9:45, take 30s FVGCs pointing at an OR side that has NOT been swept yet. Target 2R, hold original SL. Kill switches: OR > 150pt | variant = ifvg | both OR sides swept | magnet-against direction | 5th+ trade of day. SIZING: 1st of day = 1x full, 2nd-4th = 0.5x half. 8.2yr validated: n=995, PF 1.79, EV +0.40R/trade. Sized R/yr +39.6 = $23,780. Monthly: 74% winning months, worst -5.5R, Sharpe 0.75. NO VIX FILTER (tested, p=0.057 not significant — costs $5k/yr for marginal smoothing). The sized rule alone provides risk management; VIX-elevated days are taken normally.",
-    "action_plan": "AT 9:45: mark OR.H, OR.L. If OR > 150pt -> NO PLAY. From 9:45-10:15 watch 30s bars. On each FVGC: variant != ifvg AND direction points at unswept OR side AND at least one OR side still unswept -> TAKE. SIZING: 1st trade of day = 1x full. 2nd/3rd/4th = 0.5x half. Skip 5th+. Same-day re-entries have SAME edge as #1 — take them, just at half size for risk control. Target 2R, hold original SL, never BE. Day's done when both OR sides swept OR 10:15 passes.",
     "trade_lists": {
       "all_trades_30s_primary": "studies/or_hl_play_8yr_validation/results/magnet_aligned_30s.csv (filter magnet='aligned' AND or_range<=150 AND variant!='ifvg')",
       "all_trades_1m_alt": "studies/or_hl_play_8yr_validation/results/magnet_aligned_1m.csv (same filters)",
