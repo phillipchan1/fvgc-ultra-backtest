@@ -2702,6 +2702,41 @@
     // tells you which path won.
     window.__BRIEFING_SOURCE = dataSource;
 
+    // ===== Stale-data guard =====
+    // If we ended up on a briefing whose meta.date is BEFORE today's ET
+    // date, every "WAIT" play computes as "DONE" (because the time-state
+    // ticker sees today > briefingDate and bails into the passed branch).
+    // Surface this loudly instead of silently rendering wrong state.
+    // Common cause: Fly was momentarily unreachable, dashboard fell back
+    // to the static briefing.json on GH Pages which only updates when we
+    // commit it.
+    try {
+      const briefingDate = (d.meta || {}).date;
+      const todayET = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/New_York',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+      }).format(new Date());
+      if (briefingDate && briefingDate < todayET) {
+        const banner = document.createElement('div');
+        banner.style.cssText =
+          'position:fixed;top:0;left:0;right:0;z-index:9999;' +
+          'padding:8px 16px;font:13px/1.4 ui-monospace,Menlo,monospace;' +
+          'background:#7f1d1d;color:#fef2f2;text-align:center;' +
+          'border-bottom:2px solid #dc2626;letter-spacing:0.5px;';
+        banner.innerHTML =
+          `<b>STALE DATA — showing ${briefingDate} (today is ${todayET})</b>` +
+          ` &nbsp;·&nbsp; source: <b>${dataSource}</b>` +
+          ` &nbsp;·&nbsp; <a href="#" id="briefing-retry" style="color:#fff;text-decoration:underline">retry Fly</a>`;
+        document.body.appendChild(banner);
+        document.body.style.paddingTop = '40px';
+        const retry = banner.querySelector('#briefing-retry');
+        if (retry) retry.addEventListener('click', (e) => {
+          e.preventDefault();
+          location.reload();
+        });
+      }
+    } catch (_) { /* never block render on the staleness check */ }
+
     const loading = document.getElementById('loading');
     if (loading) loading.remove();
 
