@@ -990,6 +990,76 @@ def _load_existing_briefing() -> dict | None:
         return None
 
 
+def _github_put_file(repo_path: str, local_path: Path, message: str) -> bool:
+    """Create/update a single file in the repo via the GitHub Contents API.
+    Returns True on success. Requires GH_ACTIONS_TOKEN with `contents:write`.
+
+    The Contents API needs the current blob SHA to update an existing file,
+    so we GET first (404 = new file, no SHA needed) then PUT base64 content."""
+    if not GH_ACTIONS_TOKEN:
+        return False
+    if not local_path.exists():
+        log.warning("github-commit: %s missing locally — skipped", local_path)
+        return False
+    import base64
+    api = f"https://api.github.com/repos/{GH_REPO}/contents/{repo_path}"
+    headers = {
+        "Authorization": f"Bearer {GH_ACTIONS_TOKEN}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "nq-live-snapshot/0.1",
+    }
+
+    # 1. Fetch current SHA (if the file already exists).
+    sha = None
+    try:
+        get_req = urllib.request.Request(api + "?ref=master", headers=headers)
+        with urllib.request.urlopen(get_req, timeout=15) as r:
+            sha = _json.loads(r.read()).get("sha")
+    except urllib.error.HTTPError as e:
+        if e.code != 404:
+            log.warning("github-commit: GET %s HTTP %s", repo_path, e.code)
+    except Exception as e:
+        log.warning("github-commit: GET %s failed: %s", repo_path, e)
+
+    # 2. PUT new content.
+    content_b64 = base64.b64encode(local_path.read_bytes()).decode()
+    payload = {"message": message, "content": content_b64, "branch": "master"}
+    if sha:
+        payload["sha"] = sha
+    body = _json.dumps(payload).encode()
+    put_req = urllib.request.Request(api, data=body, method="PUT", headers={
+        **headers, "Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(put_req, timeout=20) as r:
+            return r.status in (200, 201)
+    except urllib.error.HTTPError as e:
+        err = e.read().decode("utf-8", errors="replace")[:300]
+        log.warning("github-commit: PUT %s HTTP %s: %s", repo_path, e.code, err)
+        return False
+    except Exception as e:
+        log.warning("github-commit: PUT %s failed: %s", repo_path, e)
+        return False
+
+
+def _commit_briefing_to_github() -> None:
+    """Push today's briefing.json + data.js to the repo via the Contents
+    API. Keeps the GH Pages static fallback fresh so a brief Fly outage
+    on the trader's morning load doesn't drop them onto days-old data
+    (which makes every WAIT play render as DONE). pages.yml auto-deploys
+    on the push since the PAT (not GITHUB_TOKEN) triggers workflows."""
+    if not GH_ACTIONS_TOKEN:
+        log.info("github-commit: GH_ACTIONS_TOKEN not set — skipping fallback sync")
+        return
+    today = datetime.now(NY_TZ).strftime("%Y-%m-%d")
+    msg = f"briefing: fly daily run {today}"
+    ok_json = _github_put_file("tools/briefing/briefing.json",
+                               _briefing_dir / "briefing.json", msg)
+    ok_js = _github_put_file("tools/briefing/data.js",
+                             _briefing_dir / "data.js", msg)
+    log.info("github-commit: briefing.json=%s data.js=%s", ok_json, ok_js)
+
+
 def _run_morning_briefing(force: bool = False) -> tuple[bool, str]:
     """Run sync_playbook_from_notion.py + morning_briefing.py in sequence.
     Returns (ok, message). Loads the resulting briefing.json into
@@ -1068,6 +1138,18 @@ def _run_morning_briefing(force: bool = False) -> tuple[bool, str]:
             f"plays={len(loaded.get('matrix_plays') or [])}+{len(loaded.get('active_plays') or [])}"
         )
         log.info("morning-briefing: OK — %s", signal_summary)
+
+        # Commit the fresh artifacts to GitHub so the GH Pages fallback
+        # (briefing.json) is never more than minutes stale. Without this,
+        # if Fly is briefly unreachable on the trader's morning load, the
+        # dashboard falls back to a days-old static file and every WAIT
+        # play renders as DONE. Best-effort — a commit failure must not
+        # break the briefing itself.
+        try:
+            _commit_briefing_to_github()
+        except Exception:
+            log.exception("morning-briefing: GitHub commit failed (non-fatal)")
+
         return True, "ok"
     finally:
         with _briefing_lock:
