@@ -25,10 +25,12 @@ from typing import Iterable
 
 try:
     from zoneinfo import ZoneInfo
-    NY_TZ = ZoneInfo('America/New_York')
+    NY_TZ  = ZoneInfo('America/New_York')
+    UTC_TZ = ZoneInfo('UTC')
 except ImportError:
     import pytz
-    NY_TZ = pytz.timezone('America/New_York')
+    NY_TZ  = pytz.timezone('America/New_York')
+    UTC_TZ = pytz.UTC
 
 FF_BASE = 'https://nfs.faireconomy.media'
 FF_URLS = {
@@ -165,11 +167,23 @@ def _parse_xml(body: str) -> list[CalendarEvent]:
         if t_clean and t_clean not in ('allday', 'tentative', 'tba'):
             try:
                 t = datetime.strptime(t_clean, '%I:%M%p').time()
-                et_dt = datetime.combine(d, t, tzinfo=NY_TZ)
+                # Forex Factory XML publishes times in GMT/UTC for accounts
+                # without a custom timezone configured (we use the public
+                # feed). Previous code tagged the datetime as NY_TZ —
+                # producing values like 14:00 for ISM PMI (which is
+                # actually 10:00 ET / 14:00 UTC). Build as UTC, convert
+                # to ET, so the field actually matches its name.
+                gmt_dt = datetime.combine(d, t, tzinfo=UTC_TZ)
+                et_dt = gmt_dt.astimezone(NY_TZ)
             except ValueError:
                 et_dt = None
+        # When et_dt rolls over a UTC→ET day boundary (e.g. a 00:30 UTC
+        # event on Mon is actually 20:30 ET Sun), the event's DATE has
+        # to follow the ET reading, not the original GMT date — otherwise
+        # load_events_for_date(target_date) misses it.
         out.append(CalendarEvent(
-            date=d, time_et=et_dt, country=country,
+            date=et_dt.date() if et_dt else d,
+            time_et=et_dt, country=country,
             impact=impact, title=title, url=url,
         ))
     return out
