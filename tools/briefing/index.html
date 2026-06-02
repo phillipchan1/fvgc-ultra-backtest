@@ -4632,13 +4632,33 @@
         'Any':         'Any window',
       };
 
-      WINDOW_ORDER.forEach(w => {
+      // Render windows in order: matrix W1/W2/W3 first, then any non-
+      // standard windows by start time (e.g. a 9:30-9:37 short play that
+      // doesn't fit a W bucket), then 'Any' last. Used to silently skip
+      // anything not in WINDOW_ORDER — meaning the FVGC Off of 930 Candle
+      // play with window '9:30-9:37' bucketed but never rendered.
+      const parseStartMin = (w) => {
+        const m = String(w || '').match(/(\d{1,2}):(\d{2})/);
+        return m ? parseInt(m[1],10)*60 + parseInt(m[2],10) : 9999;
+      };
+      const extraWindows = [...groups.keys()]
+        .filter(w => !WINDOW_ORDER.includes(w))
+        .sort((a, b) => parseStartMin(a) - parseStartMin(b));
+      const renderOrder = [
+        ...WINDOW_ORDER.filter(w => w !== 'Any'),
+        ...extraWindows.filter(w => w !== 'Any'),
+        'Any',
+      ];
+
+      renderOrder.forEach(w => {
         const plays = groups.get(w);
         if (!plays || !plays.length) return;
+        // Build a label for non-standard windows (just the time range).
+        const label = windowLabels[w] || (w === 'Any' ? 'Any window' : w);
         const sec = h('div', {class:'window-section', 'data-window': w});
         sec.appendChild(h('div', {class: 'window-header' + (w === 'Any' ? ' win-any' : '')},
           h('span', {class:'w-bar'}),
-          h('span', null, windowLabels[w]),
+          h('span', null, label),
           h('span', {class:'w-status'}),
           h('span', {class:'w-count'}, `${plays.length}`)));
         plays.forEach(p => sec.appendChild(renderCandidateCard(p, onClick)));
@@ -5150,9 +5170,98 @@
           h('div', {class:'detail-text'}, p.pre_market_conditions)));
       }
 
+      // ----- INTRADAY CONFLUENCES — structured per-factor table -----
+      // When a play carries an intraday_confluences array (per the rich
+      // schema introduced for FVGC Off of 930 Candle), render it as a
+      // discrete checklist with timing, polarity (positive vs anti), and
+      // historic lift/stats. Plays that haven't been re-curated yet just
+      // skip this section silently.
+      if ((p.intraday_confluences || []).length) {
+        const sec = h('div', {class:'detail-section'},
+          h('div', {class:'detail-label'}, 'INTRADAY CONFLUENCES'));
+        p.intraday_confluences.forEach(c => {
+            const isAnti = c.polarity === 'negative';
+            const marker = isAnti ? '✕' : '+';
+            const cls = `factor-line ${isAnti ? 'veto' : 'on'}`;
+            sec.appendChild(h('div', {class: cls},
+              h('span', {class:'marker'}, marker),
+              h('span', {class:'lift'},
+                c.lift_pp != null ? `+${c.lift_pp}pp` :
+                c.when ? c.when : '·'),
+              h('span', {class:'desc'},
+                c.desc,
+                c.stats ? h('span', {class:'mute mono',
+                                     style:'display:block;font-size:10px;margin-top:2px;'},
+                            c.stats) : null,
+                c.rationale ? h('span', {class:'mute mono',
+                                         style:'display:block;font-size:10px;margin-top:2px;'},
+                                c.rationale) : null),
+              c.id ? h('span', {class:'meta'}, c.id) : null));
+        });
+        wrap.appendChild(sec);
+      }
+
+      // ----- PRE-MARKET SIZING (vol_score etc.) — tiered sizing table -----
+      const pms = p.pre_market_sizing || {};
+      if (pms.vol_score) {
+        const vs = pms.vol_score;
+        const sec = h('div', {class:'detail-section'},
+          h('div', {class:'detail-label'}, 'PRE-MARKET SIZING'));
+        sec.appendChild(h('div', {class:'detail-text'},
+          h('div', null, h('b', null, 'vol_score'), ' = ',
+            h('span', {class:'mono'}, vs.computation || '')),
+          vs.note ? h('div', {class:'mute mono', style:'font-size:10px;margin-top:4px;'},
+                     vs.note) : null));
+        const tiers = vs.tiers || {};
+        Object.keys(tiers).sort().forEach(k => {
+          sec.appendChild(h('div', {class:'factor-line on'},
+            h('span', {class:'marker mono'}, `vol=${k}`),
+            h('span', {class:'lift'}, ''),
+            h('span', {class:'desc'}, tiers[k])));
+        });
+        wrap.appendChild(sec);
+      }
+
+      // ----- HARD KILL SWITCHES — anti-conditions / no-trade -----
+      const ks = p.hard_kill_switches || {};
+      if (Object.keys(ks).length) {
+        const sec = h('div', {class:'detail-section'},
+          h('div', {class:'detail-label'}, 'KILL SWITCHES'));
+        Object.entries(ks).forEach(([id, desc]) => {
+          sec.appendChild(h('div', {class:'factor-line veto'},
+            h('span', {class:'marker'}, '⊘'),
+            h('span', {class:'lift'}, ''),
+            h('span', {class:'desc'}, desc),
+            h('span', {class:'meta'}, id)));
+        });
+        wrap.appendChild(sec);
+      }
+
+      // ----- EXIT STRATEGY — structured exit rules -----
+      const es = p.exit_strategy || {};
+      if (Object.keys(es).length) {
+        const sec = h('div', {class:'detail-section'},
+          h('div', {class:'detail-label'}, 'EXIT STRATEGY'));
+        const labels = {
+          always: 'ALWAYS',
+          primary_target: 'PRIMARY',
+          aggressive_target: 'AGGRESSIVE',
+          scale_out_alt: 'SCALE-OUT',
+        };
+        ['always','primary_target','aggressive_target','scale_out_alt'].forEach(k => {
+          if (!es[k]) return;
+          sec.appendChild(h('div', {class:'factor-line on'},
+            h('span', {class:'marker mono', style:'min-width:70px;font-size:9px;letter-spacing:1px;'},
+              labels[k] || k),
+            h('span', {class:'lift'}, ''),
+            h('span', {class:'desc'}, es[k])));
+        });
+        wrap.appendChild(sec);
+      }
+
       if (p.action_plan) {
         wrap.appendChild(h('div', {class:'detail-section'},
-          h('div', {class:'detail-label'}, 'INTRADAY + EXIT'),
+          h('div', {class:'detail-label'}, 'INTRADAY + EXIT (notes)'),
           h('div', {class:'detail-text'}, p.action_plan)));
       }
 

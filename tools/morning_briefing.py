@@ -2255,6 +2255,13 @@ def build_briefing_dict(
             'hard_kill_switches': p.get('hard_kill_switches') or {},
             'active_vetoes': active_vetoes,
             'veto_active': len(active_vetoes) > 0,
+            # Rich confluence/sizing/exit structure for plays that carry it
+            # (the FVGC-Off-of-930-Candle play is the first; others can
+            # follow the same shape). Detail pane renders these when present.
+            'intraday_confluences': p.get('intraday_confluences') or [],
+            'pre_market_sizing':    p.get('pre_market_sizing')    or {},
+            'exit_strategy':        p.get('exit_strategy')        or {},
+            'validated_on':         p.get('validated_on')         or None,
         }
 
     active_plays_d = [_play_to_dict(mp) for mp in matched_plays
