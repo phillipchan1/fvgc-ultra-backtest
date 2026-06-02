@@ -1803,10 +1803,32 @@ def _compute_play_history() -> dict:
     # Chronological order.
     playbook_signals.sort(key=lambda s: s.get("timestamp_et") or "")
 
+    # Compact "did this TF/direction fire at all today" summary — used by
+    # the dashboard's per-play confluence evaluator to answer questions
+    # like "did the 1m FVGC short fire today?" without it needing to
+    # iterate the matched-only signals list. Each entry is the FIRST
+    # signal of that (tf, direction) so the dashboard can read the time
+    # and decide if it fell inside a play's window.
+    raw_by_tf_dir: dict[str, list] = {}
+    for tf, sigs in signals_by_tf.items():
+        for s in sigs:
+            direction = s.get("direction") or "unknown"
+            key = f"{tf}:{direction}"
+            raw_by_tf_dir.setdefault(key, []).append(s)
+    raw_by_tf_dir_summary = {
+        key: [{"time_et_human": s.get("time_et_human"),
+               "timestamp_et": s.get("timestamp_et"),
+               "variant": s.get("variant"),
+               "entry_price": s.get("entry_price")}
+              for s in sigs]
+        for key, sigs in raw_by_tf_dir.items()
+    }
+
     out_base.update({
         "signals": playbook_signals,
         "signal_count": len(playbook_signals),
         "raw_signal_count": raw_count,
+        "raw_signals_by_tf_direction": raw_by_tf_dir_summary,
         "plays": plays_matched,
         "candle_counts": candle_counts,
     })

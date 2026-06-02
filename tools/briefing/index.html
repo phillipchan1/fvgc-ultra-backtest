@@ -823,6 +823,19 @@
     color: var(--text-mute); font-weight: 700; margin-bottom: 6px;
   }
   .detail-label::before { content: "▸ "; color: var(--cyan); }
+  /* "X of N fired" badge that lives inside the INTRADAY CONFLUENCES
+     section header. Color reflects how the day stacked up so the
+     trader sees the confluence count at a glance. */
+  .conf-tally {
+    display: inline-block; margin-left: 10px;
+    font-size: 9px; letter-spacing: 1px; font-weight: 700;
+    padding: 2px 6px; border-radius: 2px;
+    border: 1px solid currentColor;
+  }
+  .conf-tally.all  { color: var(--green); background: var(--green-dim); }
+  .conf-tally.some { color: var(--cyan);  background: var(--cyan-dim); }
+  .conf-tally.none { color: var(--text-mute); }
+  .conf-tally.anti { color: var(--amber); background: var(--amber-dim); }
   .detail-text {
     font-size: 12px; color: var(--text); line-height: 1.6;
     white-space: pre-wrap;
@@ -4155,6 +4168,11 @@
           const snap = await resp.json();
           if (snap.error) throw new Error(snap.error);
           liveData = snap;
+          // Expose to outer scope so renderers like the playbook detail
+          // can evaluate confluences (gap, intraday_factors, OR widths)
+          // against the latest snapshot without taking a dependency on
+          // setupLiveOverlay's closure.
+          window.__LIVE_SNAP = snap;
           lastSuccessAt = Date.now();
           consecutiveFails = 0;
           // Show snapshot lag in pill — that's "bar publish lag",
@@ -4238,7 +4256,16 @@
           if (!resp.ok) return;
           const data = await resp.json();
           lastPlayHistoryAt = Date.now();
+          // Expose to outer scope so play-detail confluence evaluation
+          // can answer "did 1m/3m FVGC fire today?" — see _evalConfluence.
+          window.__PLAY_HISTORY = data;
           renderSessionReplay(data);
+          // Re-decorate any open detail pane so confluence ✓/✕ markers
+          // catch up with the freshest signal data without requiring a
+          // re-click.
+          if (typeof refreshOpenDetailConfluences === 'function') {
+            try { refreshOpenDetailConfluences(); } catch (_) {}
+          }
         } catch (_) { /* silent — best-effort */ }
       }
       pollPlayHistory();
@@ -5086,6 +5113,158 @@
       return bits.join(' · ');
     }
 
+    // ====== Confluence live evaluator ======
+    // Given an intraday_confluence entry from a play + the play itself,
+    // return { state: 'fired' | 'missed' | 'unknown', detail: string|null }
+    // by checking live snapshot data + today's engine signals.
+    //
+    // We're conservative: any factor whose source data isn't available
+    // returns 'unknown' (rendered as a dim '·') rather than guessing.
+    // Better to under-report fires than mislead.
+    function _evalConfluence(c, p) {
+      const snap = window.__LIVE_SNAP || {};
+      const playHist = window.__PLAY_HISTORY || {};
+      const briefingPO = (window.BRIEFING_DATA?.pre_open) || {};
+      const factors = snap.intraday_factors || {};
+      const rawByTfDir = playHist.raw_signals_by_tf_direction || {};
+
+      // Parse the play's window into start/end minutes-of-day for the
+      // FVGC-fires-in-window checks below.
+      function _windowMins() {
+        const wins = (Array.isArray(p.window) ? p.window : [p.window || ''])
+          .map(s => String(s || '').trim()).filter(Boolean);
+        if (!wins.length) return null;
+        const m = wins[0].match(/(\d+):(\d+)\s*-\s*(\d+):(\d+)/);
+        if (!m) return null;
+        return {
+          start: parseInt(m[1],10)*60 + parseInt(m[2],10),
+          end:   parseInt(m[3],10)*60 + parseInt(m[4],10),
+        };
+      }
+      function _fvgcInWindow(tf, dir) {
+        const sigs = rawByTfDir[`${tf}:${dir}`] || [];
+        const win = _windowMins();
+        const hits = sigs.filter(s => {
+          const ts = s.timestamp_et || '';
+          const tm = ts.match(/T(\d+):(\d+)/);
+          if (!tm) return false;
+          const mins = parseInt(tm[1],10)*60 + parseInt(tm[2],10);
+          if (!win) return true;
+          return mins >= win.start && mins <= win.end;
+        });
+        if (!hits.length) return null;
+        return hits[0];
+      }
+
+      switch (c.id) {
+        case 'wide_930_candle': {
+          // Proxy via c930_body_top_q (top quartile of 9:30 candle body).
+          // Wide body strongly correlates with wide range — close enough
+          // until we add a dedicated c930_range_top_q factor server-side.
+          const v = factors.c930_body_top_q;
+          if (v === true)  return {state:'fired',  detail:'9:30 candle body in top quartile (proxy for wide)'};
+          if (v === false) return {state:'missed', detail:'9:30 candle body NOT wide'};
+          return {state:'unknown', detail:'9:30 candle data not yet available'};
+        }
+        case '1m_fvgc_same_day': {
+          const hit = _fvgcInWindow('1min', 'short');
+          if (hit) return {state:'fired',
+                           detail:`fired @ ${hit.time_et_human} · ${hit.variant} · entry ${hit.entry_price}`};
+          return {state:'missed', detail:'no 1m short FVGC in window'};
+        }
+        case '3m_fvgc_same_day': {
+          const hit = _fvgcInWindow('3min', 'short');
+          if (hit) return {state:'fired',
+                           detail:`fired @ ${hit.time_et_human} · ${hit.variant} · entry ${hit.entry_price}`};
+          return {state:'missed', detail:'no 3m short FVGC in window (rare — ~4/yr)'};
+        }
+        case 'top_q_dump_day': {
+          // Approximate via 15-min OR width vs stepwise Q4 cutoff in
+          // briefing.json.or_forecast.stepwise.thresholds.or_15min[3].
+          // True dump-magnitude needs first-15min OPEN→LOW which we don't
+          // separately compute today — wide 15-min OR is a reasonable
+          // proxy for a high-dump day in either direction.
+          const or15 = (snap.or_15min || {}).width;
+          const cuts = ((window.BRIEFING_DATA?.or_forecast?.stepwise?.thresholds || {}).or_15min) || [];
+          const q4cut = cuts[3];
+          if (or15 == null || q4cut == null) return {state:'unknown', detail:'15-min OR not yet locked'};
+          if (or15 > q4cut) return {state:'fired',
+                                    detail:`15-min OR ${or15.toFixed(0)}pt > Q4 cutoff ${q4cut.toFixed(0)}pt`};
+          return {state:'missed',
+                  detail:`15-min OR ${or15.toFixed(0)}pt ≤ Q4 cutoff ${q4cut.toFixed(0)}pt`};
+        }
+        case 'gap_large_down': {
+          // ANTI-confluence: triggered means BAD for this play. Use the
+          // morning briefing's gap reading (pre_open) — that's the
+          // signed gap vs prior close. Threshold -100pt matches
+          // common gap_large_down definition elsewhere.
+          const gap = briefingPO.gap?.pts;
+          if (gap == null) return {state:'unknown', detail:'gap not available'};
+          if (gap < -100)  return {state:'fired',  detail:`gap ${gap.toFixed(1)}pt < -100`};
+          return {state:'missed', detail:`gap ${gap.toFixed(1)}pt — no large gap-down`};
+        }
+      }
+      return {state:'unknown', detail:null};
+    }
+
+    // Update the "X of N fired" badge in the section header. Counts a
+    // positive confluence as "good" when fired; an anti-confluence as
+    // "good" when missed (anti not fired = clean day for this play).
+    function _updateConfluenceTally(sectionEl, p) {
+      const tally = sectionEl.querySelector('[data-conf-tally]');
+      if (!tally) return;
+      let good = 0, total = 0, anti_fired = 0, unknown = 0;
+      (p.intraday_confluences || []).forEach(c => {
+        total += 1;
+        const ev = _evalConfluence(c, p);
+        if (ev.state === 'unknown') { unknown += 1; return; }
+        const isAnti = c.polarity === 'negative';
+        if (isAnti && ev.state === 'fired') anti_fired += 1;
+        const isGood = (isAnti && ev.state === 'missed') ||
+                       (!isAnti && ev.state === 'fired');
+        if (isGood) good += 1;
+      });
+      let txt = `${good} / ${total} fired`;
+      if (anti_fired) txt += ` · ${anti_fired} anti`;
+      if (unknown) txt += ` · ${unknown} unknown`;
+      tally.textContent = txt;
+      tally.className = 'conf-tally mono ' +
+        (anti_fired ? 'anti' : good >= total - unknown ? 'all' : good > 0 ? 'some' : 'none');
+    }
+
+    // Called by the play-history poller to refresh confluence markers
+    // when fresh signals arrive while a detail pane is open.
+    function refreshOpenDetailConfluences() {
+      const sec = document.querySelector('[data-play-confluences]');
+      if (!sec) return;
+      const playName = sec.getAttribute('data-play-confluences');
+      const allPlays = (window.BRIEFING_DATA?.active_plays || [])
+        .concat(window.BRIEFING_DATA?.matrix_plays || []);
+      const p = allPlays.find(x => x.name === playName);
+      if (!p) return;
+      // Re-eval each row + re-tally. Cheap.
+      sec.querySelectorAll('[data-conf-id]').forEach(row => {
+        const id = row.getAttribute('data-conf-id');
+        const c = (p.intraday_confluences || []).find(x => x.id === id);
+        if (!c) return;
+        const ev = _evalConfluence(c, p);
+        const isAnti = c.polarity === 'negative';
+        // Update marker + class only — leave the existing labels alone.
+        const marker = row.querySelector('.marker');
+        if (ev.state === 'fired') {
+          marker.textContent = isAnti ? '⚠' : '✓';
+          row.className = isAnti ? 'factor-line veto' : 'factor-line on';
+        } else if (ev.state === 'missed') {
+          marker.textContent = isAnti ? '✓' : '✕';
+          row.className = isAnti ? 'factor-line on' : 'factor-line missed';
+        } else {
+          marker.textContent = '·';
+          row.className = 'factor-line pending';
+        }
+      });
+      _updateConfluenceTally(sec, p);
+    }
+
     function renderPlaybookDetail(p) {
       const wrap = h('div');
       const dir = (p.direction || 'both').toLowerCase();
@@ -5171,19 +5350,35 @@
       }
 
       // ----- INTRADAY CONFLUENCES — structured per-factor table -----
-      // When a play carries an intraday_confluences array (per the rich
-      // schema introduced for FVGC Off of 930 Candle), render it as a
-      // discrete checklist with timing, polarity (positive vs anti), and
-      // historic lift/stats. Plays that haven't been re-curated yet just
-      // skip this section silently.
+      // Each row is live-evaluated against today's data: ✓ (fired),
+      // ✕ (missed — or anti-fired, for negative-polarity factors),
+      // — (unknown / data not available). A tally above the rows shows
+      // "M of N fired" so the trader sees confluence stack at a glance.
       if ((p.intraday_confluences || []).length) {
-        const sec = h('div', {class:'detail-section'},
-          h('div', {class:'detail-label'}, 'INTRADAY CONFLUENCES'));
+        const sec = h('div', {class:'detail-section', 'data-play-confluences': p.name},
+          h('div', {class:'detail-label'},
+            'INTRADAY CONFLUENCES',
+            h('span', {class:'conf-tally mono', 'data-conf-tally':''}, '')));
         p.intraday_confluences.forEach(c => {
+            const eval_ = _evalConfluence(c, p);
+            // For positive confluences: fired=✓ (good), missed=✕ (no),
+            //   unknown=· (n/a).
+            // For anti-confluences (negative polarity): fired=⚠ (anti
+            //   triggered → bad for play); missed=✓ (clean — anti didn't
+            //   fire, so it's actually GOOD); unknown=·.
             const isAnti = c.polarity === 'negative';
-            const marker = isAnti ? '✕' : '+';
-            const cls = `factor-line ${isAnti ? 'veto' : 'on'}`;
-            sec.appendChild(h('div', {class: cls},
+            let marker, cls;
+            if (eval_.state === 'fired') {
+              marker = isAnti ? '⚠' : '✓';
+              cls = isAnti ? 'factor-line veto' : 'factor-line on';
+            } else if (eval_.state === 'missed') {
+              marker = isAnti ? '✓' : '✕';
+              cls = isAnti ? 'factor-line on' : 'factor-line missed';
+            } else {
+              marker = '·';
+              cls = 'factor-line pending';
+            }
+            const row = h('div', {class: cls, 'data-conf-id': c.id},
               h('span', {class:'marker'}, marker),
               h('span', {class:'lift'},
                 c.lift_pp != null ? `+${c.lift_pp}pp` :
@@ -5195,10 +5390,16 @@
                             c.stats) : null,
                 c.rationale ? h('span', {class:'mute mono',
                                          style:'display:block;font-size:10px;margin-top:2px;'},
-                                c.rationale) : null),
-              c.id ? h('span', {class:'meta'}, c.id) : null));
+                                c.rationale) : null,
+                eval_.detail ? h('span', {class:'mono',
+                                          style:'display:block;font-size:10px;margin-top:3px;color:var(--cyan);letter-spacing:0.3px;'},
+                                eval_.detail) : null),
+              c.id ? h('span', {class:'meta'}, c.id) : null);
+            sec.appendChild(row);
         });
         wrap.appendChild(sec);
+        // Compute + render tally right after the section is in the DOM.
+        _updateConfluenceTally(sec, p);
       }
 
       // ----- PRE-MARKET SIZING (vol_score etc.) — tiered sizing table -----
