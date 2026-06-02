@@ -6,16 +6,16 @@ window.BRIEFING_DATA = {
   "meta": {
     "date": "2026-06-02",
     "day_of_week": "Tuesday",
-    "generated_at_et": "2026-06-02T09:39:27.613076-04:00",
-    "generated_at_pt": "2026-06-02T06:39:27.613076-07:00",
+    "generated_at_et": "2026-06-02T09:52:01.090999-04:00",
+    "generated_at_pt": "2026-06-02T06:52:01.090999-07:00",
     "mode": "live"
   },
   "freshness": [],
   "or_forecast": {
     "available": true,
-    "point_pts": 179.0,
-    "lo80_pts": 116.5,
-    "hi80_pts": 271.8,
+    "point_pts": 180.2,
+    "lo80_pts": 117.3,
+    "hi80_pts": 273.7,
     "baseline_pts": 117.6,
     "quintile": "Q3 typical (48th pct)",
     "tier_label": "Normal day \u2014 trade per playbook",
@@ -52,9 +52,9 @@ window.BRIEFING_DATA = {
       },
       {
         "factor": "gap_abs",
-        "value": 26.25,
-        "z": -0.7,
-        "delta_pts": 6.4
+        "value": 14.25,
+        "z": -0.82,
+        "delta_pts": 7.6
       },
       {
         "factor": "prior_day_range",
@@ -220,7 +220,7 @@ window.BRIEFING_DATA = {
     "narrative": "Tuesday is the playbook's weakest day (~49.2% WR) \u2014 require clear confluence before pulling triggers. JOLTS at 10:00 is a medium-impact release that could spike volatility mid-session; treat it as a magnet consideration for any trades still open at that time."
   },
   "pre_open": {
-    "current_price": 30545.0,
+    "current_price": 30557.0,
     "current_price_ts": "09:29 ET",
     "prior_rth": {
       "close": 30571.25,
@@ -247,8 +247,8 @@ window.BRIEFING_DATA = {
       "low": 30469.0
     },
     "gap": {
-      "pts": -26.25,
-      "pct": -0.08586498752913277,
+      "pts": -14.25,
+      "pct": -0.04661242180152921,
       "direction": "gap_down"
     },
     "data_notes": [],
@@ -263,7 +263,7 @@ window.BRIEFING_DATA = {
         "group": "london",
         "label": "London high",
         "price": 30586.0,
-        "distance_pts": 41.0,
+        "distance_pts": 29.0,
         "direction": "above",
         "tier": "C",
         "hit_rate_45m_pct": 54.3,
@@ -275,7 +275,7 @@ window.BRIEFING_DATA = {
         "group": "overnight",
         "label": "Overnight high",
         "price": 30586.0,
-        "distance_pts": 41.0,
+        "distance_pts": 29.0,
         "direction": "above",
         "tier": "C",
         "hit_rate_45m_pct": 41.1,
@@ -287,7 +287,7 @@ window.BRIEFING_DATA = {
         "group": "htf_fvg_15m",
         "label": "15m FVG (bearish)",
         "price": 30595.5,
-        "distance_pts": 50.5,
+        "distance_pts": 38.5,
         "direction": "above",
         "tier": "A",
         "hit_rate_45m_pct": 26.2,
@@ -301,7 +301,7 @@ window.BRIEFING_DATA = {
         "group": "asia",
         "label": "Asia high",
         "price": 30495.0,
-        "distance_pts": -50.0,
+        "distance_pts": -62.0,
         "direction": "below",
         "tier": "A",
         "hit_rate_45m_pct": 59.2,
@@ -313,37 +313,13 @@ window.BRIEFING_DATA = {
         "group": "london",
         "label": "London low",
         "price": 30469.0,
-        "distance_pts": -76.0,
+        "distance_pts": -88.0,
         "direction": "below",
         "tier": "C",
         "hit_rate_45m_pct": 54.3,
         "wr_as_magnet_pct": 47.4,
         "pf_as_magnet": 0.95,
         "below_baseline": true
-      },
-      {
-        "group": "htf_fvg_1H",
-        "label": "1H FVG (bullish)",
-        "price": 30469.0,
-        "distance_pts": -76.0,
-        "direction": "below",
-        "tier": "A",
-        "hit_rate_45m_pct": 22.5,
-        "wr_as_magnet_pct": 64.2,
-        "pf_as_magnet": 2.16,
-        "below_baseline": false
-      },
-      {
-        "group": "htf_fvg_15m",
-        "label": "15m FVG (bullish)",
-        "price": 30456.25,
-        "distance_pts": -88.75,
-        "direction": "below",
-        "tier": "A",
-        "hit_rate_45m_pct": 26.2,
-        "wr_as_magnet_pct": 58.4,
-        "pf_as_magnet": 1.51,
-        "below_baseline": false
       }
     ],
     "narrative": "Level structure is short-leaning: Asia high sits ~2 pts below current price and will immediately define directional tone at the open. A cluster of bullish FVGs at 30469, 30456, and 30428 provides three reactive zones as short targets (all with 58\u201364% magnet WR). Upside is thin \u2014 London and ON highs co-locate at 30586 but both carry sub-baseline magnet WRs, making them cautious long targets."
@@ -1312,25 +1288,25 @@ window.BRIEFING_DATA = {
       {
         "label": "Asia high",
         "price": 30495.0,
-        "distance_pts": -50.0,
+        "distance_pts": -62.0,
         "direction": "below"
       },
       {
         "label": "London low",
         "price": 30469.0,
-        "distance_pts": -76.0,
+        "distance_pts": -88.0,
         "direction": "below"
       },
       {
         "label": "London high",
         "price": 30586.0,
-        "distance_pts": 41.0,
+        "distance_pts": 29.0,
         "direction": "above"
       },
       {
         "label": "Overnight high",
         "price": 30586.0,
-        "distance_pts": 41.0,
+        "distance_pts": 29.0,
         "direction": "above"
       }
     ],
