@@ -6,16 +6,16 @@ window.BRIEFING_DATA = {
   "meta": {
     "date": "2026-06-02",
     "day_of_week": "Tuesday",
-    "generated_at_et": "2026-06-02T09:37:50.650331-04:00",
-    "generated_at_pt": "2026-06-02T06:37:50.650331-07:00",
+    "generated_at_et": "2026-06-02T09:38:09.007186-04:00",
+    "generated_at_pt": "2026-06-02T06:38:09.007186-07:00",
     "mode": "live"
   },
   "freshness": [],
   "or_forecast": {
     "available": true,
-    "point_pts": 179.2,
-    "lo80_pts": 116.7,
-    "hi80_pts": 272.2,
+    "point_pts": 180.1,
+    "lo80_pts": 117.2,
+    "hi80_pts": 273.5,
     "baseline_pts": 117.6,
     "quintile": "Q3 typical (48th pct)",
     "tier_label": "Normal day \u2014 trade per playbook",
@@ -52,9 +52,9 @@ window.BRIEFING_DATA = {
       },
       {
         "factor": "gap_abs",
-        "value": 24.0,
-        "z": -0.72,
-        "delta_pts": 6.7
+        "value": 15.25,
+        "z": -0.81,
+        "delta_pts": 7.5
       },
       {
         "factor": "prior_day_range",
@@ -85,7 +85,7 @@ window.BRIEFING_DATA = {
       "model": "cold_start",
       "n_features": "17"
     },
-    "narrative": "Model projects a 174-pt 45-min OR (Q3 typical, 47th pct), driven mainly by elevated 20d ATR (+34 pts) and a wide overnight session (+22 pts). Normal sizing day \u2014 no upsize or de-risk warranted. 80% CI is 114\u2013265 pts, so a compressed open remains possible; watch for tight_45min_or stand-down signal.",
+    "narrative": null,
     "stepwise": {
       "available": true,
       "sample_size": 1393,
@@ -217,11 +217,11 @@ window.BRIEFING_DATA = {
         "currency": ""
       }
     ],
-    "narrative": "Tuesday is the playbook's weakest day (~49.2% WR) \u2014 require clear confluence before pulling triggers. JOLTS at 10:00 is a medium-impact release that could spike volatility mid-session; treat it as a magnet consideration for any trades still open at that time."
+    "narrative": null
   },
   "pre_open": {
-    "current_price": 30547.25,
-    "current_price_ts": "09:27 ET",
+    "current_price": 30556.0,
+    "current_price_ts": "09:28 ET",
     "prior_rth": {
       "close": 30571.25,
       "open": 30343.0,
@@ -247,14 +247,14 @@ window.BRIEFING_DATA = {
       "low": 30469.0
     },
     "gap": {
-      "pts": -24.0,
-      "pct": -0.0785051314552071,
+      "pts": -15.25,
+      "pct": -0.049883468945496175,
       "direction": "gap_down"
     },
     "data_notes": [],
     "vixy_regime": "elevated",
     "vixy_value": 26.7,
-    "narrative": "Gap-down 74.5 pts with overnight closing in the lower half of its range signals distribution bias heading into RTH. Prior close sat at 70% of yesterday's range \u2014 neutral-to-bearish positioning. VIXY elevated at 23.85 and a wide overnight (top 20%) set up a trending M1 short day if the 9:30 candle confirms bearish; Asia high at 30495 is essentially at the open and will be the first directional test."
+    "narrative": null
   },
   "levels": {
     "scope_pts": 100,
@@ -263,7 +263,7 @@ window.BRIEFING_DATA = {
         "group": "london",
         "label": "London high",
         "price": 30586.0,
-        "distance_pts": 38.75,
+        "distance_pts": 30.0,
         "direction": "above",
         "tier": "C",
         "hit_rate_45m_pct": 54.3,
@@ -275,7 +275,7 @@ window.BRIEFING_DATA = {
         "group": "overnight",
         "label": "Overnight high",
         "price": 30586.0,
-        "distance_pts": 38.75,
+        "distance_pts": 30.0,
         "direction": "above",
         "tier": "C",
         "hit_rate_45m_pct": 41.1,
@@ -287,7 +287,7 @@ window.BRIEFING_DATA = {
         "group": "htf_fvg_15m",
         "label": "15m FVG (bearish)",
         "price": 30595.5,
-        "distance_pts": 48.25,
+        "distance_pts": 39.5,
         "direction": "above",
         "tier": "A",
         "hit_rate_45m_pct": 26.2,
@@ -301,7 +301,7 @@ window.BRIEFING_DATA = {
         "group": "asia",
         "label": "Asia high",
         "price": 30495.0,
-        "distance_pts": -52.25,
+        "distance_pts": -61.0,
         "direction": "below",
         "tier": "A",
         "hit_rate_45m_pct": 59.2,
@@ -313,7 +313,7 @@ window.BRIEFING_DATA = {
         "group": "london",
         "label": "London low",
         "price": 30469.0,
-        "distance_pts": -78.25,
+        "distance_pts": -87.0,
         "direction": "below",
         "tier": "C",
         "hit_rate_45m_pct": 54.3,
@@ -325,7 +325,7 @@ window.BRIEFING_DATA = {
         "group": "htf_fvg_1H",
         "label": "1H FVG (bullish)",
         "price": 30469.0,
-        "distance_pts": -78.25,
+        "distance_pts": -87.0,
         "direction": "below",
         "tier": "A",
         "hit_rate_45m_pct": 22.5,
@@ -337,7 +337,7 @@ window.BRIEFING_DATA = {
         "group": "htf_fvg_15m",
         "label": "15m FVG (bullish)",
         "price": 30456.25,
-        "distance_pts": -91.0,
+        "distance_pts": -99.75,
         "direction": "below",
         "tier": "A",
         "hit_rate_45m_pct": 26.2,
@@ -346,7 +346,7 @@ window.BRIEFING_DATA = {
         "below_baseline": false
       }
     ],
-    "narrative": "Level structure is short-leaning: Asia high sits ~2 pts below current price and will immediately define directional tone at the open. A cluster of bullish FVGs at 30469, 30456, and 30428 provides three reactive zones as short targets (all with 58\u201364% magnet WR). Upside is thin \u2014 London and ON highs co-locate at 30586 but both carry sub-baseline magnet WRs, making them cautious long targets."
+    "narrative": null
   },
   "factors": {
     "active": [
@@ -377,7 +377,7 @@ window.BRIEFING_DATA = {
       "wednesday"
     ],
     "unknown": [],
-    "narrative": "Short-leaning setup: gap_down + overnight_down is the primary directional signal, amplified by a wide overnight (top 20%). The M1 Long bounce thesis is structurally present (no_pre_rth_news active) but needs VIXY_normal and prior_day_middle_third \u2014 both absent today. Tuesday drag and the lack of any fully-armed edge mean patience and selectivity are required."
+    "narrative": null
   },
   "armed_edges": [],
   "watch_list": [
@@ -604,7 +604,7 @@ window.BRIEFING_DATA = {
       },
       "extra_note": "RUNNER EXIT DOCTRINE: TP@5R no-BE is the optimal exit (PF 3+). BE management caps the edge. Do not apply M2/M3 long-style BE@1R here.",
       "notion_url": "https://www.notion.so/33de2f0e776081889879c4dcbd495996",
-      "narrative": "Gap-down and overnight_down provide short-directional context, but today's pre-open score is 0/5 on the model's intraday factors. Bear_930 (+21.3pp) and c930_body_top_q (+15.6pp) are the two factors that unlock this play \u2014 both confirmed at 9:31. If both fire, take full size via runner mode (TP@5R no-BE). FVGC Off of 930 Candle (premium slice, 70% WR) is the priority sub-play within the first 90 seconds."
+      "narrative": null
     },
     {
       "name": "M1 Long",
@@ -646,7 +646,7 @@ window.BRIEFING_DATA = {
       "expectancy": null,
       "extra_note": "8yr-validated (n=117): IS 59.8% / OOS 55.0% @ 3+, regime spread 9.4pp, year-floor 50%. Gap-down quiet bounce: when sellers gap it large-down without fresh catalyst, vol normal, prior close non-committal \u2014 fade the gap-down via no_fvg long in M1.",
       "notion_url": "https://www.notion.so/365e2f0e77608154b4caca8dcc0a7c70",
-      "narrative": "Max possible score is 2 \u2014 below the 3+ threshold required to trade. Missing VIXY_normal and prior_day_middle_third means this play cannot reach a tradeable tier today. Pass regardless of 9:30 candle behavior."
+      "narrative": null
     },
     {
       "name": "M2 Long",
@@ -707,7 +707,7 @@ window.BRIEFING_DATA = {
       },
       "extra_note": "TIER B / CONFIDENCE LOW. 8yr re-val: year-floor 26.7% (2021), 16.7% (2023). Trade 4+ tier ONLY, capped size. Stand aside in melt-up (NQ >+15% 60d AND VIX<15) or chop years. No robust replacement stack found in re-mining.",
       "notion_url": "https://www.notion.so/361e2f0e776081e69d5dfc696dbd5726",
-      "narrative": "One pre-market factor (regime_bull). Gap-down overnight makes a bullish 9:30 candle (the primary +20.6pp driver) less likely. Even at max 4 factors, this is Tier B capped size only due to severe regime fragility. If bull_930 doesn't fire at 9:31, the play is functionally dead for the day."
+      "narrative": null
     },
     {
       "name": "M3 Long",
@@ -774,7 +774,7 @@ window.BRIEFING_DATA = {
       },
       "extra_note": "8yr-validated Tier A (n=264, 5/5 gates): IS 65.4% / OOS 61.6% @ 3+, year-floor 47.8%, regime spread 1.8pp \u2014 most regime-robust cell in the matrix. Thesis: Mon/Fri prior-weak no-bull-FVG mean-reversion. Magnet gate no longer required (8yr re-mine confirmed edge holds without it).",
       "notion_url": "https://www.notion.so/361e2f0e7760819bbbc7ca78b9faa8f9",
-      "narrative": "Vetoed by Tuesday (-10.1pp). No trade regardless of confluence \u2014 the Mon/Fri calendar thesis explicitly excludes Tuesdays. Observe but do not act."
+      "narrative": null
     }
   ],
   "avoid": {
@@ -853,7 +853,7 @@ window.BRIEFING_DATA = {
         ]
       }
     ],
-    "narrative": "All six avoid combos require tight_45min_or as the confirming factor \u2014 the stand-down only triggers if OR compresses to bottom 20% by 10:15. Monitor early: if the first 5 minutes chop and OR tracks narrow, step back from shorts (gap_down + short_only + tight_45min_or is a 25% WR graveyard)."
+    "narrative": null
   },
   "active_plays": [
     {
@@ -863,7 +863,7 @@ window.BRIEFING_DATA = {
       "wr_base": "55-60% on score\u22655/6 (fixed-1R) / 35-40% under scaled exits",
       "sample_size": 86,
       "action_plan": "At 9:45: lock or_15min_range. Skip day if <67pt. At 10:15: lock or_45min_range (LONG needs \u2265137). Anti-pattern check at sweep: not chop_day, not killzone_minute\u226545, not ath_swept_today, body fraction \u22640.90, no magnets against. Score 8 direction-aware factors; SHORT \u22654 or LONG \u22655/6 = take.\n\nExit Strategy: Stop at gap edge + 2pt buffer. Scaled exit: 25/25/50 trim at 1R / 4R / 8R targets. After TP1 hits \u2192 move stop to BE. Soft stop on candle close re-inverting gap. EOD flat if open.",
-      "notion_url": "https://www.notion.so/368e2f0e776081f5bec2f8e56ce0d680",
+      "notion_url": "https://www.notion.so/IFVG-Reversal-v1-0-368e2f0e776081f5bec2f8e56ce0d680",
       "description": "Tempo-grounded IFVG reversal model. Direction-aware confluence (8 short + 8 long factors), 7 anti-pattern hard skips, regime-gated by opening range and prior-day character. 5yr backtest 2021-2026, OOS-validated, walk-forward stable in 53% of 6-month windows at PF \u2265 1.5.",
       "pre_market_conditions": "Identify prior_day_type (trend/reversal up/down), prior_day_close_position, prior_day_range_atr_ratio (vol regime), distance to recent ATH. Mark all tracked levels: prev_day_high/low, overnight, asia, london highs/lows. Note calendar (FOMC week, opex Friday).",
       "tier": "A",
@@ -880,11 +880,7 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false,
-      "intraday_confluences": [],
-      "pre_market_sizing": {},
-      "exit_strategy": {},
-      "validated_on": null
+      "veto_active": false
     },
     {
       "name": "VP Magnet Play (A+) \u2014 n_vp\u22652 + VA-Edge",
@@ -893,7 +889,7 @@ window.BRIEFING_DATA = {
       "wr_base": "83% at +3R (81% OOS); 9/9 yrs positive; multi-TF (30s+1m+2m+3m)",
       "sample_size": 208,
       "action_plan": "Watch 30s + 1m + 2m + 3m simultaneously 9:30-10:15 ET. On EVERY FVGC fire from ANY TF: 1) variant must be bos, ifvg, or no_fvg (NOT PS); 2) n_vp_targets >= 2 (POC/VAH/VAL in trade direction within 0.5R-3R); 3) direction-matched VA-edge ahead (VAL for long, VAH for short within 0.5-3R); 4) within 9:30-10:15 window. All YES from ANY TF -> take at 1.5x size, stop -1R, fixed TP +3R, no BE. SUBSEQUENT same-day same-direction fires on slower TFs are re-confirmations only -- already in trade, no action. Median gap between first and second fire when multi-TF triggers same direction: 2.5 min, 65% within 5 min.\n\nExit Strategy: Stop \u22121R (FVG geometry). Fixed TP +3R. NO BE move (BE clips runners \u2014 see RM section). Max consecutive losers in 9yr sample: 2. Max yearly DD: \u22122R.",
-      "notion_url": "https://www.notion.so/367e2f0e7760811aa7b0efd3aff8024e",
+      "notion_url": "https://www.notion.so/VP-Magnet-Play-A-n_vp-2-VA-Edge-367e2f0e7760811aa7b0efd3aff8024e",
       "description": null,
       "pre_market_conditions": "Compute prior-RTH (9:30-16:00 ET previous session) POC, VAH, VAL from 30s NQ candles (1.0 pt buckets, 70% value area). Levels are KNOWN by 4:00pm ET the prior day. By 9:30 you should have a printout: POC=, VAH=, VAL=__, and where current price sits relative to them.",
       "tier": "A",
@@ -911,11 +907,7 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false,
-      "intraday_confluences": [],
-      "pre_market_sizing": {},
-      "exit_strategy": {},
-      "validated_on": null
+      "veto_active": false
     },
     {
       "name": "M1 Long \u2014 Confluence Model",
@@ -924,7 +916,7 @@ window.BRIEFING_DATA = {
       "wr_base": "59.8% IS / 55.0% OOS @ 3+ (8yr-validated)",
       "sample_size": 117,
       "action_plan": "At 9:31 check 9:30 candle body \u2014 if top quartile, skip (veto, c930_body_top_q -5.5pp). At signal fire (9:30-9:45), require variant_no_fvg for cleanest setup (+8.0pp). Total 3+ confluences \u2192 take full size with BE@1R \u2192 TP@3R. Do not scale up at 4+ tier (OOS n=1).\n\nExit Strategy: BE@1R \u2192 3R fixed target. EV +0.54R/trade, PF 2.31. Standard size at 3+ tier (do NOT scale up at 4+ \u2014 n thin OOS).",
-      "notion_url": "https://www.notion.so/365e2f0e77608154b4caca8dcc0a7c70",
+      "notion_url": "https://www.notion.so/M1-Long-Confluence-Model-365e2f0e77608154b4caca8dcc0a7c70",
       "description": "NEW play (2026-05-18) discovered via multi_cell_8yr_v2 re-mining on 8yr data. Gap-down quiet morning bounce: long FVGC 9:30-9:45 when overnight gap-down + no pre-RTH news + vixy_normal + variant_no_fvg + calendar factors align. 7-pro / 2-veto stack passes all 5 acceptance gates (year-floor 50%, regime spread 9.4pp, IS/OOS delta 4.8pp, n=117 over 8yr). The bullish counterpart to M1 Short \u2014 same window, opposite setup logic (fade gap-down vs continuation on gap-down panic).",
       "pre_market_conditions": "Hard vetoes (skip entirely): prior day closed bottom 1/3 (prior_day_weak). Pre-market confluences (check by 9:25): no pre-RTH news scheduled (+21.1pp), prior day closed in middle 1/3 (33-67%, +9.5pp), VIXY in normal regime (+6.6pp), IS FOMC week (+6.3pp), day=Wednesday (+6.3pp), gap < -100 pts (gap_large_down, +5.5pp). NOT FOMC week is NOT a confluence here \u2014 the play wants FOMC-week Wednesdays.",
       "tier": "A",
@@ -940,11 +932,7 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false,
-      "intraday_confluences": [],
-      "pre_market_sizing": {},
-      "exit_strategy": {},
-      "validated_on": null
+      "veto_active": false
     },
     {
       "name": "M3 Long \u2014 Confluence Model",
@@ -953,7 +941,7 @@ window.BRIEFING_DATA = {
       "wr_base": "65.4% IS / 61.6% OOS @ 3+ (8yr re-validated)",
       "sample_size": 264,
       "action_plan": "By 10:00 score these intraday factors: NO bullish FVG in first 5min (no_5m_bull_fvg) \u2014 counter-intuitive but signals the bulls haven't shown; bearish FVG in first 5min (has_5m_bear_fvg) \u2014 seller liquidation creates fade opp; variant_no_fvg signal (engine flag at trigger). Vetoes: opex week, day=Tuesday. Take FVGC long signal 10:00-10:15 at 3+ confluence, full size; do NOT add size at 4+/5+ tier (OOS-collapses).\n\nExit Strategy: BE@1R \u2192 2R fixed target. EV +0.45R/trade, PF 2.26. Standard size at 3+ tier (do NOT scale up at 4+ \u2014 collapses OOS).",
-      "notion_url": "https://www.notion.so/361e2f0e7760819bbbc7ca78b9faa8f9",
+      "notion_url": "https://www.notion.so/M3-Long-Confluence-Model-361e2f0e7760819bbbc7ca78b9faa8f9",
       "description": "Long FVGC 10:00-10:15 \u2014 Monday/Friday prior-weak no-bull-FVG mean-reversion play. 7 confluences + 3 vetoes. 8yr re-validated (2018-2026, n=264): WR 65.4% IS / 61.6% OOS, year-floor 47.8%, regime spread 1.8pp across bull/bear/neutral. Was Tier B; upgraded to Tier A based on multi_cell_8yr_v2 study (2026-05-18) which showed the OLD compression-thesis stack misidentified the play \u2014 true edge is calendar (Mon/Fri) + prior_day_weak + variant_no_fvg.",
       "pre_market_conditions": "Hard vetoes (skip entirely): opex week OR day=Tuesday OR prior_day closed in middle 1/3 (33-67% of range). Pre-market confluences: day=Monday OR day=Friday (calendar lift), prior_day_weak (closed bottom 1/3), NOT FOMC week. By 9:35 add intraday confluences.",
       "tier": "A",
@@ -969,11 +957,7 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false,
-      "intraday_confluences": [],
-      "pre_market_sizing": {},
-      "exit_strategy": {},
-      "validated_on": null
+      "veto_active": false
     },
     {
       "name": "M2 Long \u2014 Confluence Model",
@@ -982,7 +966,7 @@ window.BRIEFING_DATA = {
       "wr_base": "64.5% 8yr @ 4+ tier / REGIME-FRAGILE (2021=36%, 2023=17%)",
       "sample_size": 110,
       "action_plan": "At 9:31 check bull_930. At 9:35 check first-5min bear FVG presence. At 9:45 confirm \u22652 FVGs printed in 9:30-9:45 macro. Then FVGC long fires 9:45-10:00 (BOS, IFVG, no_fvg \u2014 never protected_swing). Count 7 confluences total, take 3+.\n\nExit Strategy: 4+ TIER ONLY. BE@1R \u2192 3R fixed (+0.57R EV, PF 2.62 on 8yr). Cap size at Tier B. Hard stand-aside on 2021/2023 regime types (grind-higher melt-up / VIX-elevated chop).",
-      "notion_url": "https://www.notion.so/361e2f0e776081e69d5dfc696dbd5726",
+      "notion_url": "https://www.notion.so/M2-Long-Confluence-Model-361e2f0e776081e69d5dfc696dbd5726",
       "description": "DOWNGRADED 2026-05-18 from Tier A. The 8yr re-validation (multi_cell_8yr_v2) revealed the original 30-month OOS sample (n=20) masked severe regime fragility: 2021 WR collapsed to 26.7%, 2023 to 16.7% at 4+ tier. Old factor stack does NOT generalize back to 2018-2022. Re-mining on 8yr couldn't find a robust replacement stack (best new stack only n=14 trades). Trade 4+ tier only at capped size; expect regime-driven drawdowns; consider standing aside in melt-up / VIX-elevated regimes.",
       "pre_market_conditions": "Hard vetoes: opex week OR Wednesday OR 60d NQ return < -5% \u2192 skip entirely. Pre-market confluences: gap up >10pts, regime_bull (60d NQ > +5%), pre-RTH news on calendar, day=Thursday.",
       "tier": "B",
@@ -998,11 +982,7 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false,
-      "intraday_confluences": [],
-      "pre_market_sizing": {},
-      "exit_strategy": {},
-      "validated_on": null
+      "veto_active": false
     },
     {
       "name": "M3 Short \u2014 Both-Swept Carve-Out (Idea)",
@@ -1011,7 +991,7 @@ window.BRIEFING_DATA = {
       "wr_base": "61.5%",
       "sample_size": 39,
       "action_plan": "At 10:00 ET, BOTH OR.H AND OR.L must have wicked through (loose definition: any high > OR.H AND any low < OR.L between 9:45 and 10:00). Short FVGC entry in the M3 window (10:00\u201310:15). Standard FVGC variant rules \u2014 not BOS, not protected_swing.\n\nExit Strategy: TP at OR.L touch (re-test). SL per FVGC model. 71.4% of trades reach OR.L. No BE management studied yet.",
-      "notion_url": "https://www.notion.so/35ce2f0e776081f1be39d7ff086ec51e",
+      "notion_url": "https://www.notion.so/M3-Short-Both-Swept-Carve-Out-Idea-35ce2f0e776081f1be39d7ff086ec51e",
       "description": "Carve-out to the standard 'no shorts in M3' rule. When BOTH OR.H and OR.L have been swept (any wick beyond) by 10:00 ET, the day is in expanded-range/trending mode and short FVGCs targeting OR.L re-test work. n=39 across Oct 2023 \u2013 Mar 2026, no OOS split. Best opposite-direction M3 cell across all 4 sweep states.",
       "pre_market_conditions": "None specific. Trigger is intraday only \u2014 sweep state at 10:00 ET.",
       "tier": "B",
@@ -1027,11 +1007,7 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false,
-      "intraday_confluences": [],
-      "pre_market_sizing": {},
-      "exit_strategy": {},
-      "validated_on": null
+      "veto_active": false
     },
     {
       "name": "IFVG Reversal \u2014 v3 (anchor-to-sweep + close entry)",
@@ -1040,7 +1016,7 @@ window.BRIEFING_DATA = {
       "wr_base": "71.0% @ 1R | 65.2% @ 1.5R | PF 2.81 (n=138 signals across 37 distinct opps \u2014 v3 re-run on TV-aligned bars)",
       "sample_size": 138,
       "action_plan": "LONG only. Killzone 9:30\u201311:00 ET. Entry TF: 3min (winner). Sweep (wick-through, wick_only strictness) of a major liquidity level. PD gate ON \u2014 entry must be below prior-day mid. Within 10 bars, a bearish 3-bar FVG forms whose NEAR EDGE (bottom) is anchored to the swept price: abs(fvg_bottom \u2212 sweep_price) \u2264 3 \u00d7 fvg_size (no proximity cap). The sweep candle itself can be bar k of the 3-bar pattern. Entry = CLOSE of the first bar (within 2 bars of FVG formation) that closes back above the FVG top. No retest. Stop = FVG bottom \u2212 5pt. Chop filter ON (skip if \u22653 bars sit inside the FVG before inversion). Obstruction filter \u22643.\n\nExit Strategy: 1.5R full close. PF 2.81 on this target (buffer=5pt on stop). WR@1R=71.0%, WR@1.5R=65.2%, avg_r=+0.630. Move stop to BE only after the first 10\u201320pt internal swing in profit \u2014 never tighter. Soft stop: full candle body close back through entry.",
-      "notion_url": "https://www.notion.so/344e2f0e77608185b832c8c131a35bce",
+      "notion_url": "https://www.notion.so/IFVG-Reversal-v3-anchor-to-sweep-close-entry-344e2f0e77608185b832c8c131a35bce",
       "description": null,
       "pre_market_conditions": "Mark: 1H swings (unswept), 4H swings (unswept), London H/L, Asia (overnight) H/L, 6am H/L, prior-day H/L/MID, NY AM rolling H/L (9:30 onward). On red-folder 8:30 news days, mark the 1-min news candle H/L if range \u226560pt. Primary confluence driver (re-run): instant_inversion=True (inversion happens within 1 bar of FVG formation, not 2) \u2014 WR 84.0% at n=50, +23.8pp lift. Secondary: large-bucket FVG sizes (bucket 6+, ~15pt+). Note: unlike the pre-fix run, swing_1H is NOT a significant confluence factor here.",
       "tier": "A",
@@ -1056,11 +1032,7 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false,
-      "intraday_confluences": [],
-      "pre_market_sizing": {},
-      "exit_strategy": {},
-      "validated_on": null
+      "veto_active": false
     },
     {
       "name": "VWAP Continuation",
@@ -1069,7 +1041,7 @@ window.BRIEFING_DATA = {
       "wr_base": "37.4% wins / 47.3% BE / 15.3% loss",
       "sample_size": 313,
       "action_plan": "1. Session-anchored VWAP from 9:30. 2. Wait for 3+ consecutive 30s closes above (long) or below (short) VWAP. 3. Pullback within 2pt of VWAP. 4. Entry: first 30s close back on trend side. 5. CRITICAL: measure abs(entry - VWAP). If <10 NQ pts \u2192 skip this signal. 6. R0 = abs(entry - VWAP at entry). 7. No new entries after 10:00 ET. Multiple signals/day allowed.\n\nExit Strategy: Initial SL = first 30s close on wrong side of current VWAP (dynamic). Move stop to BE when +1R reached. TP = fixed +2.5R from entry. Three outcomes: WIN +2.5R (37%), BE 0R (47%), LOSS variable avg -1.3R (15%). PF 4.61 / EV +0.73R. The BE move at +1R is non-negotiable \u2014 without it, PF collapses to ~1.1.",
-      "notion_url": "https://www.notion.so/342e2f0e77608199821ecfbf57a1c591",
+      "notion_url": "https://www.notion.so/VWAP-Continuation-342e2f0e77608199821ecfbf57a1c591",
       "description": "Anchored VWAP from 9:30, 3+ trend bars, pullback within 2pt, re-cross entry in gap-aligned direction, ONLY when R0 (entry-to-VWAP distance) \u226510 NQ pts. Exit: dynamic VWAP-close SL \u2192 BE at +1R \u2192 TP at +2.5R. 8yr revalidation 2018-2026: n=313, PF 4.61 raw / 4.13 after 0.5pt slip, EV +0.73R/trade (~$217/contract). Profitable every year incl. 2025 (+$19K/ct). Original 'Calm VIXY only' filter was wrong and has been removed \u2014 high-VIXY days actually have the highest PF.",
       "pre_market_conditions": "Skip day if: (1) red folder news on calendar, (2) Wednesday, (3) prior day type = reversal_up, (4) gap <2pt. Otherwise: gap-up \u2192 longs only; gap-down \u2192 shorts only. No VIXY filter (deprecated).",
       "tier": null,
@@ -1086,11 +1058,7 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false,
-      "intraday_confluences": [],
-      "pre_market_sizing": {},
-      "exit_strategy": {},
-      "validated_on": null
+      "veto_active": false
     },
     {
       "name": "ATR Range Exhaustion Filter (High VIXY)",
@@ -1099,7 +1067,7 @@ window.BRIEFING_DATA = {
       "wr_base": "61% at 1R (high VIXY + <30% range used + W1, n=124) | 58-61% across window variants",
       "sample_size": 124,
       "action_plan": "At FVGC entry signal: compute range_used_pct = (session_high_so_far \u2013 session_low_so_far) / rolling_40d_avg_rth_range. Only take the trade if range_used_pct < 30% (strict) or < 50% (looser). Entry must be W1 (9:30\u20139:45). Skip if >100% of expected range already used.\n\nExit Strategy: Standard FVGC exit (1R TP, SL at swing). No modification needed \u2014 the filter is pre-trade context only.",
-      "notion_url": "https://www.notion.so/342e2f0e7760816abc98f5a9af374523",
+      "notion_url": "https://www.notion.so/ATR-Range-Exhaustion-Filter-High-VIXY-342e2f0e7760816abc98f5a9af374523",
       "description": "On high VIXY days, take FVGC entries at W1 (9:30\u20139:45) when <30\u201350% of the expected daily ATR range has already been used by session open. Expected daily range = 40-day rolling average of prior rth_range. Range used = (session_high \u2013 session_low) from 9:30 to entry bar / rolling_avg_rth_range.\n\nThis is a FILTER on top of the base FVGC model, not a standalone signal. It selects the subset of W1 FVGC trades that occur early in high-volatility sessions when most of the day's expected range still remains.",
       "pre_market_conditions": "Check VIXY regime: must be 'high'. Compute expected daily range = 40-day rolling avg of prior rth_range. This is your denominator for the range_used_pct filter during the session.",
       "tier": null,
@@ -1115,11 +1083,7 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false,
-      "intraday_confluences": [],
-      "pre_market_sizing": {},
-      "exit_strategy": {},
-      "validated_on": null
+      "veto_active": false
     },
     {
       "name": "15m FVG Breakout Continuation",
@@ -1128,7 +1092,7 @@ window.BRIEFING_DATA = {
       "wr_base": "93.3% at 1R (28W/2L), 60% at 2R, 55% at 3R",
       "sample_size": 40,
       "action_plan": "1) Price breaks through a 15m FVG \u2014 closes on the far side (non-reclaiming). 2) Within 10 bars (30s TF), an opposing-direction FVG created before the break gets inverted (close crosses its far boundary). 3) First FVGC signal in the SAME direction as the break fires within 40 bars of the inversion. Entry must be 09:30\u201310:15 NY. KEY DIFFERENCE from reversal study: trade direction matches the break direction, not opposite.\n\nExit Strategy: BE@1R \u2192 TP 3R (or hold to 5R: PF 8.33)",
-      "notion_url": "https://www.notion.so/340e2f0e776081cd922adc681ab3fdb1",
+      "notion_url": "https://www.notion.so/15m-FVG-Breakout-Continuation-340e2f0e776081cd922adc681ab3fdb1",
       "description": "Price breaks through an unmitigated 15-minute FVG \u2014 the gap fails to hold. An opposing FVG that was supporting the prior structure gets inverted, confirming the break is real. Then a FVGC signal fires in the breakout direction (continuation, not reversal). This is a momentum play: when 15m structure fails, the move runs hard. Median MFE 8.7R. Only works on 15m FVGs \u2014 tested all level types, nothing else comes close.",
       "pre_market_conditions": "Identify unmitigated 15-minute FVGs on the chart. These are potential breakout levels if they fail to hold.",
       "tier": "A",
@@ -1144,11 +1108,7 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false,
-      "intraday_confluences": [],
-      "pre_market_sizing": {},
-      "exit_strategy": {},
-      "validated_on": null
+      "veto_active": false
     },
     {
       "name": "M1 Short \u2014 Confluence Model",
@@ -1157,7 +1117,7 @@ window.BRIEFING_DATA = {
       "wr_base": "Slice 70% (PREMIUM) | Rest 48% IS / 56% OOS \u2014 runner-only secondary",
       "sample_size": 124,
       "action_plan": "FVGC short fires 9:30-9:45. Skip if protected_swing variant. Count 7 confluences, apply tier table for sizing. 2+ = full size runner. 4+ = max size runner.\n\nExit Strategy: Runner mode at 2+ conf. Recommended: 1/3 @ 1R + 1/3 @ 2R + 1/3 rides to 5R with NO BE on runner (+0.77R EV/trade). Never BE@1R on this play.",
-      "notion_url": "https://www.notion.so/33de2f0e776081889879c4dcbd495996",
+      "notion_url": "https://www.notion.so/M1-Short-Confluence-Model-33de2f0e776081889879c4dcbd495996",
       "description": "TWO-TIER play. PREMIUM = Opening-FVG slice (FVG @9:29:30-9:31:00) \u2014 see dedicated page, 70% WR / PF 2.3, ~1.3/mo recent. SECONDARY = rest of M1 (entry 9:30-9:45 outside slice) \u2014 runner-only at TP@5R no-BE, PF ~2.0, regime-dependent. Original 7-factor confluence stack INVALIDATED on 8yr (no FDR survivors). Replaced with 3-factor vol_score (ON_range_high + prior_day_ATR_high + gap_abs_top_q) as sizing input only.",
       "pre_market_conditions": "Hard vetoes: VIXY bottom quartile OR Monday \u2192 skip. Confluences (pre-market): gap >100pts down, prior day bottom 1/3, FOMC week, VIXY top quartile, Friday. At 9:30:30: bear 930 candle + big body (top quartile, \u226523pts).",
       "tier": "B",
@@ -1173,11 +1133,7 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false,
-      "intraday_confluences": [],
-      "pre_market_sizing": {},
-      "exit_strategy": {},
-      "validated_on": null
+      "veto_active": false
     },
     {
       "name": "FVGC Off of 930 Candle",
@@ -1186,7 +1142,7 @@ window.BRIEFING_DATA = {
       "wr_base": "69.9% (no-PS, n=83) | 72.0% with tier 2+ M1 confluences (n=75)",
       "sample_size": 83,
       "action_plan": "An FVG is created during the 9:29:30\u20139:31:00 window (first ~90 seconds of RTH) on 30s bars. Take the short FVGC entry only. For more setups: also watch 1m FVGs completing by 9:32, 2m by 9:34. Active watch window: 9:30\u20139:37. Layer: 30s first, then 1m/2m as backup.\n\nExit Strategy: Move stop to BE the instant 1R hits (free upgrade: +0.40R -> +0.73R/trade). Primary target 3R (BE-trailed) = +1.33R/trade PF 5.40. Aggressive 5R target = +1.63R PF 6.40.",
-      "notion_url": "https://www.notion.so/33de2f0e776081aa9c6bdc297e5fb68b",
+      "notion_url": "https://www.notion.so/FVGC-Off-of-930-Candle-33de2f0e776081aa9c6bdc297e5fb68b",
       "description": "STANDALONE play \u2014 short FVGCs where the FVG was created in the 9:30 candle (09:29:30-09:31:00 NY). Carries ALL of the M1 short alpha (slice WR 70.4% PF 3.05 vs rest of M1 48.4% PF 0.94). 8yr ES validated 2026-05-27.",
       "pre_market_conditions": "None required. Stronger when combined with gap down day or prior day down.",
       "tier": null,
@@ -1200,69 +1156,9 @@ window.BRIEFING_DATA = {
       "pre_met": [],
       "pre_missing": [],
       "match_status": "always",
-      "hard_kill_switches": {
-        "vol_score_zero": "vol_score=0 \u2192 0.5\u00d7 size or skip (worst cell)",
-        "same_day_followup_m1": "Don't double-dip M1 short same day (45.8% WR \u00b7 PF 0.62)",
-        "breakdown_entry": "Skip 9:30-low breakdown entry (stop-hunt magnet, 45% WR)"
-      },
+      "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false,
-      "intraday_confluences": [
-        {
-          "id": "wide_930_candle",
-          "when": "9:31",
-          "desc": "Wide 9:30 candle (= bigger FVG = more retrace room)",
-          "lift_pp": 14.7,
-          "polarity": "positive"
-        },
-        {
-          "id": "1m_fvgc_same_day",
-          "when": "9:31-9:32",
-          "desc": "1m FVGC fires same day (confirmation only \u2014 NOT standalone)",
-          "stats": "72.7% WR \u00b7 PF 2.85 in overlap cell",
-          "polarity": "positive"
-        },
-        {
-          "id": "3m_fvgc_same_day",
-          "when": "9:33+",
-          "desc": "3m FVGC fires \u2014 RARE premium signal, SIZE UP",
-          "stats": "~4/yr \u00b7 64.5% WR \u00b7 PF 2.13 baseline; 75% WR on top-dump days",
-          "polarity": "positive"
-        },
-        {
-          "id": "top_q_dump_day",
-          "when": "9:45",
-          "desc": "First 15-min dump in Q4 (90d rolling) \u2014 perfect cell",
-          "stats": "100% WR on Q4 dump days (n=10); 100% on top-10% (n=8)",
-          "polarity": "positive"
-        },
-        {
-          "id": "gap_large_down",
-          "when": "preopen",
-          "desc": "gap_large_down \u2014 ANTI-confluence here (inverts vs M1)",
-          "rationale": "Big gap-down = crowd already short, retest fails",
-          "polarity": "negative"
-        }
-      ],
-      "pre_market_sizing": {
-        "vol_score": {
-          "computation": "ON_range_top_q + prior_day_ATR_top_q + gap_abs_top_q (each 90d rolling)",
-          "note": "Sizing input only \u2014 NOT a gate (don't veto on it)",
-          "tiers": {
-            "0": "0.5\u00d7 size or skip (worst cell)",
-            "1": "Normal size",
-            "2": "1.25\u20131.5\u00d7 size (best cell)",
-            "3": "Normal size, NO upsize (chop)"
-          }
-        }
-      },
-      "exit_strategy": {
-        "always": "Move stop to BE the instant 1R hits (+0.40 \u2192 +0.73R/trade \u2014 basically free)",
-        "primary_target": "3R BE-trailed (+1.33R/trade \u00b7 PF 5.40) \u2014 best risk-adjusted",
-        "aggressive_target": "5R no-BE (+1.63R/trade \u00b7 PF 6.40)",
-        "scale_out_alt": "1/3 @ 1R, 1/3 @ 3R, 1/3 trail (smoother ~+1.0R)"
-      },
-      "validated_on": "2026-05-27 (8yr ES baseline, n=4,542)"
+      "veto_active": false
     },
     {
       "name": "FVGC To Opening Range H/L",
@@ -1271,7 +1167,7 @@ window.BRIEFING_DATA = {
       "wr_base": "48%",
       "sample_size": 995,
       "action_plan": "1. AT 9:45: mark OR.H, OR.L. If OR > 150pt \u2192 NO PLAY. 2. From 9:45-10:15, watch 30s bars. 3. On each FVGC: (a) variant != ifvg, (b) direction points at unswept OR side, (c) at least one OR side still unswept \u2192 TAKE IT. 4. SIZING: 1st fire = 1x. 2nd-4th = 0.5x. Skip 5th+. 5. Same-day re-entries have SAME edge as #1 (Trade #2 PF 1.73, #3 PF 1.89, #4 PF 2.00) \u2014 take them, half size for risk control. 6. Target 2R, hold SL. Day done when both OR swept OR 10:15.\n\nExit Strategy: Target = 2R. Hold ORIGINAL SL through any OR retest. Do NOT move to breakeven \u2014 70-85% of OR touches retrace through entry before continuing; a BE stop gets hit. Data: of trades that touch the OR target, 72-83% blow through it to 2R; only 10-16% reverse. The runner past OR is where the edge concentrates. Avg excursion beyond OR target on continuations: +6R.",
-      "notion_url": "https://www.notion.so/33de2f0e776080409d14f582b1868b64",
+      "notion_url": "https://www.notion.so/FVGC-To-Opening-Range-H-L-33de2f0e776080409d14f582b1868b64",
       "description": "After 9:45, take 30s FVGCs pointing at an OR side that has NOT been swept yet. Target 2R, hold original SL. Kill switches: OR > 150pt | variant = ifvg | both OR sides swept | magnet-against | 5th+ trade of day. SIZING: 1st of day = 1x, 2nd-4th = 0.5x half. 8.2yr validated: n=995, PF 1.79, EV +0.40R/trade. Sized R/yr = +39.6 = $23,780. Monthly: 74.5% winning months, worst -5.5R, Sharpe 0.75. NO VIX FILTER (tested, p=0.057 \u2014 not significant). The sized rule alone provides risk management.",
       "pre_market_conditions": "None required. This is an intraday-only setup. OR is set at 9:45 ET.",
       "tier": "A",
@@ -1294,11 +1190,7 @@ window.BRIEFING_DATA = {
         "5th_plus_trade": "Skip the 5th+ trade of the day (n=4, PF 0, EV -1.00R)."
       },
       "active_vetoes": [],
-      "veto_active": false,
-      "intraday_confluences": [],
-      "pre_market_sizing": {},
-      "exit_strategy": {},
-      "validated_on": "2026-05-18 (8yr: 2018-01 to 2026-05, magnet-aligned framing)"
+      "veto_active": false
     }
   ],
   "partial_plays": [],
@@ -1312,29 +1204,29 @@ window.BRIEFING_DATA = {
       {
         "label": "Asia high",
         "price": 30495.0,
-        "distance_pts": -52.25,
+        "distance_pts": -61.0,
         "direction": "below"
       },
       {
         "label": "London low",
         "price": 30469.0,
-        "distance_pts": -78.25,
+        "distance_pts": -87.0,
         "direction": "below"
       },
       {
         "label": "London high",
         "price": 30586.0,
-        "distance_pts": 38.75,
+        "distance_pts": 30.0,
         "direction": "above"
       },
       {
         "label": "Overnight high",
         "price": 30586.0,
-        "distance_pts": 38.75,
+        "distance_pts": 30.0,
         "direction": "above"
       }
     ],
-    "narrative": "Primary focus is the M1 Short setup: gap-down + overnight_down pre-loads bearish context, and a bearish 9:30 candle + top-quartile body at 9:31 stacks to the max 2-factor tier. FVGC Off of 930 Candle is the top-priority sub-play in the first 90 seconds (70% WR, standalone). Watch the 45-min OR width as the binary gate \u2014 wide OR unlocks 72\u201375% WR combos, tight OR means stand down. Asia high at 30495 is the immediate directional test at the open."
+    "narrative": null
   },
   "unknown_factors": [
     {
