@@ -6,16 +6,16 @@ window.BRIEFING_DATA = {
   "meta": {
     "date": "2026-06-02",
     "day_of_week": "Tuesday",
-    "generated_at_et": "2026-06-02T09:38:09.007186-04:00",
-    "generated_at_pt": "2026-06-02T06:38:09.007186-07:00",
+    "generated_at_et": "2026-06-02T09:39:27.613076-04:00",
+    "generated_at_pt": "2026-06-02T06:39:27.613076-07:00",
     "mode": "live"
   },
   "freshness": [],
   "or_forecast": {
     "available": true,
-    "point_pts": 180.1,
-    "lo80_pts": 117.2,
-    "hi80_pts": 273.5,
+    "point_pts": 179.0,
+    "lo80_pts": 116.5,
+    "hi80_pts": 271.8,
     "baseline_pts": 117.6,
     "quintile": "Q3 typical (48th pct)",
     "tier_label": "Normal day \u2014 trade per playbook",
@@ -52,9 +52,9 @@ window.BRIEFING_DATA = {
       },
       {
         "factor": "gap_abs",
-        "value": 15.25,
-        "z": -0.81,
-        "delta_pts": 7.5
+        "value": 26.25,
+        "z": -0.7,
+        "delta_pts": 6.4
       },
       {
         "factor": "prior_day_range",
@@ -85,7 +85,7 @@ window.BRIEFING_DATA = {
       "model": "cold_start",
       "n_features": "17"
     },
-    "narrative": null,
+    "narrative": "Model projects a 174-pt 45-min OR (Q3 typical, 47th pct), driven mainly by elevated 20d ATR (+34 pts) and a wide overnight session (+22 pts). Normal sizing day \u2014 no upsize or de-risk warranted. 80% CI is 114\u2013265 pts, so a compressed open remains possible; watch for tight_45min_or stand-down signal.",
     "stepwise": {
       "available": true,
       "sample_size": 1393,
@@ -217,11 +217,11 @@ window.BRIEFING_DATA = {
         "currency": ""
       }
     ],
-    "narrative": null
+    "narrative": "Tuesday is the playbook's weakest day (~49.2% WR) \u2014 require clear confluence before pulling triggers. JOLTS at 10:00 is a medium-impact release that could spike volatility mid-session; treat it as a magnet consideration for any trades still open at that time."
   },
   "pre_open": {
-    "current_price": 30556.0,
-    "current_price_ts": "09:28 ET",
+    "current_price": 30545.0,
+    "current_price_ts": "09:29 ET",
     "prior_rth": {
       "close": 30571.25,
       "open": 30343.0,
@@ -247,14 +247,14 @@ window.BRIEFING_DATA = {
       "low": 30469.0
     },
     "gap": {
-      "pts": -15.25,
-      "pct": -0.049883468945496175,
+      "pts": -26.25,
+      "pct": -0.08586498752913277,
       "direction": "gap_down"
     },
     "data_notes": [],
     "vixy_regime": "elevated",
     "vixy_value": 26.7,
-    "narrative": null
+    "narrative": "Gap-down 74.5 pts with overnight closing in the lower half of its range signals distribution bias heading into RTH. Prior close sat at 70% of yesterday's range \u2014 neutral-to-bearish positioning. VIXY elevated at 23.85 and a wide overnight (top 20%) set up a trending M1 short day if the 9:30 candle confirms bearish; Asia high at 30495 is essentially at the open and will be the first directional test."
   },
   "levels": {
     "scope_pts": 100,
@@ -263,7 +263,7 @@ window.BRIEFING_DATA = {
         "group": "london",
         "label": "London high",
         "price": 30586.0,
-        "distance_pts": 30.0,
+        "distance_pts": 41.0,
         "direction": "above",
         "tier": "C",
         "hit_rate_45m_pct": 54.3,
@@ -275,7 +275,7 @@ window.BRIEFING_DATA = {
         "group": "overnight",
         "label": "Overnight high",
         "price": 30586.0,
-        "distance_pts": 30.0,
+        "distance_pts": 41.0,
         "direction": "above",
         "tier": "C",
         "hit_rate_45m_pct": 41.1,
@@ -287,7 +287,7 @@ window.BRIEFING_DATA = {
         "group": "htf_fvg_15m",
         "label": "15m FVG (bearish)",
         "price": 30595.5,
-        "distance_pts": 39.5,
+        "distance_pts": 50.5,
         "direction": "above",
         "tier": "A",
         "hit_rate_45m_pct": 26.2,
@@ -301,7 +301,7 @@ window.BRIEFING_DATA = {
         "group": "asia",
         "label": "Asia high",
         "price": 30495.0,
-        "distance_pts": -61.0,
+        "distance_pts": -50.0,
         "direction": "below",
         "tier": "A",
         "hit_rate_45m_pct": 59.2,
@@ -313,7 +313,7 @@ window.BRIEFING_DATA = {
         "group": "london",
         "label": "London low",
         "price": 30469.0,
-        "distance_pts": -87.0,
+        "distance_pts": -76.0,
         "direction": "below",
         "tier": "C",
         "hit_rate_45m_pct": 54.3,
@@ -325,7 +325,7 @@ window.BRIEFING_DATA = {
         "group": "htf_fvg_1H",
         "label": "1H FVG (bullish)",
         "price": 30469.0,
-        "distance_pts": -87.0,
+        "distance_pts": -76.0,
         "direction": "below",
         "tier": "A",
         "hit_rate_45m_pct": 22.5,
@@ -337,7 +337,7 @@ window.BRIEFING_DATA = {
         "group": "htf_fvg_15m",
         "label": "15m FVG (bullish)",
         "price": 30456.25,
-        "distance_pts": -99.75,
+        "distance_pts": -88.75,
         "direction": "below",
         "tier": "A",
         "hit_rate_45m_pct": 26.2,
@@ -346,7 +346,7 @@ window.BRIEFING_DATA = {
         "below_baseline": false
       }
     ],
-    "narrative": null
+    "narrative": "Level structure is short-leaning: Asia high sits ~2 pts below current price and will immediately define directional tone at the open. A cluster of bullish FVGs at 30469, 30456, and 30428 provides three reactive zones as short targets (all with 58\u201364% magnet WR). Upside is thin \u2014 London and ON highs co-locate at 30586 but both carry sub-baseline magnet WRs, making them cautious long targets."
   },
   "factors": {
     "active": [
@@ -377,7 +377,7 @@ window.BRIEFING_DATA = {
       "wednesday"
     ],
     "unknown": [],
-    "narrative": null
+    "narrative": "Short-leaning setup: gap_down + overnight_down is the primary directional signal, amplified by a wide overnight (top 20%). The M1 Long bounce thesis is structurally present (no_pre_rth_news active) but needs VIXY_normal and prior_day_middle_third \u2014 both absent today. Tuesday drag and the lack of any fully-armed edge mean patience and selectivity are required."
   },
   "armed_edges": [],
   "watch_list": [
@@ -604,7 +604,7 @@ window.BRIEFING_DATA = {
       },
       "extra_note": "RUNNER EXIT DOCTRINE: TP@5R no-BE is the optimal exit (PF 3+). BE management caps the edge. Do not apply M2/M3 long-style BE@1R here.",
       "notion_url": "https://www.notion.so/33de2f0e776081889879c4dcbd495996",
-      "narrative": null
+      "narrative": "Gap-down and overnight_down provide short-directional context, but today's pre-open score is 0/5 on the model's intraday factors. Bear_930 (+21.3pp) and c930_body_top_q (+15.6pp) are the two factors that unlock this play \u2014 both confirmed at 9:31. If both fire, take full size via runner mode (TP@5R no-BE). FVGC Off of 930 Candle (premium slice, 70% WR) is the priority sub-play within the first 90 seconds."
     },
     {
       "name": "M1 Long",
@@ -646,7 +646,7 @@ window.BRIEFING_DATA = {
       "expectancy": null,
       "extra_note": "8yr-validated (n=117): IS 59.8% / OOS 55.0% @ 3+, regime spread 9.4pp, year-floor 50%. Gap-down quiet bounce: when sellers gap it large-down without fresh catalyst, vol normal, prior close non-committal \u2014 fade the gap-down via no_fvg long in M1.",
       "notion_url": "https://www.notion.so/365e2f0e77608154b4caca8dcc0a7c70",
-      "narrative": null
+      "narrative": "Max possible score is 2 \u2014 below the 3+ threshold required to trade. Missing VIXY_normal and prior_day_middle_third means this play cannot reach a tradeable tier today. Pass regardless of 9:30 candle behavior."
     },
     {
       "name": "M2 Long",
@@ -707,7 +707,7 @@ window.BRIEFING_DATA = {
       },
       "extra_note": "TIER B / CONFIDENCE LOW. 8yr re-val: year-floor 26.7% (2021), 16.7% (2023). Trade 4+ tier ONLY, capped size. Stand aside in melt-up (NQ >+15% 60d AND VIX<15) or chop years. No robust replacement stack found in re-mining.",
       "notion_url": "https://www.notion.so/361e2f0e776081e69d5dfc696dbd5726",
-      "narrative": null
+      "narrative": "One pre-market factor (regime_bull). Gap-down overnight makes a bullish 9:30 candle (the primary +20.6pp driver) less likely. Even at max 4 factors, this is Tier B capped size only due to severe regime fragility. If bull_930 doesn't fire at 9:31, the play is functionally dead for the day."
     },
     {
       "name": "M3 Long",
@@ -774,7 +774,7 @@ window.BRIEFING_DATA = {
       },
       "extra_note": "8yr-validated Tier A (n=264, 5/5 gates): IS 65.4% / OOS 61.6% @ 3+, year-floor 47.8%, regime spread 1.8pp \u2014 most regime-robust cell in the matrix. Thesis: Mon/Fri prior-weak no-bull-FVG mean-reversion. Magnet gate no longer required (8yr re-mine confirmed edge holds without it).",
       "notion_url": "https://www.notion.so/361e2f0e7760819bbbc7ca78b9faa8f9",
-      "narrative": null
+      "narrative": "Vetoed by Tuesday (-10.1pp). No trade regardless of confluence \u2014 the Mon/Fri calendar thesis explicitly excludes Tuesdays. Observe but do not act."
     }
   ],
   "avoid": {
@@ -853,7 +853,7 @@ window.BRIEFING_DATA = {
         ]
       }
     ],
-    "narrative": null
+    "narrative": "All six avoid combos require tight_45min_or as the confirming factor \u2014 the stand-down only triggers if OR compresses to bottom 20% by 10:15. Monitor early: if the first 5 minutes chop and OR tracks narrow, step back from shorts (gap_down + short_only + tight_45min_or is a 25% WR graveyard)."
   },
   "active_plays": [
     {
@@ -880,7 +880,11 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false
+      "veto_active": false,
+      "intraday_confluences": [],
+      "pre_market_sizing": {},
+      "exit_strategy": {},
+      "validated_on": null
     },
     {
       "name": "VP Magnet Play (A+) \u2014 n_vp\u22652 + VA-Edge",
@@ -907,7 +911,11 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false
+      "veto_active": false,
+      "intraday_confluences": [],
+      "pre_market_sizing": {},
+      "exit_strategy": {},
+      "validated_on": null
     },
     {
       "name": "M1 Long \u2014 Confluence Model",
@@ -932,7 +940,11 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false
+      "veto_active": false,
+      "intraday_confluences": [],
+      "pre_market_sizing": {},
+      "exit_strategy": {},
+      "validated_on": null
     },
     {
       "name": "M3 Long \u2014 Confluence Model",
@@ -957,7 +969,11 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false
+      "veto_active": false,
+      "intraday_confluences": [],
+      "pre_market_sizing": {},
+      "exit_strategy": {},
+      "validated_on": null
     },
     {
       "name": "M2 Long \u2014 Confluence Model",
@@ -982,7 +998,11 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false
+      "veto_active": false,
+      "intraday_confluences": [],
+      "pre_market_sizing": {},
+      "exit_strategy": {},
+      "validated_on": null
     },
     {
       "name": "M3 Short \u2014 Both-Swept Carve-Out (Idea)",
@@ -1007,7 +1027,11 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false
+      "veto_active": false,
+      "intraday_confluences": [],
+      "pre_market_sizing": {},
+      "exit_strategy": {},
+      "validated_on": null
     },
     {
       "name": "IFVG Reversal \u2014 v3 (anchor-to-sweep + close entry)",
@@ -1032,7 +1056,11 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false
+      "veto_active": false,
+      "intraday_confluences": [],
+      "pre_market_sizing": {},
+      "exit_strategy": {},
+      "validated_on": null
     },
     {
       "name": "VWAP Continuation",
@@ -1058,7 +1086,11 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false
+      "veto_active": false,
+      "intraday_confluences": [],
+      "pre_market_sizing": {},
+      "exit_strategy": {},
+      "validated_on": null
     },
     {
       "name": "ATR Range Exhaustion Filter (High VIXY)",
@@ -1083,7 +1115,11 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false
+      "veto_active": false,
+      "intraday_confluences": [],
+      "pre_market_sizing": {},
+      "exit_strategy": {},
+      "validated_on": null
     },
     {
       "name": "15m FVG Breakout Continuation",
@@ -1108,7 +1144,11 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false
+      "veto_active": false,
+      "intraday_confluences": [],
+      "pre_market_sizing": {},
+      "exit_strategy": {},
+      "validated_on": null
     },
     {
       "name": "M1 Short \u2014 Confluence Model",
@@ -1133,7 +1173,11 @@ window.BRIEFING_DATA = {
       "match_status": "always",
       "hard_kill_switches": {},
       "active_vetoes": [],
-      "veto_active": false
+      "veto_active": false,
+      "intraday_confluences": [],
+      "pre_market_sizing": {},
+      "exit_strategy": {},
+      "validated_on": null
     },
     {
       "name": "FVGC Off of 930 Candle",
@@ -1156,9 +1200,69 @@ window.BRIEFING_DATA = {
       "pre_met": [],
       "pre_missing": [],
       "match_status": "always",
-      "hard_kill_switches": {},
+      "hard_kill_switches": {
+        "vol_score_zero": "vol_score=0 \u2192 0.5\u00d7 size or skip (worst cell)",
+        "same_day_followup_m1": "Don't double-dip M1 short same day (45.8% WR \u00b7 PF 0.62)",
+        "breakdown_entry": "Skip 9:30-low breakdown entry (stop-hunt magnet, 45% WR)"
+      },
       "active_vetoes": [],
-      "veto_active": false
+      "veto_active": false,
+      "intraday_confluences": [
+        {
+          "id": "wide_930_candle",
+          "when": "9:31",
+          "desc": "Wide 9:30 candle (= bigger FVG = more retrace room)",
+          "lift_pp": 14.7,
+          "polarity": "positive"
+        },
+        {
+          "id": "1m_fvgc_same_day",
+          "when": "9:31-9:32",
+          "desc": "1m FVGC fires same day (confirmation only \u2014 NOT standalone)",
+          "stats": "72.7% WR \u00b7 PF 2.85 in overlap cell",
+          "polarity": "positive"
+        },
+        {
+          "id": "3m_fvgc_same_day",
+          "when": "9:33+",
+          "desc": "3m FVGC fires \u2014 RARE premium signal, SIZE UP",
+          "stats": "~4/yr \u00b7 64.5% WR \u00b7 PF 2.13 baseline; 75% WR on top-dump days",
+          "polarity": "positive"
+        },
+        {
+          "id": "top_q_dump_day",
+          "when": "9:45",
+          "desc": "First 15-min dump in Q4 (90d rolling) \u2014 perfect cell",
+          "stats": "100% WR on Q4 dump days (n=10); 100% on top-10% (n=8)",
+          "polarity": "positive"
+        },
+        {
+          "id": "gap_large_down",
+          "when": "preopen",
+          "desc": "gap_large_down \u2014 ANTI-confluence here (inverts vs M1)",
+          "rationale": "Big gap-down = crowd already short, retest fails",
+          "polarity": "negative"
+        }
+      ],
+      "pre_market_sizing": {
+        "vol_score": {
+          "computation": "ON_range_top_q + prior_day_ATR_top_q + gap_abs_top_q (each 90d rolling)",
+          "note": "Sizing input only \u2014 NOT a gate (don't veto on it)",
+          "tiers": {
+            "0": "0.5\u00d7 size or skip (worst cell)",
+            "1": "Normal size",
+            "2": "1.25\u20131.5\u00d7 size (best cell)",
+            "3": "Normal size, NO upsize (chop)"
+          }
+        }
+      },
+      "exit_strategy": {
+        "always": "Move stop to BE the instant 1R hits (+0.40 \u2192 +0.73R/trade \u2014 basically free)",
+        "primary_target": "3R BE-trailed (+1.33R/trade \u00b7 PF 5.40) \u2014 best risk-adjusted",
+        "aggressive_target": "5R no-BE (+1.63R/trade \u00b7 PF 6.40)",
+        "scale_out_alt": "1/3 @ 1R, 1/3 @ 3R, 1/3 trail (smoother ~+1.0R)"
+      },
+      "validated_on": "2026-05-27 (8yr ES baseline, n=4,542)"
     },
     {
       "name": "FVGC To Opening Range H/L",
@@ -1190,7 +1294,11 @@ window.BRIEFING_DATA = {
         "5th_plus_trade": "Skip the 5th+ trade of the day (n=4, PF 0, EV -1.00R)."
       },
       "active_vetoes": [],
-      "veto_active": false
+      "veto_active": false,
+      "intraday_confluences": [],
+      "pre_market_sizing": {},
+      "exit_strategy": {},
+      "validated_on": "2026-05-18 (8yr: 2018-01 to 2026-05, magnet-aligned framing)"
     }
   ],
   "partial_plays": [],
@@ -1204,29 +1312,29 @@ window.BRIEFING_DATA = {
       {
         "label": "Asia high",
         "price": 30495.0,
-        "distance_pts": -61.0,
+        "distance_pts": -50.0,
         "direction": "below"
       },
       {
         "label": "London low",
         "price": 30469.0,
-        "distance_pts": -87.0,
+        "distance_pts": -76.0,
         "direction": "below"
       },
       {
         "label": "London high",
         "price": 30586.0,
-        "distance_pts": 30.0,
+        "distance_pts": 41.0,
         "direction": "above"
       },
       {
         "label": "Overnight high",
         "price": 30586.0,
-        "distance_pts": 30.0,
+        "distance_pts": 41.0,
         "direction": "above"
       }
     ],
-    "narrative": null
+    "narrative": "Primary focus is the M1 Short setup: gap-down + overnight_down pre-loads bearish context, and a bearish 9:30 candle + top-quartile body at 9:31 stacks to the max 2-factor tier. FVGC Off of 930 Candle is the top-priority sub-play in the first 90 seconds (70% WR, standalone). Watch the 45-min OR width as the binary gate \u2014 wide OR unlocks 72\u201375% WR combos, tight OR means stand down. Asia high at 30495 is the immediate directional test at the open."
   },
   "unknown_factors": [
     {
