@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
   "meta": {
-    "date": "2026-06-01",
-    "day_of_week": "Monday",
-    "generated_at_et": "2026-06-01T09:33:43.506815-04:00",
-    "generated_at_pt": "2026-06-01T06:33:43.506815-07:00",
+    "date": "2026-06-02",
+    "day_of_week": "Tuesday",
+    "generated_at_et": "2026-06-02T09:12:18.299688-04:00",
+    "generated_at_pt": "2026-06-02T06:12:18.299688-07:00",
     "mode": "live"
   },
   "freshness": [],
   "or_forecast": {
     "available": true,
-    "point_pts": 172.8,
-    "lo80_pts": 112.4,
-    "hi80_pts": 262.3,
+    "point_pts": 177.9,
+    "lo80_pts": 115.8,
+    "hi80_pts": 270.1,
     "baseline_pts": 117.6,
-    "quintile": "Q3 typical (45th pct)",
+    "quintile": "Q3 typical (48th pct)",
     "tier_label": "Normal day \u2014 trade per playbook",
     "tier_level": "normal",
     "feature_date": "2026-02-20",
@@ -37,39 +37,39 @@
     "drivers": [
       {
         "factor": "atr_20d",
-        "value": 374.125,
-        "z": 1.39,
-        "delta_pts": 32.9
+        "value": 379.212,
+        "z": 1.45,
+        "delta_pts": 34.4
       },
       {
         "factor": "overnight_range",
-        "value": 284.5,
-        "z": 1.06,
-        "delta_pts": 25.8
+        "value": 268.25,
+        "z": 0.9,
+        "delta_pts": 21.7
       },
       {
-        "factor": "atr_ratio_5_20",
-        "value": 0.832,
-        "z": -0.78,
-        "delta_pts": -7.2
-      },
-      {
-        "factor": "atr_5d",
-        "value": 311.1,
-        "z": 0.51,
-        "delta_pts": -3.4
+        "factor": "prior_day_range",
+        "value": 401.0,
+        "z": 0.98,
+        "delta_pts": 5.4
       },
       {
         "factor": "gap_abs",
-        "value": 73.0,
-        "z": -0.22,
-        "delta_pts": 2.0
+        "value": 39.75,
+        "z": -0.56,
+        "delta_pts": 5.1
       },
       {
-        "factor": "gap_atr_ratio",
-        "value": 0.195,
-        "z": -0.53,
-        "delta_pts": -1.8
+        "factor": "atr_5d",
+        "value": 339.55,
+        "z": 0.75,
+        "delta_pts": -5.1
+      },
+      {
+        "factor": "atr_ratio_5_20",
+        "value": 0.895,
+        "z": -0.51,
+        "delta_pts": -4.7
       }
     ],
     "perf": {
@@ -82,7 +82,7 @@
       "model": "cold_start",
       "n_features": "17"
     },
-    "narrative": "Predicted 45-min OR of 175 pts lands at Q3 (47th pct) \u2014 a normal day by recent standards, not wide enough to unlock OR-H/L play's full green light. Elevated ATR_20d (374 pts, +1.4\u03c3) and a wide overnight (284.5 pts, +1.1\u03c3) are the primary drivers above the 118-pt baseline; the 5d ATR compression (atr_ratio_5_20 = 0.83) is a modest drag, signaling recent sessions have been tighter than the 20d average. Bottom line: trade per playbook at normal size \u2014 wait to confirm OR width at 10:15 before escalating.",
+    "narrative": null,
     "stepwise": {
       "available": true,
       "sample_size": 1393,
@@ -202,83 +202,89 @@
     }
   },
   "calendar": {
-    "day_of_week": "Monday",
-    "dow_note": "Monday is middling in the sample (WR ~50.5%). NWOG comes into play today only.",
+    "day_of_week": "Tuesday",
+    "dow_note": "Tuesday is the weakest day in the sample (WR ~49.2%). Stay selective.",
     "unknown": false,
     "is_fomc_week": false,
     "events": [
       {
-        "event": "ISM Manufacturing PMI",
-        "time_et": "10:00",
-        "impact": "High",
-        "currency": ""
-      },
-      {
-        "event": "ISM Manufacturing Prices",
+        "event": "JOLTS Job Openings",
         "time_et": "10:00",
         "impact": "Medium",
         "currency": ""
       }
     ],
-    "narrative": "Monday, non-FOMC week \u2014 the morning window is effectively catalyst-free. Powell's speaking slot was at 00:30 ET (overnight, already absorbed) and both ISM prints land at 14:00 ET, well past the 9:30-10:15 RTH focus window. No pre-RTH news is a confirmed positive confluence (+21pp on M1 Long), so the session opens clean."
+    "narrative": null
   },
   "pre_open": {
-    "current_price": 30323.25,
-    "current_price_ts": "09:23 ET",
+    "current_price": 30531.5,
+    "current_price_ts": "09:02 ET",
     "prior_rth": {
-      "close": 30396.25,
-      "open": 30382.25,
-      "high": 30536.0,
-      "low": 30270.0,
-      "close_position": 0.47462406015037595,
+      "close": 30571.25,
+      "open": 30343.0,
+      "high": 30693.0,
+      "low": 30292.0,
+      "close_position": 0.6963840399002493,
       "label": null
     },
     "overnight": {
-      "high": 30595.25,
-      "low": 30310.75,
-      "range": 284.5,
-      "direction": "down",
+      "high": 30586.0,
+      "low": 30317.75,
+      "range": 268.25,
+      "direction": "flat",
       "tight": false,
       "wide": true
     },
     "asia": {
-      "high": 30595.25,
-      "low": 30373.25
+      "high": 30495.0,
+      "low": 30317.75
     },
     "london": {
-      "high": 30591.75,
-      "low": 30443.75
+      "high": 30586.0,
+      "low": 30469.0
     },
     "gap": {
-      "pts": -73.0,
-      "pct": -0.24016120409589997,
+      "pts": -39.75,
+      "pct": -0.13002412397268676,
       "direction": "gap_down"
     },
     "data_notes": [],
     "vixy_regime": "elevated",
     "vixy_value": 26.7,
-    "narrative": "Gap-down 49.5 pts (-0.16%) on a wide overnight (284.5 pts, top 20%) with price drifting down through the session \u2014 a soft overnight sell with no news catalyst. Prior RTH close sat mid-range (47%), leaving no strong directional narrative from yesterday. VIXY at 23.3 is in the elevated regime (not high enough for ATR exhaustion filter, not low enough to mute shorts) \u2014 vol is present but not extreme. Current price 30346.75 is 50 pts below the prior close, probing toward ON low support at 30310."
+    "narrative": null
   },
   "levels": {
     "scope_pts": 100,
     "above": [
       {
-        "group": "asia",
-        "label": "Asia low",
-        "price": 30373.25,
-        "distance_pts": 50.0,
+        "group": "london",
+        "label": "London high",
+        "price": 30586.0,
+        "distance_pts": 54.5,
         "direction": "above",
-        "tier": "A",
-        "hit_rate_45m_pct": 59.2,
-        "wr_as_magnet_pct": 54.2,
-        "pf_as_magnet": 1.22,
-        "below_baseline": false
+        "tier": "C",
+        "hit_rate_45m_pct": 54.3,
+        "wr_as_magnet_pct": 47.4,
+        "pf_as_magnet": 0.95,
+        "below_baseline": true
+      },
+      {
+        "group": "overnight",
+        "label": "Overnight high",
+        "price": 30586.0,
+        "distance_pts": 54.5,
+        "direction": "above",
+        "tier": "C",
+        "hit_rate_45m_pct": 41.1,
+        "wr_as_magnet_pct": 48.7,
+        "pf_as_magnet": 0.86,
+        "below_baseline": true
       },
       {
         "group": "htf_fvg_15m",
         "label": "15m FVG (bearish)",
-        "price": 30384.5,
-        "distance_pts": 61.25,
+        "price": 30595.5,
+        "distance_pts": 64.0,
         "direction": "above",
         "tier": "A",
         "hit_rate_45m_pct": 26.2,
@@ -289,41 +295,64 @@
     ],
     "below": [
       {
-        "group": "overnight",
-        "label": "Overnight low",
-        "price": 30310.75,
-        "distance_pts": -12.5,
+        "group": "asia",
+        "label": "Asia high",
+        "price": 30495.0,
+        "distance_pts": -36.5,
+        "direction": "below",
+        "tier": "A",
+        "hit_rate_45m_pct": 59.2,
+        "wr_as_magnet_pct": 54.2,
+        "pf_as_magnet": 1.22,
+        "below_baseline": false
+      },
+      {
+        "group": "london",
+        "label": "London low",
+        "price": 30469.0,
+        "distance_pts": -62.5,
         "direction": "below",
         "tier": "C",
-        "hit_rate_45m_pct": 41.1,
-        "wr_as_magnet_pct": 48.7,
-        "pf_as_magnet": 0.86,
+        "hit_rate_45m_pct": 54.3,
+        "wr_as_magnet_pct": 47.4,
+        "pf_as_magnet": 0.95,
         "below_baseline": true
       },
       {
-        "group": "prev_day",
-        "label": "Prev day low",
-        "price": 30270.0,
-        "distance_pts": -53.25,
+        "group": "htf_fvg_1H",
+        "label": "1H FVG (bullish)",
+        "price": 30469.0,
+        "distance_pts": -62.5,
         "direction": "below",
         "tier": "A",
-        "hit_rate_45m_pct": 40.6,
-        "wr_as_magnet_pct": 57.1,
-        "pf_as_magnet": 1.45,
+        "hit_rate_45m_pct": 22.5,
+        "wr_as_magnet_pct": 64.2,
+        "pf_as_magnet": 2.16,
+        "below_baseline": false
+      },
+      {
+        "group": "htf_fvg_15m",
+        "label": "15m FVG (bullish)",
+        "price": 30456.25,
+        "distance_pts": -75.25,
+        "direction": "below",
+        "tier": "A",
+        "hit_rate_45m_pct": 26.2,
+        "wr_as_magnet_pct": 58.4,
+        "pf_as_magnet": 1.51,
         "below_baseline": false
       }
     ],
-    "narrative": "Four levels within 100 pts, split 2-above / 2-below \u2014 balanced field with meaningful draws in both directions. The cleanest short draw is PDL at 30270 (PF 1.45 as magnet, 57% WR), but it's 77 pts away \u2014 needs expansion to get there. ON low at 30310 is closer but actually a caution flag (PF 0.86, below baseline) \u2014 don't overweight it as a target. On the long side, Asia low at 30373 (+26.5 pts) is the nearest reactive zone with a positive magnet stat (54% WR, PF 1.22); London low at 30443 is marginal (PF 0.95). Best use: Asia low as near-side long target, PDL as the big short draw if OR expands."
+    "narrative": null
   },
   "factors": {
     "active": [
       "elevated_vixy",
       "gap_down",
-      "has_red_folder",
-      "monday",
       "no_pre_rth_news",
+      "no_red_folder",
       "not_fomc_week",
-      "overnight_down",
+      "tuesday",
       "wide_overnight"
     ],
     "inactive": [
@@ -331,23 +360,45 @@
       "friday",
       "gap_up",
       "has_pre_rth_news",
+      "has_red_folder",
       "is_fomc_week",
       "low_vixy",
-      "no_red_folder",
+      "monday",
       "normal_vixy",
+      "overnight_down",
       "overnight_up",
       "prior_day_down",
       "prior_day_up",
       "thursday",
       "tight_overnight",
-      "tuesday",
       "wednesday"
     ],
     "unknown": [],
-    "narrative": "Bull factors are absent today \u2014 no gap_up, no prior_day_up, no FOMC week lift. The active set is gap_down + overnight_down + wide_overnight, which tilts the session toward short continuation on W1 if the 9:30 candle confirms bearish. The no_pre_rth_news flag is the key long-side positive, unlocking M1 Long's strongest factor (+21pp). Monday is neutral-to-slight-drag for most plays and hard-kills M1 Short."
+    "narrative": null
   },
   "armed_edges": [],
   "watch_list": [
+    {
+      "stars": "\u2605\u2605\u2605",
+      "factors": [
+        "macro_w1",
+        "no_red_folder",
+        "wide_45min_or"
+      ],
+      "n": 64,
+      "wr_pct": 75.0,
+      "pf": 3.21,
+      "p_wr": 0.0,
+      "pre_matched": [
+        "no_red_folder"
+      ],
+      "post_needed": [
+        {
+          "factor": "wide_45min_or",
+          "desc": "45-min OR (9:30\u201310:15) in top 20% \u2014 KEY confirmation"
+        }
+      ]
+    },
     {
       "stars": "\u2605\u2605",
       "factors": [
@@ -430,27 +481,6 @@
     {
       "stars": "\u2605\u2605",
       "factors": [
-        "bearish_930",
-        "macro_w1",
-        "overnight_down"
-      ],
-      "n": 64,
-      "wr_pct": 68.8,
-      "pf": 2.3,
-      "p_wr": 0.003,
-      "pre_matched": [
-        "overnight_down"
-      ],
-      "post_needed": [
-        {
-          "factor": "bearish_930",
-          "desc": "9:30 candle closed bearish"
-        }
-      ]
-    },
-    {
-      "stars": "\u2605\u2605",
-      "factors": [
         "gap_down",
         "short_only",
         "wide_45min_or"
@@ -517,10 +547,9 @@
     }
   ],
   "w1_short_confluence": {
-    "preopen_count": 2,
+    "preopen_count": 1,
     "active_factors": [
-      "gap_down",
-      "overnight_down"
+      "gap_down"
     ],
     "tier": null
   },
@@ -530,14 +559,8 @@
       "direction": "short",
       "window": "9:30-9:45",
       "timeframe": "30s",
-      "veto_active": true,
-      "active_vetoes": [
-        {
-          "id": "dow_monday",
-          "desc": "Day is Monday",
-          "lift_pp": -12.5
-        }
-      ],
+      "veto_active": false,
+      "active_vetoes": [],
       "preopen_count": 0,
       "max_preopen": 5,
       "preopen_active": [],
@@ -578,7 +601,7 @@
       },
       "extra_note": "RUNNER EXIT DOCTRINE: TP@5R no-BE is the optimal exit (PF 3+). BE management caps the edge. Do not apply M2/M3 long-style BE@1R here.",
       "notion_url": "https://www.notion.so/33de2f0e776081889879c4dcbd495996",
-      "narrative": "VETOED \u2014 Monday kills M1 Short outright (-12.5pp). No M1 short trades today regardless of how bearish the 9:30 candle looks. The FVGC Off of 930 Candle (standalone short slice) is the only short play still live in the M1 window."
+      "narrative": null
     },
     {
       "name": "M1 Long",
@@ -587,18 +610,13 @@
       "timeframe": "30s",
       "veto_active": false,
       "active_vetoes": [],
-      "preopen_count": 2,
+      "preopen_count": 1,
       "max_preopen": 6,
       "preopen_active": [
         {
           "id": "no_pre_rth_news",
           "desc": "NO pre-RTH news scheduled (strongest factor)",
           "lift_pp": 21.1
-        },
-        {
-          "id": "prior_day_mid",
-          "desc": "Prior day close in middle 1/3 (no narrative)",
-          "lift_pp": 9.5
         }
       ],
       "post_pending": [
@@ -610,22 +628,22 @@
         }
       ],
       "projection": {
-        "min_count": 2,
-        "max_count": 3,
+        "min_count": 1,
+        "max_count": 2,
         "min_tier": {
           "action": "SKIP",
           "note": "no setup"
         },
         "max_tier": {
-          "action": "TAKE full size, BE@1R -> 3R fixed",
-          "note": "~59% WR, PF 2.31, EV +0.54R (operating tier)"
+          "action": "SKIP",
+          "note": "no setup"
         },
         "locked": false
       },
       "expectancy": null,
       "extra_note": "8yr-validated (n=117): IS 59.8% / OOS 55.0% @ 3+, regime spread 9.4pp, year-floor 50%. Gap-down quiet bounce: when sellers gap it large-down without fresh catalyst, vol normal, prior close non-committal \u2014 fade the gap-down via no_fvg long in M1.",
       "notion_url": "https://www.notion.so/365e2f0e77608154b4caca8dcc0a7c70",
-      "narrative": "Two pre-open factors confirmed (no_pre_rth_news +21.1pp, prior_day_mid +9.5pp) \u2014 the gap-down quiet bounce setup is arming. Today's 49.5pt gap-down without a news catalyst is exactly the scenario this play was built for. At 9:31, check if the 9:30 candle body is NOT top-quartile (veto); at signal time, need variant_no_fvg for the third confluence. If that fires, take full size BE@1R \u2192 3R."
+      "narrative": null
     },
     {
       "name": "M2 Long",
@@ -686,7 +704,7 @@
       },
       "extra_note": "TIER B / CONFIDENCE LOW. 8yr re-val: year-floor 26.7% (2021), 16.7% (2023). Trade 4+ tier ONLY, capped size. Stand aside in melt-up (NQ >+15% 60d AND VIX<15) or chop years. No robust replacement stack found in re-mining.",
       "notion_url": "https://www.notion.so/361e2f0e776081e69d5dfc696dbd5726",
-      "narrative": "Only 1 pre-open factor active (regime_bull +9.4pp). Needs bull_930 at 9:31 (+20.6pp) to get to 2 \u2014 and even then, 4+ tier requires all three post-open factors to fire. On a gap-down Monday this is low-probability; if the 9:30 candle opens bearish, M2 Long should be deprioritized. Remain at Tier B capped size if it does set up."
+      "narrative": null
     },
     {
       "name": "M3 Long",
@@ -696,19 +714,14 @@
       "veto_active": true,
       "active_vetoes": [
         {
-          "id": "prior_day_mid",
-          "desc": "Prior day close in middle 1/3 (no narrative)",
-          "lift_pp": -15.4
+          "id": "dow_tuesday",
+          "desc": "Day is Tuesday",
+          "lift_pp": -10.1
         }
       ],
-      "preopen_count": 2,
+      "preopen_count": 1,
       "max_preopen": 4,
       "preopen_active": [
-        {
-          "id": "dow_monday",
-          "desc": "Day is Monday",
-          "lift_pp": 10.5
-        },
         {
           "id": "not_fomc_week",
           "desc": "NOT FOMC week",
@@ -736,8 +749,8 @@
         }
       ],
       "projection": {
-        "min_count": 2,
-        "max_count": 5,
+        "min_count": 1,
+        "max_count": 4,
         "min_tier": {
           "action": "SKIP",
           "note": "no setup"
@@ -753,34 +766,17 @@
         "setup_pct_of_all_days": 28.1,
         "fire_rate_pct": 31.8,
         "ev_per_setup_day_R": 0.087,
-        "fire_rate_now_pct": 31.2,
+        "fire_rate_now_pct": 30.7,
         "fire_rate_max_pct": 30.1
       },
       "extra_note": "8yr-validated Tier A (n=264, 5/5 gates): IS 65.4% / OOS 61.6% @ 3+, year-floor 47.8%, regime spread 1.8pp \u2014 most regime-robust cell in the matrix. Thesis: Mon/Fri prior-weak no-bull-FVG mean-reversion. Magnet gate no longer required (8yr re-mine confirmed edge holds without it).",
       "notion_url": "https://www.notion.so/361e2f0e7760819bbbc7ca78b9faa8f9",
-      "narrative": "VETOED \u2014 prior_day_mid (close in middle 1/3 of range, 47%) kills M3 Long today (-15.4pp). M3 Long's thesis requires prior_day_weak (closed bottom 1/3) to establish the mean-reversion setup; yesterday's neutral close disarms it. No M3 long trades today."
+      "narrative": null
     }
   ],
   "avoid": {
     "factor_signals": [],
     "combo_signals": [
-      {
-        "status": "watch",
-        "factors": [
-          "overnight_down",
-          "short_only",
-          "tight_45min_or"
-        ],
-        "n": 31,
-        "wr_pct": 22.6,
-        "pf": 0.32,
-        "post_needed": [
-          {
-            "factor": "tight_45min_or",
-            "desc": "45-min OR in bottom 20% \u2014 HARD stand-down signal"
-          }
-        ]
-      },
       {
         "status": "watch",
         "factors": [
@@ -826,27 +822,6 @@
         "wr_pct": 26.3,
         "pf": 0.35,
         "post_needed": [
-          {
-            "factor": "tight_45min_or",
-            "desc": "45-min OR in bottom 20% \u2014 HARD stand-down signal"
-          }
-        ]
-      },
-      {
-        "status": "watch",
-        "factors": [
-          "bullish_930",
-          "overnight_down",
-          "tight_45min_or"
-        ],
-        "n": 45,
-        "wr_pct": 26.7,
-        "pf": 0.33,
-        "post_needed": [
-          {
-            "factor": "bullish_930",
-            "desc": "9:30 candle closed bullish"
-          },
           {
             "factor": "tight_45min_or",
             "desc": "45-min OR in bottom 20% \u2014 HARD stand-down signal"
@@ -1224,31 +1199,31 @@
     ],
     "best_targets": [
       {
-        "label": "Overnight low",
-        "price": 30310.75,
-        "distance_pts": -12.5,
+        "label": "Asia high",
+        "price": 30495.0,
+        "distance_pts": -36.5,
         "direction": "below"
       },
       {
-        "label": "Prev day low",
-        "price": 30270.0,
-        "distance_pts": -53.25,
+        "label": "London low",
+        "price": 30469.0,
+        "distance_pts": -62.5,
         "direction": "below"
       },
       {
-        "label": "Asia low",
-        "price": 30373.25,
-        "distance_pts": 50.0,
+        "label": "London high",
+        "price": 30586.0,
+        "distance_pts": 54.5,
         "direction": "above"
       },
       {
-        "label": "15m FVG (bearish)",
-        "price": 30384.5,
-        "distance_pts": 61.25,
+        "label": "Overnight high",
+        "price": 30586.0,
+        "distance_pts": 54.5,
         "direction": "above"
       }
     ],
-    "narrative": "Two plays are vetoed (M1 Short by Monday, M3 Long by prior_day_mid) \u2014 the active opportunity set narrows to M1 Long, FVGC Off 930 Candle, and FVGC To OR H/L. The primary decision tree: (1) At 9:30, watch for bearish candle \u2192 FVGC Off 930 Candle short is live if an FVG forms in the first 90 seconds; (2) simultaneously, watch for no_fvg variant signal \u2192 M1 Long arms at 3 confluences on gap-down no-news setup; (3) if bearish_930 confirms and OR expands wide by 10:15, the watch-list shorts (PF 2.30\u20133.27) are the high-conviction setup. Tight OR at 10:15 is the kill switch \u2014 stand down on all short continuation."
+    "narrative": null
   },
   "unknown_factors": [
     {
