@@ -5362,6 +5362,35 @@
           h('div', {class:'detail-text'}, p.pre_market_conditions)));
       }
 
+      // ----- PRE-MARKET FACTORS — fired/missed checklist -----
+      // Mirrors the matrix-detail CONFLUENCE CHECKLIST pattern, but for
+      // playbook plays that have pre_market_factors set in Notion. Each
+      // factor renders as ✓ (fired) or ✕ (missed), with the human-
+      // readable description from briefing_config.factors when available.
+      // Header shows "X / N fired" tally.
+      const pmFired   = p.pre_met_factors    || (p.pre_met    || []).map(f => ({id:f, desc:f}));
+      const pmMissed  = p.pre_missing_factors|| (p.pre_missing|| []).map(f => ({id:f, desc:f}));
+      const pmTotal   = pmFired.length + pmMissed.length;
+      if (pmTotal > 0) {
+        const sec = h('div', {class:'detail-section'},
+          h('div', {class:'detail-label'}, `PRE-MARKET FACTORS · ${pmFired.length}/${pmTotal} fired`));
+        pmFired.forEach(f => {
+          sec.appendChild(h('div', {class:'factor-line on'},
+            h('span', {class:'marker'}, '✓'),
+            h('span', {class:'lift'}, 'pre-open'),
+            h('span', {class:'desc'}, f.desc || f.id),
+            h('span', {class:'meta'}, f.id)));
+        });
+        pmMissed.forEach(f => {
+          sec.appendChild(h('div', {class:'factor-line missed'},
+            h('span', {class:'marker'}, '✕'),
+            h('span', {class:'lift'}, 'missed'),
+            h('span', {class:'desc'}, f.desc || f.id),
+            h('span', {class:'meta'}, f.id)));
+        });
+        wrap.appendChild(sec);
+      }
+
       // ----- INTRADAY CONFLUENCES — structured per-factor table -----
       // Each row is live-evaluated against today's data: ✓ (fired),
       // ✕ (missed — or anti-fired, for negative-polarity factors),

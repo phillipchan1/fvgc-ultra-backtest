@@ -2243,9 +2243,29 @@ def build_briefing_dict(
     pre_open_d['vixy_regime'] = vixy_regime
     pre_open_d['vixy_value']  = vixy_value
 
+    # Factor-id → description lookup used to enrich playbook plays'
+    # pre_met / pre_missing lists so the dashboard can render them with
+    # human-readable labels (e.g. "gap_up — cash opens above prior RTH
+    # close") instead of bare IDs.
+    factor_cfg = (config.get('factors') or {}) if isinstance(config, dict) else {}
+    def _factor_entry(fid: str) -> dict:
+        info = factor_cfg.get(fid) or {}
+        return {
+            'id': fid,
+            'desc': info.get('desc') or fid,
+            'category': info.get('category'),
+            'kind': info.get('kind'),
+        }
+
     def _play_to_dict(mp) -> dict:
         p = mp.play
         active_vetoes = compute_play_vetoes(p, today_factors, vixy_regime)
+        # Enriched pre_met / pre_missing with descriptions, so the playbook
+        # detail pane can render a checklist mirroring the matrix-play
+        # CONFLUENCE CHECKLIST (X/N fired + per-factor desc) instead of
+        # bare ID strings.
+        pre_met_enr     = [_factor_entry(f) for f in mp.pre_met]
+        pre_missing_enr = [_factor_entry(f) for f in mp.pre_missing]
         return {
             'name': p.get('name'),
             'direction': p.get('direction'),
@@ -2264,6 +2284,8 @@ def build_briefing_dict(
             'window': p.get('window') or [],
             'pre_met': list(mp.pre_met),
             'pre_missing': list(mp.pre_missing),
+            'pre_met_factors': pre_met_enr,
+            'pre_missing_factors': pre_missing_enr,
             'match_status': mp.status,
             # Notion-sourced kill switches — pass through so the dashboard
             # can render the full list. Live kill switches stay in the
