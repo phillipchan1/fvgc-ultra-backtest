@@ -2066,13 +2066,23 @@ def build_briefing_dict(
         expectancy = _load_expectancy_stats()
         for name, play in MATRIX_PLAYS.items():
             preopen_active = []
+            preopen_missed = []   # NEW: pros that didn't fire today so the
+                                  # dashboard can render the full 7-factor
+                                  # checklist instead of just the fired ones
             post_pending = []
+            inactive_vetoes = []  # NEW: vetoes that didn't fire — surfaced
+                                  # so the trader can see "what could have
+                                  # killed this" alongside the active set
             max_preopen = 0
             for fid, when, desc, lift in play['pros']:
                 if when == 'preopen':
                     max_preopen += 1
                     if f.get(fid):
                         preopen_active.append({
+                            'id': fid, 'desc': desc, 'lift_pp': lift,
+                        })
+                    else:
+                        preopen_missed.append({
                             'id': fid, 'desc': desc, 'lift_pp': lift,
                         })
                 else:
@@ -2083,6 +2093,10 @@ def build_briefing_dict(
             for vid, _w, vdesc, vlift in play['vetos']:
                 if f.get(vid):
                     active_vetoes.append({
+                        'id': vid, 'desc': vdesc, 'lift_pp': vlift,
+                    })
+                else:
+                    inactive_vetoes.append({
                         'id': vid, 'desc': vdesc, 'lift_pp': vlift,
                     })
 
@@ -2127,9 +2141,11 @@ def build_briefing_dict(
                 'timeframe': play.get('timeframe', '30s'),
                 'veto_active': bool(active_vetoes),
                 'active_vetoes': active_vetoes,
+                'inactive_vetoes': inactive_vetoes,
                 'preopen_count': preopen_count,
                 'max_preopen': max_preopen,
                 'preopen_active': preopen_active,
+                'preopen_missed': preopen_missed,
                 'post_pending': post_pending,
                 'projection': {
                     'min_count': min_possible,

@@ -4946,12 +4946,25 @@
       // Single ordered list. data-pending-factor on every row (including
       // already-fired ones, harmlessly idempotent) so the live updater
       // hits any row when its factor resolves.
+      // Include every factor on the play — fired, missed pre-open, OR
+      // still-pending in window — so the trader sees the full Notion
+      // checklist (e.g. "3/7 fired" for M1 Long instead of just listing
+      // the 3 that fired). preopen_missed is emitted by the morning
+      // briefing now; falls back gracefully for older snapshots.
+      const preopenActive = p.preopen_active || [];
+      const preopenMissed = p.preopen_missed || [];
+      const totalFactors  = preopenActive.length + preopenMissed.length + pending.length;
+      const firedCount    = preopenActive.length
+                          + pending.filter(f => firedSet.has(f.id)).length;
       const checklist = h('div', {class:'detail-section'},
         h('div', {class:'detail-label'},
-          `CONFLUENCE CHECKLIST · ${(p.preopen_active||[]).length + pending.length}`));
+          `CONFLUENCE CHECKLIST · ${firedCount}/${totalFactors} fired`));
       const rows = [];
-      (p.preopen_active || []).forEach(f => rows.push({
-        f, state: 'on', marker: '✓', whenTxt: 'pre-open',
+      preopenActive.forEach(f => rows.push({
+        f, state: 'on', marker: '✓', whenTxt: 'pre-open · fired',
+      }));
+      preopenMissed.forEach(f => rows.push({
+        f, state: 'missed', marker: '✕', whenTxt: 'pre-open · missed',
       }));
       pending.forEach(f => {
         if (firedSet.has(f.id))       rows.push({f, state: 'on',      marker: '✓', whenTxt: 'fired'});
