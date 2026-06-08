@@ -3188,6 +3188,15 @@
     tickMarketState();
     tickPlaysSummary();
     window._setAiPillState(false, null);  // overridden by narrative poller
+    // Drive the 1Hz refresh — also re-runs tickMarketState, tickPlays-
+    // Summary, and tickBriefingAge via the body of tickClock. Without
+    // this the clock stays at "--:--:--" and the market/plays/briefing-
+    // age pills freeze at their first-paint values. (Regression from
+    // the topbar redesign: I dropped the original
+    //   tickClock(); setInterval(tickClock, 1000);
+    // pair when restructuring the pill cluster and never restored it.)
+    tickClock();
+    setInterval(tickClock, 1000);
     if (window.BriefingTheme) window.BriefingTheme.mountToggle(topbar);
     app.appendChild(topbar);
 
