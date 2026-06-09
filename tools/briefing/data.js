@@ -4,22 +4,22 @@
 window.BRIEFING_DATA = {
   "schema_version": 1,
   "meta": {
-    "date": "2026-06-08",
-    "day_of_week": "Monday",
-    "generated_at_et": "2026-06-08T09:11:53.619482-04:00",
-    "generated_at_pt": "2026-06-08T06:11:53.619482-07:00",
+    "date": "2026-06-09",
+    "day_of_week": "Tuesday",
+    "generated_at_et": "2026-06-09T09:12:19.579653-04:00",
+    "generated_at_pt": "2026-06-09T06:12:19.579653-07:00",
     "mode": "live"
   },
   "freshness": [],
   "or_forecast": {
     "available": true,
-    "point_pts": 403.5,
-    "lo80_pts": 262.6,
-    "hi80_pts": 612.6,
+    "point_pts": 242.4,
+    "lo80_pts": 157.8,
+    "hi80_pts": 368.1,
     "baseline_pts": 117.6,
-    "quintile": "Q5 WIDE (93th pct)",
-    "tier_label": "Q5 wide \u2014 best size-up regime, target multi-R runners",
-    "tier_level": "wide_max",
+    "quintile": "Q4 (73th pct)",
+    "tier_label": "Wide \u2014 favor full size on confluence setups",
+    "tier_level": "wide",
     "feature_date": "2026-02-20",
     "is_stale": true,
     "overrides": [
@@ -40,39 +40,39 @@ window.BRIEFING_DATA = {
     "drivers": [
       {
         "factor": "overnight_range",
-        "value": 646.25,
-        "z": 4.52,
-        "delta_pts": 156.9
+        "value": 436.0,
+        "z": 2.51,
+        "delta_pts": 70.6
       },
       {
         "factor": "atr_20d",
-        "value": 422.212,
-        "z": 1.93,
-        "delta_pts": 47.9
-      },
-      {
-        "factor": "prior_day_range",
-        "value": 1126.25,
-        "z": 5.7,
-        "delta_pts": 35.0
+        "value": 418.712,
+        "z": 1.89,
+        "delta_pts": 46.8
       },
       {
         "factor": "gap_abs",
-        "value": 491.75,
-        "z": 4.07,
-        "delta_pts": -31.5
+        "value": 277.25,
+        "z": 1.87,
+        "delta_pts": -15.7
       },
       {
         "factor": "atr_5d",
-        "value": 517.75,
-        "z": 2.29,
-        "delta_pts": -14.7
+        "value": 519.85,
+        "z": 2.31,
+        "delta_pts": -14.8
       },
       {
         "factor": "atr_ratio_5_20",
-        "value": 1.226,
-        "z": 0.9,
-        "delta_pts": 8.9
+        "value": 1.242,
+        "z": 0.97,
+        "delta_pts": 9.5
+      },
+      {
+        "factor": "prior_day_range",
+        "value": 411.5,
+        "z": 1.04,
+        "delta_pts": 5.7
       }
     ],
     "perf": {
@@ -205,43 +205,43 @@ window.BRIEFING_DATA = {
     }
   },
   "calendar": {
-    "day_of_week": "Monday",
-    "dow_note": "Monday is middling in the sample (WR ~50.5%). NWOG comes into play today only.",
-    "unknown": true,
+    "day_of_week": "Tuesday",
+    "dow_note": "Tuesday is the weakest day in the sample (WR ~49.2%). Stay selective.",
+    "unknown": false,
     "is_fomc_week": false,
     "events": [],
     "narrative": null
   },
   "pre_open": {
-    "current_price": 29508.25,
-    "current_price_ts": "09:01 ET",
+    "current_price": 29730.0,
+    "current_price_ts": "09:02 ET",
     "prior_rth": {
-      "close": 29016.5,
-      "open": 30035.75,
-      "high": 30100.5,
-      "low": 28974.25,
-      "close_position": 0.037513873473917866,
-      "label": "prior_day_down"
+      "close": 29452.75,
+      "open": 29526.0,
+      "high": 29743.0,
+      "low": 29331.5,
+      "close_position": 0.29465370595382745,
+      "label": null
     },
     "overnight": {
-      "high": 29518.5,
-      "low": 28872.25,
-      "range": 646.25,
+      "high": 29739.5,
+      "low": 29303.5,
+      "range": 436.0,
       "direction": "up",
       "tight": false,
       "wide": true
     },
     "asia": {
-      "high": 29287.5,
-      "low": 28872.25
+      "high": 29651.5,
+      "low": 29303.5
     },
     "london": {
-      "high": 29437.75,
-      "low": 29000.0
+      "high": 29727.5,
+      "low": 29566.0
     },
     "gap": {
-      "pts": 491.75,
-      "pct": 1.6947254148501716,
+      "pts": 277.25,
+      "pct": 0.9413382451553759,
       "direction": "gap_up"
     },
     "data_notes": [],
@@ -255,8 +255,8 @@ window.BRIEFING_DATA = {
       {
         "group": "overnight",
         "label": "Overnight high",
-        "price": 29518.5,
-        "distance_pts": 10.25,
+        "price": 29739.5,
+        "distance_pts": 9.5,
         "direction": "above",
         "tier": "C",
         "hit_rate_45m_pct": 41.1,
@@ -265,22 +265,22 @@ window.BRIEFING_DATA = {
         "below_baseline": true
       },
       {
-        "group": "htf_fvg_15m",
-        "label": "15m FVG (bearish)",
-        "price": 29549.0,
-        "distance_pts": 40.75,
+        "group": "prev_day",
+        "label": "Prev day high",
+        "price": 29743.0,
+        "distance_pts": 13.0,
         "direction": "above",
         "tier": "A",
-        "hit_rate_45m_pct": 26.2,
-        "wr_as_magnet_pct": 58.4,
-        "pf_as_magnet": 1.51,
+        "hit_rate_45m_pct": 40.6,
+        "wr_as_magnet_pct": 57.1,
+        "pf_as_magnet": 1.45,
         "below_baseline": false
       },
       {
         "group": "htf_fvg_15m",
         "label": "15m FVG (bearish)",
-        "price": 29593.5,
-        "distance_pts": 85.25,
+        "price": 29765.25,
+        "distance_pts": 35.25,
         "direction": "above",
         "tier": "A",
         "hit_rate_45m_pct": 26.2,
@@ -291,52 +291,28 @@ window.BRIEFING_DATA = {
     ],
     "below": [
       {
-        "group": "htf_fvg_1H",
-        "label": "1H FVG (bullish)",
-        "price": 29484.0,
-        "distance_pts": -24.25,
-        "direction": "below",
-        "tier": "A",
-        "hit_rate_45m_pct": 22.5,
-        "wr_as_magnet_pct": 64.2,
-        "pf_as_magnet": 2.16,
-        "below_baseline": false
-      },
-      {
-        "group": "htf_fvg_15m",
-        "label": "15m FVG (bullish)",
-        "price": 29462.25,
-        "distance_pts": -46.0,
-        "direction": "below",
-        "tier": "A",
-        "hit_rate_45m_pct": 26.2,
-        "wr_as_magnet_pct": 58.4,
-        "pf_as_magnet": 1.51,
-        "below_baseline": false
-      },
-      {
-        "group": "htf_fvg_15m",
-        "label": "15m FVG (bullish)",
-        "price": 29456.0,
-        "distance_pts": -52.25,
-        "direction": "below",
-        "tier": "A",
-        "hit_rate_45m_pct": 26.2,
-        "wr_as_magnet_pct": 58.4,
-        "pf_as_magnet": 1.51,
-        "below_baseline": false
-      },
-      {
         "group": "london",
         "label": "London high",
-        "price": 29437.75,
-        "distance_pts": -70.5,
+        "price": 29727.5,
+        "distance_pts": -2.5,
         "direction": "below",
         "tier": "C",
         "hit_rate_45m_pct": 54.3,
         "wr_as_magnet_pct": 47.4,
         "pf_as_magnet": 0.95,
         "below_baseline": true
+      },
+      {
+        "group": "asia",
+        "label": "Asia high",
+        "price": 29651.5,
+        "distance_pts": -78.5,
+        "direction": "below",
+        "tier": "A",
+        "hit_rate_45m_pct": 59.2,
+        "wr_as_magnet_pct": 54.2,
+        "pf_as_magnet": 1.22,
+        "below_baseline": false
       }
     ],
     "narrative": null
@@ -345,49 +321,77 @@ window.BRIEFING_DATA = {
     "active": [
       "elevated_vixy",
       "gap_up",
-      "monday",
+      "no_pre_rth_news",
+      "no_red_folder",
+      "not_fomc_week",
       "overnight_up",
-      "prior_day_down",
+      "tuesday",
       "wide_overnight"
     ],
     "inactive": [
       "entry_inside_prior_day_value_area",
       "friday",
       "gap_down",
-      "low_vixy",
-      "normal_vixy",
-      "overnight_down",
-      "prior_day_up",
-      "thursday",
-      "tight_overnight",
-      "tuesday",
-      "wednesday"
-    ],
-    "unknown": [
       "has_pre_rth_news",
       "has_red_folder",
       "is_fomc_week",
-      "no_pre_rth_news",
-      "no_red_folder",
-      "not_fomc_week"
+      "low_vixy",
+      "monday",
+      "normal_vixy",
+      "overnight_down",
+      "prior_day_down",
+      "prior_day_up",
+      "thursday",
+      "tight_overnight",
+      "wednesday"
     ],
+    "unknown": [],
     "narrative": null
   },
-  "armed_edges": [
+  "armed_edges": [],
+  "watch_list": [
+    {
+      "stars": "\u2605\u2605\u2605",
+      "factors": [
+        "macro_w1",
+        "no_red_folder",
+        "wide_45min_or"
+      ],
+      "n": 64,
+      "wr_pct": 75.0,
+      "pf": 3.21,
+      "p_wr": 0.0,
+      "pre_matched": [
+        "no_red_folder"
+      ],
+      "post_needed": [
+        {
+          "factor": "wide_45min_or",
+          "desc": "45-min OR (9:30\u201310:15) in top 20% \u2014 KEY confirmation"
+        }
+      ]
+    },
     {
       "stars": "\u2605\u2605",
       "factors": [
         "macro_w1",
-        "prior_day_down",
-        "short_only"
+        "no_pre_rth_news",
+        "wide_45min_or"
       ],
-      "n": 59,
-      "wr_pct": 72.9,
-      "pf": 2.52,
-      "p_wr": 0.001
-    }
-  ],
-  "watch_list": [
+      "n": 67,
+      "wr_pct": 74.6,
+      "pf": 3.27,
+      "p_wr": 0.0,
+      "pre_matched": [
+        "no_pre_rth_news"
+      ],
+      "post_needed": [
+        {
+          "factor": "wide_45min_or",
+          "desc": "45-min OR (9:30\u201310:15) in top 20% \u2014 KEY confirmation"
+        }
+      ]
+    },
     {
       "stars": "\u2605\u2605",
       "factors": [
@@ -418,6 +422,27 @@ window.BRIEFING_DATA = {
       "pf": 2.84,
       "p_wr": 0.0,
       "pre_matched": [],
+      "post_needed": [
+        {
+          "factor": "wide_45min_or",
+          "desc": "45-min OR (9:30\u201310:15) in top 20% \u2014 KEY confirmation"
+        }
+      ]
+    },
+    {
+      "stars": "\u2605\u2605",
+      "factors": [
+        "macro_w1",
+        "not_fomc_week",
+        "wide_45min_or"
+      ],
+      "n": 67,
+      "wr_pct": 70.1,
+      "pf": 2.47,
+      "p_wr": 0.001,
+      "pre_matched": [
+        "not_fomc_week"
+      ],
       "post_needed": [
         {
           "factor": "wide_45min_or",
@@ -475,28 +500,6 @@ window.BRIEFING_DATA = {
       "stars": "\u2605\u2605",
       "factors": [
         "bullish_930",
-        "elevated_vixy",
-        "prior_day_down"
-      ],
-      "n": 69,
-      "wr_pct": 66.7,
-      "pf": 1.67,
-      "p_wr": 0.009,
-      "pre_matched": [
-        "elevated_vixy",
-        "prior_day_down"
-      ],
-      "post_needed": [
-        {
-          "factor": "bullish_930",
-          "desc": "9:30 candle closed bullish"
-        }
-      ]
-    },
-    {
-      "stars": "\u2605\u2605",
-      "factors": [
-        "bullish_930",
         "long_only",
         "macro_w2"
       ],
@@ -511,53 +514,27 @@ window.BRIEFING_DATA = {
           "desc": "9:30 candle closed bullish"
         }
       ]
-    },
-    {
-      "stars": "\u2605\u2605",
-      "factors": [
-        "bearish_930",
-        "macro_w1",
-        "short_only"
-      ],
-      "n": 151,
-      "wr_pct": 66.2,
-      "pf": 2.17,
-      "p_wr": 0.0,
-      "pre_matched": [],
-      "post_needed": [
-        {
-          "factor": "bearish_930",
-          "desc": "9:30 candle closed bearish"
-        }
-      ]
     }
   ],
-  "w1_short_confluence": {
-    "preopen_count": 1,
-    "active_factors": [
-      "prior_day_down"
-    ],
-    "tier": null
-  },
+  "w1_short_confluence": null,
   "matrix_plays": [
     {
       "name": "M1 Short",
       "direction": "short",
       "window": "9:30-9:45",
       "timeframe": "30s",
-      "veto_active": true,
-      "active_vetoes": [
-        {
-          "id": "dow_monday",
-          "desc": "Day is Monday",
-          "lift_pp": -12.5
-        }
-      ],
+      "veto_active": false,
+      "active_vetoes": [],
       "inactive_vetoes": [
         {
           "id": "vixy_low",
           "desc": "VIXY in bottom quartile",
           "lift_pp": -15.7
+        },
+        {
+          "id": "dow_monday",
+          "desc": "Day is Monday",
+          "lift_pp": -12.5
         }
       ],
       "preopen_count": 1,
@@ -812,8 +789,14 @@ window.BRIEFING_DATA = {
       "direction": "long",
       "window": "10:00-10:15",
       "timeframe": "30s",
-      "veto_active": false,
-      "active_vetoes": [],
+      "veto_active": true,
+      "active_vetoes": [
+        {
+          "id": "dow_tuesday",
+          "desc": "Day is Tuesday",
+          "lift_pp": -10.1
+        }
+      ],
       "inactive_vetoes": [
         {
           "id": "prior_day_mid",
@@ -824,21 +807,11 @@ window.BRIEFING_DATA = {
           "id": "is_opex_week",
           "desc": "Opex week (3rd Friday week)",
           "lift_pp": -12.5
-        },
-        {
-          "id": "dow_tuesday",
-          "desc": "Day is Tuesday",
-          "lift_pp": -10.1
         }
       ],
-      "preopen_count": 3,
+      "preopen_count": 2,
       "max_preopen": 4,
       "preopen_active": [
-        {
-          "id": "dow_monday",
-          "desc": "Day is Monday",
-          "lift_pp": 10.5
-        },
         {
           "id": "prior_day_weak",
           "desc": "Prior day close in bottom 1/3 of range",
@@ -851,6 +824,11 @@ window.BRIEFING_DATA = {
         }
       ],
       "preopen_missed": [
+        {
+          "id": "dow_monday",
+          "desc": "Day is Monday",
+          "lift_pp": 10.5
+        },
         {
           "id": "dow_friday",
           "desc": "Day is Friday",
@@ -878,11 +856,11 @@ window.BRIEFING_DATA = {
         }
       ],
       "projection": {
-        "min_count": 3,
-        "max_count": 6,
+        "min_count": 2,
+        "max_count": 5,
         "min_tier": {
-          "action": "TAKE full size, BE@1R -> 2R fixed",
-          "note": "~65% WR, PF 2.26, EV +0.45R (operating tier)"
+          "action": "SKIP",
+          "note": "no setup"
         },
         "max_tier": {
           "action": "TAKE same size \u2014 do NOT scale up",
@@ -895,7 +873,7 @@ window.BRIEFING_DATA = {
         "setup_pct_of_all_days": 28.1,
         "fire_rate_pct": 31.8,
         "ev_per_setup_day_R": 0.087,
-        "fire_rate_now_pct": 31.8,
+        "fire_rate_now_pct": 31.2,
         "fire_rate_max_pct": 30.1
       },
       "extra_note": "8yr-validated Tier A (n=264, 5/5 gates): IS 65.4% / OOS 61.6% @ 3+, year-floor 47.8%, regime spread 1.8pp \u2014 most regime-robust cell in the matrix. Thesis: Mon/Fri prior-weak no-bull-FVG mean-reversion. Magnet gate no longer required (8yr re-mine confirmed edge holds without it).",
@@ -1400,36 +1378,34 @@ window.BRIEFING_DATA = {
   ],
   "partial_plays": [],
   "game_plan": {
-    "one_liners": [
-      "Elevated vol regime after a weak close. Short setups have historically been strongest here \u2014 align with the 9:30\u20139:45 macro window."
-    ],
+    "one_liners": [],
     "checklist": [
       "9:30 candle direction \u2014 bearish confirms most high-edge combos",
       "Watch 45-min OR width by 10:15 \u2014 WIDE = green light, TIGHT = stand down"
     ],
     "best_targets": [
       {
-        "label": "1H FVG (bullish)",
-        "price": 29484.0,
-        "distance_pts": -24.25,
+        "label": "London high",
+        "price": 29727.5,
+        "distance_pts": -2.5,
         "direction": "below"
       },
       {
-        "label": "15m FVG (bullish)",
-        "price": 29462.25,
-        "distance_pts": -46.0,
+        "label": "Asia high",
+        "price": 29651.5,
+        "distance_pts": -78.5,
         "direction": "below"
       },
       {
         "label": "Overnight high",
-        "price": 29518.5,
-        "distance_pts": 10.25,
+        "price": 29739.5,
+        "distance_pts": 9.5,
         "direction": "above"
       },
       {
-        "label": "15m FVG (bearish)",
-        "price": 29549.0,
-        "distance_pts": 40.75,
+        "label": "Prev day high",
+        "price": 29743.0,
+        "distance_pts": 13.0,
         "direction": "above"
       }
     ],
