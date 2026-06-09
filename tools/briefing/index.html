@@ -2875,9 +2875,19 @@
     // Returns {label, cls, action} — never null.
     function _computeMatrixState(p) {
       const proj         = p.projection || {};
-      const projMax      = proj.max_count ?? 0;
+      // projection.take_threshold is the LOWEST confluence count whose
+      // tier produces a TAKE action — that's what the trader actually
+      // needs to clear to be tradeable. Compare against this, not
+      // max_count, otherwise plays flip to MISSED whenever the topmost
+      // tier becomes unreachable even though a lower TAKE-able tier
+      // is still in reach (or already met).
+      // Fallback: if take_threshold is missing (old briefing schema),
+      // use min_count so the play never falsely shows MISSED — we'd
+      // rather under-warn than over-warn here.
+      const takeThr      = proj.take_threshold ?? proj.min_count ?? 0;
       const maxActionStr = proj.max_tier?.action || '';
-      const maxActionUC  = maxActionStr.toUpperCase();
+      const minActionStr = proj.min_tier?.action || '';
+      const actionAtTake = maxActionStr || minActionStr;
       const firedSet     = new Set(p._fired_factor_ids  || []);
       const missedSet    = new Set(p._missed_factor_ids || []);
       const liveCount    = p._live_count != null ? p._live_count : p.preopen_count;
@@ -2894,9 +2904,9 @@
 
       if (ts === 'passed') {
         // Window over — summarise what happened.
-        if (liveCount >= projMax && maxActionUC.includes('TAKE')) {
+        if (liveCount >= takeThr) {
           return { label: 'DONE · ARMED', cls: 'live',
-                   action: `Window armed. Action: ${maxActionStr}` };
+                   action: `Window armed. Action: ${actionAtTake}` };
         }
         return { label: 'DONE', cls: 'wait',
                  action: `Window has passed. Final count: ${liveCount}/${p.max_preopen}.` };
@@ -2908,11 +2918,10 @@
       }
 
       // In window (ts === 'in_window' or null fallback) — live states.
-      if (liveCount >= projMax && maxActionUC.includes('TAKE')) {
-        return { label: 'ARMED', cls: 'live', action: maxActionStr };
+      if (liveCount >= takeThr) {
+        return { label: 'ARMED', cls: 'live', action: actionAtTake };
       }
-      const canReach = (liveCount + unknownPending.length) >= projMax
-                       && maxActionUC.includes('TAKE');
+      const canReach = (liveCount + unknownPending.length) >= takeThr;
       if (!canReach && missedSet.size > 0) {
         return { label: 'MISSED', cls: 'missed',
                  action: 'Confluence threshold unreachable — stand down.' };
@@ -2920,7 +2929,7 @@
       if (firedSet.size > 0) {
         return { label: 'LIVE · BUILDING', cls: 'live',
                  action: `Currently ${liveCount}/${p.max_preopen} — ` +
-                         `need ${Math.max(0, projMax - liveCount)} more for TAKE.` };
+                         `need ${Math.max(0, takeThr - liveCount)} more for TAKE.` };
       }
       return { label: 'LIVE · WATCHING', cls: 'wait',
                action: `Currently ${liveCount}/${p.max_preopen} pre-open. Watch ${p.window}.` };
@@ -3650,39 +3659,33 @@
             (unknownCount > 0 ? ` · +${unknownCount}` : '');
         }
 
-        // 3. State badge transitions. Priority order:
-        //    a. ARMED — live count crosses TAKE threshold (sticky).
-        //    b. MISSED — confluence can no longer reach TAKE threshold
-        //                (no unknowns left + below proj_max), AND at least
-        //                one factor failed. Play is effectively dead for
-        //                this window.
-        //    c. LIVE — at least one factor fired but not yet armed.
-        //    d. WAIT — no factors decided yet (handled by time-state ticker).
+        // 3. State badge — delegate to the single _computeMatrixState
+        //    helper so the card matches the detail-pane banner and the
+        //    plays-summary tally bit-for-bit. The earlier inline logic
+        //    here didn't check time-state (only confluence counts), so
+        //    M2 Long was flipping to MISSED at 9:31 because the 9:30
+        //    candle resolved bull_930=false — even though M2 Long's
+        //    window doesn't open until 9:45 and lower tiers (2-3
+        //    confluences) are still tradeable. _computeMatrixState
+        //    correctly returns WAIT pre-window regardless of how many
+        //    intraday factors have already resolved.
         if (!p.veto_active) {
           const stateEl = card.querySelector('.pstate');
-          const cur = stateEl?.textContent;
-          if (liveCount >= projMax
-              && (p.projection?.max_tier?.action || '').toUpperCase().includes('TAKE')) {
-            if (cur !== 'ARMED') {
-              stateEl.textContent = 'ARMED';
-              stateEl.className = 'pstate live';
-              card.classList.add('armed');
-              card.classList.remove('missed');
+          if (stateEl) {
+            // Persist live counters first so _computeMatrixState reads
+            // the freshest values.
+            p._live_count        = liveCount;
+            p._fired_factor_ids  = [...firedIds];
+            p._missed_factor_ids = [...missedIds];
+            const st = _computeMatrixState(p);
+            const targetCls = 'pstate ' + st.cls;
+            if (stateEl.textContent !== st.label || stateEl.className !== targetCls) {
+              stateEl.textContent = st.label;
+              stateEl.className = targetCls;
             }
-          } else if (!canStillReachTake && missedIds.size > 0) {
-            // No path to ARMED anymore — play missed for this window.
-            if (cur !== 'MISSED' && cur !== 'ARMED') {
-              stateEl.textContent = 'MISSED';
-              stateEl.className = 'pstate missed';
-              card.classList.add('missed');
-              card.classList.remove('armed');
-            }
-          } else if (firedIds.size > 0 && cur !== 'ARMED' && cur !== 'MISSED') {
-            // Partial progress, still possible to arm.
-            if (stateEl.classList.contains('wait')) {
-              stateEl.className = 'pstate live';
-              stateEl.textContent = 'LIVE';
-            }
+            card.classList.toggle('armed',
+              st.label === 'ARMED' || st.label === 'DONE · ARMED');
+            card.classList.toggle('missed', st.label === 'MISSED');
           }
         }
 

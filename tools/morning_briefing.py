@@ -2107,6 +2107,18 @@ def build_briefing_dict(
             min_tier = _tier_for(min_possible, play['tiers'])
             max_tier = _tier_for(max_possible, play['tiers'])
 
+            # Lowest confluence count whose tier action contains 'TAKE'.
+            # The live overlay was incorrectly comparing liveCount to
+            # max_count when deciding ARMED vs MISSED — that flagged
+            # plays as MISSED if the topmost tier became unreachable,
+            # even when a lower TAKE-able tier (e.g. M1 Short Tier B at
+            # 2 confluences) was still in reach OR already met.
+            take_threshold = None
+            for t_min, _t_max, t_action, _t_note in play['tiers']:
+                if 'TAKE' in (t_action or '').upper():
+                    take_threshold = t_min
+                    break
+
             exp = expectancy.get(name) if expectancy else None
             exp_block = None
             if exp:
@@ -2153,6 +2165,11 @@ def build_briefing_dict(
                     'min_tier': {'action': min_tier[2], 'note': min_tier[3]},
                     'max_tier': {'action': max_tier[2], 'note': max_tier[3]},
                     'locked': min_possible == max_possible,
+                    # Lowest confluence count where the tier action is TAKE-
+                    # able. Dashboard uses this to gauge ARMED / MISSED
+                    # correctly (vs comparing to max_count which is wrong
+                    # when lower tiers also produce TAKE).
+                    'take_threshold': take_threshold,
                 },
                 'expectancy': exp_block,
                 'extra_note': play.get('extra_note'),
