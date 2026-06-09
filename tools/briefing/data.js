@@ -6,16 +6,16 @@ window.BRIEFING_DATA = {
   "meta": {
     "date": "2026-06-09",
     "day_of_week": "Tuesday",
-    "generated_at_et": "2026-06-09T09:39:33.477462-04:00",
-    "generated_at_pt": "2026-06-09T06:39:33.477462-07:00",
+    "generated_at_et": "2026-06-09T09:40:05.341696-04:00",
+    "generated_at_pt": "2026-06-09T06:40:05.341696-07:00",
     "mode": "live"
   },
   "freshness": [],
   "or_forecast": {
     "available": true,
-    "point_pts": 247.0,
-    "lo80_pts": 160.8,
-    "hi80_pts": 375.1,
+    "point_pts": 244.8,
+    "lo80_pts": 159.3,
+    "hi80_pts": 371.7,
     "baseline_pts": 117.6,
     "quintile": "Q4 (75th pct)",
     "tier_label": "Wide \u2014 favor full size on confluence setups",
@@ -52,9 +52,9 @@ window.BRIEFING_DATA = {
       },
       {
         "factor": "gap_abs",
-        "value": 268.0,
-        "z": 1.78,
-        "delta_pts": -15.0
+        "value": 284.0,
+        "z": 1.94,
+        "delta_pts": -16.3
       },
       {
         "factor": "atr_5d",
@@ -213,7 +213,7 @@ window.BRIEFING_DATA = {
     "narrative": null
   },
   "pre_open": {
-    "current_price": 29720.75,
+    "current_price": 29736.75,
     "current_price_ts": "09:29 ET",
     "prior_rth": {
       "close": 29452.75,
@@ -240,8 +240,8 @@ window.BRIEFING_DATA = {
       "low": 29566.0
     },
     "gap": {
-      "pts": 268.0,
-      "pct": 0.9099320097444211,
+      "pts": 284.0,
+      "pct": 0.9642563088336404,
       "direction": "gap_up"
     },
     "data_notes": [],
@@ -253,22 +253,10 @@ window.BRIEFING_DATA = {
     "scope_pts": 100,
     "above": [
       {
-        "group": "london",
-        "label": "London high",
-        "price": 29727.5,
-        "distance_pts": 6.75,
-        "direction": "above",
-        "tier": "C",
-        "hit_rate_45m_pct": 54.3,
-        "wr_as_magnet_pct": 47.4,
-        "pf_as_magnet": 0.95,
-        "below_baseline": true
-      },
-      {
         "group": "prev_day",
         "label": "Prev day high",
         "price": 29743.0,
-        "distance_pts": 22.25,
+        "distance_pts": 6.25,
         "direction": "above",
         "tier": "A",
         "hit_rate_45m_pct": 40.6,
@@ -280,7 +268,7 @@ window.BRIEFING_DATA = {
         "group": "overnight",
         "label": "Overnight high",
         "price": 29747.25,
-        "distance_pts": 26.5,
+        "distance_pts": 10.5,
         "direction": "above",
         "tier": "C",
         "hit_rate_45m_pct": 41.1,
@@ -292,7 +280,7 @@ window.BRIEFING_DATA = {
         "group": "htf_fvg_15m",
         "label": "15m FVG (bearish)",
         "price": 29765.25,
-        "distance_pts": 44.5,
+        "distance_pts": 28.5,
         "direction": "above",
         "tier": "A",
         "hit_rate_45m_pct": 26.2,
@@ -303,10 +291,22 @@ window.BRIEFING_DATA = {
     ],
     "below": [
       {
+        "group": "london",
+        "label": "London high",
+        "price": 29727.5,
+        "distance_pts": -9.25,
+        "direction": "below",
+        "tier": "C",
+        "hit_rate_45m_pct": 54.3,
+        "wr_as_magnet_pct": 47.4,
+        "pf_as_magnet": 0.95,
+        "below_baseline": true
+      },
+      {
         "group": "asia",
         "label": "Asia high",
         "price": 29651.5,
-        "distance_pts": -69.25,
+        "distance_pts": -85.25,
         "direction": "below",
         "tier": "A",
         "hit_rate_45m_pct": 59.2,
@@ -1389,21 +1389,27 @@ window.BRIEFING_DATA = {
     ],
     "best_targets": [
       {
-        "label": "Asia high",
-        "price": 29651.5,
-        "distance_pts": -69.25,
+        "label": "London high",
+        "price": 29727.5,
+        "distance_pts": -9.25,
         "direction": "below"
       },
       {
-        "label": "London high",
-        "price": 29727.5,
-        "distance_pts": 6.75,
-        "direction": "above"
+        "label": "Asia high",
+        "price": 29651.5,
+        "distance_pts": -85.25,
+        "direction": "below"
       },
       {
         "label": "Prev day high",
         "price": 29743.0,
-        "distance_pts": 22.25,
+        "distance_pts": 6.25,
+        "direction": "above"
+      },
+      {
+        "label": "Overnight high",
+        "price": 29747.25,
+        "distance_pts": 10.5,
         "direction": "above"
       }
     ],
