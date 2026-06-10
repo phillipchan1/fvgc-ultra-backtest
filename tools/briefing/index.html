@@ -3,6 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Disable browser caching of the HTML shell. GH Pages default is
+     max-age=600, which means a stale index.html from yesterday's deploy
+     can hang around for 10 minutes after a fresh push — and worse, the
+     user's morning visit will pull HTML from yesterday's cache if the
+     tab was left open or revisited inside the TTL window. We can't
+     control the HTTP response headers Pages sends (no _headers support),
+     but every modern browser honors these meta directives. -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>NQ Morning Briefing · TACTICAL</title>
 <!-- Favicon — matches the ◤ NQ BRIEFING brand mark in the topbar. SVG
      for crisp rendering at any DPR; the data: URL fallback inline below
@@ -2720,39 +2730,113 @@
     // tells you which path won.
     window.__BRIEFING_SOURCE = dataSource;
 
-    // ===== Stale-data guard =====
-    // If we ended up on a briefing whose meta.date is BEFORE today's ET
-    // date, every "WAIT" play computes as "DONE" (because the time-state
-    // ticker sees today > briefingDate and bails into the passed branch).
-    // Surface this loudly instead of silently rendering wrong state.
-    // Common cause: Fly was momentarily unreachable, dashboard fell back
-    // to the static briefing.json on GH Pages which only updates when we
-    // commit it.
-    try {
-      const briefingDate = (d.meta || {}).date;
-      const todayET = new Intl.DateTimeFormat('en-CA', {
+    // ===== Stale-briefing guard + self-heal =====
+    // Three failure modes this addresses, all of which produce the same
+    // visible symptom (pre-9:30 plays rendering as DONE because the time-
+    // state ticker sees today's date > the briefing's date and bails
+    // into the 'passed' branch):
+    //
+    //   1. User opened the dashboard before today's briefing was
+    //      generated (Fly cron fires at 9:11 ET — anyone arriving before
+    //      that got yesterday's data).
+    //   2. User left the tab open overnight. BRIEFING_DATA still holds
+    //      yesterday's payload because we used to fetch only once.
+    //   3. Fly was briefly unreachable on first load and the dashboard
+    //      fell back to GH Pages — which only refreshes when Fly commits
+    //      the morning artifacts.
+    //
+    // Fix: on initial render, if the briefing.date is BEFORE today's ET
+    // date, (a) show a loud banner, (b) auto-retry Fly every 30s in the
+    // background, (c) when a fresh briefing arrives, full-reload so all
+    // the IIFE-time computations rerun cleanly. Also: a 5-min background
+    // poll runs all day so a stale tab self-heals across the date roll.
+    function _todayETDate() {
+      return new Intl.DateTimeFormat('en-CA', {
         timeZone: 'America/New_York',
         year: 'numeric', month: '2-digit', day: '2-digit',
       }).format(new Date());
-      if (briefingDate && briefingDate < todayET) {
-        const banner = document.createElement('div');
+    }
+    function _briefingIsStale(briefing) {
+      const bd = (briefing?.meta || {}).date;
+      return !!(bd && bd < _todayETDate());
+    }
+    async function _fetchFreshBriefing() {
+      // Same fallback chain as the initial load. Returns parsed JSON or null.
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 8000);
+        const r = await fetch('https://nq-live-snapshot.fly.dev/api/briefing',
+                              {cache:'no-store', signal:ctrl.signal});
+        clearTimeout(t);
+        if (r.ok) {
+          const b = await r.json();
+          if (b && b.or_forecast) return b;
+        }
+      } catch (_) {}
+      try {
+        const r = await fetch('briefing.json?t=' + Date.now(), {cache:'no-store'});
+        if (r.ok) return await r.json();
+      } catch (_) {}
+      return null;
+    }
+    function _renderStaleBanner(briefingDate, todayET, source, retrying) {
+      let banner = document.getElementById('stale-briefing-banner');
+      if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'stale-briefing-banner';
         banner.style.cssText =
           'position:fixed;top:0;left:0;right:0;z-index:9999;' +
           'padding:8px 16px;font:13px/1.4 ui-monospace,Menlo,monospace;' +
           'background:#7f1d1d;color:#fef2f2;text-align:center;' +
           'border-bottom:2px solid #dc2626;letter-spacing:0.5px;';
-        banner.innerHTML =
-          `<b>STALE DATA — showing ${briefingDate} (today is ${todayET})</b>` +
-          ` &nbsp;·&nbsp; source: <b>${dataSource}</b>` +
-          ` &nbsp;·&nbsp; <a href="#" id="briefing-retry" style="color:#fff;text-decoration:underline">retry Fly</a>`;
         document.body.appendChild(banner);
         document.body.style.paddingTop = '40px';
-        const retry = banner.querySelector('#briefing-retry');
-        if (retry) retry.addEventListener('click', (e) => {
-          e.preventDefault();
-          location.reload();
-        });
       }
+      const retryNote = retrying
+        ? ' &nbsp;·&nbsp; <span style="opacity:.85">auto-retrying every 30s…</span>'
+        : ' &nbsp;·&nbsp; <a href="#" id="briefing-retry" style="color:#fff;text-decoration:underline">retry now</a>';
+      banner.innerHTML =
+        `<b>STALE DATA — showing ${briefingDate} (today is ${todayET})</b>` +
+        ` &nbsp;·&nbsp; source: <b>${source}</b>` + retryNote;
+      const retry = banner.querySelector('#briefing-retry');
+      if (retry) retry.addEventListener('click', (e) => {
+        e.preventDefault();
+        location.reload();
+      });
+    }
+    try {
+      const todayET = _todayETDate();
+      const briefingDate = (d.meta || {}).date;
+      const stale = _briefingIsStale(d);
+      if (stale) {
+        _renderStaleBanner(briefingDate, todayET, dataSource, true);
+        // Auto-retry every 30s. When a fresh briefing appears, full
+        // reload so EVERY render path picks up the new data (much
+        // cleaner than trying to patch in place — there's no partial-
+        // update path that touches every consumer of BRIEFING_DATA).
+        const retryHandle = setInterval(async () => {
+          const fresh = await _fetchFreshBriefing();
+          if (fresh && !_briefingIsStale(fresh)) {
+            clearInterval(retryHandle);
+            location.reload();
+          }
+        }, 30000);
+      }
+      // 5-min background staleness check — catches the "tab left open
+      // overnight" case. Re-fetches briefing.json; if the date has
+      // changed (meaning a fresher one is available), reload. Light-
+      // weight: one fetch per 5 min, cache:no-store so we don't pull
+      // from a stale CDN edge.
+      setInterval(async () => {
+        const currentDate = (window.BRIEFING_DATA?.meta || {}).date;
+        const today = _todayETDate();
+        if (currentDate && currentDate >= today) return;  // still fresh
+        const fresh = await _fetchFreshBriefing();
+        const freshDate = (fresh?.meta || {}).date;
+        if (freshDate && freshDate > (currentDate || '')) {
+          location.reload();
+        }
+      }, 5 * 60 * 1000);
     } catch (_) { /* never block render on the staleness check */ }
 
     const loading = document.getElementById('loading');
