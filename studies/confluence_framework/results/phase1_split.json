@@ -1,0 +1,51 @@
+{
+  "created": "2026-06-09",
+  "session_quality_rule": {
+    "expected_on_bars": 1860,
+    "window": "18:00 prior ET -> 09:30 ET",
+    "min_coverage": 0.9,
+    "sessions_total": 1859,
+    "sessions_removed": 14,
+    "removed_by_year": {
+      "2018": 2,
+      "2019": 2,
+      "2020": 5,
+      "2021": 1,
+      "2022": 1,
+      "2023": 1,
+      "2024": 1,
+      "2025": 1
+    }
+  },
+  "split": {
+    "rule": "chronological 70/30 by quality-passing session date",
+    "n_is_sessions": 1291,
+    "n_oos_sessions": 554,
+    "is_start": "2018-01-02",
+    "is_end": "2024-02-12",
+    "oos_boundary_date": "2024-02-13",
+    "oos_end": "2026-05-15"
+  },
+  "is_folds": {
+    "fold1": {
+      "start": "2018-01-02",
+      "end": "2019-11-22",
+      "n_sessions": 323
+    },
+    "fold2": {
+      "start": "2019-12-02",
+      "end": "2021-06-01",
+      "n_sessions": 323
+    },
+    "fold3": {
+      "start": "2021-06-02",
+      "end": "2022-09-29",
+      "n_sessions": 322
+    },
+    "fold4": {
+      "start": "2022-09-30",
+      "end": "2024-02-12",
+      "n_sessions": 323
+    }
+  }
+}
