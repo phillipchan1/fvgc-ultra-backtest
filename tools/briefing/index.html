@@ -3487,6 +3487,14 @@
     updatePlayTimeStates();
     setInterval(updatePlayTimeStates, 30000);
 
+    // querySelector escape helper. Lives at outer scope so both
+    // updatePlayTimeStates (below) AND setupLiveOverlay's internals
+    // can reach it. CSS.escape is universal on modern browsers; the
+    // raw-fallback branch is just paranoia for ancient runtimes.
+    function cssEscape(s) {
+      return (window.CSS && CSS.escape) ? CSS.escape(s) : s;
+    }
+
     function updatePlayTimeStates() {
       document.querySelectorAll('.play-card[data-key]').forEach(card => {
         const key = card.dataset.key;
@@ -3834,12 +3842,12 @@
         });
       }
 
-      // Tiny helper so the querySelector escaping isn't open-coded in
-      // five places. CSS.escape is widely supported but missing on
-      // ancient browsers; fall through to the raw string when absent.
-      function cssEscape(s) {
-        return (window.CSS && CSS.escape) ? CSS.escape(s) : s;
-      }
+      // cssEscape moved to outer scope (above updatePlayTimeStates)
+      // because that function also uses it. Was originally defined here
+      // inside setupLiveOverlay's closure, which is invisible to outer-
+      // scope callers — broke updatePlayTimeStates with ReferenceError,
+      // killing the 30s state-refresh ticker and freezing every play
+      // card in its initial state ("DONE every morning" pattern).
 
       // -------- Tier 2: playbook play live kill-switches --------
       // FVGC To Opening Range H/L decision tree, applied against the
