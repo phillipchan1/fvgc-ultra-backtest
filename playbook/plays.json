@@ -453,6 +453,24 @@
     "pre_market_factors": [],
     "intraday_confluences": [
       {
+        "id": "gap_down_day",
+        "when": "preopen",
+        "desc": "Gap-down day (any negative gap) \u2014 Notion: \"Stronger when combined with gap down\"",
+        "polarity": "positive"
+      },
+      {
+        "id": "prior_day_down",
+        "when": "preopen",
+        "desc": "Prior day was a down day (close < open) \u2014 Notion: \"Stronger when combined with prior day down\"",
+        "polarity": "positive"
+      },
+      {
+        "id": "vol_score_best_cell",
+        "when": "preopen",
+        "desc": "vol_score = 2 (best sizing cell \u2014 1.25\u20131.5\u00d7 size per pre_market_sizing table)",
+        "polarity": "positive"
+      },
+      {
         "id": "wide_930_candle",
         "when": "9:31",
         "desc": "Wide 9:30 candle (= bigger FVG = more retrace room)",

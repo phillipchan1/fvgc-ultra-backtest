@@ -5320,6 +5320,63 @@
           if (gap < -100)  return {state:'fired',  detail:`gap ${gap.toFixed(1)}pt < -100`};
           return {state:'missed', detail:`gap ${gap.toFixed(1)}pt — no large gap-down`};
         }
+        case 'gap_down_day': {
+          // ANY negative gap counts (Notion: "Stronger when combined with
+          // gap down day"). Distinct from gap_large_down (the anti, which
+          // requires gap < -100). Threshold for boost is just gap < 0.
+          const gap = briefingPO.gap?.pts;
+          if (gap == null) return {state:'unknown', detail:'gap not available'};
+          if (gap < 0)  return {state:'fired',  detail:`gap ${gap.toFixed(1)}pt — gap-down day`};
+          return {state:'missed', detail:`gap ${gap.toFixed(1)}pt — no gap-down`};
+        }
+        case 'prior_day_down': {
+          // Prior RTH closed below where it opened — yesterday was a
+          // selling day. Notion flags this as a booster for short FVGCs
+          // off the 9:30 candle (sentiment continuation).
+          const pr = briefingPO.prior_rth || {};
+          const close = pr.close, open = pr.open;
+          if (close == null || open == null) {
+            return {state:'unknown', detail:'prior RTH OHLC not available'};
+          }
+          if (close < open) {
+            return {state:'fired',
+                    detail:`prior RTH: open ${open.toFixed(2)} → close ${close.toFixed(2)} (down day)`};
+          }
+          return {state:'missed',
+                  detail:`prior RTH: open ${open.toFixed(2)} → close ${close.toFixed(2)} (up day)`};
+        }
+        case 'vol_score_best_cell': {
+          // vol_score = ON_range_top_q + prior_day_ATR_top_q + gap_abs_top_q
+          // (each 90d rolling, 1 if top quartile else 0). The play's
+          // pre_market_sizing.vol_score table flags vol=2 as the best
+          // cell (1.25-1.5× size). We approximate the three components
+          // from briefing pre_open data — exact 90d percentiles aren't
+          // in the briefing yet but the briefing flags "WIDE"/"TIGHT"
+          // overnight + has gap_abs.
+          const ovr = briefingPO.overnight || {};
+          const gap = briefingPO.gap?.pts;
+          // Use existing 'wide' flag as proxy for ON_range_top_q.
+          const onTopQ = !!ovr.wide;
+          // Use atr-ratio-style heuristic: gap_abs > 75pt is roughly top
+          // quartile for NQ in recent regime. Imperfect but directional.
+          const gapTopQ = gap != null && Math.abs(gap) > 75;
+          // prior_day_ATR_top_q: no direct briefing flag; treat as
+          // unknown component (won't count toward score).
+          const components = [];
+          if (onTopQ) components.push('ON_range top-q ✓');
+          if (gapTopQ) components.push('gap_abs top-q ✓');
+          const score = (onTopQ ? 1 : 0) + (gapTopQ ? 1 : 0);
+          // "Best cell" is vol_score=2. We're only measuring 2 of 3
+          // components so we treat 2+ as the threshold (best signal we
+          // can give without the ATR-percentile data).
+          if (score >= 2) {
+            return {state:'fired',
+                    detail:`vol_score ≈ ${score}+ · ${components.join(', ')}`};
+          }
+          return {state:'missed',
+                  detail:`vol_score ≈ ${score} (need 2+) · ` +
+                         `ON=${ovr.wide ? 'wide' : 'normal'}, gap_abs=${gap != null ? Math.abs(gap).toFixed(0) + 'pt' : 'n/a'}`};
+        }
       }
       return {state:'unknown', detail:null};
     }
