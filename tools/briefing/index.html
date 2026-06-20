@@ -2517,6 +2517,178 @@
     padding: 3px 8px; border: 1px solid var(--cyan-dim); border-radius: 2px;
   }
   .play-link:hover { background: var(--cyan-dim); }
+
+  /* ===================== SETTINGS (gear popover) ===================== */
+  .settings-wrap { position: relative; flex-shrink: 0; margin-left: 4px; }
+  .settings-btn {
+    appearance: none; cursor: pointer;
+    width: 28px; height: 28px; border-radius: 3px;
+    border: 1px solid var(--line); background: var(--bg-2);
+    color: var(--text-mute); font-size: 14px; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .settings-btn:hover { color: var(--text-dim); background: var(--bg-3); }
+  .settings-btn[aria-expanded="true"] {
+    color: var(--cyan); border-color: var(--cyan-deep); background: var(--cyan-dim);
+  }
+  .settings-pop {
+    position: absolute; top: calc(100% + 8px); right: 0; z-index: 8000;
+    min-width: 200px; padding: 12px;
+    background: var(--bg-1); border: 1px solid var(--line-2);
+    border-radius: 6px; box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    display: none;
+  }
+  .settings-pop.open { display: block; }
+  .settings-pop .settings-h {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--text-mute); margin: 0 0 7px;
+  }
+  .settings-pop .settings-sect + .settings-sect { margin-top: 14px; }
+  /* keep the moved theme toggle full-width inside the panel */
+  .settings-pop .theme-toggle { display: flex; width: 100%; }
+  .settings-pop .theme-btn { flex: 1; justify-content: center; }
+
+  /* ===================== POSITION SIZER ===================== */
+  /* Topbar launch button */
+  .sizer-launch {
+    appearance: none; cursor: pointer; flex-shrink: 0;
+    margin-left: 4px;
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--cyan); background: var(--cyan-dim);
+    border: 1px solid var(--cyan-deep); border-radius: 2px;
+    padding: 5px 10px; line-height: 1;
+  }
+  .sizer-launch:hover { background: var(--cyan); color: var(--bg-0); }
+  .sizer-launch .kbd {
+    font-size: 8px; opacity: 0.7; border: 1px solid currentColor;
+    border-radius: 2px; padding: 1px 3px; letter-spacing: 0;
+  }
+  /* Overlay + panel */
+  .sizer-overlay {
+    position: fixed; inset: 0; z-index: 9000;
+    background: rgba(2, 4, 9, 0.78);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: none; align-items: flex-start; justify-content: center;
+    padding: 24px 16px; overflow-y: auto;
+  }
+  .sizer-overlay.open { display: flex; }
+  .sizer-panel {
+    width: 100%; max-width: 560px; margin: auto;
+    background:
+      linear-gradient(180deg, var(--primary-bg-top), var(--primary-bg-bot));
+    border: 1px solid var(--line-2); border-radius: 6px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px var(--cyan-dim);
+    overflow: hidden;
+  }
+  .sizer-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+    background: var(--bg-glass);
+  }
+  .sizer-head .title {
+    font-family: var(--mono); font-size: 12px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--text);
+  }
+  .sizer-head .title .accent { color: var(--cyan); }
+  .sizer-head .sub {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 1px;
+    color: var(--text-mute);
+  }
+  .sizer-head .spacer { flex: 1; }
+  .sizer-close {
+    appearance: none; cursor: pointer;
+    width: 26px; height: 26px; border-radius: 3px;
+    border: 1px solid var(--line-2); background: var(--bg-2);
+    color: var(--text-dim); font-size: 16px; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .sizer-close:hover { color: var(--red); border-color: var(--red); }
+  .sizer-body { padding: 14px 16px 18px; }
+  /* Input rows */
+  .sizer-row { margin-bottom: 12px; }
+  .sizer-lbl {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--text-mute); margin-bottom: 6px;
+  }
+  .seg { display: flex; gap: 6px; flex-wrap: wrap; }
+  .seg-btn {
+    appearance: none; cursor: pointer; flex: 1; min-width: 64px;
+    font-family: var(--mono); font-size: 14px; font-weight: 700;
+    letter-spacing: 1px; color: var(--text-dim);
+    background: var(--bg-2); border: 1px solid var(--line);
+    border-radius: 3px; padding: 11px 8px; line-height: 1;
+    text-align: center; transition: none;
+  }
+  .seg-btn:hover { background: var(--bg-3); color: var(--text); }
+  .seg-btn[aria-pressed="true"] {
+    background: var(--cyan-dim); color: var(--cyan);
+    border-color: var(--cyan-deep); box-shadow: inset 0 0 0 1px var(--cyan-deep);
+  }
+  .seg-btn .unit { font-size: 9px; opacity: 0.6; font-weight: 500; }
+  /* Custom risk + stop number fields */
+  .sizer-field {
+    font-family: var(--mono); font-size: 15px; font-weight: 700;
+    color: var(--text); background: var(--bg-0);
+    border: 1px solid var(--line-2); border-radius: 3px;
+    padding: 10px 12px; width: 100%; text-align: center;
+  }
+  .sizer-field:focus { outline: none; border-color: var(--cyan); }
+  .sizer-field::placeholder { color: var(--text-mute); font-weight: 500; }
+  /* Accounts stepper */
+  .stepper { display: flex; align-items: stretch; gap: 0; max-width: 220px; }
+  .stepper button {
+    appearance: none; cursor: pointer; width: 48px;
+    font-family: var(--mono); font-size: 20px; font-weight: 700;
+    color: var(--cyan); background: var(--bg-2);
+    border: 1px solid var(--line-2);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .stepper button:hover { background: var(--cyan-dim); }
+  .stepper button:first-child { border-radius: 3px 0 0 3px; }
+  .stepper button:last-child { border-radius: 0 3px 3px 0; }
+  .stepper .val {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; background: var(--bg-0);
+    border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2);
+  }
+  .stepper .val b {
+    font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--text);
+  }
+  .stepper .val span {
+    font-family: var(--mono); font-size: 8px; letter-spacing: 1px;
+    color: var(--text-mute); text-transform: uppercase;
+  }
+  /* Result table */
+  .sizer-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+  .sizer-table th {
+    font-family: var(--mono); font-size: 8.5px; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--text-mute); font-weight: 700;
+    text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line-2);
+  }
+  .sizer-table th:first-child { text-align: left; }
+  .sizer-table td {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    text-align: right; padding: 9px 8px; border-bottom: 1px solid var(--line-soft);
+    color: var(--text-dim); font-size: 13px;
+  }
+  .sizer-table td:first-child { text-align: left; color: var(--text-mute); }
+  .sizer-table td.contracts { color: var(--text); font-weight: 700; font-size: 16px; }
+  .sizer-table tr.hit td { background: var(--cyan-dim); }
+  .sizer-table tr.hit td:first-child { color: var(--cyan); font-weight: 700; }
+  .sizer-table tr.hit td.contracts { color: var(--cyan); }
+  .sizer-foot {
+    margin-top: 12px; display: flex; justify-content: space-between;
+    flex-wrap: wrap; gap: 8px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.5px;
+    color: var(--text-mute);
+  }
+  .sizer-foot b { color: var(--text-dim); }
+  @media (max-width: 480px) {
+    .sizer-table td.contracts { font-size: 15px; }
+    .seg-btn { font-size: 13px; padding: 10px 6px; }
+  }
 </style>
 </head>
 <body>
@@ -3258,6 +3430,9 @@
     const topbar = h('div', {class:'topbar'},
       h('div', {class:'brand'},
         h('span', {class:'accent'}, 'NQ'), ' BRIEFING'),
+      h('button', {class:'sizer-launch', title:'Position sizer — press S',
+        onclick: openSizer},
+        '⊞ SIZE', h('span', {class:'kbd'}, 'S')),
       h('div', {class:'spacer'}),
       // Day chip — small, dim, far-left of the right-side cluster.
       h('span', {class:'meta-tag mono'},
@@ -3290,8 +3465,232 @@
     // pair when restructuring the pill cluster and never restored it.)
     tickClock();
     setInterval(tickClock, 1000);
-    if (window.BriefingTheme) window.BriefingTheme.mountToggle(topbar);
+    // ===== Settings popover (gear) — holds theme + any future prefs =====
+    const settingsPop = h('div', {class:'settings-pop'},
+      h('div', {class:'settings-sect'},
+        h('div', {class:'settings-h'}, 'Theme')));
+    const settingsBtn = h('button', {class:'settings-btn', 'aria-expanded':'false',
+      'aria-label':'Settings', title:'Settings'}, '⚙');
+    const settingsWrap = h('div', {class:'settings-wrap'}, settingsBtn, settingsPop);
+    const closeSettings = () => {
+      settingsPop.classList.remove('open');
+      settingsBtn.setAttribute('aria-expanded', 'false');
+    };
+    settingsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = settingsPop.classList.toggle('open');
+      settingsBtn.setAttribute('aria-expanded', String(open));
+    });
+    document.addEventListener('click', (e) => {
+      if (!settingsWrap.contains(e.target)) closeSettings();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeSettings();
+    });
+    // Keep the gear in the always-visible left cluster (before the spacer),
+    // so it doesn't slide off-screen when the pill row overflows.
+    topbar.insertBefore(settingsWrap, topbar.querySelector('.spacer'));
+    // Theme toggle now lives inside the settings panel, not the bare topbar.
+    if (window.BriefingTheme)
+      window.BriefingTheme.mountToggle(settingsPop.querySelector('.settings-sect'));
     app.appendChild(topbar);
+
+    // ============ POSITION SIZER (replaces NQ_Contract_Sizing.xlsx) ============
+    // Mirrors the Excel exactly:
+    //   contracts = ROUND(risk / (stop * $/pt), 0) * accounts
+    //   scale-out = MROUND(contracts * frac, accounts)   (frac = .20/.33/.50)
+    // $/pt per symbol: NQ=2, ES=5, GOLD(MGC)=10 (micro point values from sheet).
+    const SIZER_SYMBOLS = {
+      NQ:   {label:'NQ',   pv:2,  stops:[5,10,15,20,25,30,35,40,45,50,55,60,65]},
+      ES:   {label:'ES',   pv:5,  stops:[1,2,3,4,5,6,7,8,9,10]},
+      GOLD: {label:'GOLD', pv:10, stops:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]},
+    };
+    const SIZER_RISKS = [250, 500, 750];
+    const sizerState = (() => {
+      const s = {sym:'NQ', risk:500, accounts:1, stop:''};
+      try { Object.assign(s, JSON.parse(localStorage.getItem('nqSizer') || '{}')); }
+      catch (e) {}
+      if (!SIZER_SYMBOLS[s.sym]) s.sym = 'NQ';
+      return s;
+    })();
+    const sizerSave = () => {
+      try { localStorage.setItem('nqSizer', JSON.stringify(sizerState)); } catch (e) {}
+    };
+    const sizerMround = (x, m) => Math.round(x / m) * m;        // half-up; all +ve
+    const sizerContracts = (risk, stop, pv, acct) =>
+      Math.round(risk / (stop * pv)) * acct;
+
+    let sizerOverlay = null;
+    function openSizer() {
+      if (!sizerOverlay) sizerOverlay = buildSizer();
+      sizerOverlay.classList.add('open');
+      const cf = sizerOverlay.querySelector('[data-role=custom-risk]');
+      // focus stop field for instant typing if a custom risk isn't pending
+      const sf = sizerOverlay.querySelector('[data-role=stop]');
+      if (sf) setTimeout(() => sf.focus(), 30);
+    }
+    function closeSizer() {
+      if (sizerOverlay) sizerOverlay.classList.remove('open');
+    }
+
+    function buildSizer() {
+      const cfg = () => SIZER_SYMBOLS[sizerState.sym];
+
+      // ----- result table -----
+      const tbody = h('tbody');
+      const table = h('table', {class:'sizer-table'},
+        h('thead', null, h('tr', null,
+          h('th', null, 'Stop'),
+          h('th', null, 'Contracts'),
+          h('th', null, '20%'),
+          h('th', null, '33%'),
+          h('th', null, '50%'))),
+        tbody);
+
+      const foot = h('div', {class:'sizer-foot'});
+
+      function renderTable() {
+        const c = cfg();
+        const risk = Number(sizerState.risk) || 0;
+        const acct = Math.max(1, Number(sizerState.accounts) || 1);
+        const activeStop = Number(sizerState.stop);
+        tbody.textContent = '';
+        c.stops.forEach((stop) => {
+          const ct = sizerContracts(risk, stop, c.pv, acct);
+          const tr = h('tr', activeStop === stop ? {class:'hit'} : null,
+            h('td', null, String(stop)),
+            h('td', {class:'contracts'}, String(ct)),
+            h('td', null, String(sizerMround(ct * 0.20, acct))),
+            h('td', null, String(sizerMround(ct * 0.33, acct))),
+            h('td', null, String(sizerMround(ct * 0.50, acct))));
+          tr.addEventListener('click', () => {
+            sizerState.stop = (activeStop === stop) ? '' : stop;
+            stopField.value = sizerState.stop;
+            sizerSave(); renderTable();
+          });
+          tbody.appendChild(tr);
+        });
+        const perAcct = acct > 1 ? ` · ${acct} accts (×${acct})` : '';
+        foot.textContent = '';
+        foot.appendChild(h('span', null,
+          h('b', null, c.label), ` · $${c.pv}/pt${perAcct}`));
+        foot.appendChild(h('span', null,
+          'risk ', h('b', null, '$' + (risk || '—')), ' / trade'));
+      }
+
+      // ----- symbol segmented control -----
+      const symSeg = h('div', {class:'seg'},
+        ...Object.keys(SIZER_SYMBOLS).map((k) =>
+          h('button', {class:'seg-btn', 'data-sym':k,
+            'aria-pressed': String(sizerState.sym === k),
+            onclick: () => {
+              sizerState.sym = k; sizerSave();
+              symSeg.querySelectorAll('.seg-btn').forEach((b) =>
+                b.setAttribute('aria-pressed', String(b.dataset.sym === k)));
+              renderTable();
+            }}, SIZER_SYMBOLS[k].label)));
+
+      // ----- risk segmented control + custom -----
+      const customRisk = h('input', {type:'number', inputmode:'numeric',
+        class:'sizer-field', 'data-role':'custom-risk', placeholder:'custom $',
+        style:'margin-top:6px; display:' +
+          (SIZER_RISKS.includes(Number(sizerState.risk)) ? 'none' : 'block'),
+        value: SIZER_RISKS.includes(Number(sizerState.risk)) ? '' : sizerState.risk});
+      const riskBtns = [...SIZER_RISKS, 'CUSTOM'];
+      const riskSeg = h('div', {class:'seg'},
+        ...riskBtns.map((r) => {
+          const isCustom = r === 'CUSTOM';
+          const pressed = isCustom
+            ? !SIZER_RISKS.includes(Number(sizerState.risk))
+            : Number(sizerState.risk) === r;
+          return h('button', {class:'seg-btn', 'data-risk':String(r),
+            'aria-pressed': String(pressed),
+            onclick: () => {
+              if (isCustom) {
+                customRisk.style.display = 'block';
+                customRisk.focus();
+              } else {
+                sizerState.risk = r; customRisk.style.display = 'none';
+                customRisk.value = '';
+              }
+              sizerSave();
+              riskSeg.querySelectorAll('.seg-btn').forEach((b) => {
+                const v = b.dataset.risk;
+                b.setAttribute('aria-pressed', String(
+                  v === 'CUSTOM'
+                    ? !SIZER_RISKS.includes(Number(sizerState.risk))
+                    : Number(sizerState.risk) === Number(v)));
+              });
+              renderTable();
+            }},
+            isCustom ? 'Custom' : h('span', null, '$', String(r)));
+        }));
+      customRisk.addEventListener('input', () => {
+        sizerState.risk = Number(customRisk.value) || 0;
+        sizerSave(); renderTable();
+      });
+
+      // ----- accounts stepper -----
+      const acctVal = h('b', null, String(sizerState.accounts));
+      const setAcct = (n) => {
+        sizerState.accounts = Math.min(20, Math.max(1, n));
+        acctVal.textContent = String(sizerState.accounts);
+        sizerSave(); renderTable();
+      };
+      const stepper = h('div', {class:'stepper'},
+        h('button', {onclick: () => setAcct(sizerState.accounts - 1)}, '−'),
+        h('div', {class:'val'}, acctVal, h('span', null, 'accounts')),
+        h('button', {onclick: () => setAcct(sizerState.accounts + 1)}, '+'));
+
+      // ----- stop input (highlights matching row) -----
+      const stopField = h('input', {type:'number', inputmode:'decimal',
+        class:'sizer-field', 'data-role':'stop', placeholder:'stop (pts) →  highlight row',
+        value: sizerState.stop});
+      stopField.addEventListener('input', () => {
+        sizerState.stop = stopField.value === '' ? '' : Number(stopField.value);
+        sizerSave(); renderTable();
+      });
+
+      const panel = h('div', {class:'sizer-panel'},
+        h('div', {class:'sizer-head'},
+          h('div', {class:'title'}, h('span', {class:'accent'}, '⊞ '), 'POSITION SIZER'),
+          h('div', {class:'spacer'}),
+          h('button', {class:'sizer-close', title:'Close (Esc)', onclick: closeSizer}, '×')),
+        h('div', {class:'sizer-body'},
+          h('div', {class:'sizer-row'},
+            h('div', {class:'sizer-lbl'}, 'Symbol'), symSeg),
+          h('div', {class:'sizer-row'},
+            h('div', {class:'sizer-lbl'}, 'Risk per trade'), riskSeg, customRisk),
+          h('div', {class:'sizer-row'},
+            h('div', {class:'sizer-lbl'}, 'Accounts (multiplies all)'), stepper),
+          h('div', {class:'sizer-row'},
+            h('div', {class:'sizer-lbl'}, 'Stop size'), stopField),
+          table,
+          foot));
+
+      const overlay = h('div', {class:'sizer-overlay'},
+        panel);
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeSizer();
+      });
+      document.body.appendChild(overlay);
+      renderTable();
+      return overlay;
+    }
+
+    // hotkeys: S opens, Esc closes (ignore while typing in a field)
+    document.addEventListener('keydown', (e) => {
+      const t = e.target;
+      const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' ||
+        t.isContentEditable);
+      if (e.key === 'Escape') { closeSizer(); return; }
+      if ((e.key === 's' || e.key === 'S') && !typing &&
+          !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        if (sizerOverlay && sizerOverlay.classList.contains('open')) closeSizer();
+        else openSizer();
+      }
+    });
 
     // ============ DECISION FLOW (3 cols) ============
     const po = d.pre_open || {};
