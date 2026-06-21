@@ -73,6 +73,7 @@ SYMBOL = "NQ.c.0"
 STYPE_IN = "continuous"
 
 NY_TZ = ZoneInfo("America/New_York")
+PT_TZ = ZoneInfo("America/Los_Angeles")
 
 # Databento OHLCV prices for GLBX.MDP3 are fixed-point integers, base 1e-9.
 PRICE_SCALE = 1_000_000_000
@@ -1184,6 +1185,114 @@ def _morning_briefing_cron_loop() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Week-ahead report — Sunday 12pm PT prep for the upcoming trading week.
+# ---------------------------------------------------------------------------
+# Companion to the daily briefing. Generates tools/briefing/week_ahead.json +
+# week_ahead.js (red-folder events in PST, weekday range averages, ATR-based
+# range estimates) and commits them so the GH Pages week.html refreshes.
+# Cadence is weekly, not daily — so it lives on its own loop.
+
+_last_week_ahead_run_date_pt: str | None = None
+_week_ahead_lock = threading.Lock()
+
+
+def _commit_week_ahead_to_github() -> None:
+    """Push week_ahead.json + week_ahead.js to the repo via the Contents API
+    so the GH Pages week.html picks them up on the next deploy."""
+    if not GH_ACTIONS_TOKEN:
+        log.info("week-ahead: GH_ACTIONS_TOKEN not set — skipping commit")
+        return
+    today = datetime.now(PT_TZ).strftime("%Y-%m-%d")
+    msg = f"briefing: week-ahead run {today}"
+    ok_json = _github_put_file("tools/briefing/week_ahead.json",
+                               _briefing_dir / "week_ahead.json", msg)
+    ok_js = _github_put_file("tools/briefing/week_ahead.js",
+                             _briefing_dir / "week_ahead.js", msg)
+    log.info("week-ahead commit: week_ahead.json=%s week_ahead.js=%s", ok_json, ok_js)
+
+
+def _run_week_ahead() -> tuple[bool, str]:
+    """Run tools/week_ahead.py --export and commit the artifacts."""
+    import subprocess
+    try:
+        result = subprocess.run(
+            ["python", "tools/week_ahead.py", "--export"],
+            cwd=str(_repo_root), env=os.environ.copy(),
+            capture_output=True, text=True, timeout=180,
+        )
+        if result.returncode != 0:
+            err = (result.stderr or "")[:500]
+            log.error("week-ahead: exit=%d\nSTDERR: %s", result.returncode, err)
+            return False, f"exit={result.returncode}: {err[:200]}"
+        try:
+            _commit_week_ahead_to_github()
+        except Exception:
+            log.exception("week-ahead: GitHub commit failed (non-fatal)")
+        return True, "ok"
+    except Exception as e:
+        log.exception("week-ahead: run failed")
+        return False, str(e)
+
+
+def _week_ahead_is_current() -> bool:
+    """True if the on-disk week_ahead.json already covers the current or an
+    upcoming week (so a startup re-run is unnecessary)."""
+    try:
+        path = _briefing_dir / "week_ahead.json"
+        if not path.exists():
+            return False
+        data = _json.loads(path.read_text())
+        ws = (data.get("meta") or {}).get("week_start")
+        if not ws:
+            return False
+        from datetime import date as _date
+        week_start = _date.fromisoformat(ws)
+        today_pt = datetime.now(PT_TZ).date()
+        # Current if the file's week_start is this week's Monday or later
+        # (i.e. it describes the current or an upcoming week, not a past one).
+        this_monday = today_pt - timedelta(days=today_pt.weekday())
+        return week_start >= this_monday
+    except Exception:
+        return False
+
+
+def _week_ahead_cron_loop() -> None:
+    """Background scheduler. Fires the week-ahead report once per Sunday in
+    the 12:00-12:55 PT window. Also self-heals on startup: if the on-disk
+    report is for a past week, regenerate immediately."""
+    import time
+    global _last_week_ahead_run_date_pt
+    log.info("week-ahead cron started — Sundays 12:00-12:55 PT")
+    # Startup self-heal: ensure the current week is covered.
+    try:
+        if not _week_ahead_is_current():
+            ok, msg = _run_week_ahead()
+            if ok:
+                with _week_ahead_lock:
+                    _last_week_ahead_run_date_pt = datetime.now(PT_TZ).strftime("%Y-%m-%d")
+            log.info("week-ahead startup run: %s", msg)
+    except Exception:
+        log.exception("week-ahead startup run failed")
+    while True:
+        try:
+            now_pt = datetime.now(PT_TZ)
+            today_pt = now_pt.strftime("%Y-%m-%d")
+            is_sunday = now_pt.weekday() == 6
+            in_window = (now_pt.hour == 12 and now_pt.minute <= 55)
+            with _week_ahead_lock:
+                already = (_last_week_ahead_run_date_pt == today_pt)
+            if is_sunday and in_window and not already:
+                ok, msg = _run_week_ahead()
+                with _week_ahead_lock:
+                    if ok:
+                        _last_week_ahead_run_date_pt = today_pt
+                log.info("week-ahead cron tick: %s", msg)
+        except Exception:
+            log.exception("week-ahead cron iteration failed")
+        time.sleep(60)
+
+
+# ---------------------------------------------------------------------------
 # Daily Volume Profile (POC / VAH / VAL) — for VP Magnet A+ filter
 # ---------------------------------------------------------------------------
 # The VP Magnet play needs prior-RTH POC/VAH/VAL to evaluate two factors per
@@ -1895,6 +2004,11 @@ async def lifespan(app: FastAPI):
     mt = threading.Thread(target=_morning_briefing_cron_loop, daemon=True,
                           name="morning-briefing-cron")
     mt.start()
+
+    # Week-ahead report cron — Sundays 12pm PT, plus startup self-heal.
+    wt = threading.Thread(target=_week_ahead_cron_loop, daemon=True,
+                          name="week-ahead-cron")
+    wt.start()
     yield
 
 

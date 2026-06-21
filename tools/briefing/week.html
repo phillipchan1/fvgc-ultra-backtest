@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>NQ Week Ahead · PREP</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script>
+  // Apply the saved theme before paint — shared with the daily briefing.
+  (function () {
+    var KEY = 'briefing-theme';
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    function get() {
+      try { var v = localStorage.getItem(KEY);
+        if (v === 'light' || v === 'dark' || v === 'auto') return v; } catch (e) {}
+      return 'auto';
+    }
+    function resolve(p) { return p === 'auto' ? (mq.matches ? 'dark' : 'light') : p; }
+    var theme = resolve(get());
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+    mq.addEventListener('change', function () {
+      if (get() === 'auto') {
+        var t = mq.matches ? 'dark' : 'light';
+        document.documentElement.dataset.theme = t;
+        document.documentElement.style.colorScheme = t;
+      }
+    });
+  })();
+</script>
+<style>
+  :root, html[data-theme="dark"] {
+    color-scheme: dark;
+    --bg-0:#04060c; --bg-1:#080d18; --bg-2:#0c1322; --bg-3:#11192c;
+    --line:#1c2742; --line-2:#2a3a58;
+    --text:#eaf0fa; --text-dim:#8997b2; --text-mute:#4b5878;
+    --cyan:#5ee3f7; --cyan-dim:#5ee3f71f;
+    --green:#4eecaf; --green-dim:#4eecaf1f;
+    --red:#ff5e7a; --red-dim:#ff5e7a1f;
+    --amber:#ffc24d; --amber-dim:#ffc24d1f; --amber-text:#e3b366;
+    --violet:#b69eff; --violet-dim:#b69eff1f;
+    --bg-grad-a:#102536; --bg-grad-b:#1a1336;
+    --card-hover:rgba(94,227,247,0.04);
+    --mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans:-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
+  }
+  html[data-theme="light"] {
+    color-scheme: light;
+    --bg-0:#f5f7fc; --bg-1:#ffffff; --bg-2:#f0f3f9; --bg-3:#e8edf5;
+    --line:#d4dce8; --line-2:#bcc8da;
+    --text:#10182a; --text-dim:#516079; --text-mute:#8a96ab;
+    --cyan:#0a8fa8; --cyan-dim:#0a8fa814;
+    --green:#0d9b6e; --green-dim:#0d9b6e14;
+    --red:#d42d4a; --red-dim:#d42d4a14;
+    --amber:#b8851c; --amber-dim:#b8851c14; --amber-text:#9a6f10;
+    --violet:#7a5fd0; --violet-dim:#7a5fd014;
+    --bg-grad-a:#d8e8f5; --bg-grad-b:#e8e0f5;
+    --card-hover:rgba(10,143,168,0.06);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--bg-0); color:var(--text);
+    font-family:var(--sans); -webkit-font-smoothing:antialiased; }
+  body {
+    background:
+      radial-gradient(1200px 700px at 80% -150px, var(--bg-grad-a) 0%, transparent 55%),
+      radial-gradient(900px 600px at -10% 110%, var(--bg-grad-b) 0%, transparent 55%),
+      var(--bg-0);
+    min-height:100vh;
+  }
+  .mono { font-family:var(--mono); font-variant-numeric:tabular-nums; }
+  .wrap { max-width:1100px; margin:0 auto; padding:20px 18px 60px; }
+
+  /* topbar */
+  .topbar { display:flex; align-items:center; justify-content:space-between;
+    gap:12px; padding:6px 2px 18px; flex-wrap:wrap; }
+  .brand { font-family:var(--mono); font-size:13px; font-weight:700;
+    letter-spacing:1px; display:flex; align-items:center; gap:8px; }
+  .brand .mark { color:var(--cyan); }
+  .brand .accent { color:var(--cyan); }
+  .nav-link { font-family:var(--mono); font-size:11px; text-decoration:none;
+    color:var(--text-dim); border:1px solid var(--line); border-radius:7px;
+    padding:6px 11px; background:var(--bg-2); transition:.15s; }
+  .nav-link:hover { color:var(--cyan); border-color:var(--cyan); }
+
+  /* header summary */
+  .head { margin-bottom:18px; }
+  .head h1 { font-family:var(--mono); font-size:22px; margin:0 0 4px;
+    letter-spacing:.5px; }
+  .head .gen { font-family:var(--mono); font-size:10px; color:var(--text-mute);
+    letter-spacing:1px; text-transform:uppercase; }
+  .flags { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .flag { font-family:var(--mono); font-size:10px; font-weight:700;
+    letter-spacing:.5px; padding:5px 10px; border-radius:6px;
+    border:1px solid var(--line-2); color:var(--text-dim); background:var(--bg-2); }
+  .flag.fomc   { color:var(--violet); border-color:var(--violet); background:var(--violet-dim); }
+  .flag.quad   { color:var(--amber-text); border-color:var(--amber); background:var(--amber-dim); }
+  .flag.wake   { color:var(--red); border-color:var(--red); background:var(--red-dim); }
+  .flag.range  { color:var(--cyan); border-color:var(--cyan); background:var(--cyan-dim); }
+  .spike { margin-top:10px; font-family:var(--mono); font-size:11px;
+    color:var(--amber-text); background:var(--amber-dim);
+    border:1px solid var(--amber); border-radius:7px; padding:8px 11px; }
+
+  /* day grid */
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(195px,1fr));
+    gap:12px; }
+  .day { border:1px solid var(--line); border-radius:12px; background:var(--bg-1);
+    padding:14px 14px 12px; display:flex; flex-direction:column; gap:10px;
+    transition:.15s; }
+  .day:hover { background:var(--card-hover); border-color:var(--line-2); }
+  .day.has-wake { border-color:var(--red); box-shadow:0 0 22px -12px var(--red); }
+  .day-hd { display:flex; align-items:baseline; justify-content:space-between; gap:6px; }
+  .day-hd .dow { font-family:var(--mono); font-size:13px; font-weight:700;
+    letter-spacing:.5px; }
+  .day-hd .dt { font-family:var(--mono); font-size:10px; color:var(--text-mute); }
+
+  .est { display:flex; flex-direction:column; gap:2px;
+    padding:8px 10px; border-radius:8px; background:var(--bg-2);
+    border:1px solid var(--line); }
+  .est .big { font-family:var(--mono); font-size:18px; font-weight:700; color:var(--cyan); }
+  .est .sub { font-family:var(--mono); font-size:9px; color:var(--text-mute);
+    letter-spacing:.5px; text-transform:uppercase; }
+  .est .hist { font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-top:2px; }
+
+  .badge { display:inline-block; font-family:var(--mono); font-size:9px;
+    font-weight:700; letter-spacing:.5px; padding:2px 6px; border-radius:5px;
+    color:var(--amber-text); border:1px solid var(--amber); background:var(--amber-dim); }
+
+  .events { display:flex; flex-direction:column; gap:7px; }
+  .ev { display:flex; flex-direction:column; gap:1px;
+    border-left:2px solid var(--line-2); padding-left:8px; }
+  .ev.pre { border-left-color:var(--red); }
+  .ev .time { font-family:var(--mono); font-size:11px; font-weight:700; }
+  .ev.pre .time { color:var(--red); }
+  .ev .time .et { color:var(--text-mute); font-weight:400; font-size:9px; }
+  .ev .name { font-size:11px; color:var(--text-dim); line-height:1.25; }
+  .ev .wake { color:var(--red); font-weight:700; }
+  .quiet { font-family:var(--mono); font-size:10px; color:var(--text-mute);
+    font-style:italic; }
+
+  .notes { margin-top:26px; font-family:var(--mono); font-size:10px;
+    color:var(--text-mute); line-height:1.6; border-top:1px solid var(--line);
+    padding-top:14px; }
+  .notes li { margin-bottom:4px; }
+  .err { font-family:var(--mono); font-size:13px; color:var(--red);
+    padding:40px 0; text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><span class="mark">◤</span> NQ <span class="accent">WEEK AHEAD</span></div>
+    <a class="nav-link" href="index.html">← Daily Briefing</a>
+  </div>
+  <div id="app"><div class="err">Loading week-ahead…</div></div>
+</div>
+
+<script src="week_ahead.js" onerror="window.__noWeekJs=true"></script>
+<script>
+(function () {
+  var app = document.getElementById('app');
+
+  function esc(s) { return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function dayCard(d) {
+    var est = d.range_estimate || {};
+    var hasWake = !!d.wake_up_pt;
+    var parts = [];
+    parts.push('<div class="day' + (hasWake ? ' has-wake' : '') + '">');
+    parts.push('<div class="day-hd"><span class="dow">' + esc(d.day_of_week) +
+      '</span><span class="dt mono">' + esc(d.date) + '</span></div>');
+
+    if (d.quad_witching)
+      parts.push('<span class="badge">QUAD WITCHING</span>');
+
+    parts.push('<div class="est">');
+    if (est.point_pts != null) {
+      parts.push('<div class="big">' + est.lo_pts + '–' + est.hi_pts + ' pt</div>');
+      parts.push('<div class="sub">expected range · ~' + est.point_pts + 'pt' +
+        (est.event_tag ? ' · ' + esc(est.event_tag) + ' ×' + est.mult : '') + '</div>');
+    } else {
+      parts.push('<div class="big">n/a</div><div class="sub">no estimate</div>');
+    }
+    if (d.hist_avg_rth_range != null)
+      parts.push('<div class="hist">6mo avg ' + d.hist_avg_rth_range + 'pt · OR45 ' +
+        (d.hist_avg_or45_range != null ? d.hist_avg_or45_range + 'pt' : '–') + '</div>');
+    parts.push('</div>');
+
+    if (d.events && d.events.length) {
+      parts.push('<div class="events">');
+      d.events.forEach(function (e) {
+        parts.push('<div class="ev' + (e.pre_rth ? ' pre' : '') + '">');
+        parts.push('<div class="time">' + esc(e.time_pt) +
+          ' PT <span class="et">' + esc(e.time_et_fmt) + ' ET</span>' +
+          (e.pre_rth ? ' <span class="wake">⏰</span>' : '') + '</div>');
+        parts.push('<div class="name">' + esc(e.event) + '</div>');
+        parts.push('</div>');
+      });
+      parts.push('</div>');
+    } else {
+      parts.push('<div class="quiet">no red-folder events</div>');
+    }
+    parts.push('</div>');
+    return parts.join('');
+  }
+
+  function render(data) {
+    var m = data.meta || {}, s = data.summary || {};
+    var out = [];
+    out.push('<div class="head">');
+    out.push('<h1 class="mono">' + esc(m.week_start) + ' → ' + esc(m.week_end) + '</h1>');
+    out.push('<div class="gen">generated ' + esc(m.generated_at_pt || '') + '</div>');
+
+    out.push('<div class="flags">');
+    if (s.is_fomc_week) out.push('<span class="flag fomc">FOMC WEEK</span>');
+    if (s.has_quad_witching) out.push('<span class="flag quad">QUAD WITCHING</span>');
+    out.push('<span class="flag">' + (s.total_red_folder || 0) + ' RED-FOLDER EVENTS</span>');
+    if (s.earliest_wake_pt)
+      out.push('<span class="flag wake">⏰ EARLIEST WAKE ' +
+        esc(s.earliest_wake_pt) + ' (' + esc(s.earliest_wake_day) + ')</span>');
+    if (s.recent_median_range_pts)
+      out.push('<span class="flag range">MEDIAN RANGE ' + s.recent_median_range_pts + 'pt</span>');
+    out.push('</div>');
+
+    if (s.vol_spike_recent)
+      out.push('<div class="spike">⚠ Recent volatility spike — max ' +
+        s.recent_max_range_pts + 'pt vs median ' + s.recent_median_range_pts +
+        'pt over the last 20 sessions. Estimates anchor on the median, so a ' +
+        'persistent spike would run wider than shown.</div>');
+    if (s.calendar_ok === false)
+      out.push('<div class="spike">⚠ Calendar feed was unavailable at generation — ' +
+        'event list may be incomplete. Re-check Forex Factory.</div>');
+    out.push('</div>');
+
+    out.push('<div class="grid">');
+    (data.days || []).forEach(function (d) { out.push(dayCard(d)); });
+    out.push('</div>');
+
+    if (data.notes && data.notes.length) {
+      out.push('<ul class="notes">');
+      data.notes.forEach(function (n) { out.push('<li>' + esc(n) + '</li>'); });
+      out.push('</ul>');
+    }
+    app.innerHTML = out.join('');
+  }
+
+  function fromEmbedded() {
+    if (window.WEEK_AHEAD && !window.__noWeekJs) { render(window.WEEK_AHEAD); return true; }
+    return false;
+  }
+
+  // Prefer the freshly-deployed static JSON; fall back to embedded data.js.
+  fetch('week_ahead.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+    .then(function (d) { render(d); })
+    .catch(function () {
+      if (!fromEmbedded())
+        app.innerHTML = '<div class="err">No week-ahead data yet. ' +
+          'It generates Sunday ~12pm PT.</div>';
+    });
+})();
+</script>
+</body>
+</html>

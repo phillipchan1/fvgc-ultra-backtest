@@ -1,0 +1,516 @@
+#!/usr/bin/env python3
+"""
+NQ Week-Ahead Report — Sunday-afternoon prep for the upcoming trading week.
+
+Companion to tools/morning_briefing.py. Where the morning briefing is a deep
+same-day report (full OR-width forecast, armed edges, live levels), this is a
+forward-looking 5-day planner answering three questions Phil asks every Sunday:
+
+  1. What red-folder (USD High-impact) events hit, and WHEN — in PST, so an
+     8:30 ET CPI print shows as "5:30 AM PST · wake-up" at a glance.
+  2. The historical average RTH / opening-range for each weekday.
+  3. An expected-range estimate from live ATR, nudged by an event multiplier
+     learned from history (CPI/NFP/FOMC days run wider than quiet days).
+
+Honest limitation: the SHARP same-morning OR-width forecast needs that day's
+gap + overnight range, which don't exist days ahead. So Tue-Fri range numbers
+here are ATR/seasonal/event-conditioned BASELINES, not the 9:35/9:45 forecast.
+
+Outputs tools/briefing/week_ahead.json + week_ahead.js (window.WEEK_AHEAD),
+deployed by the same GitHub Pages pipeline as the daily briefing.
+
+Usage:
+    python tools/week_ahead.py --export                 # next trading week
+    python tools/week_ahead.py --export --gen-date 2026-06-21
+    python tools/week_ahead.py                          # print, no write
+"""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+import sys
+from collections import defaultdict
+from datetime import date, datetime, time as dtime, timedelta
+from pathlib import Path
+
+try:
+    from zoneinfo import ZoneInfo
+    NY_TZ = ZoneInfo('America/New_York')
+    PT_TZ = ZoneInfo('America/Los_Angeles')
+except ImportError:  # pragma: no cover
+    import pytz
+    NY_TZ = pytz.timezone('America/New_York')
+    PT_TZ = pytz.timezone('America/Los_Angeles')
+
+REPO = Path(__file__).resolve().parent.parent
+TOOLS = REPO / 'tools'
+BRIEFING_DIR = TOOLS / 'briefing'
+TRADING_DAYS_CSV = REPO / 'data' / 'trading_days' / 'trading_days.csv'
+
+sys.path.insert(0, str(TOOLS))
+
+RTH_OPEN_ET = dtime(9, 30)
+
+
+# ======================================================================
+# Trading-week calendar
+# ======================================================================
+
+def upcoming_trading_week(gen_date: date) -> list[date]:
+    """Return the Mon-Fri of the trading week to plan for.
+
+    Run on a weekend (the intended Sunday-12pm cadence) → the week that
+    starts the very next Monday. Run mid-week → the CURRENT week's Mon-Fri
+    so a manual re-run still shows the week you're in.
+    """
+    wd = gen_date.weekday()  # Mon=0 .. Sun=6
+    if wd >= 5:              # Sat/Sun → next Monday
+        monday = gen_date + timedelta(days=(7 - wd))
+    else:                    # weekday → this week's Monday
+        monday = gen_date - timedelta(days=wd)
+    return [monday + timedelta(days=i) for i in range(5)]
+
+
+def is_quad_witching(d: date) -> bool:
+    """Triple/quad witching = 3rd Friday of Mar/Jun/Sep/Dec."""
+    if d.month not in (3, 6, 9, 12) or d.weekday() != 4:
+        return False
+    # 3rd Friday → day-of-month between 15 and 21
+    return 15 <= d.day <= 21
+
+
+# ======================================================================
+# Historical range baselines (from trading_days.csv)
+# ======================================================================
+
+def _read_history(csv_path: Path) -> list[dict]:
+    if not csv_path.exists():
+        return []
+    rows: list[dict] = []
+    with open(csv_path, newline='') as f:
+        for row in csv.DictReader(f):
+            d = (row.get('date') or '').strip()
+            if not d:
+                continue
+            rows.append(row)
+    return rows
+
+
+def _f(row: dict, key: str):
+    """Parse a float cell, None if blank/unparseable."""
+    v = (row.get(key) or '').strip()
+    if not v:
+        return None
+    try:
+        return float(v)
+    except ValueError:
+        return None
+
+
+def _mean(xs: list[float]):
+    return sum(xs) / len(xs) if xs else None
+
+
+def weekday_range_stats(rows: list[dict], lookback_days: int = 180) -> dict[int, dict]:
+    """Average RTH range + 45-min OR range per weekday, recent window.
+
+    Keyed by Python weekday (Mon=0). NQ point-ranges scale with the index
+    level, so a multi-year average understates today's regime. Default to a
+    ~6-month window (~25 samples/weekday) so the "average range" is
+    comparable to the live ATR. Falls back to all-history per weekday if a
+    weekday has too few recent samples.
+    """
+    if not rows:
+        return {}
+    last_date = max(date.fromisoformat(r['date']) for r in rows)
+    cutoff = last_date - timedelta(days=lookback_days)
+
+    recent = defaultdict(lambda: {'rth': [], 'or45': []})
+    alltime = defaultdict(lambda: {'rth': [], 'or45': []})
+    for r in rows:
+        d = date.fromisoformat(r['date'])
+        wd = d.weekday()
+        rth = _f(r, 'rth_range')
+        or45 = _f(r, 'or_45min_range')
+        if rth is not None:
+            alltime[wd]['rth'].append(rth)
+            if d >= cutoff:
+                recent[wd]['rth'].append(rth)
+        if or45 is not None:
+            alltime[wd]['or45'].append(or45)
+            if d >= cutoff:
+                recent[wd]['or45'].append(or45)
+
+    out: dict[int, dict] = {}
+    for wd in range(5):
+        rec, allt = recent[wd], alltime[wd]
+        use_rth = rec['rth'] if len(rec['rth']) >= 20 else allt['rth']
+        use_or = rec['or45'] if len(rec['or45']) >= 20 else allt['or45']
+        out[wd] = {
+            'avg_rth_range': _mean(use_rth),
+            'avg_or45_range': _mean(use_or),
+            'n': len(use_rth),
+        }
+    return out
+
+
+def event_range_multipliers(rows: list[dict]) -> dict[str, dict]:
+    """How much wider does the RTH range run on event days vs the baseline?
+
+    Returns {tag: {'mult': x, 'avg': pts, 'n': k}} for red-folder, FOMC,
+    CPI, NFP, PPI. `mult` is avg-range-on-tag-days / avg-range-all-days, so
+    it scales the live ATR baseline. Quiet (no red folder) days are the
+    natural comparison the multiplier rides on top of.
+    """
+    all_ranges = [v for r in rows if (v := _f(r, 'rth_range')) is not None]
+    base = _mean(all_ranges)
+    if not base:
+        return {}
+
+    buckets: dict[str, list[float]] = defaultdict(list)
+    for r in rows:
+        rth = _f(r, 'rth_range')
+        if rth is None:
+            continue
+        names = (r.get('red_folder_event_names') or '').upper()
+        red = (r.get('has_red_folder_news') or '').strip().lower() == 'true'
+        fomc = (r.get('is_fomc_week') or '').strip().lower() == 'true'
+        if red:
+            buckets['red_folder'].append(rth)
+        else:
+            buckets['quiet'].append(rth)
+        if fomc:
+            buckets['fomc'].append(rth)
+        if 'CPI' in names:
+            buckets['CPI'].append(rth)
+        if 'NON-FARM' in names or 'NONFARM' in names or 'NFP' in names or 'PAYROLL' in names:
+            buckets['NFP'].append(rth)
+        if 'PPI' in names:
+            buckets['PPI'].append(rth)
+
+    out: dict[str, dict] = {'_base_avg': {'avg': base, 'n': len(all_ranges)}}
+    for tag, vals in buckets.items():
+        if len(vals) < 10:
+            continue
+        avg = _mean(vals)
+        out[tag] = {'mult': avg / base, 'avg': avg, 'n': len(vals)}
+    return out
+
+
+# ======================================================================
+# Event tagging / range estimate
+# ======================================================================
+
+# Order matters — first match wins for the headline multiplier.
+_EVENT_MULT_KEYS = ['FOMC', 'CPI', 'NFP', 'PPI']
+
+
+def _event_mult_tag(event_type: str, title: str) -> str | None:
+    t = (event_type + ' ' + title).upper()
+    if 'FOMC' in t or 'FEDERAL FUNDS' in t:
+        return 'FOMC'
+    if 'CPI' in t or 'CONSUMER PRICE' in t:
+        return 'CPI'
+    if 'NON-FARM' in t or 'NONFARM' in t or 'NFP' in t or 'PAYROLL' in t:
+        return 'NFP'
+    if 'PPI' in t or 'PRODUCER PRICE' in t:
+        return 'PPI'
+    return None
+
+
+def estimate_day_range(base_atr20: float | None,
+                       day_events: list[dict],
+                       multipliers: dict[str, dict],
+                       weekday_avg: float | None) -> dict:
+    """Expected RTH range for a future day.
+
+    base = live atr_20d (typical recent daily range). Pick the strongest
+    event multiplier present that day (FOMC > CPI > NFP > PPI > generic
+    red-folder). If ATR is unavailable, fall back to the historical
+    event-day average, then the weekday average.
+    """
+    chosen_tag = None
+    mult = 1.0
+    for ev in day_events:
+        tag = _event_mult_tag(ev.get('event_type', ''), ev.get('event', ''))
+        key = tag if tag and tag in multipliers else None
+        if key is None and ev.get('event_type'):
+            key = 'red_folder' if 'red_folder' in multipliers else None
+            tag = tag or 'red_folder'
+        if key and multipliers[key]['mult'] > mult:
+            mult = multipliers[key]['mult']
+            chosen_tag = tag
+
+    if base_atr20:
+        point = base_atr20 * mult
+        method = f'median20 ({base_atr20:.0f}) × {mult:.2f}'
+        if chosen_tag:
+            method += f' [{chosen_tag}]'
+    elif chosen_tag and chosen_tag in multipliers:
+        point = multipliers[chosen_tag]['avg']
+        method = f'hist {chosen_tag} avg'
+    elif weekday_avg:
+        point = weekday_avg
+        method = 'weekday avg (no ATR)'
+    else:
+        return {'point_pts': None, 'lo_pts': None, 'hi_pts': None,
+                'mult': mult, 'event_tag': chosen_tag, 'method': 'unavailable'}
+
+    # ±25% band — wide on purpose; this is a days-ahead baseline, not a forecast.
+    return {
+        'point_pts': round(point),
+        'lo_pts': round(point * 0.75),
+        'hi_pts': round(point * 1.25),
+        'mult': round(mult, 2),
+        'event_tag': chosen_tag,
+        'method': method,
+    }
+
+
+# ======================================================================
+# Live calendar + ATR
+# ======================================================================
+
+def _fetch_week_events() -> tuple[list, bool]:
+    """All CalendarEvent for this+next ISO week. Returns (events, ok)."""
+    try:
+        from live_calendar import fetch_week
+    except ImportError:
+        return [], False
+    events = []
+    ok = False
+    for w in ('thisweek', 'nextweek'):
+        try:
+            events.extend(fetch_week(w))
+            ok = True
+        except Exception as e:  # CalendarError or network
+            print(f'  [warn] calendar fetch {w} failed: {e}', file=sys.stderr)
+    return events, ok
+
+
+def _us_high_for_day(all_events: list, day: date) -> list[dict]:
+    """Red-folder rows for `day`, sorted by ET time, with PST added."""
+    try:
+        from live_calendar import filter_us_high
+    except ImportError:
+        return []
+    out = []
+    for e in filter_us_high(all_events, day):
+        row = e.to_briefing_row()  # date, event_type, event, time_et, impact
+        if e.time_et is not None:
+            pt = e.time_et.astimezone(PT_TZ)
+            row['time_pt'] = pt.strftime('%-I:%M %p').lower()
+            row['time_et_fmt'] = e.time_et.strftime('%-I:%M %p').lower()
+            row['pt_minutes'] = pt.hour * 60 + pt.minute
+            row['pre_rth'] = e.time_et.timetz() < RTH_OPEN_ET.replace(tzinfo=e.time_et.tzinfo)
+        else:
+            row['time_pt'] = 'tentative'
+            row['time_et_fmt'] = 'tentative'
+            row['pt_minutes'] = None
+            row['pre_rth'] = False
+        out.append(row)
+    out.sort(key=lambda r: (r['pt_minutes'] is None, r.get('pt_minutes') or 0))
+    return out
+
+
+def _live_range_stats(target_date: date, n: int = 20) -> dict | None:
+    """Robust recent-RTH-range stats from live Yahoo bars.
+
+    Returns median / mean / p80 / max over the last `n` completed RTH days
+    before target_date. We anchor the expected-range estimate on the MEDIAN,
+    not the mean: NQ has spike days (e.g. 1600pt) that inflate a 20-day mean
+    well above a typical session. Median answers "what should I expect on an
+    ordinary day this week" honestly. Returns None on fetch failure.
+    """
+    try:
+        from live_market import fetch_rth_daily_ranges
+    except ImportError:
+        return None
+    try:
+        days = fetch_rth_daily_ranges(symbol='NQ=F', range_='60d', interval='5m')
+    except Exception:
+        return None
+    ranges = [d['range'] for d in days if d['date'] < target_date]
+    if len(ranges) < n:
+        return None
+    window = ranges[-n:]
+    s = sorted(window)
+    import statistics
+    p80 = s[min(len(s) - 1, int(round(0.8 * (len(s) - 1))))]
+    return {
+        'median': statistics.median(window),
+        'mean': statistics.mean(window),
+        'p80': p80,
+        'max': max(window),
+        'n': len(window),
+    }
+
+
+# ======================================================================
+# Build
+# ======================================================================
+
+DOW_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+
+
+def build_week_ahead(gen_date: date) -> dict:
+    week = upcoming_trading_week(gen_date)
+    rows = _read_history(TRADING_DAYS_CSV)
+    wd_stats = weekday_range_stats(rows)
+    mults = event_range_multipliers(rows)
+    all_events, cal_ok = _fetch_week_events()
+    rng = _live_range_stats(week[0])
+    atr_anchor = rng['median'] if rng else None
+
+    try:
+        from live_calendar import is_fomc_week
+        week_is_fomc = is_fomc_week(all_events, week[2]) if cal_ok else None
+    except ImportError:
+        week_is_fomc = None
+
+    days = []
+    total_red = 0
+    earliest_wake = None  # (pt_minutes, day_idx, label)
+    for i, d in enumerate(week):
+        events = _us_high_for_day(all_events, d) if cal_ok else []
+        total_red += len(events)
+        pre_rth = [e for e in events if e.get('pre_rth')]
+        wake = pre_rth[0] if pre_rth else None
+        if wake and wake['pt_minutes'] is not None:
+            if earliest_wake is None or wake['pt_minutes'] < earliest_wake[0]:
+                earliest_wake = (wake['pt_minutes'], i, wake['time_pt'])
+
+        wd_avg = (wd_stats.get(d.weekday()) or {}).get('avg_rth_range')
+        est = estimate_day_range(atr_anchor, events, mults, wd_avg)
+        quad = is_quad_witching(d)
+
+        days.append({
+            'date': d.isoformat(),
+            'day_of_week': DOW_NAMES[i],
+            'events': events,
+            'n_red_folder': len(events),
+            'wake_up_pt': wake['time_pt'] if wake else None,
+            'quad_witching': quad,
+            'hist_avg_rth_range': round(wd_avg) if wd_avg else None,
+            'hist_avg_or45_range': (
+                round(v) if (v := (wd_stats.get(d.weekday()) or {}).get('avg_or45_range')) else None
+            ),
+            'range_estimate': est,
+        })
+
+    return {
+        'schema_version': 1,
+        'meta': {
+            'generated_at_pt': datetime.now(PT_TZ).strftime('%Y-%m-%d %I:%M %p PT'),
+            'week_start': week[0].isoformat(),
+            'week_end': week[-1].isoformat(),
+            'gen_date': gen_date.isoformat(),
+        },
+        'summary': {
+            'is_fomc_week': week_is_fomc,
+            'total_red_folder': total_red,
+            'has_quad_witching': any(dd['quad_witching'] for dd in days),
+            'earliest_wake_pt': earliest_wake[2] if earliest_wake else None,
+            'earliest_wake_day': DOW_NAMES[earliest_wake[1]] if earliest_wake else None,
+            'recent_median_range_pts': round(rng['median']) if rng else None,
+            'recent_mean_range_pts': round(rng['mean']) if rng else None,
+            'recent_max_range_pts': round(rng['max']) if rng else None,
+            'vol_spike_recent': bool(rng and rng['max'] > 2 * rng['median']),
+            'calendar_ok': cal_ok,
+        },
+        'days': days,
+        'baselines': {
+            'event_multipliers': {
+                k: {'mult': round(v['mult'], 2), 'n': v['n']}
+                for k, v in mults.items() if k.startswith('_') is False and 'mult' in v
+            },
+            'base_avg_range': round(mults['_base_avg']['avg']) if '_base_avg' in mults else None,
+        },
+        'notes': [
+            'Times shown in PST/PDT (America/Los_Angeles). 8:30 AM ET = 5:30 AM PST.',
+            'Range estimates are ATR/event-conditioned BASELINES, not the same-morning '
+            'OR-width forecast (which needs that day\'s gap + overnight range).',
+        ],
+    }
+
+
+def export_week_ahead(data: dict, out_dir: Path) -> tuple[Path, Path]:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    json_path = out_dir / 'week_ahead.json'
+    js_path = out_dir / 'week_ahead.js'
+    json_str = json.dumps(data, indent=2)
+    json_path.write_text(json_str + '\n')
+    js_path.write_text(
+        '// Auto-generated by tools/week_ahead.py --export.\n'
+        f'window.WEEK_AHEAD = {json_str};\n'
+    )
+    return json_path, js_path
+
+
+# ======================================================================
+# CLI / pretty-print
+# ======================================================================
+
+def _print_report(data: dict) -> None:
+    m, s = data['meta'], data['summary']
+    print(f"\n  WEEK AHEAD — {m['week_start']} → {m['week_end']}")
+    print(f"  generated {m['generated_at_pt']}")
+    flags = []
+    if s['is_fomc_week']:
+        flags.append('FOMC WEEK')
+    if s['has_quad_witching']:
+        flags.append('QUAD WITCHING')
+    if s['recent_median_range_pts']:
+        flags.append(f"med range {s['recent_median_range_pts']}pt")
+    print(f"  {s['total_red_folder']} red-folder events" +
+          (f" · {' · '.join(flags)}" if flags else ''))
+    if s.get('vol_spike_recent'):
+        print(f"  ⚠ recent vol spike: max {s['recent_max_range_pts']}pt vs "
+              f"median {s['recent_median_range_pts']}pt — estimates use the median")
+    if s['earliest_wake_pt']:
+        print(f"  earliest wake-up: {s['earliest_wake_pt']} PT ({s['earliest_wake_day']})")
+    if not s['calendar_ok']:
+        print('  [warn] calendar feed unavailable — events incomplete')
+    print('  ' + '-' * 64)
+    for d in data['days']:
+        est = d['range_estimate']
+        est_s = (f"{est['lo_pts']}-{est['hi_pts']}pt (~{est['point_pts']})"
+                 if est['point_pts'] else 'n/a')
+        line = f"  {d['day_of_week']:9s} {d['date']}  est {est_s}"
+        if d['hist_avg_rth_range']:
+            line += f"  hist~{d['hist_avg_rth_range']}pt"
+        if d['quad_witching']:
+            line += '  [QUAD WITCH]'
+        print(line)
+        for e in d['events']:
+            wake = '  ⏰ WAKE-UP' if e.get('pre_rth') else ''
+            print(f"        {e['time_pt']:>9s} PT ({e['time_et_fmt']} ET)  "
+                  f"{e['event']}{wake}")
+        if not d['events']:
+            print('        (no red-folder events)')
+    print()
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description='NQ week-ahead report')
+    ap.add_argument('--export', action='store_true',
+                    help='write week_ahead.json + week_ahead.js to tools/briefing/')
+    ap.add_argument('--out-dir', default=str(BRIEFING_DIR))
+    ap.add_argument('--gen-date', default=None,
+                    help='YYYY-MM-DD generation date (default: today)')
+    args = ap.parse_args()
+
+    gen = date.fromisoformat(args.gen_date) if args.gen_date else date.today()
+    data = build_week_ahead(gen)
+    _print_report(data)
+    if args.export:
+        jp, js = export_week_ahead(data, Path(args.out_dir))
+        print(f'  wrote {jp}')
+        print(f'  wrote {js}')
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
