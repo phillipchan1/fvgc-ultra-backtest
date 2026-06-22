@@ -1,0 +1,323 @@
+======================================================================
+FVGC — Low-Side Liquidity Sweep Confluence Study
+M2+M3 Long universe; 8 low-sweep activators
+======================================================================
+
+  Loading 30s candles ...
+  1,590,485 bars  (2023-10-01 20:00:00-04:00 → 2026-03-25 19:59:30-04:00)
+
+  Loading daily volume profile (PD VAL) ...
+  580 days
+
+  Computing per-day session lows ...
+  704 days
+
+  Computing per-day first-sweep timestamps ...
+  Wrote day_levels_sweeps.csv (704 days)
+
+  Loading trades_with_levels ...
+  2,005 trades total
+
+  Tagging M2+M3 long trades ...
+  365 M2+M3 long decided trades
+  Wrote /Users/philchan/Work/fvgc-backtest/studies/low_sweep_confluence/results/m2m3_long_low_sweep_30s.csv
+
+  Playbook universe (magnet_valid=True): n=167
+  Broad universe (no magnet filter):       n=365
+
+======================================================================
+  0. BASELINE REPLICATION — OR.L-swept on M3 longs (no magnet filter)
+======================================================================
+  M3 longs (no magnet filter): n=199
+
+  --- or_l_swept (M3, no_mv) ---
+                               n     W     L     WR%      PF       EV    mfeR
+  or_l_swept (M3, no_mv)=False   108    60    48   55.6%    1.19   +2.13   5.38
+  or_l_swept (M3, no_mv)=True     91    54    37   59.3%    1.52   +6.10   5.38
+  lift (T-F):              wr= +3.8pp  pf=+0.33  ev=+3.97
+
+  M3 longs (magnet_valid=True): n=73
+
+  --- or_l_swept (M3, mv=True) ---
+                               n     W     L     WR%      PF       EV    mfeR
+  or_l_swept (M3, mv=True)=False    40    23    17   57.5%    1.30   +3.62   4.02
+  or_l_swept (M3, mv=True)=True     33    24     9   72.7%    2.70  +15.76   5.64
+  lift (T-F):              wr=+15.2pp  pf=+1.40  ev=+12.13
+
+======================================================================
+  1. UNIVARIATE per-level split — BROAD (no magnet filter)  (n=365)
+======================================================================
+
+  --- or_l_swept ---
+                               n     W     L     WR%      PF       EV    mfeR
+  or_l_swept=False           241   131   110   54.4%    1.10   +1.20   5.68
+  or_l_swept=True            124    77    47   62.1%    1.68   +7.46   5.45
+  lift (T-F):              wr= +7.7pp  pf=+0.58  ev=+6.26
+
+  --- on_low_swept ---
+                               n     W     L     WR%      PF       EV    mfeR
+  on_low_swept=False         286   163   123   57.0%    1.24   +2.76   5.47
+  on_low_swept=True           79    45    34   57.0%    1.46   +5.38   6.08
+  lift (T-F):              wr= -0.0pp  pf=+0.22  ev=+2.62
+
+  --- london_low_swept ---
+                               n     W     L     WR%      PF       EV    mfeR
+  london_low_swept=False     225   126    99   56.0%    1.20   +2.40   5.63
+  london_low_swept=True      140    82    58   58.6%    1.42   +4.82   5.55
+  lift (T-F):              wr= +2.6pp  pf=+0.21  ev=+2.42
+
+  --- premarket_low_swept ---
+                               n     W     L     WR%      PF       EV    mfeR
+  premarket_low_swept=False   202   112    90   55.4%    1.20   +2.38   5.73
+  premarket_low_swept=True    163    96    67   58.9%    1.39   +4.51   5.44
+  lift (T-F):              wr= +3.5pp  pf=+0.19  ev=+2.13
+
+  --- pdl_swept_overnight ---
+                               n     W     L     WR%      PF       EV    mfeR
+  pdl_swept_overnight=False   242   136   106   56.2%    1.27   +3.10   5.56
+  pdl_swept_overnight=True    123    72    51   58.5%    1.31   +3.78   5.68
+  lift (T-F):              wr= +2.3pp  pf=+0.04  ev=+0.68
+
+  --- pdl_swept_rth_only ---
+                               n     W     L     WR%      PF       EV    mfeR
+  pdl_swept_rth_only=False   295   169   126   57.3%    1.31   +3.54   5.61
+  pdl_swept_rth_only=True     70    39    31   55.7%    1.19   +2.43   5.56
+  lift (T-F):              wr= -1.6pp  pf=-0.12  ev=-1.11
+
+  --- pdval_swept_overnight ---
+                               n     W     L     WR%      PF       EV    mfeR
+  pdval_swept_overnight=False   184   101    83   54.9%    1.17   +2.04   5.84
+  pdval_swept_overnight=True    181   107    74   59.1%    1.40   +4.64   5.36
+  lift (T-F):              wr= +4.2pp  pf=+0.23  ev=+2.60
+
+  --- pdval_swept_rth_only ---
+                               n     W     L     WR%      PF       EV    mfeR
+  pdval_swept_rth_only=False   245   137   108   55.9%    1.21   +2.45   5.71
+  pdval_swept_rth_only=True    120    71    49   59.2%    1.43   +5.12   5.37
+  lift (T-F):              wr= +3.2pp  pf=+0.23  ev=+2.68
+
+  --- Summary lift table sorted by WR-lift (BROAD (no magnet filter)) ---
+            activator  n_T  n_F  wr_T  wr_F  wr_lift  pf_T  pf_F  ev_T  ev_F  ev_lift
+           or_l_swept  124  241  62.1  54.4      7.7  1.68  1.10  7.46  1.20     6.26
+pdval_swept_overnight  181  184  59.1  54.9      4.2  1.40  1.17  4.64  2.04     2.60
+  premarket_low_swept  163  202  58.9  55.4      3.5  1.39  1.20  4.51  2.38     2.13
+ pdval_swept_rth_only  120  245  59.2  55.9      3.2  1.43  1.21  5.12  2.45     2.68
+     london_low_swept  140  225  58.6  56.0      2.6  1.42  1.20  4.82  2.40     2.42
+  pdl_swept_overnight  123  242  58.5  56.2      2.3  1.31  1.27  3.78  3.10     0.68
+         on_low_swept   79  286  57.0  57.0     -0.0  1.46  1.24  5.38  2.76     2.62
+   pdl_swept_rth_only   70  295  55.7  57.3     -1.6  1.19  1.31  2.43  3.54    -1.11
+
+======================================================================
+  1. UNIVARIATE per-level split — PLAYBOOK (magnet_valid=True)  (n=167)
+======================================================================
+
+  --- or_l_swept ---
+                               n     W     L     WR%      PF       EV    mfeR
+  or_l_swept=False           117    68    49   58.1%    1.27   +3.16   5.75
+  or_l_swept=True             50    37    13   74.0%    3.05  +16.40   5.30
+  lift (T-F):              wr=+15.9pp  pf=+1.78  ev=+13.24
+
+  --- on_low_swept ---
+                               n     W     L     WR%      PF       EV    mfeR
+  on_low_swept=False         140    88    52   62.9%    1.55   +6.07   5.49
+  on_low_swept=True           27    17    10   63.0%    2.31  +12.59   6.28
+  lift (T-F):              wr= +0.1pp  pf=+0.75  ev=+6.52
+
+  --- london_low_swept ---
+                               n     W     L     WR%      PF       EV    mfeR
+  london_low_swept=False     116    74    42   63.8%    1.61   +6.51   5.75
+  london_low_swept=True       51    31    20   60.8%    1.78   +8.53   5.32
+  lift (T-F):              wr= -3.0pp  pf=+0.17  ev=+2.02
+
+  --- premarket_low_swept ---
+                               n     W     L     WR%      PF       EV    mfeR
+  premarket_low_swept=False   102    64    38   62.7%    1.60   +6.47   5.91
+  premarket_low_swept=True     65    41    24   63.1%    1.77   +8.15   5.17
+  lift (T-F):              wr= +0.3pp  pf=+0.17  ev=+1.68
+
+  --- pdl_swept_overnight ---
+                               n     W     L     WR%      PF       EV    mfeR
+  pdl_swept_overnight=False   105    68    37   64.8%    1.84   +8.19   5.17
+  pdl_swept_overnight=True     62    37    25   59.7%    1.43   +5.32   6.38
+  lift (T-F):              wr= -5.1pp  pf=-0.42  ev=-2.87
+
+  --- pdl_swept_rth_only ---
+                               n     W     L     WR%      PF       EV    mfeR
+  pdl_swept_rth_only=False   140    92    48   65.7%    1.83   +8.39   5.42
+  pdl_swept_rth_only=True     27    13    14   48.1%    1.04   +0.56   6.65
+  lift (T-F):              wr=-17.6pp  pf=-0.79  ev=-7.84
+
+  --- pdval_swept_overnight ---
+                               n     W     L     WR%      PF       EV    mfeR
+  pdval_swept_overnight=False    79    50    29   63.3%    1.75   +7.41   5.64
+  pdval_swept_overnight=True     88    55    33   62.5%    1.60   +6.88   5.60
+  lift (T-F):              wr= -0.8pp  pf=-0.15  ev=-0.53
+
+  --- pdval_swept_rth_only ---
+                               n     W     L     WR%      PF       EV    mfeR
+  pdval_swept_rth_only=False   109    69    40   63.3%    1.64   +6.70   5.39
+  pdval_swept_rth_only=True     58    36    22   62.1%    1.70   +7.93   6.06
+  lift (T-F):              wr= -1.2pp  pf=+0.05  ev=+1.23
+
+  --- Summary lift table sorted by WR-lift (PLAYBOOK (magnet_valid=True)) ---
+            activator  n_T  n_F  wr_T  wr_F  wr_lift  pf_T  pf_F  ev_T  ev_F  ev_lift
+           or_l_swept   50  117  74.0  58.1     15.9  3.05  1.27 16.40  3.16    13.24
+  premarket_low_swept   65  102  63.1  62.7      0.3  1.77  1.60  8.15  6.47     1.68
+         on_low_swept   27  140  63.0  62.9      0.1  2.31  1.55 12.59  6.07     6.52
+pdval_swept_overnight   88   79  62.5  63.3     -0.8  1.60  1.75  6.88  7.41    -0.53
+ pdval_swept_rth_only   58  109  62.1  63.3     -1.2  1.70  1.64  7.93  6.70     1.23
+     london_low_swept   51  116  60.8  63.8     -3.0  1.78  1.61  8.53  6.51     2.02
+  pdl_swept_overnight   62  105  59.7  64.8     -5.1  1.43  1.84  5.32  8.19    -2.87
+   pdl_swept_rth_only   27  140  48.1  65.7    -17.6  1.04  1.83  0.56  8.39    -7.84
+
+======================================================================
+  2. CORRELATION MATRIX — 8 activators (PLAYBOOK universe)
+======================================================================
+                       or_l_swept  on_low_swept  london_low_swept  premarket_low_swept  pdl_swept_overnight  pdl_swept_rth_only  pdval_swept_overnight  pdval_swept_rth_only
+or_l_swept                  1.000         0.210             0.078                0.095                0.147               0.139                  0.200                 0.182
+on_low_swept                0.210         1.000             0.662                0.550                0.067               0.337                  0.090                 0.260
+london_low_swept            0.078         0.662             1.000                0.831               -0.025               0.203                  0.003                 0.199
+premarket_low_swept         0.095         0.550             0.831                1.000                0.073               0.317                  0.043                 0.243
+pdl_swept_overnight         0.147         0.067            -0.025                0.073                1.000               0.572                  0.728                 0.637
+pdl_swept_rth_only          0.139         0.337             0.203                0.317                0.572               1.000                  0.416                 0.602
+pdval_swept_overnight       0.200         0.090             0.003                0.043                0.728               0.416                  1.000                 0.691
+pdval_swept_rth_only        0.182         0.260             0.199                0.243                0.637               0.602                  0.691                 1.000
+
+  Base rates (P(swept=True) on PLAYBOOK):
+    or_l_swept                 29.9%  (n_T=50/167)
+    on_low_swept               16.2%  (n_T=27/167)
+    london_low_swept           30.5%  (n_T=51/167)
+    premarket_low_swept        38.9%  (n_T=65/167)
+    pdl_swept_overnight        37.1%  (n_T=62/167)
+    pdl_swept_rth_only         16.2%  (n_T=27/167)
+    pdval_swept_overnight      52.7%  (n_T=88/167)
+    pdval_swept_rth_only       34.7%  (n_T=58/167)
+
+======================================================================
+  3. MARGINAL LIFT — stratified by level_confluence_count band
+======================================================================
+
+  --- or_l_swept stratified by confluence_band ---
+band  n_F  wr_F  pf_F  n_T  wr_T  pf_T  wr_lift
+ 0-2   96  58.3  1.24   39  79.5  4.43     21.2
+ 3-4   17  58.8  1.23    9  44.4  0.71    -14.4
+  5+    4  50.0  2.29    2 100.0   NaN     50.0
+
+  --- on_low_swept stratified by confluence_band ---
+band  n_F  wr_F  pf_F  n_T  wr_T  pf_T  wr_lift
+ 0-2  119  65.5  1.71   16  56.2  2.12     -9.3
+ 3-4   19  52.6  0.96    7  57.1  1.00      4.5
+  5+    2   0.0  0.00    4 100.0   NaN    100.0
+
+  --- london_low_swept stratified by confluence_band ---
+band  n_F  wr_F  pf_F  n_T  wr_T  pf_T  wr_lift
+ 0-2  103  65.0  1.72   32  62.5  1.90     -2.5
+ 3-4   11  63.6  1.12   15  46.7  0.89    -17.0
+  5+    2   0.0  0.00    4 100.0   NaN    100.0
+
+  --- premarket_low_swept stratified by confluence_band ---
+band  n_F  wr_F  pf_F  n_T  wr_T  pf_T  wr_lift
+ 0-2   89  64.0  1.72   46  65.2  1.85      1.2
+ 3-4   11  63.6  1.12   15  46.7  0.89    -17.0
+  5+    2   0.0  0.00    4 100.0   NaN    100.0
+
+  --- pdl_swept_overnight stratified by confluence_band ---
+band  n_F  wr_F  pf_F  n_T  wr_T  pf_T  wr_lift
+ 0-2   86  69.8  2.30   49  55.1  1.16    -14.7
+ 3-4   17  47.1  0.71    9  66.7  1.60     19.6
+  5+    2   0.0  0.00    4 100.0   NaN    100.0
+
+  --- pdl_swept_rth_only stratified by confluence_band ---
+band  n_F  wr_F  pf_F  n_T  wr_T  pf_T  wr_lift
+ 0-2  117  70.1  2.24   18  27.8  0.32    -42.3
+ 3-4   21  47.6  0.67    5  80.0  4.17     32.4
+  5+    2   0.0  0.00    4 100.0   NaN    100.0
+
+  --- pdval_swept_overnight stratified by confluence_band ---
+band  n_F  wr_F  pf_F  n_T  wr_T  pf_T  wr_lift
+ 0-2   65  66.2  2.03   70  62.9  1.56     -3.3
+ 3-4   13  53.8  0.91   13  53.8  1.03      0.0
+  5+    1   0.0  0.00    5  80.0  8.00     80.0
+
+  --- pdval_swept_rth_only stratified by confluence_band ---
+band  n_F  wr_F  pf_F  n_T  wr_T  pf_T  wr_lift
+ 0-2   91  67.0  1.93   44  59.1  1.48     -7.9
+ 3-4   17  47.1  0.71    9  66.7  1.60     19.6
+  5+    1   0.0  0.00    5  80.0  8.00     80.0
+
+======================================================================
+  4. LOGISTIC REGRESSION — outcome_win ~ activator + level_confluence_count + macro_window
+======================================================================
+  or_l_swept                coef=+0.750  se=0.390  95%CI=[-0.015, +1.515]  p=0.055    n=167
+  on_low_swept              coef=+0.060  se=0.458  95%CI=[-0.838, +0.958]  p=0.895    n=167
+  london_low_swept          coef=-0.072  se=0.372  95%CI=[-0.802, +0.658]  p=0.847    n=167
+  premarket_low_swept       coef=+0.048  se=0.344  95%CI=[-0.627, +0.723]  p=0.889    n=167
+  pdl_swept_overnight       coef=-0.215  se=0.336  95%CI=[-0.874, +0.443]  p=0.521    n=167
+  pdl_swept_rth_only        coef=-0.715  se=0.441  95%CI=[-1.578, +0.149]  p=0.105    n=167
+  pdval_swept_overnight     coef=-0.020  se=0.325  95%CI=[-0.657, +0.618]  p=0.951    n=167
+  pdval_swept_rth_only      coef=-0.020  se=0.348  95%CI=[-0.702, +0.662]  p=0.955    n=167
+
+======================================================================
+  5. STACKING — by n_lows_swept_clusters (PLAYBOOK universe)
+======================================================================
+  cluster_count = sum of {or_l, on_low, pdl_overnight, pdval_overnight}
+ cluster_count  n  wins  losses   wr   pf    ev  mean_mfe_r
+             0 58    37      21 63.8 1.76  7.16        5.89
+             1 31    19      12 61.3 1.49  5.48        4.40
+             2 43    24      19 55.8 1.01  0.12        5.26
+             3 30    21       9 70.0 3.06 16.17        6.79
+             4  5     4       1 80.0 4.83 23.00        6.17
+
+======================================================================
+  6. PER-MACRO breakdown for each activator (PLAYBOOK)
+======================================================================
+
+  --- or_l_swept ---
+    M2  swept=False: n=77 wr=58.4% pf= 1.25 ev=+2.92
+    M2  swept=True : n=17 wr=76.5% pf= 4.16 ev=+17.65
+    M3  swept=False: n=40 wr=57.5% pf= 1.30 ev=+3.62
+    M3  swept=True : n=33 wr=72.7% pf= 2.70 ev=+15.76
+
+  --- on_low_swept ---
+    M2  swept=False: n=85 wr=61.2% pf= 1.45 ev=+5.00
+    M2  swept=True : n=9 wr=66.7% pf= 2.67 ev=+11.11
+    M3  swept=False: n=55 wr=65.5% pf= 1.73 ev=+7.73
+    M3  swept=True : n=18 wr=61.1% pf= 2.20 ev=+13.33
+
+  --- london_low_swept ---
+    M2  swept=False: n=73 wr=63.0% pf= 1.53 ev=+5.82
+    M2  swept=True : n=21 wr=57.1% pf= 1.47 ev=+4.76
+    M3  swept=False: n=43 wr=65.1% pf= 1.75 ev=+7.67
+    M3  swept=True : n=30 wr=63.3% pf= 1.97 ev=+11.17
+
+  --- premarket_low_swept ---
+    M2  swept=False: n=66 wr=62.1% pf= 1.49 ev=+5.45
+    M2  swept=True : n=28 wr=60.7% pf= 1.59 ev=+5.89
+    M3  swept=False: n=36 wr=63.9% pf= 1.80 ev=+8.33
+    M3  swept=True : n=37 wr=64.9% pf= 1.89 ev=+9.86
+
+  --- pdl_swept_overnight ---
+    M2  swept=False: n=65 wr=64.6% pf= 1.90 ev=+8.00
+    M2  swept=True : n=29 wr=55.2% pf= 1.01 ev=+0.17
+    M3  swept=False: n=40 wr=65.0% pf= 1.76 ev=+8.50
+    M3  swept=True : n=33 wr=63.6% pf= 1.96 ev=+9.85
+
+  --- pdl_swept_rth_only ---
+    M2  swept=False: n=83 wr=65.1% pf= 1.82 ev=+7.83
+    M2  swept=True : n=11 wr=36.4% pf= 0.43 ev=-11.36
+    M3  swept=False: n=57 wr=66.7% pf= 1.85 ev=+9.21
+    M3  swept=True : n=16 wr=56.2% pf= 1.85 ev=+8.75
+
+  --- pdval_swept_overnight ---
+    M2  swept=False: n=49 wr=59.2% pf= 1.58 ev=+5.71
+    M2  swept=True : n=45 wr=64.4% pf= 1.47 ev=+5.44
+    M3  swept=False: n=30 wr=70.0% pf= 2.03 ev=+10.17
+    M3  swept=True : n=43 wr=60.5% pf= 1.73 ev=+8.37
+
+  --- pdval_swept_rth_only ---
+    M2  swept=False: n=68 wr=60.3% pf= 1.46 ev=+4.85
+    M2  swept=True : n=26 wr=65.4% pf= 1.67 ev=+7.50
+    M3  swept=False: n=41 wr=68.3% pf= 1.96 ev=+9.76
+    M3  swept=True : n=32 wr=59.4% pf= 1.72 ev=+8.28
+
+Done.

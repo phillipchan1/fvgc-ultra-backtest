@@ -1,0 +1,57 @@
+======================================================================
+E2 deep-dive: aged-naked VP POC magnet (lag-1)
+======================================================================
+
+--- 1) Yearly stability ---
+year  n    WR      PF      exp     sumR    
+2018  37    43.2%  2.29    +0.73R  +27.0
+2019  9     44.4%  2.40    +0.78R  +7.0
+2020  104   29.8%  1.27    +0.19R  +20.0
+2021  101   36.6%  1.73    +0.47R  +47.0
+2022  134   28.4%  1.19    +0.13R  +18.0
+2023  103   34.0%  1.54    +0.36R  +37.0
+2024  76    39.5%  1.96    +0.58R  +44.0
+2025  114   50.9%  3.11    +1.04R  +118.0
+2026  48    27.1%  1.11    +0.08R  +4.0
+
+Total: n=726  WR=36.1%  PF= 1.69  exp=+0.44R  sumR=+322.0
+
+--- 2) Direction breakdown ---
+  long   ALL: n=381  WR=36.5%  PF= 1.72  exp=+0.46R  sumR=+175.0
+  long   OOS: n=179  WR=39.1%  PF= 1.93  exp=+0.56R  sumR=+101.0
+  short  ALL: n=345  WR=35.7%  PF= 1.66  exp=+0.43R  sumR=+147.0
+  short  OOS: n=162  WR=40.7%  PF= 2.06  exp=+0.63R  sumR=+102.0
+
+--- 3) Naked-vs-touched POC contrast (same setup, opposite condition) ---
+  NAKED  (overnight did NOT reach POC):
+    ALL: n=726  WR=36.1%  PF= 1.69  exp=+0.44R  sumR=+322.0
+    OOS: n=341  WR=39.9%  PF= 1.99  exp=+0.60R  sumR=+203.0
+  TOUCHED (overnight DID reach POC, otherwise same setup):
+    ALL: n=802  WR=33.0%  PF= 1.48  exp=+0.32R  sumR=+258.0
+    OOS: n=432  WR=35.0%  PF= 1.61  exp=+0.40R  sumR=+172.0
+
+--- 4) Variant decomposition (OOS only) ---
+  bos                 n= 98  WR=40.8%  PF= 2.07  exp=+0.63R  sumR=+62.0
+  ifvg                n= 60  WR=33.3%  PF= 1.50  exp=+0.33R  sumR=+20.0
+  no_fvg              n=183  WR=41.5%  PF= 2.13  exp=+0.66R  sumR=+121.0
+
+--- 5) Time-window decomposition (OOS only) ---
+  9:30-9:45     n= 84  WR=32.1%  PF= 1.42  exp=+0.29R  sumR=+24.0
+  9:45-10:00    n=125  WR=39.2%  PF= 1.93  exp=+0.57R  sumR=+71.0
+  10:00-10:15   n=132  WR=45.5%  PF= 2.50  exp=+0.82R  sumR=+108.0
+
+--- 6) Lookahead audit ---
+  Inputs to E2:
+    poc_lag1            : yesterday's POC (loaded via load_lagged_vp)         CAUSAL
+    overnight_high/low  : pre-RTH session extremes  (available_time = open)  CAUSAL
+    entry_price, sl_dist: from baseline trade row                            CAUSAL
+    variant != PS       : from FVGC engine, known at entry                   CAUSAL
+    mod in [570, 615]   : trade clock                                        CAUSAL
+  No full-session aggregates used.  Audit: PASS
+
+--- 7) R-distance to POC profile (OOS naked cohort) ---
+  R-distance to POC (positive = ahead): p25=2.42  p50=5.36  p75=9.67  p95=16.79
+  0-1.5R    n= 49  WR=34.7%  PF= 1.59  exp=+0.39R  sumR=+19.0
+  1.5-3R    n= 58  WR=44.8%  PF= 2.44  exp=+0.79R  sumR=+46.0
+  3-6R      n= 76  WR=32.9%  PF= 1.47  exp=+0.32R  sumR=+24.0
+  6R+       n=158  WR=43.0%  PF= 2.27  exp=+0.72R  sumR=+114.0

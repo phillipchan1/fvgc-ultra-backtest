@@ -1,5 +1,11 @@
 # Phase A — Adversarial walk-forward of `n_vp_targets`
 
+## Causal Audit Status
+
+**INVALIDATED — 2026-05-21.** The headline +19.93pp OOS lift was a lookahead artifact. `run.py:51` joined `daily_volume_profile.csv` on `date`, which gave 9:30-10:15 trades access to today's full-session 16:00 POC/VAH/VAL. Under strictly causal lag-1 VP, the same buckets are flat at the OOS base rate (44.2% / 44.8% / 44.5% / 26.7% vs base 44.3%) — no usable signal. Composite VP's lag-1 analysis first surfaced this; [`studies/lookahead_audit/rerun_vp_targets_causal.py`](../lookahead_audit/rerun_vp_targets_causal.py) reproduces the full 4-bucket comparison. **The Verdict below is preserved for historical context only.** Stop building on `n_vp_targets`.
+
+---
+
 ## Verdict
 
 **PASS** under a stricter walk-forward than the parent discovery study.

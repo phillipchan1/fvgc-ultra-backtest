@@ -2367,6 +2367,53 @@
     width: var(--w, 0%);
   }
 
+  /* ===== Liquidity ladder (price-relative map) ===== */
+  .lv-ladder {
+    position: relative; width: 100%; margin: 4px 0 16px;
+    font-family: var(--mono);
+    --rail: 86px;        /* x of the vertical rail */
+    --lbl: 100px;        /* x where right-side labels begin */
+  }
+  .lv-ladder svg { position: absolute; inset: 0; width: 100%; height: 100%;
+    overflow: visible; pointer-events: none; }
+  .lv-ladder .rail { stroke: var(--line-2); stroke-width: 1; }
+  .lv-ladder .lead { stroke: var(--line-2); stroke-width: 1; fill: none; opacity: .7; }
+  .lv-ladder .lead.above { stroke: var(--green); opacity: .42; }
+  .lv-ladder .lead.below { stroke: var(--red);  opacity: .42; }
+  .lv-ladder .tick { stroke-width: 1.5; }
+  .lv-ladder .tick.above { stroke: var(--green); }
+  .lv-ladder .tick.below { stroke: var(--red); }
+  .lv-ladder .nowline { stroke: var(--cyan); stroke-width: 1.4;
+    stroke-dasharray: 2 4; opacity: .9; }
+  /* now chip on the rail */
+  .lv-now {
+    position: absolute; left: 0; transform: translateY(-50%);
+    width: var(--rail); text-align: right; padding-right: 10px;
+    box-sizing: border-box; z-index: 3;
+  }
+  .lv-now .now-px {
+    display: inline-block; font-size: 12px; font-weight: 700; color: var(--cyan);
+    text-shadow: 0 0 8px var(--cyan); letter-spacing: .3px;
+  }
+  .lv-now .now-tag { display: block; font-size: 8px; letter-spacing: 2px;
+    color: var(--text-mute); }
+  /* level label rows on the right */
+  .lv-row {
+    position: absolute; transform: translateY(-50%);
+    left: var(--lbl); right: 0; display: flex; align-items: baseline;
+    gap: 8px; z-index: 2; line-height: 1.1;
+  }
+  .lv-row .lv-name { font-size: 11px; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; }
+  .lv-row .lv-px { font-size: 11px; color: var(--text-dim); flex: 0 0 auto; }
+  .lv-row .lv-dist { font-size: 11px; font-weight: 700; flex: 0 0 auto;
+    min-width: 48px; text-align: right; }
+  .lv-row.above .lv-dist { color: var(--green); }
+  .lv-row.below .lv-dist { color: var(--red); }
+  .lv-row .lv-arrow { flex: 0 0 auto; font-size: 10px; }
+  .lv-row.above .lv-arrow { color: var(--green); }
+  .lv-row.below .lv-arrow { color: var(--red); }
+
   /* ===== Avoid banner ===== */
   .avoid-banner {
     padding: 12px 16px;
@@ -3505,7 +3552,7 @@
     //   scale-out = MROUND(contracts * frac, accounts)   (frac = .20/.33/.50)
     // $/pt per symbol: NQ=2, ES=5, GOLD(MGC)=10 (micro point values from sheet).
     const SIZER_SYMBOLS = {
-      NQ:   {label:'NQ',   pv:2,  stops:[5,10,15,20,25,30,35,40,45,50,55,60,65]},
+      NQ:   {label:'NQ',   pv:2,  stops:[10,15,20,25,30,35,40,45,50,55,60,65]},
       ES:   {label:'ES',   pv:5,  stops:[1,2,3,4,5,6,7,8,9,10]},
       GOLD: {label:'GOLD', pv:10, stops:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]},
     };
@@ -3840,7 +3887,7 @@
     // ============ BOTTOM: LEVELS + PLAN ============
     app.appendChild(h('div', {class:'section-h'}, 'Targets & Plan'));
     const bottom = h('div', {class:'grid grid-2'});
-    bottom.appendChild(renderLevelsTable(d.levels || {}));
+    bottom.appendChild(renderLevelsTable(d.levels || {}, (d.pre_open || {}).current_price));
     bottom.appendChild(renderGamePlan(d.game_plan || {}));
     app.appendChild(bottom);
 
@@ -4063,6 +4110,9 @@
           // Format like fmtPrice elsewhere
           setLiveField('price', snap.current_price.toFixed(2),
             snap.current_ts_et ? snap.current_ts_et.slice(11, 16) + ' ET' : null);
+          // Slide the liquidity-ladder NOW marker (and live distances) to match.
+          window.__livePrice = snap.current_price;
+          document.querySelectorAll('.lv-ladder').forEach(n => n._redraw && n._redraw());
         }
         if (snap?.gap_pts != null) {
           const sign = snap.gap_pts >= 0 ? '+' : '';
@@ -6834,7 +6884,78 @@
       return card;
     }
 
-    function renderLevelsTable(lv) {
+    // Vertical price-relative map of the liquidity levels: a rail with the
+    // current price marked, every level placed true-to-scale by price, and a
+    // de-collided label on the right so clustered levels stay readable. The
+    // NOW marker (and each level's live distance) re-derives from curPrice, so
+    // this can be redrawn cheaply as live price ticks in.
+    function buildLadder(host, levels, curPrice) {
+      host.textContent = '';
+      if (curPrice == null || !levels.length) return;
+
+      const H = Math.max(220, Math.min(420, 64 + levels.length * 34));
+      host.style.height = H + 'px';
+      const PAD = 14;                       // top/bottom px breathing room
+      const prices = levels.map(l => l.price).concat([curPrice]);
+      let lo = Math.min(...prices), hi = Math.max(...prices);
+      const span = (hi - lo) || 1;
+      lo -= span * 0.08; hi += span * 0.08;
+      const yOf = (p) => PAD + (hi - p) / (hi - lo) * (H - 2 * PAD);
+
+      // SVG geometry layer (rail, now line, leaders, ticks) — stretched, so
+      // no text lives here. Uses a 0..100 x-space mapped to full width.
+      const RAIL = 86, LBL = 100;           // px, must match CSS vars
+      const W = host.clientWidth || 600;
+      const xPct = (px) => px / W * 100;
+      const svg = h('svg', {viewBox: `0 0 100 ${H}`, preserveAspectRatio: 'none'});
+
+      // de-collide level labels (keep tick at true y, nudge label, link w/ leader)
+      const items = levels.map((l, i) => ({l, i, ty: yOf(l.price), ly: yOf(l.price)}))
+        .sort((a, b) => a.ty - b.ty);
+      const GAP = 24;
+      for (let i = 1; i < items.length; i++)
+        if (items[i].ly - items[i - 1].ly < GAP) items[i].ly = items[i - 1].ly + GAP;
+      // if the stack overran the bottom, pull the whole thing up from the end
+      if (items.length && items[items.length - 1].ly > H - PAD) {
+        items[items.length - 1].ly = H - PAD;
+        for (let i = items.length - 2; i >= 0; i--)
+          if (items[i + 1].ly - items[i].ly < GAP) items[i].ly = items[i + 1].ly - GAP;
+      }
+
+      svg.appendChild(h('line', {class: 'rail',
+        x1: xPct(RAIL), y1: PAD, x2: xPct(RAIL), y2: H - PAD}));
+
+      items.forEach(it => {
+        const side = it.l.price >= curPrice ? 'above' : 'below';
+        // leader: rail tick (true y) -> label y
+        svg.appendChild(h('path', {class: 'lead ' + side,
+          d: `M${xPct(RAIL)} ${it.ty} C ${xPct(RAIL) + 4} ${it.ty}, ${xPct(LBL) - 4} ${it.ly}, ${xPct(LBL)} ${it.ly}`}));
+        svg.appendChild(h('line', {class: 'tick ' + side,
+          x1: xPct(RAIL - 4), y1: it.ty, x2: xPct(RAIL + 4), y2: it.ty}));
+      });
+      // NOW line across the whole width
+      const ny = yOf(curPrice);
+      svg.appendChild(h('line', {class: 'nowline', x1: 0, y1: ny, x2: 100, y2: ny}));
+      host.appendChild(svg);
+
+      // HTML label layer (crisp text)
+      items.forEach(it => {
+        const l = it.l;
+        const dist = l.price - curPrice;
+        const side = dist >= 0 ? 'above' : 'below';
+        host.appendChild(h('div', {class: 'lv-row ' + side, style: `top:${it.ly}px;`},
+          h('span', {class: 'lv-arrow'}, side === 'above' ? '▲' : '▼'),
+          h('span', {class: 'lv-name'}, l.label),
+          h('span', {class: 'lv-px'}, fmtPrice(l.price)),
+          h('span', {class: 'lv-dist'}, fmtPts(dist))));
+      });
+      // NOW chip on the rail
+      host.appendChild(h('div', {class: 'lv-now', style: `top:${ny}px;`},
+        h('span', {class: 'now-tag'}, 'NOW'),
+        h('span', {class: 'now-px'}, fmtPrice(curPrice))));
+    }
+
+    function renderLevelsTable(lv, curPrice) {
       const above = lv.above || [], below = lv.below || [];
       const card = h('details', {class:'card'},
         h('summary', {class:'card-h'},
@@ -6867,6 +6988,26 @@
       above.forEach(l => tb.appendChild(fmtRow(l, 'above')));
       below.forEach(l => tb.appendChild(fmtRow(l, 'below')));
       tbl.appendChild(tb);
+
+      // Price-relative ladder above the table. Levels sit at true price
+      // positions around a NOW marker so distance is visible at a glance.
+      const allLevels = above.concat(below);
+      if (curPrice != null && allLevels.length) {
+        const ladder = h('div', {class: 'lv-ladder'});
+        body.appendChild(ladder);
+        const draw = () => buildLadder(ladder, allLevels,
+          (window.__livePrice != null ? window.__livePrice : curPrice));
+        ladder._redraw = draw;
+        draw();
+        // redraw once on layout settle (clientWidth needs the DOM laid out)
+        requestAnimationFrame(draw);
+        if (!window.__ladderResizeHooked) {
+          window.__ladderResizeHooked = true;
+          window.addEventListener('resize', () =>
+            document.querySelectorAll('.lv-ladder').forEach(n => n._redraw && n._redraw()));
+        }
+      }
+
       body.appendChild(tbl);
       body.appendChild(h('div', {class:'mute mono', style:'font-size:10px;margin-top:10px;line-height:1.6;'},
         '1–2 levels in trade direction = sweet spot (55% WR, PF 1.30) ',
@@ -6938,10 +7079,20 @@
     }
     function tickMacroStatus() {
       const { date, minOfDay } = getETNow();
-      const isToday = meta.date === date;
+      // Stale-data agreement: the play cards (timeStateForPlay) flip to DONE
+      // whenever the briefing date is older than today's ET date. If we bail
+      // here on !isToday, the sections keep their neutral (open-looking) state
+      // while every play reads DONE — the recurring "M3 DONE but the window's
+      // still open" contradiction. So when the briefing is from a PAST date,
+      // force every section to 'past' so the UI is internally consistent (and
+      // the stale banner / self-heal handles actually pulling fresh data). A
+      // future briefing date (shouldn't happen) leaves everything 'pending'.
+      const staleState = meta.date < date ? 'past'
+                       : meta.date > date ? 'pending'
+                       : null;  // null === today: compute per-window below
       document.querySelectorAll('.window-section[data-window]').forEach(sec => {
         sec.classList.remove('pending', 'live', 'past');
-        if (!isToday) return;
+        if (staleState) { sec.classList.add(staleState); return; }
         const range = parseWindowRange(sec.getAttribute('data-window'));
         if (!range) return;
         const state = minOfDay < range.start ? 'pending'

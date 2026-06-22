@@ -1,0 +1,100 @@
+Loading base frame (trades + lag-1 VP + session levels)...
+  trades: 4548
+  cols: 99
+
+
+=== E0  A+ replication under LAG-1 VP ===
+  pre-IS (2018):   n=  4  WR=0.0%  PF= 0.00  exp=-1.00R  sumR=-4.0  lift_2R=-17.857142857142854
+  IS  (2018-22):   n= 66  WR=19.7%  PF= 0.74  exp=-0.21R  sumR=-14.0  lift_2R=-3.6728433445259725
+  OOS (2023-26):   n= 90  WR=32.2%  PF= 1.43  exp=+0.29R  sumR=+26.0  lift_2R=-3.135173389950463
+  VERDICT: FAIL  OOS lift -3.14pp < 5.0pp
+
+=== E1  Single-magnet clean shot (VA-edge, 0.5-1.5R) ===
+  pre-IS (2018):   n=  3  WR=0.0%  PF= 0.00  exp=-1.00R  sumR=-3.0  lift_2R=-42.857142857142854
+  IS  (2018-22):   n= 46  WR=28.3%  PF= 1.18  exp=+0.13R  sumR=+6.0  lift_2R=-7.427784055988424
+  OOS (2023-26):   n= 30  WR=26.7%  PF= 1.09  exp=+0.07R  sumR=+2.0  lift_2R=-0.9129511677282376
+  VERDICT: FAIL  OOS lift -0.91pp < 5.0pp
+
+=== E2  Aged-naked VP POC magnet ===
+  pre-IS (2018):   n= 10  WR=20.0%  PF= 0.75  exp=-0.20R  sumR=-2.0  lift_2R=-22.857142857142854
+  IS  (2018-22):   n= 98  WR=23.5%  PF= 0.92  exp=-0.06R  sumR=-6.0  lift_2R=-5.342602157141929
+  OOS (2023-26):   n= 95  WR=43.2%  PF= 2.28  exp=+0.73R  sumR=+69.0  lift_2R=5.227399709464741
+  VERDICT: PASS  
+
+=== E3  A+ × stable-POC (3+ consecutive days) ===
+  pre-IS (2018):   n=  2  WR=0.0%  PF= 0.00  exp=-1.00R  sumR=-2.0  lift_2R=-42.857142857142854
+  IS  (2018-22):   n=  6  WR=0.0%  PF= 0.00  exp=-1.00R  sumR=-6.0  lift_2R=-6.703146374829005
+  OOS (2023-26):   n=  8  WR=12.5%  PF= 0.43  exp=-0.50R  sumR=-4.0  lift_2R=18.253715498938426
+  VERDICT: SMALL_N  OOS n=8 < 20
+
+=== E4  HTF weekly VP magnet stack (≥2 + VA-edge, 0.5-5R) ===
+  pre-IS (2018):   n=  1  WR=100.0%  PF=  INF  exp=+3.00R  sumR=+3.0  lift_2R=57.14285714285714
+  IS  (2018-22):   n=  4  WR=25.0%  PF= 1.00  exp=+0.00R  sumR=+0.0  lift_2R=9.963520291837662
+  OOS (2023-26):   n=  8  WR=37.5%  PF= 1.80  exp=+0.50R  sumR=+4.0  lift_2R=18.253715498938426
+  VERDICT: SMALL_N  OOS n=8 < 20
+
+=== E5  VP-sweep then FVGC (pivot mechanism) ===
+  pre-IS (2018):   n= 47  WR=27.7%  PF= 1.15  exp=+0.11R  sumR=+5.0  lift_2R=-10.942249240121576
+  IS  (2018-22):   n=651  WR=30.0%  PF= 1.28  exp=+0.20R  sumR=+129.0  lift_2R=-2.7092907680701717
+  OOS (2023-26):   n=725  WR=36.4%  PF= 1.72  exp=+0.46R  sumR=+331.0  lift_2R=0.02957756790394339
+  VERDICT: FAIL  OOS lift +0.03pp < 5.0pp
+
+=== E6  Level-launched FVGC (FVG edge ±3pts of VP) ===
+  pre-IS (2018):   n= 21  WR=28.6%  PF= 1.20  exp=+0.14R  sumR=+3.0  lift_2R=-9.523809523809524
+  IS  (2018-22):   n=206  WR=29.6%  PF= 1.26  exp=+0.18R  sumR=+38.0  lift_2R=-3.143275824667191
+  OOS (2023-26):   n=191  WR=31.9%  PF= 1.41  exp=+0.28R  sumR=+53.0  lift_2R=-6.026389213103456
+  VERDICT: FAIL  OOS lift -6.03pp < 5.0pp
+
+=== E7  Cross-framework magnet stack (VP+Liq ≥2 + key edge) ===
+  pre-IS (2018):   n= 60  WR=33.3%  PF= 1.50  exp=+0.33R  sumR=+20.0  lift_2R=-2.8571428571428523
+  IS  (2018-22):   n=702  WR=29.8%  PF= 1.27  exp=+0.19R  sumR=+134.0  lift_2R=-0.29288996457259575
+  OOS (2023-26):   n=694  WR=34.4%  PF= 1.58  exp=+0.38R  sumR=+262.0  lift_2R=-3.0359098612921187
+  VERDICT: FAIL  OOS lift -3.04pp < 5.0pp
+
+=== E8  Confluent-zone magnet (VP±3pts of PDH/PDL/ONH/ONL) ===
+  pre-IS (2018):   n= 11  WR=36.4%  PF= 1.71  exp=+0.45R  sumR=+5.0  lift_2R=2.5974025974025983
+  IS  (2018-22):   n= 96  WR=28.1%  PF= 1.17  exp=+0.12R  sumR=+12.0  lift_2R=-7.744813041495668
+  OOS (2023-26):   n=105  WR=29.5%  PF= 1.26  exp=+0.18R  sumR=+19.0  lift_2R=-5.1986654534425245
+  VERDICT: FAIL  OOS lift -5.20pp < 5.0pp
+
+=== E9  NWOG × VP confluence (Monday only) ===
+  pre-IS (2018):   n=0  lift_2R=None
+  IS  (2018-22):   n=  2  WR=50.0%  PF= 3.00  exp=+1.00R  sumR=+2.0  lift_2R=9.963520291837662
+  OOS (2023-26):   n=  8  WR=62.5%  PF= 5.00  exp=+1.50R  sumR=+12.0  lift_2R=18.253715498938426
+  VERDICT: SMALL_N  OOS n=8 < 20
+
+=== E10 Liquidity-only mirror (≥2 liq ahead + PDH/PDL or ONH/ONL key) ===
+  pre-IS (2018):   n= 52  WR=38.5%  PF= 1.88  exp=+0.54R  sumR=+28.0  lift_2R=-0.5494505494505475
+  IS  (2018-22):   n=567  WR=30.5%  PF= 1.32  exp=+0.22R  sumR=+125.0  lift_2R=0.3515273465113822
+  OOS (2023-26):   n=521  WR=37.0%  PF= 1.77  exp=+0.48R  sumR=+251.0  lift_2R=-1.6359198177602285
+  VERDICT: FAIL  OOS lift -1.64pp < 5.0pp
+
+=== E11 BSL/SSL sweep + FVGC reversal (cluster proxy) ===
+  pre-IS (2018):   n=  8  WR=50.0%  PF= 3.00  exp=+1.00R  sumR=+8.0  lift_2R=19.642857142857146
+  IS  (2018-22):   n= 75  WR=30.7%  PF= 1.33  exp=+0.23R  sumR=+17.0  lift_2R=-4.0364797081623385
+  OOS (2023-26):   n= 69  WR=39.1%  PF= 1.93  exp=+0.57R  sumR=+39.0  lift_2R=2.1305270931413265
+  VERDICT: FAIL  OOS lift +2.13pp < 5.0pp
+
+=== E12 Dynamic TP on A+ cohort (n=156, lag-1 VP) ===
+  Fixed +3R:   WR=26.9%  exp=+0.077R
+  Split 50/50 @ first magnet + runner: exp=+0.083R
+  Delta: +0.006R per trade
+
+
+===========================================================================
+ID   VERDICT   OOS n   OOS PF    OOS WR    exp R     
+---------------------------------------------------------------------------
+E0   FAIL      90      1.43      32.2%     +0.29     
+E1   FAIL      30      1.09      26.7%     +0.07     
+E2   PASS      95      2.28      43.2%     +0.73     
+E3   SMALL_N   8       0.43      12.5%     -0.50     
+E4   SMALL_N   8       1.80      37.5%     +0.50     
+E5   FAIL      725     1.72      36.4%     +0.46     
+E6   FAIL      191     1.41      31.9%     +0.28     
+E7   FAIL      694     1.58      34.4%     +0.38     
+E8   FAIL      105     1.26      29.5%     +0.18     
+E9   SMALL_N   8       5.00      62.5%     +1.50     
+E10  FAIL      521     1.77      37.0%     +0.48     
+E11  FAIL      69      1.93      39.1%     +0.57     
+E12  BETTER    156     -         -         +0.08     
+===========================================================================

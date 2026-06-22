@@ -2,7 +2,7 @@
 window.WEEK_AHEAD = {
   "schema_version": 1,
   "meta": {
-    "generated_at_pt": "2026-06-21 03:19 PM PT",
+    "generated_at_pt": "2026-06-21 04:57 PM PT",
     "week_start": "2026-06-22",
     "week_end": "2026-06-26",
     "gen_date": "2026-06-21"
@@ -17,7 +17,38 @@ window.WEEK_AHEAD = {
     "recent_mean_range_pts": 538,
     "recent_max_range_pts": 1620,
     "vol_spike_recent": true,
+    "vol_regime": "normal",
     "calendar_ok": true
+  },
+  "market": {
+    "regime": "normal",
+    "regime_note": "Normal range regime \u2014 standard matrix plays",
+    "vol_pct": 0.65,
+    "median_range_pts": 418,
+    "ref_close": 30693.5,
+    "ref_date": "2026-06-18",
+    "levels": [
+      {
+        "name": "Recent high (60d)",
+        "price": 30915.0,
+        "dist": 221.5,
+        "dist_abs": 222
+      },
+      {
+        "name": "Prior-week low",
+        "price": 29923.0,
+        "dist": -770.5,
+        "dist_abs": 770
+      },
+      {
+        "name": "20-day low",
+        "price": 28227.8,
+        "dist": -2465.8,
+        "dist_abs": 2466
+      }
+    ],
+    "ath_near": false,
+    "ath_dist": 221.5
   },
   "days": [
     {
@@ -26,7 +57,9 @@ window.WEEK_AHEAD = {
       "events": [],
       "n_red_folder": 0,
       "wake_up_pt": null,
+      "in_window_event": false,
       "quad_witching": false,
+      "fomc_decision": false,
       "hist_avg_rth_range": 328,
       "hist_avg_or45_range": 186,
       "range_estimate": {
@@ -36,7 +69,13 @@ window.WEEK_AHEAD = {
         "mult": 1.0,
         "event_tag": null,
         "method": "median20 (418) \u00d7 1.00"
-      }
+      },
+      "play_notes": [
+        {
+          "tag": "NOTE",
+          "text": "Monday \u2014 weekend gap + range-expansion tendency; respect the opening drive direction."
+        }
+      ]
     },
     {
       "date": "2026-06-23",
@@ -44,7 +83,9 @@ window.WEEK_AHEAD = {
       "events": [],
       "n_red_folder": 0,
       "wake_up_pt": null,
+      "in_window_event": false,
       "quad_witching": false,
+      "fomc_decision": false,
       "hist_avg_rth_range": 338,
       "hist_avg_or45_range": 201,
       "range_estimate": {
@@ -54,7 +95,13 @@ window.WEEK_AHEAD = {
         "mult": 1.0,
         "event_tag": null,
         "method": "median20 (418) \u00d7 1.00"
-      }
+      },
+      "play_notes": [
+        {
+          "tag": "PLAY",
+          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
+        }
+      ]
     },
     {
       "date": "2026-06-24",
@@ -62,7 +109,9 @@ window.WEEK_AHEAD = {
       "events": [],
       "n_red_folder": 0,
       "wake_up_pt": null,
+      "in_window_event": false,
       "quad_witching": false,
+      "fomc_decision": false,
       "hist_avg_rth_range": 338,
       "hist_avg_or45_range": 171,
       "range_estimate": {
@@ -72,7 +121,13 @@ window.WEEK_AHEAD = {
         "mult": 1.0,
         "event_tag": null,
         "method": "median20 (418) \u00d7 1.00"
-      }
+      },
+      "play_notes": [
+        {
+          "tag": "PLAY",
+          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
+        }
+      ]
     },
     {
       "date": "2026-06-25",
@@ -87,7 +142,8 @@ window.WEEK_AHEAD = {
           "time_pt": "5:30 am",
           "time_et_fmt": "8:30 am",
           "pt_minutes": 330,
-          "pre_rth": true
+          "pre_rth": true,
+          "in_window": false
         },
         {
           "date": "2026-06-25",
@@ -98,12 +154,15 @@ window.WEEK_AHEAD = {
           "time_pt": "5:30 am",
           "time_et_fmt": "8:30 am",
           "pt_minutes": 330,
-          "pre_rth": true
+          "pre_rth": true,
+          "in_window": false
         }
       ],
       "n_red_folder": 2,
       "wake_up_pt": "5:30 am",
+      "in_window_event": false,
       "quad_witching": false,
+      "fomc_decision": false,
       "hist_avg_rth_range": 366,
       "hist_avg_or45_range": 212,
       "range_estimate": {
@@ -113,7 +172,13 @@ window.WEEK_AHEAD = {
         "mult": 1.26,
         "event_tag": "red_folder",
         "method": "median20 (418) \u00d7 1.26 [red_folder]"
-      }
+      },
+      "play_notes": [
+        {
+          "tag": "ARMED",
+          "text": "Pre-RTH market-mover \u2014 dump-capture watch (WR scales with dump size) + opening-FVG short tier-2 more likely. Wait for the 9:30 reaction, don't pre-position."
+        }
+      ]
     },
     {
       "date": "2026-06-26",
@@ -121,7 +186,9 @@ window.WEEK_AHEAD = {
       "events": [],
       "n_red_folder": 0,
       "wake_up_pt": null,
+      "in_window_event": false,
       "quad_witching": false,
+      "fomc_decision": false,
       "hist_avg_rth_range": 349,
       "hist_avg_or45_range": 203,
       "range_estimate": {
@@ -131,7 +198,13 @@ window.WEEK_AHEAD = {
         "mult": 1.0,
         "event_tag": null,
         "method": "median20 (418) \u00d7 1.00"
-      }
+      },
+      "play_notes": [
+        {
+          "tag": "PLAY",
+          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
+        }
+      ]
     }
   ],
   "baselines": {

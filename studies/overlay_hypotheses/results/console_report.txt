@@ -1,0 +1,113 @@
+==============================================================================
+PRE-REGISTERED OVERLAY HYPOTHESES — FVGC v2.0.5 (frozen)
+==============================================================================
+Universe: baseline_trades.csv.preserve  (8yr real baseline)
+  IS   2018-2023: n= 2773  WR=47.9%  PF=0.92  E[R]=-0.043
+  OOS  2024-2025: n= 1441  WR=52.9%  PF=1.12  E[R]=+0.058
+  TAIL 2026-2026: n=  328  WR=48.5%  PF=0.94  E[R]=-0.030
+
+Bar: WR>=66.7% (==PF>=2.0 at fixed 1R) AND survives OOS AND clears FDR q=0.10
+
+------------------------------------------------------------------------------
+H1  Opening-window FVG SHORTS (fvg_created 09:29:30-09:31:00, short)
+------------------------------------------------------------------------------
+  IS  : n=  49  WR=53.1%  PF=1.13  E[R]=+0.061  p=0.5578(1s=0.2789)
+  OOS : n=  50  WR=72.0%  PF=2.57  E[R]=+0.440  p=0.0078(1s=0.0039)
+  TAIL: n=  10  WR=70.0%  PF=2.33  E[R]=+0.400  p=n<30
+  >1R target reconstruction (opening_fvg_short):
+    IS: 1.0R hit=53% E[R]=+0.06 PF=1.13 | 1.5R hit=51% E[R]=+0.28 PF=1.56 | 2.0R hit=45% E[R]=+0.35 PF=1.63 | 2.5R hit=43% E[R]=+0.50 PF=1.88 | 3.0R hit=41% E[R]=+0.63 PF=2.07  (n=49)
+    OOS: 1.0R hit=72% E[R]=+0.44 PF=2.57 | 1.5R hit=70% E[R]=+0.75 PF=3.50 | 2.0R hit=66% E[R]=+0.98 PF=3.88 | 2.5R hit=60% E[R]=+1.12 PF=3.95 | 3.0R hit=58% E[R]=+1.36 PF=4.58  (n=50)
+  (contrast) opening_fvg_long:
+    IS: n=  95  WR=47.4%  PF=0.90  E[R]=-0.053
+    OOS: n=  41  WR=46.3%  PF=0.86  E[R]=-0.073
+
+------------------------------------------------------------------------------
+H2  W1-alignment (entries >=09:45 only; W1=first 15m candle dir)
+------------------------------------------------------------------------------
+  (W1-known entries: 3195 of 4542 tradeable)
+  IS   aligned: n=1103  WR=49.9%  PF=0.99  E[R]=-0.003  p=0.0936(1s=0.0468)
+  OOS  aligned: n= 632  WR=55.5%  PF=1.25  E[R]=+0.111  p=0.0834(1s=0.0417)
+  TAIL aligned: n= 142  WR=43.7%  PF=0.78  E[R]=-0.127  p=0.1577(1s=0.0789)
+  IS   counter: n= 803  WR=48.6%  PF=0.94  E[R]=-0.029  p=0.6651(1s=0.3326)
+  OOS  counter: n= 412  WR=49.3%  PF=0.97  E[R]=-0.015  p=0.0960(1s=0.0480)
+  TAIL counter: n=  97  WR=47.4%  PF=0.90  E[R]=-0.052  p=0.9013(1s=0.4506)
+
+------------------------------------------------------------------------------
+H4  Post-sweep continuation (ON hi/lo swept BEFORE entry, sweep dir)
+------------------------------------------------------------------------------
+  IS   cont: n= 986  WR=47.4%  PF=0.90  E[R]=-0.053  p=0.7304(1s=0.3652)
+  OOS  cont: n= 562  WR=55.7%  PF=1.26  E[R]=+0.114  p=0.0988(1s=0.0494)
+  TAIL cont: n= 107  WR=46.7%  PF=0.88  E[R]=-0.065  p=0.7546(1s=0.3773)
+  (contrast) post_sweep_reversal:
+    IS: n= 721  WR=50.2%  PF=1.01  E[R]=+0.004
+    OOS: n= 329  WR=51.1%  PF=1.04  E[R]=+0.021
+
+------------------------------------------------------------------------------
+H3  Exclusion overlay (derive low-WR avoid combos on IS, lock, test OOS)
+------------------------------------------------------------------------------
+  Worst causal pre-entry combos by IS WR (n>=30), with OOS follow-through:
+    combo                             IS n  IS WR  OOS n  OOS WR
+    bull930+gap_up+on_dn                34  38.2%     23   56.5%
+    long+gap_up+on_dn                   36  38.9%     19   63.2%
+    short+fomc+elevated_vixy            32  40.6%     56   39.3%
+    short+on_dn+elevated_vixy          209  40.7%    172   52.9%
+    gap_up+on_dn                        76  40.8%     41   53.7%
+    short+gap_up+on_dn                  40  42.5%     22   45.5%
+    bear930+pd_dn+elevated_vixy         89  42.7%    117   57.3%
+    short+on_dn+pd_up                  224  42.9%     84   46.4%
+    bear930+gap_up+on_dn                42  42.9%     18   50.0%
+    short+bull930+on_dn                352  43.2%     99   40.4%
+
+  No causal pre-entry combo reaches IS WR<=35% at n>=30.
+  => the prior combo search's low-WR 'avoid' cells were driven by
+     or_45min_range (a 10:15 lookahead feature). No deployable causal
+     do-not-trade overlay is recoverable. H3 has no FDR test to add.
+
+------------------------------------------------------------------------------
+H5  Target study — MFE/MAE, hit-rates, reconstructed E[R] by target/cohort
+------------------------------------------------------------------------------
+  [ALL]
+    IS (n=2773, MFE_r med=0.92, eod-resid<=21): 1.0R:E[R]=-0.04,PF=0.92 | 1.5R:E[R]=+0.11,PF=1.19 | 2.0R:E[R]=+0.21,PF=1.35 | 2.5R:E[R]=+0.29,PF=1.45 | 3.0R:E[R]=+0.34,PF=1.51
+    OOS (n=1441, MFE_r med=1.32, eod-resid<=12): 1.0R:E[R]=+0.06,PF=1.12 | 1.5R:E[R]=+0.22,PF=1.42 | 2.0R:E[R]=+0.37,PF=1.69 | 2.5R:E[R]=+0.48,PF=1.83 | 3.0R:E[R]=+0.57,PF=1.95
+  [shorts]
+    IS (n=1412, MFE_r med=0.93, eod-resid<=7): 1.0R:E[R]=-0.05,PF=0.91 | 1.5R:E[R]=+0.11,PF=1.19 | 2.0R:E[R]=+0.21,PF=1.36 | 2.5R:E[R]=+0.29,PF=1.45 | 3.0R:E[R]=+0.34,PF=1.51
+    OOS (n=703, MFE_r med=1.36, eod-resid<=5): 1.0R:E[R]=+0.06,PF=1.13 | 1.5R:E[R]=+0.22,PF=1.43 | 2.0R:E[R]=+0.39,PF=1.73 | 2.5R:E[R]=+0.48,PF=1.83 | 3.0R:E[R]=+0.58,PF=1.96
+  [longs]
+    IS (n=1361, MFE_r med=0.92, eod-resid<=14): 1.0R:E[R]=-0.04,PF=0.93 | 1.5R:E[R]=+0.10,PF=1.19 | 2.0R:E[R]=+0.20,PF=1.34 | 2.5R:E[R]=+0.29,PF=1.45 | 3.0R:E[R]=+0.34,PF=1.52
+    OOS (n=738, MFE_r med=1.29, eod-resid<=7): 1.0R:E[R]=+0.05,PF=1.11 | 1.5R:E[R]=+0.21,PF=1.41 | 2.0R:E[R]=+0.36,PF=1.65 | 2.5R:E[R]=+0.48,PF=1.84 | 3.0R:E[R]=+0.57,PF=1.94
+  [opening_short]
+    IS (n=49, MFE_r med=1.57, eod-resid<=0): 1.0R:E[R]=+0.06,PF=1.13 | 1.5R:E[R]=+0.28,PF=1.56 | 2.0R:E[R]=+0.35,PF=1.63 | 2.5R:E[R]=+0.50,PF=1.88 | 3.0R:E[R]=+0.63,PF=2.07
+    OOS (n=50, MFE_r med=4.25, eod-resid<=2): 1.0R:E[R]=+0.44,PF=2.57 | 1.5R:E[R]=+0.75,PF=3.50 | 2.0R:E[R]=+0.98,PF=3.88 | 2.5R:E[R]=+1.12,PF=3.95 | 3.0R:E[R]=+1.36,PF=4.58
+  [macro1(9:30-9:45)]
+    IS (n=862, MFE_r med=0.78, eod-resid<=6): 1.0R:E[R]=-0.11,PF=0.81 | 1.5R:E[R]=+0.02,PF=1.03 | 2.0R:E[R]=+0.10,PF=1.16 | 2.5R:E[R]=+0.16,PF=1.23 | 3.0R:E[R]=+0.18,PF=1.26
+    OOS (n=396, MFE_r med=1.27, eod-resid<=3): 1.0R:E[R]=+0.05,PF=1.11 | 1.5R:E[R]=+0.22,PF=1.44 | 2.0R:E[R]=+0.41,PF=1.77 | 2.5R:E[R]=+0.51,PF=1.89 | 3.0R:E[R]=+0.64,PF=2.10
+  (eod-resid = trades reaching neither +kR nor -1R; scored 0R/scratch)
+
+------------------------------------------------------------------------------
+POSITIVE CONTROL (harness validation — not in FDR family)
+------------------------------------------------------------------------------
+  Null calibration (two-sided): 21/400 random masks p<0.05 (5.2%, expect ~5%)
+  Power: synthetic 70%-win oracle (n=100): WR=70.0% p=0.0008 (expect p~0) -> PASS
+
+==============================================================================
+BH-FDR FAMILY (q=0.10, two-sided p, 15 valid tests)
+==============================================================================
+  test                         era      n     WR     PF    E[R]      p2      p1    p_bh sig
+  H1 opening_fvg_short         OOS     50  72.0%   2.57  +0.440  0.0078  0.0039  0.1170 
+  H2 W1-aligned                OOS    632  55.5%   1.25  +0.111  0.0834  0.0417  0.2964 
+  H2 W1-aligned                IS    1103  49.9%   0.99  -0.003  0.0936  0.0468  0.2964 
+  H2 W1-counter                OOS    412  49.3%   0.97  -0.015  0.0960  0.0480  0.2964 
+  H4 post_sweep_cont           OOS    562  55.7%   1.26  +0.114  0.0988  0.0494  0.2964 
+  H4 post_sweep_rev            IS     721  50.2%   1.01  +0.004  0.1545  0.0772  0.3379 
+  H2 W1-aligned                TAIL   142  43.7%   0.78  -0.127  0.1577  0.0789  0.3379 
+  H1 opening_fvg_long          OOS     41  46.3%   0.86  -0.073  0.4861  0.2430  0.8300 
+  H4 post_sweep_rev            OOS    329  51.1%   1.04  +0.021  0.4980  0.2490  0.8300 
+  H1 opening_fvg_short         IS      49  53.1%   1.13  +0.061  0.5578  0.2789  0.8367 
+  H2 W1-counter                IS     803  48.6%   0.94  -0.029  0.6651  0.3326  0.8707 
+  H4 post_sweep_cont           IS     986  47.4%   0.90  -0.053  0.7304  0.3652  0.8707 
+  H4 post_sweep_cont           TAIL   107  46.7%   0.88  -0.065  0.7546  0.3773  0.8707 
+  H2 W1-counter                TAIL    97  47.4%   0.90  -0.052  0.9013  0.4506  0.9657 
+  H1 opening_fvg_long          IS      95  47.4%   0.90  -0.053  1.0000  0.5048  1.0000 
+
+  Survivors of BH-FDR q=0.10: 0
+  (n<30 cells, excluded from family: H1 opening_fvg_short)

@@ -1,5 +1,17 @@
 # Feature Discovery — Predicting hit_2R on the 30s Baseline
 
+## Causal Audit Status
+
+**INVALIDATED — 2026-05-21.** This study has two distinct lookahead bugs in `run.py`:
+1. **VP join (`run.py:50,78`)** — `daily_volume_profile.csv` joined on `date` exposes today's 9:30-16:00 POC/VAH/VAL to 9:30-10:15 trades. The `n_vp_targets` / `vp_only_target` findings collapse to noise under lag-1 VP (see [`studies/lookahead_audit/`](../lookahead_audit/analysis.md)).
+2. **`range_regime` (`run.py:184`)** — `pl.col('rth_range') > rolling_avg * 1.25` uses today's full-session range. `range_regime` cannot be computed at trade time; any cell citing range_regime (here and in [higher_R_targets](../higher_R_targets/analysis.md)) is uncomputable causally.
+
+Additional suspect (time-gated, not masked): `or_*_state` and `match_930_dir` derived on lines 137,155-162 — gated features used on trades before the gate.
+
+**Headlines preserved below for historical context.** Do not act on `n_vp_targets`, `vp_only_target`, or `range_regime` findings.
+
+---
+
 **Goal.** Find features (single or stacked) that move the per-trade probability of
 reaching ≥2R from the base rate (~42%) toward 55%+ on samples of n≥50, on the
 full 2018-01 → 2026-05 baseline.

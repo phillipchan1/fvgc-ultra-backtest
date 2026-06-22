@@ -1,0 +1,310 @@
+============================================================
+Prior-day-type study — load + join
+============================================================
+Loading data...
+  1393 trading days, 938 total trades, 766 tradeable (win/loss)
+  766 trades after join
+
+Joined trades: 766  baseline WR=49.61%  PF=1.00
+
+prior_day_type distribution among trades:
+prior_day_type
+other            295
+range            173
+reversal_up       81
+trend_down        79
+trend_up          71
+reversal_down     67
+
+Writing per-trade table with prior_day_type...
+Writing aggregate WR/PF by prior_day_type...
+Writing headline cells (prior_day_type x direction x macro_window)...
+Writing failure-mode probes (Monday / gap / news)...
+Writing playbook stack lift (W1 Short / M2+M3 Long / IFVG Long)...
+
+============================================================
+Running combo permutation grid
+============================================================
+
+Building factor masks...
+  34 factors defined (7 prior_day_* masks)
+Generating combos...
+  5678 valid combos (max 3-way)
+  Baseline: 766 trades, WR=49.6%, PF=1.00
+  2015 combos with n >= 30
+  Running 10,000 permutations per combo...
+    [1/2015] bearish_930 + elevated_vixy: n=205, WR=47.3%, PF=0.90, p_wr=0.2503
+    [2/2015] bearish_930 + gap_down: n=147, WR=51.0%, PF=1.22, p_wr=0.3823
+    [3/2015] bearish_930 + gap_up: n=252, WR=49.6%, PF=0.98, p_wr=0.5302
+    [4/2015] bearish_930 + has_red_folder: n=58, WR=51.7%, PF=1.28, p_wr=0.4162
+    [5/2015] bearish_930 + is_fomc_week: n=70, WR=44.3%, PF=0.75, p_wr=0.2039
+    [6/2015] bearish_930 + large_930_candle: n=89, WR=53.9%, PF=1.35, p_wr=0.2175
+    [7/2015] bearish_930 + long_only: n=162, WR=45.1%, PF=0.79, p_wr=0.1116
+    [8/2015] bearish_930 + low_vixy: n=101, WR=52.5%, PF=1.26, p_wr=0.2973
+    [9/2015] bearish_930 + macro_w1: n=95, WR=55.8%, PF=1.40, p_wr=0.1163
+    [10/2015] bearish_930 + macro_w2: n=160, WR=43.8%, PF=0.82, p_wr=0.0566
+    [27/2015] bearish_930 + tight_45min_or: n=78, WR=38.5%, PF=0.70, p_wr=0.0203 *
+    [30/2015] bearish_930 + wide_45min_or: n=85, WR=68.2%, PF=2.44, p_wr=0.0000 *
+    [57/2015] bullish_930 + tight_45min_or: n=70, WR=38.6%, PF=0.55, p_wr=0.0346 *
+    [81/2015] elevated_vixy + prior_trend_down: n=41, WR=63.4%, PF=1.98, p_wr=0.0496 *
+    [86/2015] elevated_vixy + tight_5min_or: n=47, WR=63.8%, PF=2.08, p_wr=0.0274 *
+    [88/2015] elevated_vixy + wide_45min_or: n=105, WR=61.0%, PF=1.86, p_wr=0.0073 *
+    [89/2015] elevated_vixy + wide_5min_or: n=115, WR=41.7%, PF=0.73, p_wr=0.0432 *
+    [110/2015] gap_down + tight_45min_or: n=53, WR=37.7%, PF=0.60, p_wr=0.0465 *
+    [113/2015] gap_down + wide_45min_or: n=66, WR=68.2%, PF=2.60, p_wr=0.0005 *
+    [119/2015] gap_up + long_only: n=243, WR=43.6%, PF=0.73, p_wr=0.0140 *
+    [136/2015] gap_up + short_only: n=223, WR=55.2%, PF=1.22, p_wr=0.0304 *
+    [138/2015] gap_up + tight_45min_or: n=95, WR=38.9%, PF=0.64, p_wr=0.0167 *
+    [141/2015] gap_up + wide_45min_or: n=82, WR=61.0%, PF=1.65, p_wr=0.0176 *
+    [142/2015] gap_up + wide_5min_or: n=89, WR=39.3%, PF=0.63, p_wr=0.0234 *
+    [167/2015] large_930_candle + long_only: n=69, WR=36.2%, PF=0.63, p_wr=0.0147 *
+    [179/2015] large_930_candle + short_only: n=79, WR=59.5%, PF=1.58, p_wr=0.0418 *
+    [187/2015] long_only + no_pre_rth_news: n=326, WR=45.4%, PF=0.80, p_wr=0.0270 *
+    [192/2015] long_only + overnight_up: n=189, WR=40.7%, PF=0.63, p_wr=0.0024 *
+    [199/2015] long_only + tight_45min_or: n=58, WR=36.2%, PF=0.56, p_wr=0.0221 *
+    [215/2015] low_vixy + prior_range: n=34, WR=67.6%, PF=2.17, p_wr=0.0263 *
+    [218/2015] low_vixy + tight_45min_or: n=37, WR=29.7%, PF=0.46, p_wr=0.0082 *
+    [234/2015] macro_w1 + wide_45min_or: n=32, WR=71.9%, PF=2.35, p_wr=0.0095 *
+    [248/2015] macro_w2 + tight_45min_or: n=49, WR=28.6%, PF=0.43, p_wr=0.0019 *
+    [250/2015] macro_w2 + tight_overnight: n=59, WR=37.3%, PF=0.58, p_wr=0.0317 *
+    [251/2015] macro_w2 + wide_45min_or: n=64, WR=62.5%, PF=1.96, p_wr=0.0215 *
+    [267/2015] macro_w3 + tight_overnight: n=39, WR=64.1%, PF=2.14, p_wr=0.0430 *
+    [268/2015] macro_w3 + wide_45min_or: n=48, WR=62.5%, PF=2.08, p_wr=0.0471 *
+    [281/2015] no_pre_rth_news + prior_trend_down: n=70, WR=60.0%, PF=1.51, p_wr=0.0430 *
+    [285/2015] no_pre_rth_news + tight_45min_or: n=140, WR=37.9%, PF=0.59, p_wr=0.0016 *
+    [288/2015] no_pre_rth_news + wide_45min_or: n=126, WR=65.1%, PF=2.06, p_wr=0.0001 *
+    [304/2015] no_red_folder + tight_45min_or: n=123, WR=39.0%, PF=0.64, p_wr=0.0058 *
+    [307/2015] no_red_folder + wide_45min_or: n=117, WR=65.8%, PF=2.10, p_wr=0.0000 *
+    [308/2015] no_red_folder + wide_5min_or: n=134, WR=42.5%, PF=0.72, p_wr=0.0441 *
+    [328/2015] not_fomc_week + prior_trend_down: n=72, WR=59.7%, PF=1.40, p_wr=0.0441 *
+    [330/2015] not_fomc_week + short_only: n=315, WR=54.9%, PF=1.33, p_wr=0.0076 *
+    [332/2015] not_fomc_week + tight_45min_or: n=121, WR=38.8%, PF=0.64, p_wr=0.0054 *
+    [335/2015] not_fomc_week + wide_45min_or: n=123, WR=63.4%, PF=2.00, p_wr=0.0006 *
+    [346/2015] overnight_down + wide_45min_or: n=63, WR=68.3%, PF=2.50, p_wr=0.0015 *
+    [350/2015] overnight_up + prior_day_up: n=118, WR=41.5%, PF=0.73, p_wr=0.0331 *
+    [355/2015] overnight_up + short_only: n=193, WR=55.4%, PF=1.28, p_wr=0.0359 *
+    [357/2015] overnight_up + tight_45min_or: n=76, WR=39.5%, PF=0.67, p_wr=0.0432 *
+    [360/2015] overnight_up + wide_45min_or: n=61, WR=63.9%, PF=1.96, p_wr=0.0127 *
+    [361/2015] overnight_up + wide_5min_or: n=78, WR=37.2%, PF=0.54, p_wr=0.0131 *
+    [365/2015] prior_day_down + short_only: n=80, WR=62.5%, PF=2.01, p_wr=0.0100 *
+    [366/2015] prior_day_down + wide_45min_or: n=40, WR=77.5%, PF=3.68, p_wr=0.0002 *
+    [367/2015] prior_day_down + wide_5min_or: n=41, WR=65.9%, PF=1.79, p_wr=0.0229 *
+    [377/2015] prior_day_up + wide_5min_or: n=39, WR=30.8%, PF=0.49, p_wr=0.0132 *
+    [379/2015] prior_range + tight_45min_or: n=34, WR=32.4%, PF=0.49, p_wr=0.0283 *
+    [384/2015] prior_range + wide_overnight: n=32, WR=68.8%, PF=2.28, p_wr=0.0182 *
+    [385/2015] prior_reversal_down + short_only: n=39, WR=66.7%, PF=2.71, p_wr=0.0227 *
+    [391/2015] short_only + tight_45min_or: n=90, WR=40.0%, PF=0.67, p_wr=0.0316 *
+    [394/2015] short_only + wide_45min_or: n=91, WR=69.2%, PF=2.63, p_wr=0.0000 *
+    [397/2015] small_930_candle + tight_45min_or: n=60, WR=31.7%, PF=0.50, p_wr=0.0022 *
+    [404/2015] wide_45min_or + wide_overnight: n=67, WR=64.2%, PF=2.12, p_wr=0.0094 *
+    [412/2015] bearish_930 + elevated_vixy + macro_w2: n=76, WR=35.5%, PF=0.57, p_wr=0.0072 *
+    [427/2015] bearish_930 + elevated_vixy + wide_45min_or: n=59, WR=62.7%, PF=1.97, p_wr=0.0250 *
+    [428/2015] bearish_930 + elevated_vixy + wide_5min_or: n=63, WR=34.9%, PF=0.56, p_wr=0.0102 *
+    [448/2015] bearish_930 + gap_down + wide_45min_or: n=34, WR=70.6%, PF=3.27, p_wr=0.0084 *
+    [461/2015] bearish_930 + gap_up + normal_vixy: n=53, WR=64.2%, PF=1.89, p_wr=0.0200 *
+    [474/2015] bearish_930 + gap_up + wide_45min_or: n=51, WR=66.7%, PF=1.99, p_wr=0.0085 *
+    [485/2015] bearish_930 + large_930_candle + macro_w1: n=31, WR=67.7%, PF=2.60, p_wr=0.0285 *
+    [492/2015] bearish_930 + large_930_candle + short_only: n=61, WR=65.6%, PF=1.92, p_wr=0.0064 *
+    [493/2015] bearish_930 + large_930_candle + wide_45min_or: n=37, WR=64.9%, PF=2.12, p_wr=0.0401 *
+    [500/2015] bearish_930 + long_only + no_red_folder: n=134, WR=44.0%, PF=0.76, p_wr=0.0909
+    [508/2015] bearish_930 + long_only + wide_5min_or: n=35, WR=31.4%, PF=0.47, p_wr=0.0191 *
+    [511/2015] bearish_930 + low_vixy + macro_w3: n=32, WR=65.6%, PF=2.42, p_wr=0.0432 *
+    [519/2015] bearish_930 + low_vixy + tight_45min_or: n=30, WR=30.0%, PF=0.48, p_wr=0.0213 *
+    [525/2015] bearish_930 + macro_w1 + short_only: n=68, WR=61.8%, PF=1.92, p_wr=0.0253 *
+    [526/2015] bearish_930 + macro_w2 + no_pre_rth_news: n=149, WR=43.0%, PF=0.78, p_wr=0.0430 *
+    [537/2015] bearish_930 + macro_w2 + tight_45min_or: n=35, WR=31.4%, PF=0.53, p_wr=0.0197 *
+    [539/2015] bearish_930 + macro_w2 + tight_overnight: n=36, WR=30.6%, PF=0.39, p_wr=0.0130 *
+    [552/2015] bearish_930 + macro_w3 + tight_5min_or: n=31, WR=71.0%, PF=3.35, p_wr=0.0102 *
+    [569/2015] bearish_930 + no_pre_rth_news + tight_45min_or: n=70, WR=37.1%, PF=0.65, p_wr=0.0193 *
+    [572/2015] bearish_930 + no_pre_rth_news + wide_45min_or: n=73, WR=65.8%, PF=2.13, p_wr=0.0018 *
+    [573/2015] bearish_930 + no_pre_rth_news + wide_5min_or: n=84, WR=39.3%, PF=0.65, p_wr=0.0312 *
+    [591/2015] bearish_930 + no_red_folder + wide_45min_or: n=67, WR=67.2%, PF=2.31, p_wr=0.0021 *
+    [592/2015] bearish_930 + no_red_folder + wide_5min_or: n=82, WR=39.0%, PF=0.65, p_wr=0.0266 *
+    [596/2015] bearish_930 + normal_vixy + overnight_up: n=47, WR=63.8%, PF=2.03, p_wr=0.0311 *
+    [608/2015] bearish_930 + not_fomc_week + short_only: n=196, WR=55.6%, PF=1.46, p_wr=0.0318 *
+    [610/2015] bearish_930 + not_fomc_week + tight_45min_or: n=65, WR=38.5%, PF=0.71, p_wr=0.0383 *
+    [613/2015] bearish_930 + not_fomc_week + wide_45min_or: n=66, WR=66.7%, PF=2.38, p_wr=0.0026 *
+    [620/2015] bearish_930 + overnight_down + wide_45min_or: n=31, WR=71.0%, PF=3.16, p_wr=0.0120 *
+    [630/2015] bearish_930 + overnight_up + wide_45min_or: n=41, WR=65.9%, PF=1.95, p_wr=0.0226 *
+    [631/2015] bearish_930 + overnight_up + wide_5min_or: n=56, WR=33.9%, PF=0.49, p_wr=0.0096 *
+    [635/2015] bearish_930 + prior_day_down + short_only: n=60, WR=61.7%, PF=1.97, p_wr=0.0382 *
+    [636/2015] bearish_930 + prior_day_down + wide_5min_or: n=30, WR=66.7%, PF=1.90, p_wr=0.0418 *
+    [652/2015] bearish_930 + short_only + wide_45min_or: n=63, WR=71.4%, PF=2.99, p_wr=0.0001 *
+    [655/2015] bearish_930 + small_930_candle + tight_45min_or: n=35, WR=31.4%, PF=0.54, p_wr=0.0202 *
+    [660/2015] bearish_930 + wide_45min_or + wide_5min_or: n=32, WR=65.6%, PF=2.17, p_wr=0.0475 *
+    [661/2015] bearish_930 + wide_45min_or + wide_overnight: n=38, WR=65.8%, PF=2.36, p_wr=0.0320 *
+    [669/2015] bullish_930 + elevated_vixy + macro_w2: n=66, WR=63.6%, PF=1.84, p_wr=0.0137 *
+    [682/2015] bullish_930 + elevated_vixy + wide_overnight: n=41, WR=68.3%, PF=2.09, p_wr=0.0101 *
+    [695/2015] bullish_930 + gap_down + wide_45min_or: n=32, WR=65.6%, PF=2.13, p_wr=0.0465 *
+    [702/2015] bullish_930 + gap_up + macro_w3: n=72, WR=38.9%, PF=0.69, p_wr=0.0363 *
+    [734/2015] bullish_930 + long_only + overnight_up: n=104, WR=40.4%, PF=0.63, p_wr=0.0239 *
+    [750/2015] bullish_930 + macro_w1 + not_fomc_week: n=74, WR=51.4%, PF=0.96, p_wr=0.4315
+    [781/2015] bullish_930 + no_pre_rth_news + tight_45min_or: n=70, WR=38.6%, PF=0.55, p_wr=0.0356 *
+    [784/2015] bullish_930 + no_pre_rth_news + wide_45min_or: n=53, WR=64.2%, PF=1.98, p_wr=0.0203 *
+    [786/2015] bullish_930 + no_pre_rth_news + wide_overnight: n=48, WR=62.5%, PF=1.51, p_wr=0.0418 *
+    [787/2015] bullish_930 + no_red_folder + normal_vixy: n=65, WR=38.5%, PF=0.55, p_wr=0.0447 *
+    [797/2015] bullish_930 + no_red_folder + tight_45min_or: n=59, WR=37.3%, PF=0.53, p_wr=0.0328 *
+    [800/2015] bullish_930 + no_red_folder + wide_45min_or: n=50, WR=64.0%, PF=1.89, p_wr=0.0228 *
+    [802/2015] bullish_930 + no_red_folder + wide_overnight: n=46, WR=63.0%, PF=1.50, p_wr=0.0403 *
+    [825/2015] bullish_930 + overnight_down + wide_45min_or: n=32, WR=65.6%, PF=2.07, p_wr=0.0463 *
+    [849/2015] elevated_vixy + gap_down + macro_w3: n=56, WR=64.3%, PF=1.93, p_wr=0.0145 *
+    [852/2015] elevated_vixy + gap_down + not_fomc_week: n=130, WR=57.7%, PF=1.51, p_wr=0.0278 *
+    [858/2015] elevated_vixy + gap_down + wide_45min_or: n=48, WR=70.8%, PF=3.16, p_wr=0.0019 *
+    [860/2015] elevated_vixy + gap_down + wide_overnight: n=38, WR=65.8%, PF=2.18, p_wr=0.0276 *
+    [864/2015] elevated_vixy + gap_up + long_only: n=132, WR=42.4%, PF=0.73, p_wr=0.0416 *
+    [878/2015] elevated_vixy + gap_up + wide_5min_or: n=70, WR=35.7%, PF=0.54, p_wr=0.0108 *
+    [908/2015] elevated_vixy + long_only + overnight_up: n=108, WR=38.9%, PF=0.60, p_wr=0.0094 *
+    [943/2015] elevated_vixy + macro_w3 + wide_45min_or: n=35, WR=71.4%, PF=3.24, p_wr=0.0056 *
+    [959/2015] elevated_vixy + no_pre_rth_news + tight_5min_or: n=42, WR=64.3%, PF=2.07, p_wr=0.0362 *
+    [961/2015] elevated_vixy + no_pre_rth_news + wide_45min_or: n=90, WR=62.2%, PF=1.93, p_wr=0.0072 *
+    [962/2015] elevated_vixy + no_pre_rth_news + wide_5min_or: n=103, WR=39.8%, PF=0.64, p_wr=0.0224 *
+    [976/2015] elevated_vixy + no_red_folder + tight_5min_or: n=41, WR=63.4%, PF=1.99, p_wr=0.0494 *
+    [978/2015] elevated_vixy + no_red_folder + wide_45min_or: n=82, WR=63.4%, PF=2.00, p_wr=0.0055 *
+    [979/2015] elevated_vixy + no_red_folder + wide_5min_or: n=98, WR=38.8%, PF=0.62, p_wr=0.0165 *
+    [992/2015] elevated_vixy + not_fomc_week + tight_5min_or: n=44, WR=65.9%, PF=2.16, p_wr=0.0212 *
+    [994/2015] elevated_vixy + not_fomc_week + wide_45min_or: n=85, WR=61.2%, PF=1.87, p_wr=0.0158 *
+    [999/2015] elevated_vixy + overnight_down + wide_45min_or: n=47, WR=66.0%, PF=2.43, p_wr=0.0157 *
+    [1000/2015] elevated_vixy + overnight_down + wide_5min_or: n=45, WR=51.1%, PF=1.14, p_wr=0.4841
+    [1008/2015] elevated_vixy + overnight_up + wide_5min_or: n=62, WR=35.5%, PF=0.50, p_wr=0.0146 *
+    [1016/2015] elevated_vixy + prior_day_up + wide_5min_or: n=34, WR=29.4%, PF=0.45, p_wr=0.0113 *
+    [1020/2015] elevated_vixy + short_only + wide_45min_or: n=59, WR=64.4%, PF=2.18, p_wr=0.0140 *
+    [1024/2015] elevated_vixy + wide_45min_or + wide_overnight: n=59, WR=66.1%, PF=2.21, p_wr=0.0056 *
+    [1068/2015] gap_down + macro_w3 + not_fomc_week: n=88, WR=59.1%, PF=1.55, p_wr=0.0371 *
+    [1070/2015] gap_down + macro_w3 + prior_day_up: n=40, WR=65.0%, PF=1.92, p_wr=0.0316 *
+    [1082/2015] gap_down + no_pre_rth_news + tight_45min_or: n=49, WR=36.7%, PF=0.55, p_wr=0.0399 *
+    [1085/2015] gap_down + no_pre_rth_news + wide_45min_or: n=59, WR=69.5%, PF=2.71, p_wr=0.0007 *
+    [1100/2015] gap_down + no_red_folder + wide_45min_or: n=55, WR=69.1%, PF=2.63, p_wr=0.0028 *
+    [1116/2015] gap_down + not_fomc_week + wide_45min_or: n=59, WR=67.8%, PF=2.51, p_wr=0.0018 *
+    [1126/2015] gap_down + overnight_down + wide_45min_or: n=52, WR=69.2%, PF=2.68, p_wr=0.0025 *
+    [1135/2015] gap_down + short_only + tight_45min_or: n=35, WR=34.3%, PF=0.46, p_wr=0.0477 *
+    [1138/2015] gap_down + short_only + wide_45min_or: n=44, WR=70.5%, PF=3.35, p_wr=0.0022 *
+    [1152/2015] gap_up + large_930_candle + long_only: n=39, WR=33.3%, PF=0.51, p_wr=0.0267 *
+    [1158/2015] gap_up + large_930_candle + short_only: n=46, WR=65.2%, PF=1.89, p_wr=0.0178 *
+    [1164/2015] gap_up + long_only + macro_w3: n=87, WR=36.8%, PF=0.56, p_wr=0.0077 *
+    [1165/2015] gap_up + long_only + no_pre_rth_news: n=210, WR=41.4%, PF=0.67, p_wr=0.0044 *
+    [1166/2015] gap_up + long_only + no_red_folder: n=188, WR=42.0%, PF=0.69, p_wr=0.0115 *
+    [1168/2015] gap_up + long_only + not_fomc_week: n=204, WR=44.1%, PF=0.74, p_wr=0.0433 *
+    [1169/2015] gap_up + long_only + overnight_up: n=186, WR=41.4%, PF=0.64, p_wr=0.0063 *
+    [1172/2015] gap_up + long_only + prior_range: n=53, WR=32.1%, PF=0.38, p_wr=0.0067 *
+    [1176/2015] gap_up + long_only + tight_45min_or: n=40, WR=32.5%, PF=0.42, p_wr=0.0187 *
+    [1197/2015] gap_up + macro_w1 + short_only: n=70, WR=60.0%, PF=1.44, p_wr=0.0466 *
+    [1202/2015] gap_up + macro_w2 + normal_vixy: n=39, WR=64.1%, PF=1.70, p_wr=0.0456 *
+    [1210/2015] gap_up + macro_w2 + tight_45min_or: n=31, WR=29.0%, PF=0.41, p_wr=0.0143 *
+    [1241/2015] gap_up + no_pre_rth_news + tight_45min_or: n=91, WR=38.5%, PF=0.62, p_wr=0.0142 *
+    [1244/2015] gap_up + no_pre_rth_news + wide_45min_or: n=67, WR=61.2%, PF=1.58, p_wr=0.0315 *
+    [1245/2015] gap_up + no_pre_rth_news + wide_5min_or: n=82, WR=39.0%, PF=0.60, p_wr=0.0275 *
+    [1250/2015] gap_up + no_red_folder + prior_day_down: n=91, WR=52.7%, PF=1.11, p_wr=0.2986
+    [1251/2015] gap_up + no_red_folder + prior_day_up: n=113, WR=40.7%, PF=0.71, p_wr=0.0263 *
+    [1256/2015] gap_up + no_red_folder + short_only: n=197, WR=54.8%, PF=1.16, p_wr=0.0499 *
+    [1258/2015] gap_up + no_red_folder + tight_45min_or: n=79, WR=39.2%, PF=0.68, p_wr=0.0362 *
+    [1261/2015] gap_up + no_red_folder + wide_45min_or: n=62, WR=62.9%, PF=1.70, p_wr=0.0216 *
+    [1262/2015] gap_up + no_red_folder + wide_5min_or: n=80, WR=38.8%, PF=0.60, p_wr=0.0293 *
+    [1279/2015] gap_up + not_fomc_week + short_only: n=182, WR=56.0%, PF=1.29, p_wr=0.0275 *
+    [1281/2015] gap_up + not_fomc_week + tight_45min_or: n=78, WR=37.2%, PF=0.60, p_wr=0.0129 *
+    [1293/2015] gap_up + overnight_up + short_only: n=186, WR=56.5%, PF=1.31, p_wr=0.0245 *
+    [1295/2015] gap_up + overnight_up + tight_45min_or: n=72, WR=38.9%, PF=0.63, p_wr=0.0388 *
+    [1298/2015] gap_up + overnight_up + wide_45min_or: n=61, WR=63.9%, PF=1.96, p_wr=0.0144 *
+    [1299/2015] gap_up + overnight_up + wide_5min_or: n=76, WR=38.2%, PF=0.57, p_wr=0.0248 *
+    [1311/2015] gap_up + prior_range + short_only: n=48, WR=68.8%, PF=2.33, p_wr=0.0035 *
+    [1316/2015] gap_up + short_only + wide_45min_or: n=47, WR=68.1%, PF=2.08, p_wr=0.0074 *
+    [1319/2015] gap_up + small_930_candle + tight_45min_or: n=45, WR=33.3%, PF=0.55, p_wr=0.0150 *
+    [1351/2015] large_930_candle + long_only + no_pre_rth_news: n=62, WR=35.5%, PF=0.65, p_wr=0.0141 *
+    [1352/2015] large_930_candle + long_only + no_red_folder: n=58, WR=37.9%, PF=0.74, p_wr=0.0388 *
+    [1354/2015] large_930_candle + long_only + overnight_up: n=36, WR=33.3%, PF=0.48, p_wr=0.0337 *
+    [1360/2015] large_930_candle + macro_w1 + short_only: n=30, WR=66.7%, PF=2.09, p_wr=0.0375 *
+    [1393/2015] large_930_candle + overnight_up + short_only: n=44, WR=68.2%, PF=2.12, p_wr=0.0089 *
+    [1395/2015] large_930_candle + prior_day_down + short_only: n=31, WR=71.0%, PF=2.68, p_wr=0.0090 *
+    [1396/2015] large_930_candle + short_only + wide_45min_or: n=37, WR=67.6%, PF=2.57, p_wr=0.0216 *
+    [1432/2015] long_only + no_pre_rth_news + normal_vixy: n=68, WR=38.2%, PF=0.57, p_wr=0.0332 *
+    [1435/2015] long_only + no_pre_rth_news + overnight_up: n=161, WR=38.5%, PF=0.58, p_wr=0.0011 *
+    [1442/2015] long_only + no_pre_rth_news + tight_45min_or: n=55, WR=32.7%, PF=0.45, p_wr=0.0072 *
+    [1448/2015] long_only + no_red_folder + normal_vixy: n=64, WR=37.5%, PF=0.56, p_wr=0.0285 *
+    [1451/2015] long_only + no_red_folder + overnight_up: n=139, WR=38.8%, PF=0.59, p_wr=0.0026 *
+    [1457/2015] long_only + no_red_folder + tight_45min_or: n=47, WR=31.9%, PF=0.44, p_wr=0.0074 *
+    [1460/2015] long_only + no_red_folder + wide_45min_or: n=43, WR=65.1%, PF=2.13, p_wr=0.0253 *
+    [1466/2015] long_only + not_fomc_week + overnight_up: n=155, WR=40.6%, PF=0.62, p_wr=0.0090 *
+    [1477/2015] long_only + not_fomc_week + wide_5min_or: n=55, WR=34.5%, PF=0.47, p_wr=0.0154 *
+    [1482/2015] long_only + overnight_up + prior_day_up: n=56, WR=33.9%, PF=0.48, p_wr=0.0112 *
+    [1483/2015] long_only + overnight_up + prior_range: n=44, WR=27.3%, PF=0.29, p_wr=0.0016 *
+    [1485/2015] long_only + overnight_up + wide_5min_or: n=41, WR=31.7%, PF=0.44, p_wr=0.0120 *
+    [1500/2015] low_vixy + no_pre_rth_news + no_red_folder: n=130, WR=52.3%, PF=1.17, p_wr=0.2865
+    [1508/2015] low_vixy + no_pre_rth_news + tight_45min_or: n=32, WR=28.1%, PF=0.40, p_wr=0.0093 *
+    [1524/2015] low_vixy + not_fomc_week + tight_45min_or: n=33, WR=30.3%, PF=0.48, p_wr=0.0164 *
+    [1560/2015] macro_w1 + not_fomc_week + short_only: n=88, WR=59.1%, PF=1.61, p_wr=0.0390 *
+    [1568/2015] macro_w1 + overnight_up + short_only: n=55, WR=61.8%, PF=1.66, p_wr=0.0406 *
+    [1581/2015] macro_w2 + no_pre_rth_news + tight_45min_or: n=46, WR=28.3%, PF=0.41, p_wr=0.0026 *
+    [1584/2015] macro_w2 + no_pre_rth_news + wide_45min_or: n=54, WR=64.8%, PF=1.98, p_wr=0.0162 *
+    [1596/2015] macro_w2 + no_red_folder + tight_45min_or: n=40, WR=32.5%, PF=0.49, p_wr=0.0175 *
+    [1599/2015] macro_w2 + no_red_folder + wide_45min_or: n=50, WR=66.0%, PF=2.16, p_wr=0.0104 *
+    [1613/2015] macro_w2 + not_fomc_week + tight_45min_or: n=41, WR=29.3%, PF=0.42, p_wr=0.0051 *
+    [1629/2015] macro_w2 + short_only + tight_45min_or: n=32, WR=28.1%, PF=0.45, p_wr=0.0112 *
+    [1630/2015] macro_w2 + short_only + tight_5min_or: n=33, WR=33.3%, PF=0.64, p_wr=0.0401 *
+    [1631/2015] macro_w2 + short_only + tight_overnight: n=36, WR=30.6%, PF=0.44, p_wr=0.0130 *
+    [1632/2015] macro_w2 + short_only + wide_45min_or: n=42, WR=66.7%, PF=2.40, p_wr=0.0140 *
+    [1650/2015] macro_w3 + no_pre_rth_news + wide_5min_or: n=48, WR=35.4%, PF=0.52, p_wr=0.0314 *
+    [1665/2015] macro_w3 + no_red_folder + wide_5min_or: n=45, WR=33.3%, PF=0.47, p_wr=0.0173 *
+    [1679/2015] macro_w3 + not_fomc_week + wide_45min_or: n=42, WR=64.3%, PF=2.19, p_wr=0.0335 *
+    [1691/2015] macro_w3 + prior_day_up + tight_5min_or: n=30, WR=70.0%, PF=2.90, p_wr=0.0144 *
+    [1705/2015] no_pre_rth_news + no_red_folder + tight_45min_or: n=123, WR=39.0%, PF=0.64, p_wr=0.0065 *
+    [1708/2015] no_pre_rth_news + no_red_folder + wide_45min_or: n=117, WR=65.8%, PF=2.10, p_wr=0.0001 *
+    [1709/2015] no_pre_rth_news + no_red_folder + wide_5min_or: n=134, WR=42.5%, PF=0.72, p_wr=0.0407 *
+    [1728/2015] no_pre_rth_news + not_fomc_week + prior_trend_down: n=64, WR=60.9%, PF=1.53, p_wr=0.0375 *
+    [1730/2015] no_pre_rth_news + not_fomc_week + short_only: n=290, WR=54.8%, PF=1.29, p_wr=0.0141 *
+    [1732/2015] no_pre_rth_news + not_fomc_week + tight_45min_or: n=113, WR=38.1%, PF=0.61, p_wr=0.0035 *
+    [1735/2015] no_pre_rth_news + not_fomc_week + wide_45min_or: n=102, WR=64.7%, PF=2.04, p_wr=0.0004 *
+    [1745/2015] no_pre_rth_news + overnight_down + wide_45min_or: n=58, WR=67.2%, PF=2.37, p_wr=0.0040 *
+    [1749/2015] no_pre_rth_news + overnight_up + prior_day_up: n=102, WR=39.2%, PF=0.66, p_wr=0.0182 *
+    [1750/2015] no_pre_rth_news + overnight_up + prior_range: n=81, WR=45.7%, PF=0.82, p_wr=0.2654
+    [1752/2015] no_pre_rth_news + overnight_up + prior_reversal_up: n=35, WR=34.3%, PF=0.46, p_wr=0.0473 *
+    [1759/2015] no_pre_rth_news + overnight_up + wide_45min_or: n=46, WR=65.2%, PF=1.95, p_wr=0.0212 *
+    [1760/2015] no_pre_rth_news + overnight_up + wide_5min_or: n=71, WR=36.6%, PF=0.51, p_wr=0.0123 *
+    [1764/2015] no_pre_rth_news + prior_day_down + short_only: n=74, WR=62.2%, PF=1.94, p_wr=0.0163 *
+    [1765/2015] no_pre_rth_news + prior_day_down + wide_45min_or: n=36, WR=77.8%, PF=3.73, p_wr=0.0005 *
+    [1766/2015] no_pre_rth_news + prior_day_down + wide_5min_or: n=37, WR=64.9%, PF=1.66, p_wr=0.0417 *
+    [1775/2015] no_pre_rth_news + prior_day_up + wide_5min_or: n=34, WR=32.4%, PF=0.49, p_wr=0.0319 *
+    [1783/2015] no_pre_rth_news + prior_trend_down + short_only: n=36, WR=66.7%, PF=2.24, p_wr=0.0250 *
+    [1789/2015] no_pre_rth_news + short_only + wide_45min_or: n=79, WR=67.1%, PF=2.19, p_wr=0.0011 *
+    [1792/2015] no_pre_rth_news + small_930_candle + tight_45min_or: n=58, WR=31.0%, PF=0.48, p_wr=0.0023 *
+    [1799/2015] no_pre_rth_news + wide_45min_or + wide_overnight: n=57, WR=63.2%, PF=1.99, p_wr=0.0230 *
+    [1817/2015] no_red_folder + not_fomc_week + prior_trend_down: n=57, WR=61.4%, PF=1.57, p_wr=0.0433 *
+    [1819/2015] no_red_folder + not_fomc_week + short_only: n=275, WR=54.2%, PF=1.24, p_wr=0.0326 *
+    [1821/2015] no_red_folder + not_fomc_week + tight_45min_or: n=106, WR=39.6%, PF=0.66, p_wr=0.0174 *
+    [1824/2015] no_red_folder + not_fomc_week + wide_45min_or: n=100, WR=64.0%, PF=1.98, p_wr=0.0011 *
+    [1834/2015] no_red_folder + overnight_down + wide_45min_or: n=54, WR=66.7%, PF=2.32, p_wr=0.0071 *
+    [1838/2015] no_red_folder + overnight_up + prior_day_up: n=97, WR=38.1%, PF=0.64, p_wr=0.0105 *
+    [1841/2015] no_red_folder + overnight_up + prior_reversal_up: n=35, WR=34.3%, PF=0.46, p_wr=0.0449 *
+    [1843/2015] no_red_folder + overnight_up + short_only: n=169, WR=55.6%, PF=1.24, p_wr=0.0468 *
+    [1848/2015] no_red_folder + overnight_up + wide_45min_or: n=42, WR=69.0%, PF=2.29, p_wr=0.0064 *
+    [1849/2015] no_red_folder + overnight_up + wide_5min_or: n=69, WR=36.2%, PF=0.51, p_wr=0.0133 *
+    [1853/2015] no_red_folder + prior_day_down + short_only: n=64, WR=62.5%, PF=1.98, p_wr=0.0202 *
+    [1854/2015] no_red_folder + prior_day_down + wide_45min_or: n=32, WR=78.1%, PF=3.69, p_wr=0.0008 *
+    [1855/2015] no_red_folder + prior_day_down + wide_5min_or: n=35, WR=65.7%, PF=1.73, p_wr=0.0329 *
+    [1861/2015] no_red_folder + prior_day_up + tight_45min_or: n=60, WR=38.3%, PF=0.66, p_wr=0.0474 *
+    [1864/2015] no_red_folder + prior_day_up + wide_5min_or: n=34, WR=32.4%, PF=0.49, p_wr=0.0320 *
+    [1878/2015] no_red_folder + short_only + wide_45min_or: n=74, WR=66.2%, PF=2.09, p_wr=0.0023 *
+    [1881/2015] no_red_folder + small_930_candle + tight_45min_or: n=57, WR=31.6%, PF=0.49, p_wr=0.0031 *
+    [1888/2015] no_red_folder + wide_45min_or + wide_overnight: n=56, WR=62.5%, PF=1.92, p_wr=0.0284 *
+    [1912/2015] not_fomc_week + overnight_down + wide_45min_or: n=52, WR=69.2%, PF=2.53, p_wr=0.0023 *
+    [1921/2015] not_fomc_week + overnight_up + short_only: n=155, WR=56.8%, PF=1.38, p_wr=0.0294 *
+    [1923/2015] not_fomc_week + overnight_up + tight_45min_or: n=60, WR=38.3%, PF=0.66, p_wr=0.0389 *
+    [1924/2015] not_fomc_week + overnight_up + tight_5min_or: n=63, WR=60.3%, PF=1.78, p_wr=0.0482 *
+    [1928/2015] not_fomc_week + overnight_up + wide_overnight: n=65, WR=61.5%, PF=1.55, p_wr=0.0286 *
+    [1931/2015] not_fomc_week + prior_day_down + short_only: n=67, WR=64.2%, PF=2.26, p_wr=0.0095 *
+    [1932/2015] not_fomc_week + prior_day_down + wide_45min_or: n=31, WR=74.2%, PF=3.22, p_wr=0.0034 *
+    [1933/2015] not_fomc_week + prior_day_down + wide_5min_or: n=40, WR=65.0%, PF=1.72, p_wr=0.0329 *
+    [1938/2015] not_fomc_week + prior_day_up + small_930_candle: n=69, WR=39.1%, PF=0.70, p_wr=0.0426 *
+    [1943/2015] not_fomc_week + prior_day_up + wide_5min_or: n=36, WR=30.6%, PF=0.50, p_wr=0.0146 *
+    [1946/2015] not_fomc_week + prior_reversal_down + short_only: n=30, WR=70.0%, PF=3.50, p_wr=0.0185 *
+    [1954/2015] not_fomc_week + short_only + wide_45min_or: n=79, WR=67.1%, PF=2.53, p_wr=0.0011 *
+    [1957/2015] not_fomc_week + small_930_candle + tight_45min_or: n=49, WR=30.6%, PF=0.48, p_wr=0.0040 *
+    [1964/2015] not_fomc_week + wide_45min_or + wide_overnight: n=58, WR=62.1%, PF=1.98, p_wr=0.0334 *
+    [1968/2015] overnight_down + short_only + wide_45min_or: n=39, WR=71.8%, PF=3.20, p_wr=0.0030 *
+    [1974/2015] overnight_up + prior_day_up + prior_reversal_up: n=41, WR=34.1%, PF=0.52, p_wr=0.0269 *
+    [1976/2015] overnight_up + prior_day_up + small_930_candle: n=30, WR=33.3%, PF=0.65, p_wr=0.0475 *
+    [1978/2015] overnight_up + prior_range + short_only: n=44, WR=68.2%, PF=2.31, p_wr=0.0093 *
+    [1983/2015] overnight_up + short_only + wide_45min_or: n=34, WR=76.5%, PF=3.52, p_wr=0.0011 *
+    [1990/2015] overnight_up + wide_45min_or + wide_overnight: n=33, WR=66.7%, PF=2.27, p_wr=0.0355 *
+    [2000/2015] prior_day_up + small_930_candle + tight_45min_or: n=35, WR=28.6%, PF=0.49, p_wr=0.0083 *
+    [2004/2015] short_only + small_930_candle + tight_45min_or: n=37, WR=32.4%, PF=0.53, p_wr=0.0218 *
+
+Done. Results in /Users/philchan/Work/fvgc-backtest/studies/prior_day_type/results

@@ -13,3 +13,9 @@ logs/
 # stores the same keys as repo secrets so CI keeps working.
 .env
 .env.local
+
+# Claude Code agent worktrees — local scratch copies, never commit
+.claude/worktrees/
+
+# Node deps (Cloudflare worker)
+node_modules/

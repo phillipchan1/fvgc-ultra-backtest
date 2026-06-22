@@ -1,0 +1,336 @@
+//@version=6
+// =============================================================================
+// FVGC Morning Levels  —  auto-draws Phil's daily pre-market + in-session levels
+// -----------------------------------------------------------------------------
+// Session windows match data/levels/build_session_levels.py (America/New_York):
+//   Prev Session H/L  prior RTH 09:30-16:00
+//   Asia H/L          prior day 19:00 -> 02:00
+//   London H/L        02:00 -> 08:00
+//   6am H/L           04:00 -> 08:00
+//   Overnight H/L     prior day 18:00 -> 09:30
+//   Opening Range H/L 09:30 -> 09:45  (forms at 09:45)
+//   Daily 50%         CME daily candle midpoint (prior 18:00 -> 17:00)
+//   NWOG H/L          Mondays: Fri RTH close <-> Mon RTH open
+//   Data H/L          a 1-minute candle whose range > threshold (news proxy)
+//   15m / 1H FVG      3-candle gap, min size = MIN_FVG_SIZE
+//
+// Behaviour:
+//   * Neat black horizontal line per level, text label at the right end.
+//   * When liquidity is taken, the line CUTS at the bar where it happened.
+//   * Levels at the same price MERGE into one line with a combined label.
+//   * Only levels within `Max distance` of price are drawn.
+// =============================================================================
+indicator("FVGC Morning Levels", overlay=true, max_lines_count=500, max_labels_count=500, max_boxes_count=60, max_bars_back=5000)
+
+TZ = "America/New_York"
+
+// ---------------- Inputs: display ----------------
+gD = "Display"
+maxDist    = input.float(300,  "Max distance from price (pts, 0 = off)", group=gD)
+confTol    = input.float(5,    "Confluence merge tolerance (pts)",       group=gD)
+lineColor  = input.color(color.black, "Line / text color",              group=gD)
+lineWidth  = input.int(1,      "Line width", minval=1,                   group=gD)
+fontSize   = input.string("normal", "Label size", options=["tiny","small","normal","large"], group=gD)
+boldLabels = input.bool(true,  "Bold labels (unicode)",                  group=gD)
+labelOff   = input.int(3,      "Label offset (bars right of line end)",  group=gD)
+showBG     = input.bool(true,  "Session background shading",             group=gD)
+maxAgeBars = input.int(4000,   "Prune levels older than (bars)",         group=gD)
+
+// ---------------- Inputs: which levels ----------------
+gL = "Levels"
+showPrevDay = input.bool(true, "Previous session H/L (RTH)",     group=gL)
+showAsia    = input.bool(true, "Asia H/L (19:00-02:00)",         group=gL)
+showLondon  = input.bool(true, "London H/L (02:00-08:00)",       group=gL)
+show6am     = input.bool(true, "6am H/L (04:00-08:00)",          group=gL)
+showON      = input.bool(true, "Overnight H/L (18:00-09:30)",    group=gL)
+showOR      = input.bool(true, "Opening Range H/L (09:30-09:45)",group=gL)
+show50      = input.bool(true, "Daily 50% (CME 18:00-17:00)",    group=gL)
+showNWOG    = input.bool(true, "NWOG (Mondays)",                 group=gL)
+showData    = input.bool(true, "Data H/L (large 1m candle)",     group=gL)
+
+// ---------------- Inputs: data candle ----------------
+gDC = "Data candle (news proxy)"
+dataThresh = input.float(60, "Min 1m candle range (pts)", group=gDC)
+dataStart  = input.int(800,  "Data window start (HHMM)",  group=gDC)
+dataEnd    = input.int(930,  "Data window end (HHMM)",    group=gDC)
+
+// ---------------- Inputs: FVGs ----------------
+gF = "FVG / Gaps"
+show15  = input.bool(true, "15m FVG", group=gF)
+show1H  = input.bool(true, "1H FVG",  group=gF)
+fvgMin  = input.float(3,   "Min FVG size (pts)", group=gF)
+fvgFill = input.color(color.new(color.gray, 88), "FVG fill", group=gF)
+
+fSize = fontSize == "tiny" ? size.tiny : fontSize == "small" ? size.small : fontSize == "large" ? size.large : size.normal
+
+// map ASCII -> Unicode mathematical-bold glyphs (Pine has no native bold)
+f_bold(s) =>
+    NORM = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+    var bvals = array.from("𝐀","𝐁","𝐂","𝐃","𝐄","𝐅","𝐆","𝐇","𝐈","𝐉","𝐊","𝐋","𝐌","𝐍","𝐎","𝐏","𝐐","𝐑","𝐒","𝐓","𝐔","𝐕","𝐖","𝐗","𝐘","𝐙","𝐚","𝐛","𝐜","𝐝","𝐞","𝐟","𝐠","𝐡","𝐢","𝐣","𝐤","𝐥","𝐦","𝐧","𝐨","𝐩","𝐪","𝐫","𝐬","𝐭","𝐮","𝐯","𝐰","𝐱","𝐲","𝐳","𝟎","𝟏","𝟐","𝟑","𝟒","𝟓","𝟔","𝟕","𝟖","𝟗")
+    out = ""
+    if str.length(s) > 0
+        for i = 0 to str.length(s) - 1
+            ch = str.substring(s, i, i + 1)
+            p = str.pos(NORM, ch)
+            out := out + (na(p) ? ch : array.get(bvals, p))
+    out
+
+f_lbl(s) => boldLabels ? f_bold(s) : s
+
+// ---------------- Time of bar (NY) ----------------
+hhmm = hour(time, TZ) * 100 + minute(time, TZ)
+dow  = dayofweek(time, TZ)
+
+inAsia   = hhmm >= 1900 or hhmm < 200
+inLondon = hhmm >= 200  and hhmm < 800
+in6am    = hhmm >= 400  and hhmm < 800
+inON     = hhmm >= 1800 or hhmm < 930
+inRTH    = hhmm >= 930  and hhmm < 1600
+inOR     = hhmm >= 930  and hhmm < 945
+inDaily  = hhmm >= 1800 or hhmm < 1700   // CME day 18:00 -> 17:00
+
+// ---------------- Level store (parallel arrays) ----------------
+var arrP     = array.new_float()
+var arrName  = array.new_string()
+var arrSide  = array.new_int()    //  1 = high (swept when high>=p), -1 = low (low<=p), 0 = mid
+var arrForm  = array.new_int()    // bar_index at formation
+var arrSwept = array.new_int()    // bar_index where taken, -1 if still live
+
+addLvl(_p, _name, _side, _form) =>
+    if not na(_p)
+        array.push(arrP, _p)
+        array.push(arrName, _name)
+        array.push(arrSide, _side)
+        array.push(arrForm, _form)
+        array.push(arrSwept, -1)
+
+// running session extreme + the bar that made each extreme; separate var per call site
+f_sess(_in, _h, _l) =>
+    var float hi = na
+    var float lo = na
+    var int hiBar = na
+    var int loBar = na
+    var bool was = false
+    bool ended = (not _in) and was
+    if _in and not was
+        hi := _h
+        lo := _l
+        hiBar := bar_index
+        loBar := bar_index
+    else if _in
+        if _h > hi
+            hi := _h
+            hiBar := bar_index
+        if _l < lo
+            lo := _l
+            loBar := bar_index
+    was := _in
+    [hi, lo, hiBar, loBar, ended]
+
+[pdH, pdL, pdHB, pdLB, pdEnd] = f_sess(inRTH,    high, low)
+[asH, asL, asHB, asLB, asEnd] = f_sess(inAsia,   high, low)
+[loH, loL, loHB, loLB, loEnd] = f_sess(inLondon, high, low)
+[s6H, s6L, s6HB, s6LB, s6End] = f_sess(in6am,    high, low)
+[onH, onL, onHB, onLB, onEnd] = f_sess(inON,     high, low)
+[orH, orL, orHB, orLB, orEnd] = f_sess(inOR,     high, low)
+[dyH, dyL, dyHB, dyLB, dyEnd] = f_sess(inDaily,  high, low)
+
+if pdEnd and showPrevDay
+    addLvl(pdH, "Prev Session High", 1, pdHB)
+    addLvl(pdL, "Prev Session Low", -1, pdLB)
+if asEnd and showAsia
+    addLvl(asH, "Asia High", 1, asHB)
+    addLvl(asL, "Asia Low", -1, asLB)
+if loEnd and showLondon
+    addLvl(loH, "London High", 1, loHB)
+    addLvl(loL, "London Low", -1, loLB)
+if s6End and show6am
+    addLvl(s6H, "6am High", 1, s6HB)
+    addLvl(s6L, "6am Low", -1, s6LB)
+if onEnd and showON
+    addLvl(onH, "Overnight High", 1, onHB)
+    addLvl(onL, "Overnight Low", -1, onLB)
+if orEnd and showOR
+    addLvl(orH, "OR High", 1, orHB)
+    addLvl(orL, "OR Low", -1, orLB)
+if dyEnd and show50
+    addLvl((dyH + dyL) / 2, "Daily 50%", 0, math.min(dyHB, dyLB))
+
+// NWOG: Friday RTH close <-> Monday RTH open
+var float friClose = na
+if pdEnd and dow == dayofweek.friday
+    friClose := close[1]
+isMonOpen = inRTH and not inRTH[1] and dow == dayofweek.monday
+if showNWOG and isMonOpen and not na(friClose)
+    addLvl(math.max(friClose, open), "NWOG High", 1, bar_index)
+    addLvl(math.min(friClose, open), "NWOG Low", -1, bar_index)
+
+// Data H/L: large 1-minute candle inside the data window (anchored at the candle itself)
+m1t = request.security(syminfo.tickerid, "1", time,    lookahead=barmerge.lookahead_off)
+m1h = request.security(syminfo.tickerid, "1", high[1], lookahead=barmerge.lookahead_off)
+m1l = request.security(syminfo.tickerid, "1", low[1],  lookahead=barmerge.lookahead_off)
+newM1 = m1t != m1t[1]
+inDataWin = hhmm >= dataStart and hhmm < dataEnd
+dataForm = math.max(bar_index - 1, 0)
+if showData and newM1 and inDataWin and not na(m1h) and (m1h - m1l) >= dataThresh
+    addLvl(m1h, "Data High", 1, dataForm)
+    addLvl(m1l, "Data Low", -1, dataForm)
+
+// ---------------- Per-bar: prune old + detect sweeps ----------------
+if array.size(arrP) > 0
+    for i = array.size(arrP) - 1 to 0
+        formB = array.get(arrForm, i)
+        if maxAgeBars > 0 and (bar_index - formB) > maxAgeBars
+            array.remove(arrP, i)
+            array.remove(arrName, i)
+            array.remove(arrSide, i)
+            array.remove(arrForm, i)
+            array.remove(arrSwept, i)
+        else
+            if array.get(arrSwept, i) == -1 and bar_index > formB
+                p  = array.get(arrP, i)
+                sd = array.get(arrSide, i)
+                swept = (sd == 1 and high >= p) or (sd == -1 and low <= p) or (sd == 0 and high >= p and low <= p)
+                if swept
+                    array.set(arrSwept, i, bar_index)
+
+// ---------------- Render (last bar only) ----------------
+var poolL = array.new_line()
+var poolT = array.new_label()
+
+if barstate.islast
+    if array.size(poolL) > 0
+        for i = 0 to array.size(poolL) - 1
+            line.delete(array.get(poolL, i))
+    if array.size(poolT) > 0
+        for i = 0 to array.size(poolT) - 1
+            label.delete(array.get(poolT, i))
+    array.clear(poolL)
+    array.clear(poolT)
+
+    // gather renderable (distance filter)
+    tP    = array.new_float()
+    tN    = array.new_string()
+    tForm = array.new_int()
+    tX2   = array.new_int()
+    if array.size(arrP) > 0
+        for i = 0 to array.size(arrP) - 1
+            p = array.get(arrP, i)
+            if maxDist <= 0 or math.abs(p - close) <= maxDist
+                sw = array.get(arrSwept, i)
+                array.push(tP, p)
+                array.push(tN, array.get(arrName, i))
+                array.push(tForm, array.get(arrForm, i))
+                array.push(tX2, sw == -1 ? bar_index : sw)
+
+    // selection sort ascending by price
+    m = array.size(tP)
+    if m > 1
+        for a = 0 to m - 2
+            mn = a
+            for b = a + 1 to m - 1
+                if array.get(tP, b) < array.get(tP, mn)
+                    mn := b
+            if mn != a
+                f = array.get(tP, a)
+                array.set(tP, a, array.get(tP, mn))
+                array.set(tP, mn, f)
+                s = array.get(tN, a)
+                array.set(tN, a, array.get(tN, mn))
+                array.set(tN, mn, s)
+                g = array.get(tForm, a)
+                array.set(tForm, a, array.get(tForm, mn))
+                array.set(tForm, mn, g)
+                x = array.get(tX2, a)
+                array.set(tX2, a, array.get(tX2, mn))
+                array.set(tX2, mn, x)
+
+    // group by confluence tolerance and draw
+    i = 0
+    while i < m
+        gP    = array.get(tP, i)
+        gForm = array.get(tForm, i)
+        gX2   = array.get(tX2, i)
+        gName = array.get(tN, i)
+        sumP  = gP
+        cnt   = 1
+        j = i + 1
+        while j < m and (array.get(tP, j) - gP) <= confTol
+            gName := gName + " + " + array.get(tN, j)
+            sumP  := sumP + array.get(tP, j)
+            gForm := math.min(gForm, array.get(tForm, j))
+            gX2   := math.min(gX2, array.get(tX2, j))
+            cnt   := cnt + 1
+            j := j + 1
+        avgP = sumP / cnt
+        leftX = math.max(gForm, bar_index - 4900)   // clamp to stay within historical buffer
+        ln = line.new(leftX, avgP, gX2, avgP, xloc=xloc.bar_index, color=lineColor, width=lineWidth)
+        array.push(poolL, ln)
+        lb = label.new(gX2 + labelOff, avgP, f_lbl(gName), xloc=xloc.bar_index, yloc=yloc.price, style=label.style_none, textcolor=lineColor, size=fSize)
+        array.push(poolT, lb)
+        i := j
+
+// ---------------- FVG / gaps (latest unfilled per timeframe) ----------------
+f_fvg(tfStr, gapLabel, en) =>
+    var box   bx       = na
+    var label lb       = na
+    var float zTop     = na
+    var float zBot     = na
+    var bool  isBull   = false
+    var int   createdB = na
+    var int   fillBar  = na
+    h1 = request.security(syminfo.tickerid, tfStr, high[1], lookahead=barmerge.lookahead_off)
+    l1 = request.security(syminfo.tickerid, tfStr, low[1],  lookahead=barmerge.lookahead_off)
+    h3 = request.security(syminfo.tickerid, tfStr, high[3], lookahead=barmerge.lookahead_off)
+    l3 = request.security(syminfo.tickerid, tfStr, low[3],  lookahead=barmerge.lookahead_off)
+    tt = request.security(syminfo.tickerid, tfStr, time,    lookahead=barmerge.lookahead_off)
+    newBar = tt != tt[1]
+    if en
+        // detect a fresh 3-candle gap on a newly completed HTF bar
+        if newBar and not na(h3)
+            if (l1 - h3) >= fvgMin           // bullish gap (support below)
+                zTop := l1
+                zBot := h3
+                isBull := true
+                createdB := bar_index
+                fillBar := na
+            else if (l3 - h1) >= fvgMin      // bearish gap (resistance above)
+                zTop := l3
+                zBot := h1
+                isBull := false
+                createdB := bar_index
+                fillBar := na
+        // mitigation -> record the cut bar
+        if not na(createdB) and na(fillBar)
+            if isBull and low <= zTop
+                fillBar := bar_index
+            else if (not isBull) and high >= zBot
+                fillBar := bar_index
+        // draw on the last bar
+        if barstate.islast and not na(createdB)
+            mid = (zTop + zBot) / 2
+            inRange = maxDist <= 0 or math.abs(mid - close) <= maxDist
+            x2 = na(fillBar) ? bar_index : fillBar
+            bxLeft = math.max(createdB, bar_index - 4900)   // clamp to historical buffer
+            if inRange
+                if na(bx)
+                    bx := box.new(bxLeft, zTop, x2, zBot, border_color=lineColor, border_width=1, bgcolor=fvgFill)
+                    lb := label.new(x2 + labelOff, mid, f_lbl(gapLabel), xloc=xloc.bar_index, yloc=yloc.price, style=label.style_none, textcolor=lineColor, size=fSize)
+                else
+                    box.set_lefttop(bx, bxLeft, zTop)
+                    box.set_rightbottom(bx, x2, zBot)
+                    label.set_xy(lb, x2 + labelOff, mid)
+            else if not na(bx)
+                box.delete(bx)
+                label.delete(lb)
+                bx := na
+                lb := na
+    true
+
+dummy15 = f_fvg("15", "15M Gap", show15)
+dummy1H = f_fvg("60", "1H Gap",  show1H)
+
+// ---------------- Session background shading ----------------
+bgcolor(showBG and inAsia   ? color.new(color.orange, 94) : na, title="Asia")
+bgcolor(showBG and inLondon ? color.new(color.purple, 94) : na, title="London")
+bgcolor(showBG and inRTH    ? color.new(color.gray,   95) : na, title="RTH")

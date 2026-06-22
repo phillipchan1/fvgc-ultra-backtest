@@ -41,10 +41,27 @@ PRICE_FLOOR = 1_000
 
 # Known event times (ET) for pre-RTH / during-session classification
 EVENT_TIMES = {
+    # 8:30 NY releases
     'NFP': dtime(8, 30),
     'CPI': dtime(8, 30),
+    'PPI': dtime(8, 30),
+    'GDP': dtime(8, 30),
+    'Retail Sales': dtime(8, 30),
+    'Initial Jobless Claims': dtime(8, 30),
+    'Durable Goods': dtime(8, 30),
+    # 10:00 NY releases (v0.4.1 — added for data-wick model, await CSV extension)
+    'ISM Manufacturing': dtime(10, 0),
+    'ISM Services': dtime(10, 0),
+    'ISM Non-Manufacturing': dtime(10, 0),
+    'Consumer Confidence': dtime(10, 0),
+    'JOLTS': dtime(10, 0),
+    'Pending Home Sales': dtime(10, 0),
+    'Existing Home Sales': dtime(10, 0),
+    'New Home Sales': dtime(10, 0),
+    # 14:00 NY releases
     'FOMC Statement': dtime(14, 0),
     'FOMC Minutes': dtime(14, 0),
+    # No specific release time
     'OPEX': None,
     'Triple/Quadruple Witching': None,
 }

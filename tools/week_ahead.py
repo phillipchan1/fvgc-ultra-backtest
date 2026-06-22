@@ -52,6 +52,7 @@ TRADING_DAYS_CSV = REPO / 'data' / 'trading_days' / 'trading_days.csv'
 sys.path.insert(0, str(TOOLS))
 
 RTH_OPEN_ET = dtime(9, 30)
+WINDOW_END_ET = dtime(11, 0)   # Phil trades the first ~90 min (9:30-11:00 ET)
 
 
 # ======================================================================
@@ -301,50 +302,142 @@ def _us_high_for_day(all_events: list, day: date) -> list[dict]:
         row = e.to_briefing_row()  # date, event_type, event, time_et, impact
         if e.time_et is not None:
             pt = e.time_et.astimezone(PT_TZ)
+            et_t = e.time_et.time()
             row['time_pt'] = pt.strftime('%-I:%M %p').lower()
             row['time_et_fmt'] = e.time_et.strftime('%-I:%M %p').lower()
             row['pt_minutes'] = pt.hour * 60 + pt.minute
-            row['pre_rth'] = e.time_et.timetz() < RTH_OPEN_ET.replace(tzinfo=e.time_et.tzinfo)
+            row['pre_rth'] = et_t < RTH_OPEN_ET
+            # In-window = lands DURING the first 90 min (e.g. 10:00 ET ISM /
+            # JOLTS / Consumer Sentiment) — more disruptive to an open trade
+            # than 8:30 data already digested by the open.
+            row['in_window'] = RTH_OPEN_ET <= et_t < WINDOW_END_ET
         else:
             row['time_pt'] = 'tentative'
             row['time_et_fmt'] = 'tentative'
             row['pt_minutes'] = None
             row['pre_rth'] = False
+            row['in_window'] = False
         out.append(row)
     out.sort(key=lambda r: (r['pt_minutes'] is None, r.get('pt_minutes') or 0))
     return out
 
 
-def _live_range_stats(target_date: date, n: int = 20) -> dict | None:
-    """Robust recent-RTH-range stats from live Yahoo bars.
+_VOL_REGIME_BANDS = [
+    (0.33, 'low',      'Quiet — expect compression; dump-capture unlikely, fade extremes'),
+    (0.66, 'normal',   'Normal range regime — standard matrix plays'),
+    (0.90, 'elevated', 'Elevated vol — dump-capture armed, wider stops, size up on A+'),
+    (1.01, 'high',     'High vol — big OR width likely; dump-capture sweet spot but choppy'),
+]
 
-    Returns median / mean / p80 / max over the last `n` completed RTH days
-    before target_date. We anchor the expected-range estimate on the MEDIAN,
-    not the mean: NQ has spike days (e.g. 1600pt) that inflate a 20-day mean
-    well above a typical session. Median answers "what should I expect on an
-    ordinary day this week" honestly. Returns None on fetch failure.
+
+def _pctile(sorted_vals: list[float], x: float) -> float:
+    if not sorted_vals:
+        return 0.5
+    return sum(1 for v in sorted_vals if v <= x) / len(sorted_vals)
+
+
+def _live_market_context(target_date: date, n: int = 20) -> dict | None:
+    """One daily-series fetch → recent-range stats, vol regime, and key
+    price-structure levels (draws for the first 90 min).
+
+    Range estimate anchors on the MEDIAN of the last `n` RTH days, not the
+    mean: NQ spike days (saw 1600pt) inflate a 20-day mean above a typical
+    session. Vol regime = percentile of that median within ~1yr of daily
+    ranges. Levels are robust structure (prior-week H/L, 20-day H/L, recent
+    high as ATH proxy) — NOT naked POCs, which the naked-VP study killed.
+    Returns None on fetch failure.
     """
     try:
-        from live_market import fetch_rth_daily_ranges
+        from live_market import fetch_rth_daily_ranges, fetch_yahoo_1m
     except ImportError:
         return None
     try:
+        # Yahoo caps 5m intraday at ~60 days — that's our RTH-accurate series.
         days = fetch_rth_daily_ranges(symbol='NQ=F', range_='60d', interval='5m')
     except Exception:
         return None
-    ranges = [d['range'] for d in days if d['date'] < target_date]
-    if len(ranges) < n:
+    prior = [d for d in days if d['date'] < target_date]
+    if len(prior) < n:
         return None
+
+    import statistics
+    ranges = [d['range'] for d in prior]
     window = ranges[-n:]
     s = sorted(window)
-    import statistics
     p80 = s[min(len(s) - 1, int(round(0.8 * (len(s) - 1))))]
+    median = statistics.median(window)
+
+    # Vol regime: where this week's expected (median) range sits within the
+    # last ~60 RTH sessions — a "vs last quarter" read, all RTH-consistent.
+    hist = sorted(ranges)
+    vol_pct = _pctile(hist, median)
+    regime, regime_note = 'normal', ''
+    for thresh, label, note in _VOL_REGIME_BANDS:
+        if vol_pct <= thresh:
+            regime, regime_note = label, note
+            break
+
+    # ---- price-structure levels (draws) ----
+    last = prior[-1]
+    ref = last['close']
+    last20 = prior[-20:]
+    hi20 = max(d['high'] for d in last20)
+    lo20 = min(d['low'] for d in last20)
+    # Prior completed Mon-Fri week relative to target_date's week.
+    tmonday = target_date - timedelta(days=target_date.weekday())
+    pw_lo = tmonday - timedelta(days=7)
+    pw_days = [d for d in prior if pw_lo <= d['date'] < tmonday]
+    pw_high = max((d['high'] for d in pw_days), default=None)
+    pw_low = min((d['low'] for d in pw_days), default=None)
+
+    # ATH — best-effort daily fetch (5y). NQ's all-time high may predate the
+    # 60d intraday window, so use a long daily series; fall back to the 60d
+    # high if the fetch fails.
+    ath = max(d['high'] for d in prior)
+    ath_label = 'Recent high (60d)'
+    try:
+        daily = fetch_yahoo_1m(symbol='NQ=F', range_='5y', interval='1d')
+        dmax = max(b['high'] for b in daily)
+        if dmax >= ath:
+            ath, ath_label = dmax, 'All-time high'
+    except Exception:
+        pass
+
+    def _lvl(name, price):
+        if price is None:
+            return None
+        return {'name': name, 'price': round(price, 1),
+                'dist': round(price - ref, 1), 'dist_abs': round(abs(price - ref))}
+
+    # Candidates in priority order (most significant label wins on ties).
+    candidates = [lv for lv in [
+        _lvl(ath_label, ath),
+        _lvl('Prior-week high', pw_high),
+        _lvl('20-day high', hi20),
+        _lvl('Prior-week low', pw_low),
+        _lvl('20-day low', lo20),
+    ] if lv]
+    # Dedupe by price — when the recent high IS the prior-week / 20-day high,
+    # show it once under the strongest label rather than three identical rows.
+    seen_prices = set()
+    levels = []
+    for lv in candidates:
+        if lv['price'] in seen_prices:
+            continue
+        seen_prices.add(lv['price'])
+        levels.append(lv)
+    # Sort by absolute distance — nearest draws first.
+    levels.sort(key=lambda lv: lv['dist_abs'])
+    # ATH magnet only real within ~100pts (ATH-availability study).
+    ath_near = abs(ath - ref) <= 100
+
     return {
-        'median': statistics.median(window),
-        'mean': statistics.mean(window),
-        'p80': p80,
-        'max': max(window),
-        'n': len(window),
+        'median': median, 'mean': statistics.mean(window), 'p80': p80,
+        'max': max(window), 'n': len(window),
+        'vol_pct': round(vol_pct, 2), 'regime': regime, 'regime_note': regime_note,
+        'ref_close': round(ref, 1), 'ref_date': last['date'].isoformat(),
+        'levels': levels, 'ath_near': ath_near,
+        'ath_dist': round(ath - ref, 1),
     }
 
 
@@ -354,6 +447,72 @@ def _live_range_stats(target_date: date, n: int = 20) -> dict | None:
 
 DOW_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
 
+_DUMP_EVENTS = ('CPI', 'NFP', 'PCE', 'PPI')
+
+
+def day_play_notes(day: dict, events: list[dict], regime: str,
+                   is_fomc_day_week: bool, weekday_idx: int) -> list[dict]:
+    """Map the day's conditions to Phil's validated plays. Each note is
+    {tag, text} — grounded in the studies, not generic TA. Order = priority.
+    """
+    notes = []
+    pre = [e for e in events if e.get('pre_rth')]
+    inwin = [e for e in events if e.get('in_window')]
+    names = ' '.join((e.get('event_type', '') + ' ' + e.get('event', ''))
+                     for e in events).upper()
+
+    # FOMC decision day — chop until 2pm ET; first 90 min often range-bound.
+    if day.get('fomc_decision'):
+        notes.append({'tag': 'AVOID', 'text':
+            'FOMC decision 2pm ET — expect compression/chop through the morning; '
+            'reduce size, the move comes after your window.'})
+
+    # Quad witching / OPEX — pinning + heavy volume, trend plays less reliable.
+    if day.get('quad_witching'):
+        notes.append({'tag': 'CAUTION', 'text':
+            'Quad witching — pinning to large strikes + elevated volume; '
+            'mean-reversion over trend, fade extensions into round numbers.'})
+
+    # Pre-RTH market-mover → dump-capture / opening-FVG short conditions.
+    if pre and any(k in names for k in _DUMP_EVENTS):
+        notes.append({'tag': 'ARMED', 'text':
+            'Pre-RTH market-mover — dump-capture watch (WR scales with dump '
+            'size) + opening-FVG short tier-2 more likely. Wait for the 9:30 '
+            'reaction, don\'t pre-position.'})
+    elif pre:
+        notes.append({'tag': 'NEWS', 'text':
+            'Pre-RTH red folder — opening impulse likely; let the first FVG '
+            'form before committing.'})
+
+    # In-window event (10:00 ET data) — second impulse mid-session.
+    if inwin:
+        t = inwin[0].get('time_et_fmt', '10:00 am')
+        notes.append({'tag': 'MID', 'text':
+            f'{t} ET data lands INSIDE your window — expect a second impulse; '
+            'a clean 9:30-10:00 trend can reverse on the print.'})
+
+    # Vol-regime-driven default play set (only when no override above dominates).
+    if regime in ('elevated', 'high'):
+        notes.append({'tag': 'PLAY', 'text':
+            'Vol elevated — dump-capture armed, wider OR expected; '
+            'favor momentum continuation over fades.'})
+    elif regime == 'low' and not pre and not day.get('fomc_decision'):
+        notes.append({'tag': 'PLAY', 'text':
+            'Quiet regime — expect a tight OR; OR-H/L sweep + reversion plays '
+            'over breakouts, M1 short on weak opens.'})
+
+    # Monday post-weekend expansion tendency.
+    if weekday_idx == 0 and not pre:
+        notes.append({'tag': 'NOTE', 'text':
+            'Monday — weekend gap + range-expansion tendency; respect the '
+            'opening drive direction.'})
+
+    if not notes:
+        notes.append({'tag': 'PLAY', 'text':
+            'Standard matrix — M1 short / OR-H/L / opening-FVG geometry on a '
+            'clean open.'})
+    return notes
+
 
 def build_week_ahead(gen_date: date) -> dict:
     week = upcoming_trading_week(gen_date)
@@ -361,8 +520,9 @@ def build_week_ahead(gen_date: date) -> dict:
     wd_stats = weekday_range_stats(rows)
     mults = event_range_multipliers(rows)
     all_events, cal_ok = _fetch_week_events()
-    rng = _live_range_stats(week[0])
-    atr_anchor = rng['median'] if rng else None
+    ctx = _live_market_context(week[0])
+    atr_anchor = ctx['median'] if ctx else None
+    regime = ctx['regime'] if ctx else 'normal'
 
     try:
         from live_calendar import is_fomc_week
@@ -385,20 +545,29 @@ def build_week_ahead(gen_date: date) -> dict:
         wd_avg = (wd_stats.get(d.weekday()) or {}).get('avg_rth_range')
         est = estimate_day_range(atr_anchor, events, mults, wd_avg)
         quad = is_quad_witching(d)
+        fomc_decision = any(
+            e.country == 'USD' and any(kw in e.title for kw in (
+                'FOMC Statement', 'Federal Funds Rate', 'FOMC Press Conference'))
+            for e in all_events if e.date == d
+        ) if cal_ok else False
 
-        days.append({
+        day = {
             'date': d.isoformat(),
             'day_of_week': DOW_NAMES[i],
             'events': events,
             'n_red_folder': len(events),
             'wake_up_pt': wake['time_pt'] if wake else None,
+            'in_window_event': any(e.get('in_window') for e in events),
             'quad_witching': quad,
+            'fomc_decision': fomc_decision,
             'hist_avg_rth_range': round(wd_avg) if wd_avg else None,
             'hist_avg_or45_range': (
                 round(v) if (v := (wd_stats.get(d.weekday()) or {}).get('avg_or45_range')) else None
             ),
             'range_estimate': est,
-        })
+        }
+        day['play_notes'] = day_play_notes(day, events, regime, bool(week_is_fomc), i)
+        days.append(day)
 
     return {
         'schema_version': 1,
@@ -414,12 +583,24 @@ def build_week_ahead(gen_date: date) -> dict:
             'has_quad_witching': any(dd['quad_witching'] for dd in days),
             'earliest_wake_pt': earliest_wake[2] if earliest_wake else None,
             'earliest_wake_day': DOW_NAMES[earliest_wake[1]] if earliest_wake else None,
-            'recent_median_range_pts': round(rng['median']) if rng else None,
-            'recent_mean_range_pts': round(rng['mean']) if rng else None,
-            'recent_max_range_pts': round(rng['max']) if rng else None,
-            'vol_spike_recent': bool(rng and rng['max'] > 2 * rng['median']),
+            'recent_median_range_pts': round(ctx['median']) if ctx else None,
+            'recent_mean_range_pts': round(ctx['mean']) if ctx else None,
+            'recent_max_range_pts': round(ctx['max']) if ctx else None,
+            'vol_spike_recent': bool(ctx and ctx['max'] > 2 * ctx['median']),
+            'vol_regime': ctx['regime'] if ctx else None,
             'calendar_ok': cal_ok,
         },
+        'market': ({
+            'regime': ctx['regime'],
+            'regime_note': ctx['regime_note'],
+            'vol_pct': ctx['vol_pct'],
+            'median_range_pts': round(ctx['median']),
+            'ref_close': ctx['ref_close'],
+            'ref_date': ctx['ref_date'],
+            'levels': ctx['levels'],
+            'ath_near': ctx['ath_near'],
+            'ath_dist': ctx['ath_dist'],
+        } if ctx else None),
         'days': days,
         'baselines': {
             'event_multipliers': {
@@ -473,6 +654,14 @@ def _print_report(data: dict) -> None:
         print(f"  earliest wake-up: {s['earliest_wake_pt']} PT ({s['earliest_wake_day']})")
     if not s['calendar_ok']:
         print('  [warn] calendar feed unavailable — events incomplete')
+    mk = data.get('market')
+    if mk:
+        print(f"  vol regime: {mk['regime'].upper()} ({int(mk['vol_pct']*100)}th pctile) "
+              f"— {mk['regime_note']}")
+        print(f"  ref close {mk['ref_close']} ({mk['ref_date']})"
+              + (f"  ·  ATH ~{mk['ath_dist']:+.0f}pt [NEAR]" if mk['ath_near'] else ''))
+        for lv in mk['levels']:
+            print(f"        {lv['dist']:+8.1f}pt  {lv['name']}  @ {lv['price']}")
     print('  ' + '-' * 64)
     for d in data['days']:
         est = d['range_estimate']
@@ -483,13 +672,22 @@ def _print_report(data: dict) -> None:
             line += f"  hist~{d['hist_avg_rth_range']}pt"
         if d['quad_witching']:
             line += '  [QUAD WITCH]'
+        if d.get('fomc_decision'):
+            line += '  [FOMC]'
         print(line)
         for e in d['events']:
-            wake = '  ⏰ WAKE-UP' if e.get('pre_rth') else ''
+            if e.get('pre_rth'):
+                tag = '  ⏰ WAKE-UP'
+            elif e.get('in_window'):
+                tag = '  ◀ IN-WINDOW'
+            else:
+                tag = ''
             print(f"        {e['time_pt']:>9s} PT ({e['time_et_fmt']} ET)  "
-                  f"{e['event']}{wake}")
+                  f"{e['event']}{tag}")
         if not d['events']:
             print('        (no red-folder events)')
+        for nt in d.get('play_notes', []):
+            print(f"        » [{nt['tag']}] {nt['text']}")
     print()
 
 

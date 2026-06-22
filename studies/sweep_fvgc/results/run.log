@@ -1,0 +1,265 @@
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:107: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  hits = df['hit_2_0R'].fillna(False).astype(bool).sum()
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:200: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  'wr_2R_aligned': round(aligned['hit_2_0R'].fillna(False).mean() * 100, 2),
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:202: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  'wr_2R_base': round(base['hit_2_0R'].fillna(False).mean() * 100, 2),
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:203: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  'lift_pp': round((aligned['hit_2_0R'].fillna(False).mean() - base['hit_2_0R'].fillna(False).mean()) * 100, 2),
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:221: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  'wr_2R_aligned': round(aligned['hit_2_0R'].fillna(False).mean() * 100, 2) if len(aligned) > 0 else np.nan,
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:223: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  'wr_2R_total': round(sub['hit_2_0R'].fillna(False).mean() * 100, 2),
+/Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/run.py:224: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  'lift_pp': round((aligned['hit_2_0R'].fillna(False).mean() - sub['hit_2_0R'].fillna(False).mean()) * 100, 2) if len(aligned) > 0 else np.nan,
+Loading data...
+  entered trades: 4,548
+  BSL/SSL rows: 2,155
+  30s bars: 5,875,787
+Computing sweep flags...
+
+--- Overall cells ---
+                       cell    n  wr_2R  wr_overall
+                all_entered 4548  42.22       49.43
+                   all_long 2284  41.81       49.52
+                  all_short 2264  42.62       49.34
+           sweep_aligned_5m 1222  44.35       51.15
+       NOT_sweep_aligned_5m 3326  41.43       48.80
+      long_sweep_aligned_5m  615  40.81       48.78
+  long_NOT_sweep_aligned_5m 1669  42.18       49.79
+     short_sweep_aligned_5m  607  47.94       53.54
+ short_NOT_sweep_aligned_5m 1657  40.68       47.80
+          sweep_aligned_10m 1451  43.83       50.65
+      NOT_sweep_aligned_10m 3097  41.46       48.85
+     long_sweep_aligned_10m  716  40.64       48.74
+ long_NOT_sweep_aligned_10m 1568  42.35       49.87
+    short_sweep_aligned_10m  735  46.94       52.52
+short_NOT_sweep_aligned_10m 1529  40.55       47.81
+          sweep_aligned_15m 1600  44.12       50.94
+      NOT_sweep_aligned_15m 2948  41.18       48.61
+     long_sweep_aligned_15m  783  41.00       49.04
+ long_NOT_sweep_aligned_15m 1501  42.24       49.77
+    short_sweep_aligned_15m  817  47.12       52.75
+short_NOT_sweep_aligned_15m 1447  40.08       47.41
+          sweep_aligned_30m 1844  44.90       51.74
+      NOT_sweep_aligned_30m 2704  40.38       47.86
+     long_sweep_aligned_30m  904  41.92       49.78
+ long_NOT_sweep_aligned_30m 1380  41.74       49.35
+    short_sweep_aligned_30m  940  47.77       53.62
+short_NOT_sweep_aligned_30m 1324  38.97       46.30
+
+--- IS/OOS cells (selected) ---
+        split                        cell    n  wr_2R  wr_overall
+ IS_2018_2022            sweep_aligned_5m  582  43.13       49.66
+ IS_2018_2022        NOT_sweep_aligned_5m 1611  38.92       46.43
+ IS_2018_2022       long_sweep_aligned_5m  301  37.54       45.51
+ IS_2018_2022   long_NOT_sweep_aligned_5m  761  40.47       48.23
+ IS_2018_2022      short_sweep_aligned_5m  281  49.11       54.09
+ IS_2018_2022  short_NOT_sweep_aligned_5m  850  37.53       44.82
+ IS_2018_2022           sweep_aligned_10m  706  42.78       49.43
+ IS_2018_2022       NOT_sweep_aligned_10m 1487  38.74       46.27
+ IS_2018_2022      long_sweep_aligned_10m  351  37.89       45.87
+ IS_2018_2022  long_NOT_sweep_aligned_10m  711  40.51       48.24
+ IS_2018_2022     short_sweep_aligned_10m  355  47.61       52.96
+ IS_2018_2022 short_NOT_sweep_aligned_10m  776  37.11       44.46
+ IS_2018_2022           sweep_aligned_15m  782  42.84       49.49
+ IS_2018_2022       NOT_sweep_aligned_15m 1411  38.48       46.07
+ IS_2018_2022      long_sweep_aligned_15m  379  37.47       45.12
+ IS_2018_2022  long_NOT_sweep_aligned_15m  683  40.85       48.76
+ IS_2018_2022     short_sweep_aligned_15m  403  47.89       53.60
+ IS_2018_2022 short_NOT_sweep_aligned_15m  728  36.26       43.54
+ IS_2018_2022           sweep_aligned_30m  886  43.57       50.11
+ IS_2018_2022       NOT_sweep_aligned_30m 1307  37.64       45.37
+ IS_2018_2022      long_sweep_aligned_30m  432  38.43       45.83
+ IS_2018_2022  long_NOT_sweep_aligned_30m  630  40.48       48.57
+ IS_2018_2022     short_sweep_aligned_30m  454  48.46       54.19
+ IS_2018_2022 short_NOT_sweep_aligned_30m  677  35.01       42.39
+OOS_2023_2026            sweep_aligned_5m  640  45.47       52.50
+OOS_2023_2026        NOT_sweep_aligned_5m 1715  43.79       51.02
+OOS_2023_2026       long_sweep_aligned_5m  314  43.95       51.91
+OOS_2023_2026   long_NOT_sweep_aligned_5m  908  43.61       51.10
+OOS_2023_2026      short_sweep_aligned_5m  326  46.93       53.07
+OOS_2023_2026  short_NOT_sweep_aligned_5m  807  43.99       50.93
+OOS_2023_2026           sweep_aligned_10m  745  44.83       51.81
+OOS_2023_2026       NOT_sweep_aligned_10m 1610  43.98       51.24
+OOS_2023_2026      long_sweep_aligned_10m  365  43.29       51.51
+OOS_2023_2026  long_NOT_sweep_aligned_10m  857  43.87       51.23
+OOS_2023_2026     short_sweep_aligned_10m  380  46.32       52.11
+OOS_2023_2026 short_NOT_sweep_aligned_10m  753  44.09       51.26
+OOS_2023_2026           sweep_aligned_15m  818  45.35       52.32
+OOS_2023_2026       NOT_sweep_aligned_15m 1537  43.66       50.94
+OOS_2023_2026      long_sweep_aligned_15m  404  44.31       52.72
+OOS_2023_2026  long_NOT_sweep_aligned_15m  818  43.40       50.61
+OOS_2023_2026     short_sweep_aligned_15m  414  46.38       51.93
+OOS_2023_2026 short_NOT_sweep_aligned_15m  719  43.95       51.32
+OOS_2023_2026           sweep_aligned_30m  958  46.14       53.24
+OOS_2023_2026       NOT_sweep_aligned_30m 1397  42.95       50.18
+OOS_2023_2026      long_sweep_aligned_30m  472  45.13       53.39
+OOS_2023_2026  long_NOT_sweep_aligned_30m  750  42.80       50.00
+OOS_2023_2026     short_sweep_aligned_30m  486  47.12       53.09
+OOS_2023_2026 short_NOT_sweep_aligned_30m  647  43.12       50.39
+
+--- Variant breakdown (10m window) ---
+ window_min         variant direction  n_aligned  wr_2R_aligned  n_total  wr_2R_total  lift_pp
+         10             bos      long        238          36.13      705        39.72    -3.58
+         10             bos     short        228          48.25      656        43.29     4.95
+         10          no_fvg      long        278          39.21     1015        42.07    -2.86
+         10          no_fvg     short        287          44.60      981        41.18     3.42
+         10 protected_swing      long        113          48.67      297        45.79     2.88
+         10 protected_swing     short        110          54.55      335        47.76     6.78
+         10            ifvg      long         87          47.13      267        41.95     5.18
+         10            ifvg     short        110          42.73      292        40.07     2.66
+
+Done. Artifacts in /Users/philchan/Work/fvgc-backtest/studies/sweep_fvgc/results

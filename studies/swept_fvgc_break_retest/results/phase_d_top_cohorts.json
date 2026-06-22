@@ -1,0 +1,256 @@
+[
+  {
+    "cohort": [
+      "htf_mid",
+      "not_target_htf",
+      "not_ifvg"
+    ],
+    "tags": "protective,survivor",
+    "train": {
+      "n": 42,
+      "wr": 0.619,
+      "expectancy_r": 0.4257,
+      "pf": 2.1174,
+      "per_year": 6.6,
+      "lift_er": 0.4661
+    }
+  },
+  {
+    "cohort": [
+      "htf_mid",
+      "not_target_htf",
+      "not_htf_far"
+    ],
+    "tags": "protective,survivor",
+    "train": {
+      "n": 45,
+      "wr": 0.6,
+      "expectancy_r": 0.4062,
+      "pf": 2.0155,
+      "per_year": 7.1,
+      "lift_er": 0.4466
+    }
+  },
+  {
+    "cohort": [
+      "htf_mid",
+      "not_target_htf"
+    ],
+    "tags": "protective,survivor",
+    "train": {
+      "n": 45,
+      "wr": 0.6,
+      "expectancy_r": 0.4062,
+      "pf": 2.0155,
+      "per_year": 7.1,
+      "lift_er": 0.4466
+    }
+  },
+  {
+    "cohort": [
+      "htf_mid",
+      "not_target_htf",
+      "r0_ge_10"
+    ],
+    "tags": "protective,survivor",
+    "train": {
+      "n": 43,
+      "wr": 0.6047,
+      "expectancy_r": 0.3925,
+      "pf": 1.9929,
+      "per_year": 6.8,
+      "lift_er": 0.4329
+    }
+  },
+  {
+    "cohort": [
+      "htf_mid",
+      "r0_ge_10",
+      "not_ifvg"
+    ],
+    "tags": "protective,survivor",
+    "train": {
+      "n": 58,
+      "wr": 0.5862,
+      "expectancy_r": 0.3228,
+      "pf": 1.78,
+      "per_year": 9.1,
+      "lift_er": 0.3632
+    }
+  },
+  {
+    "cohort": [
+      "below_vwap",
+      "not_target_htf",
+      "level_touch_3_5"
+    ],
+    "tags": "exploratory,protective,survivor",
+    "train": {
+      "n": 57,
+      "wr": 0.7193,
+      "expectancy_r": 0.264,
+      "pf": 1.9405,
+      "per_year": 9.0,
+      "lift_er": 0.3044
+    }
+  },
+  {
+    "cohort": [
+      "below_vwap",
+      "level_touch_3_5"
+    ],
+    "tags": "exploratory,survivor",
+    "train": {
+      "n": 67,
+      "wr": 0.7164,
+      "expectancy_r": 0.2379,
+      "pf": 1.839,
+      "per_year": 10.6,
+      "lift_er": 0.2783
+    }
+  },
+  {
+    "cohort": [
+      "short",
+      "below_vwap",
+      "level_touch_3_5"
+    ],
+    "tags": "exploratory,survivor",
+    "train": {
+      "n": 67,
+      "wr": 0.7164,
+      "expectancy_r": 0.2379,
+      "pf": 1.839,
+      "per_year": 10.6,
+      "lift_er": 0.2783
+    }
+  },
+  {
+    "cohort": [
+      "below_vwap",
+      "r0_ge_10",
+      "level_touch_3_5"
+    ],
+    "tags": "exploratory,protective,survivor",
+    "train": {
+      "n": 61,
+      "wr": 0.7213,
+      "expectancy_r": 0.2253,
+      "pf": 1.8083,
+      "per_year": 9.6,
+      "lift_er": 0.2657
+    }
+  },
+  {
+    "cohort": [
+      "open_above_prior_va",
+      "vixy_normal",
+      "btr_4_6"
+    ],
+    "tags": "exploratory,survivor",
+    "train": {
+      "n": 74,
+      "wr": 0.6081,
+      "expectancy_r": 0.4104,
+      "pf": 2.0473,
+      "per_year": 11.7,
+      "lift_er": 0.4508
+    }
+  },
+  {
+    "cohort": [
+      "far_magnet",
+      "btr_4_6",
+      "reclaim"
+    ],
+    "tags": "exploratory,survivor",
+    "train": {
+      "n": 61,
+      "wr": 0.2951,
+      "expectancy_r": 0.7756,
+      "pf": 2.1003,
+      "per_year": 9.6,
+      "lift_er": 0.816
+    }
+  },
+  {
+    "cohort": [
+      "short",
+      "open_above_prior_va",
+      "far_magnet"
+    ],
+    "tags": "survivor",
+    "train": {
+      "n": 89,
+      "wr": 0.2697,
+      "expectancy_r": 0.5743,
+      "pf": 1.7864,
+      "per_year": 14.0,
+      "lift_er": 0.6147
+    }
+  },
+  {
+    "cohort": [
+      "far_magnet",
+      "not_target_htf",
+      "btr_4_6"
+    ],
+    "tags": "exploratory,protective,survivor",
+    "train": {
+      "n": 101,
+      "wr": 0.2673,
+      "expectancy_r": 0.5123,
+      "pf": 1.6992,
+      "per_year": 15.9,
+      "lift_er": 0.5527
+    }
+  },
+  {
+    "cohort": [
+      "open_above_prior_va",
+      "vixy_normal",
+      "far_magnet"
+    ],
+    "tags": "survivor",
+    "train": {
+      "n": 74,
+      "wr": 0.2432,
+      "expectancy_r": 0.5072,
+      "pf": 1.6702,
+      "per_year": 11.7,
+      "lift_er": 0.5476
+    }
+  },
+  {
+    "cohort": [
+      "short",
+      "vixy_normal",
+      "far_magnet"
+    ],
+    "tags": "survivor",
+    "train": {
+      "n": 109,
+      "wr": 0.2661,
+      "expectancy_r": 0.501,
+      "pf": 1.6826,
+      "per_year": 17.2,
+      "lift_er": 0.5414
+    }
+  },
+  {
+    "cohort": [
+      "far_magnet",
+      "r0_ge_10",
+      "btr_4_6"
+    ],
+    "tags": "exploratory,protective,survivor",
+    "train": {
+      "n": 71,
+      "wr": 0.2535,
+      "expectancy_r": 0.4743,
+      "pf": 1.6354,
+      "per_year": 11.2,
+      "lift_er": 0.5147
+    }
+  }
+]

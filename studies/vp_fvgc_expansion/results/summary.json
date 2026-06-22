@@ -1,0 +1,238 @@
+[
+  {
+    "name": "E0  A+ replication under LAG-1 VP",
+    "verdict": "FAIL",
+    "reasons": [
+      "OOS lift -3.14pp < 5.0pp"
+    ],
+    "pre_is_n": 4,
+    "pre_is_pf": 0.0,
+    "pre_is_wr": 0.0,
+    "is_n": 66,
+    "is_pf": 0.7358490566037735,
+    "is_wr": 0.19696969696969696,
+    "oos_n": 90,
+    "oos_pf": 1.4262295081967213,
+    "oos_wr": 0.32222222222222224,
+    "oos_exp_r": 0.288888888888889,
+    "oos_lift_pp": -3.135173389950463,
+    "id": "E0"
+  },
+  {
+    "name": "E1  Single-magnet clean shot (VA-edge, 0.5-1.5R)",
+    "verdict": "FAIL",
+    "reasons": [
+      "OOS lift -0.91pp < 5.0pp"
+    ],
+    "pre_is_n": 3,
+    "pre_is_pf": 0.0,
+    "pre_is_wr": 0.0,
+    "is_n": 46,
+    "is_pf": 1.1818181818181819,
+    "is_wr": 0.2826086956521739,
+    "oos_n": 30,
+    "oos_pf": 1.0909090909090908,
+    "oos_wr": 0.26666666666666666,
+    "oos_exp_r": 0.06666666666666665,
+    "oos_lift_pp": -0.9129511677282376,
+    "id": "E1"
+  },
+  {
+    "name": "E2  Aged-naked VP POC magnet",
+    "verdict": "PASS",
+    "reasons": [],
+    "pre_is_n": 10,
+    "pre_is_pf": 0.75,
+    "pre_is_wr": 0.2,
+    "is_n": 98,
+    "is_pf": 0.92,
+    "is_wr": 0.23469387755102042,
+    "oos_n": 95,
+    "oos_pf": 2.2777777777777777,
+    "oos_wr": 0.43157894736842106,
+    "oos_exp_r": 0.7263157894736842,
+    "oos_lift_pp": 5.227399709464741,
+    "id": "E2"
+  },
+  {
+    "name": "E3  A+ \u00d7 stable-POC (3+ consecutive days)",
+    "verdict": "SMALL_N",
+    "reasons": [
+      "OOS n=8 < 20"
+    ],
+    "pre_is_n": 2,
+    "pre_is_pf": 0.0,
+    "pre_is_wr": 0.0,
+    "is_n": 6,
+    "is_pf": 0.0,
+    "is_wr": 0.0,
+    "oos_n": 8,
+    "oos_pf": 0.42857142857142855,
+    "oos_wr": 0.125,
+    "oos_exp_r": -0.5,
+    "oos_lift_pp": 18.253715498938426,
+    "id": "E3"
+  },
+  {
+    "name": "E4  HTF weekly VP magnet stack (\u22652 + VA-edge, 0.5-5R)",
+    "verdict": "SMALL_N",
+    "reasons": [
+      "OOS n=8 < 20"
+    ],
+    "pre_is_n": 1,
+    "pre_is_pf": null,
+    "pre_is_wr": 1.0,
+    "is_n": 4,
+    "is_pf": 1.0,
+    "is_wr": 0.25,
+    "oos_n": 8,
+    "oos_pf": 1.8,
+    "oos_wr": 0.375,
+    "oos_exp_r": 0.5,
+    "oos_lift_pp": 18.253715498938426,
+    "id": "E4"
+  },
+  {
+    "name": "E5  VP-sweep then FVGC (pivot mechanism)",
+    "verdict": "FAIL",
+    "reasons": [
+      "OOS lift +0.03pp < 5.0pp"
+    ],
+    "pre_is_n": 47,
+    "pre_is_pf": 1.1470588235294117,
+    "pre_is_wr": 0.2765957446808511,
+    "is_n": 651,
+    "is_pf": 1.2828947368421053,
+    "is_wr": 0.2995391705069124,
+    "oos_n": 725,
+    "oos_pf": 1.7180043383947938,
+    "oos_wr": 0.3641379310344828,
+    "oos_exp_r": 0.4565517241379311,
+    "oos_lift_pp": 0.02957756790394339,
+    "id": "E5"
+  },
+  {
+    "name": "E6  Level-launched FVGC (FVG edge \u00b13pts of VP)",
+    "verdict": "FAIL",
+    "reasons": [
+      "OOS lift -6.03pp < 5.0pp"
+    ],
+    "pre_is_n": 21,
+    "pre_is_pf": 1.2,
+    "pre_is_wr": 0.2857142857142857,
+    "is_n": 206,
+    "is_pf": 1.2620689655172415,
+    "is_wr": 0.2961165048543689,
+    "oos_n": 191,
+    "oos_pf": 1.4076923076923078,
+    "oos_wr": 0.3193717277486911,
+    "oos_exp_r": 0.2774869109947644,
+    "oos_lift_pp": -6.026389213103456,
+    "id": "E6"
+  },
+  {
+    "name": "E7  Cross-framework magnet stack (VP+Liq \u22652 + key edge)",
+    "verdict": "FAIL",
+    "reasons": [
+      "OOS lift -3.04pp < 5.0pp"
+    ],
+    "pre_is_n": 60,
+    "pre_is_pf": 1.5,
+    "pre_is_wr": 0.3333333333333333,
+    "is_n": 702,
+    "is_pf": 1.2718052738336714,
+    "is_wr": 0.29772079772079774,
+    "oos_n": 694,
+    "oos_pf": 1.5758241758241758,
+    "oos_wr": 0.34438040345821325,
+    "oos_exp_r": 0.377521613832853,
+    "oos_lift_pp": -3.0359098612921187,
+    "id": "E7"
+  },
+  {
+    "name": "E8  Confluent-zone magnet (VP\u00b13pts of PDH/PDL/ONH/ONL)",
+    "verdict": "FAIL",
+    "reasons": [
+      "OOS lift -5.20pp < 5.0pp"
+    ],
+    "pre_is_n": 11,
+    "pre_is_pf": 1.7142857142857142,
+    "pre_is_wr": 0.36363636363636365,
+    "is_n": 96,
+    "is_pf": 1.173913043478261,
+    "is_wr": 0.28125,
+    "oos_n": 105,
+    "oos_pf": 1.2567567567567568,
+    "oos_wr": 0.29523809523809524,
+    "oos_exp_r": 0.18095238095238098,
+    "oos_lift_pp": -5.1986654534425245,
+    "id": "E8"
+  },
+  {
+    "name": "E9  NWOG \u00d7 VP confluence (Monday only)",
+    "verdict": "SMALL_N",
+    "reasons": [
+      "OOS n=8 < 20"
+    ],
+    "pre_is_n": 0,
+    "pre_is_pf": null,
+    "pre_is_wr": null,
+    "is_n": 2,
+    "is_pf": 3.0,
+    "is_wr": 0.5,
+    "oos_n": 8,
+    "oos_pf": 5.0,
+    "oos_wr": 0.625,
+    "oos_exp_r": 1.5,
+    "oos_lift_pp": 18.253715498938426,
+    "id": "E9"
+  },
+  {
+    "name": "E10 Liquidity-only mirror (\u22652 liq ahead + PDH/PDL or ONH/ONL key)",
+    "verdict": "FAIL",
+    "reasons": [
+      "OOS lift -1.64pp < 5.0pp"
+    ],
+    "pre_is_n": 52,
+    "pre_is_pf": 1.875,
+    "pre_is_wr": 0.38461538461538464,
+    "is_n": 567,
+    "is_pf": 1.3172588832487309,
+    "is_wr": 0.30511463844797176,
+    "oos_n": 521,
+    "oos_pf": 1.7652439024390243,
+    "oos_wr": 0.3704414587332054,
+    "oos_exp_r": 0.48176583493282155,
+    "oos_lift_pp": -1.6359198177602285,
+    "id": "E10"
+  },
+  {
+    "name": "E11 BSL/SSL sweep + FVGC reversal (cluster proxy)",
+    "verdict": "FAIL",
+    "reasons": [
+      "OOS lift +2.13pp < 5.0pp"
+    ],
+    "pre_is_n": 8,
+    "pre_is_pf": 3.0,
+    "pre_is_wr": 0.5,
+    "is_n": 75,
+    "is_pf": 1.3269230769230769,
+    "is_wr": 0.30666666666666664,
+    "oos_n": 69,
+    "oos_pf": 1.9285714285714286,
+    "oos_wr": 0.391304347826087,
+    "oos_exp_r": 0.5652173913043479,
+    "oos_lift_pp": 2.1305270931413265,
+    "id": "E11"
+  },
+  {
+    "name": "E12 dynamic_tp",
+    "verdict": "BETTER",
+    "reasons": [
+      "delta exp = +0.006R per trade"
+    ],
+    "oos_n": 156,
+    "oos_exp_r": 0.08333333333333333,
+    "id": "E12"
+  }
+]

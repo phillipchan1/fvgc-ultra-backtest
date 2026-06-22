@@ -1,0 +1,93 @@
+Loading trades + features...
+  total tradeable w/ lag-1 VP: 4542
+  date range: 2018-02-01 10:02:00 → 2026-05-15 10:03:00
+
+==============================================================================
+  HOLDOUT  (2018-01-02 → 2023-09-30, never seen)  (rows=2657)
+==============================================================================
+  ALL (baseline)                       n=2657  WR= 47.8%  PF= 0.92  EV=-0.045R  pnl=-2540.0
+  Thursday alone                       n= 549  WR= 45.9%  PF= 0.85  EV=-0.082R  pnl=-1040.0
+  Inside VA alone                      n= 833  WR= 47.4%  PF= 0.95  EV=-0.052R  pnl=-495.0
+  Thursday + Inside VA  *** THE PLAY ***  n= 170  WR= 50.0%  PF= 0.97  EV=+0.000R  pnl=-75.0
+  Thursday + NOT in VA                 n= 379  WR= 44.1%  PF= 0.80  EV=-0.119R  pnl=-965.0
+  Non-Thursday + Inside VA             n= 663  WR= 46.8%  PF= 0.95  EV=-0.065R  pnl=-420.0
+
+==============================================================================
+  IN-SAMPLE  (2023-10-01 → 2026-03-25, original study)  (rows=1769)
+==============================================================================
+  ALL (baseline)                       n=1769  WR= 52.3%  PF= 1.12  EV=+0.047R  pnl=+2780.0
+  Thursday alone                       n= 365  WR= 56.7%  PF= 1.29  EV=+0.134R  pnl=+1355.0
+  Inside VA alone                      n= 525  WR= 51.8%  PF= 1.21  EV=+0.036R  pnl=+1340.0
+  Thursday + Inside VA  *** THE PLAY ***  n=  93  WR= 69.9%  PF= 2.47  EV=+0.398R  pnl=+1170.0
+  Thursday + NOT in VA                 n= 272  WR= 52.2%  PF= 1.05  EV=+0.044R  pnl=+185.0
+  Non-Thursday + Inside VA             n= 432  WR= 47.9%  PF= 1.03  EV=-0.042R  pnl=+170.0
+
+==============================================================================
+  FORWARD  (2026-03-26 → 2026-05-15, post-publication)  (rows=116)
+==============================================================================
+  ALL (baseline)                       n= 116  WR= 45.7%  PF= 0.78  EV=-0.086R  pnl=-435.0
+  Thursday alone                       n=  31  WR= 54.8%  PF= 1.41  EV=+0.097R  pnl=+160.0
+  Inside VA alone                      n=  26  WR= 42.3%  PF= 0.73  EV=-0.154R  pnl=-110.0
+  Thursday + Inside VA  *** THE PLAY ***  n=   8  WR= 37.5%  PF= 0.60  EV=-0.250R  pnl=-50.0
+  Thursday + NOT in VA                 n=  23  WR= 60.9%  PF= 1.79  EV=+0.217R  pnl=+210.0
+  Non-Thursday + Inside VA             n=  18  WR= 44.4%  PF= 0.79  EV=-0.111R  pnl=-60.0
+
+==============================================================================
+  FULL  (2018-01-02 → 2026-05-15, all data)  (rows=4542)
+==============================================================================
+  ALL (baseline)                       n=4542  WR= 49.5%  PF= 1.00  EV=-0.010R  pnl=-195.0
+  Thursday alone                       n= 945  WR= 50.4%  PF= 1.04  EV=+0.007R  pnl=+475.0
+  Inside VA alone                      n=1384  WR= 49.0%  PF= 1.04  EV=-0.020R  pnl=+735.0
+  Thursday + Inside VA  *** THE PLAY ***  n= 271  WR= 56.5%  PF= 1.34  EV=+0.129R  pnl=+1045.0
+  Thursday + NOT in VA                 n= 674  WR= 47.9%  PF= 0.94  EV=-0.042R  pnl=-570.0
+  Non-Thursday + Inside VA             n=1113  WR= 47.2%  PF= 0.98  EV=-0.057R  pnl=-310.0
+
+==============================================================================
+  PERMUTATION TEST  (in-VA mask within Thursday slice only — apples-to-apples)
+==============================================================================
+  HOLDOUT     cell n= 170  WR= 50.0%  perm-mean= 45.9%  p=0.1187
+  IN-SAMPLE   cell n=  93  WR= 69.9%  perm-mean= 56.8%  p=0.0022
+  FORWARD     cell n=   8  WR= 37.5%  perm-mean= 54.8%  p=0.9385
+  FULL        cell n= 271  WR= 56.5%  perm-mean= 50.4%  p=0.0106
+
+==============================================================================
+  DOW × Inside-VA breakdown  (Bonferroni search space = 5 days)
+==============================================================================
+
+  --- HOLDOUT ---
+  Mon + Inside VA                      n= 130  WR= 51.5%  PF= 1.11  EV=+0.031R  pnl=+150.0
+  Tue + Inside VA                      n= 148  WR= 40.5%  PF= 0.73  EV=-0.189R  pnl=-515.0
+  Wed + Inside VA                      n= 183  WR= 47.5%  PF= 0.95  EV=-0.049R  pnl=-125.0
+  Thu + Inside VA                      n= 170  WR= 50.0%  PF= 0.97  EV=+0.000R  pnl=-75.0
+  Fri + Inside VA                      n= 202  WR= 47.5%  PF= 1.03  EV=-0.050R  pnl=+70.0
+
+  --- IN-SAMPLE ---
+  Mon + Inside VA                      n= 114  WR= 43.9%  PF= 0.91  EV=-0.123R  pnl=-130.0
+  Tue + Inside VA                      n= 112  WR= 49.1%  PF= 1.10  EV=-0.018R  pnl=+145.0
+  Wed + Inside VA                      n= 100  WR= 52.0%  PF= 1.08  EV=+0.040R  pnl=+95.0
+  Thu + Inside VA                      n=  93  WR= 69.9%  PF= 2.47  EV=+0.398R  pnl=+1170.0
+  Fri + Inside VA                      n= 106  WR= 47.2%  PF= 1.04  EV=-0.057R  pnl=+60.0
+
+  --- FORWARD ---
+  Mon + Inside VA                      n=  12  WR= 58.3%  PF= 1.56  EV=+0.167R  pnl=+70.0
+  Tue + Inside VA                      n=   2  WR=  0.0%  PF= 0.00  EV=-1.000R  pnl=-80.0
+  Wed + Inside VA                      n=   3  WR= 33.3%  PF= 0.60  EV=-0.333R  pnl=-20.0
+  Thu + Inside VA                      n=   8  WR= 37.5%  PF= 0.60  EV=-0.250R  pnl=-50.0
+  Fri + Inside VA                      n=   1  WR=  0.0%  PF= 0.00  EV=-1.000R  pnl=-30.0
+
+  --- FULL ---
+  Mon + Inside VA                      n= 256  WR= 48.4%  PF= 1.03  EV=-0.031R  pnl=+90.0
+  Tue + Inside VA                      n= 262  WR= 43.9%  PF= 0.87  EV=-0.122R  pnl=-450.0
+  Wed + Inside VA                      n= 286  WR= 49.0%  PF= 0.99  EV=-0.021R  pnl=-50.0
+  Thu + Inside VA                      n= 271  WR= 56.5%  PF= 1.34  EV=+0.129R  pnl=+1045.0
+  Fri + Inside VA                      n= 309  WR= 47.2%  PF= 1.02  EV=-0.055R  pnl=+100.0
+
+  → /Users/philchan/Work/fvgc-backtest/studies/thursday_inside_va/results/summary.csv
+
+==============================================================================
+  VERDICT  (decision rule from study scoping)
+==============================================================================
+  Holdout cell:  n=170  WR=50.0%  PF=0.97
+  Forward cell:  n=8  WR=37.5%  PF=0.6
+  Holdout verdict:  INVALIDATED (multi-comparison)
+  Forward verdict:  INVALIDATED (multi-comparison)
