@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "meta": {
-    "generated_at_pt": "2026-06-21 04:57 PM PT",
+    "generated_at_pt": "2026-06-22 08:01 AM PT",
     "week_start": "2026-06-22",
     "week_end": "2026-06-26",
     "gen_date": "2026-06-21"
@@ -12,6 +12,8 @@
     "has_quad_witching": false,
     "earliest_wake_pt": "5:30 am",
     "earliest_wake_day": "Thursday",
+    "recent_median_or45_pts": 224,
+    "recent_median_f90_pts": 282,
     "recent_median_range_pts": 418,
     "recent_mean_range_pts": 538,
     "recent_max_range_pts": 1620,
@@ -23,15 +25,27 @@
     "regime": "normal",
     "regime_note": "Normal range regime \u2014 standard matrix plays",
     "vol_pct": 0.65,
+    "anchors": {
+      "or45": 224,
+      "f90": 282,
+      "rest": 284,
+      "full": 418
+    },
     "median_range_pts": 418,
     "ref_close": 30693.5,
     "ref_date": "2026-06-18",
     "levels": [
       {
-        "name": "Recent high (60d)",
+        "name": "Prior-week high",
         "price": 30915.0,
         "dist": 221.5,
         "dist_abs": 222
+      },
+      {
+        "name": "All-time high",
+        "price": 30968.0,
+        "dist": 274.5,
+        "dist_abs": 274
       },
       {
         "name": "Prior-week low",
@@ -47,7 +61,7 @@
       }
     ],
     "ath_near": false,
-    "ath_dist": 221.5
+    "ath_dist": 274.5
   },
   "days": [
     {
@@ -62,12 +76,29 @@
       "hist_avg_rth_range": 328,
       "hist_avg_or45_range": 186,
       "range_estimate": {
-        "point_pts": 418,
-        "lo_pts": 313,
-        "hi_pts": 522,
         "mult": 1.0,
         "event_tag": null,
-        "method": "median20 (418) \u00d7 1.00"
+        "method": "live median20 \u00d7 1.00",
+        "or45": {
+          "point": 224,
+          "lo": 168,
+          "hi": 280
+        },
+        "f90": {
+          "point": 282,
+          "lo": 211,
+          "hi": 352
+        },
+        "rest": {
+          "point": 284,
+          "lo": 213,
+          "hi": 355
+        },
+        "full": {
+          "point": 418,
+          "lo": 313,
+          "hi": 522
+        }
       },
       "play_notes": [
         {
@@ -88,12 +119,29 @@
       "hist_avg_rth_range": 338,
       "hist_avg_or45_range": 201,
       "range_estimate": {
-        "point_pts": 418,
-        "lo_pts": 313,
-        "hi_pts": 522,
         "mult": 1.0,
         "event_tag": null,
-        "method": "median20 (418) \u00d7 1.00"
+        "method": "live median20 \u00d7 1.00",
+        "or45": {
+          "point": 224,
+          "lo": 168,
+          "hi": 280
+        },
+        "f90": {
+          "point": 282,
+          "lo": 211,
+          "hi": 352
+        },
+        "rest": {
+          "point": 284,
+          "lo": 213,
+          "hi": 355
+        },
+        "full": {
+          "point": 418,
+          "lo": 313,
+          "hi": 522
+        }
       },
       "play_notes": [
         {
@@ -114,12 +162,29 @@
       "hist_avg_rth_range": 338,
       "hist_avg_or45_range": 171,
       "range_estimate": {
-        "point_pts": 418,
-        "lo_pts": 313,
-        "hi_pts": 522,
         "mult": 1.0,
         "event_tag": null,
-        "method": "median20 (418) \u00d7 1.00"
+        "method": "live median20 \u00d7 1.00",
+        "or45": {
+          "point": 224,
+          "lo": 168,
+          "hi": 280
+        },
+        "f90": {
+          "point": 282,
+          "lo": 211,
+          "hi": 352
+        },
+        "rest": {
+          "point": 284,
+          "lo": 213,
+          "hi": 355
+        },
+        "full": {
+          "point": 418,
+          "lo": 313,
+          "hi": 522
+        }
       },
       "play_notes": [
         {
@@ -165,12 +230,29 @@
       "hist_avg_rth_range": 366,
       "hist_avg_or45_range": 212,
       "range_estimate": {
-        "point_pts": 525,
-        "lo_pts": 394,
-        "hi_pts": 657,
         "mult": 1.26,
         "event_tag": "red_folder",
-        "method": "median20 (418) \u00d7 1.26 [red_folder]"
+        "method": "live median20 \u00d7 1.26 [red_folder]",
+        "or45": {
+          "point": 282,
+          "lo": 211,
+          "hi": 352
+        },
+        "f90": {
+          "point": 354,
+          "lo": 266,
+          "hi": 443
+        },
+        "rest": {
+          "point": 357,
+          "lo": 268,
+          "hi": 446
+        },
+        "full": {
+          "point": 525,
+          "lo": 394,
+          "hi": 657
+        }
       },
       "play_notes": [
         {
@@ -191,12 +273,29 @@
       "hist_avg_rth_range": 349,
       "hist_avg_or45_range": 203,
       "range_estimate": {
-        "point_pts": 418,
-        "lo_pts": 313,
-        "hi_pts": 522,
         "mult": 1.0,
         "event_tag": null,
-        "method": "median20 (418) \u00d7 1.00"
+        "method": "live median20 \u00d7 1.00",
+        "or45": {
+          "point": 224,
+          "lo": 168,
+          "hi": 280
+        },
+        "f90": {
+          "point": 282,
+          "lo": 211,
+          "hi": 352
+        },
+        "rest": {
+          "point": 284,
+          "lo": 213,
+          "hi": 355
+        },
+        "full": {
+          "point": 418,
+          "lo": 313,
+          "hi": 522
+        }
       },
       "play_notes": [
         {
@@ -229,6 +328,7 @@
   },
   "notes": [
     "Times shown in PST/PDT (America/Los_Angeles). 8:30 AM ET = 5:30 AM PST.",
-    "Range estimates are ATR/event-conditioned BASELINES, not the same-morning OR-width forecast (which needs that day's gap + overnight range)."
+    "Range estimates are split by window \u2014 first 45 min (your opening range), first 90 min, and the rest (11:00-close) \u2014 each the recent-median range for that window scaled by the event multiplier.",
+    "These are event-conditioned BASELINES, not the same-morning OR-width forecast (which needs that day's gap + overnight range)."
   ]
 }

@@ -52,7 +52,15 @@ TRADING_DAYS_CSV = REPO / 'data' / 'trading_days' / 'trading_days.csv'
 sys.path.insert(0, str(TOOLS))
 
 RTH_OPEN_ET = dtime(9, 30)
-WINDOW_END_ET = dtime(11, 0)   # Phil trades the first ~90 min (9:30-11:00 ET)
+OR45_END_ET = dtime(10, 15)    # first 45 min — the opening range Phil trades
+WINDOW_END_ET = dtime(11, 0)   # first ~90 min (9:30-11:00 ET)
+RTH_CLOSE_ET = dtime(16, 0)
+
+# The three windows the report estimates, in priority order. Phil's core is
+# the first 45 min; 90 min is his extended window; "rest" is context.
+RANGE_BUCKETS = ('or45', 'f90', 'rest', 'full')
+_BUCKET_LABEL = {'or45': 'first 45 min', 'f90': 'first 90 min',
+                 'rest': 'rest (11:00-close)', 'full': 'full session'}
 
 
 # ======================================================================
@@ -221,17 +229,9 @@ def _event_mult_tag(event_type: str, title: str) -> str | None:
     return None
 
 
-def estimate_day_range(base_atr20: float | None,
-                       day_events: list[dict],
-                       multipliers: dict[str, dict],
-                       weekday_avg: float | None) -> dict:
-    """Expected RTH range for a future day.
-
-    base = live atr_20d (typical recent daily range). Pick the strongest
-    event multiplier present that day (FOMC > CPI > NFP > PPI > generic
-    red-folder). If ATR is unavailable, fall back to the historical
-    event-day average, then the weekday average.
-    """
+def _event_mult(day_events: list[dict], multipliers: dict[str, dict]) -> tuple[float, str | None]:
+    """Pick the strongest event multiplier present that day (FOMC > CPI >
+    NFP > PPI > generic red-folder). Returns (mult, tag)."""
     chosen_tag = None
     mult = 1.0
     for ev in day_events:
@@ -243,31 +243,41 @@ def estimate_day_range(base_atr20: float | None,
         if key and multipliers[key]['mult'] > mult:
             mult = multipliers[key]['mult']
             chosen_tag = tag
+    return mult, chosen_tag
 
-    if base_atr20:
-        point = base_atr20 * mult
-        method = f'median20 ({base_atr20:.0f}) × {mult:.2f}'
-        if chosen_tag:
-            method += f' [{chosen_tag}]'
-    elif chosen_tag and chosen_tag in multipliers:
-        point = multipliers[chosen_tag]['avg']
-        method = f'hist {chosen_tag} avg'
-    elif weekday_avg:
-        point = weekday_avg
-        method = 'weekday avg (no ATR)'
-    else:
-        return {'point_pts': None, 'lo_pts': None, 'hi_pts': None,
-                'mult': mult, 'event_tag': chosen_tag, 'method': 'unavailable'}
 
-    # ±25% band — wide on purpose; this is a days-ahead baseline, not a forecast.
-    return {
-        'point_pts': round(point),
-        'lo_pts': round(point * 0.75),
-        'hi_pts': round(point * 1.25),
-        'mult': round(mult, 2),
-        'event_tag': chosen_tag,
-        'method': method,
-    }
+def estimate_buckets(anchors: dict | None, day_events: list[dict],
+                     multipliers: dict[str, dict],
+                     weekday_or45: float | None,
+                     weekday_full: float | None) -> dict:
+    """Expected range per window (or45 / f90 / rest / full).
+
+    Each bucket anchors on the live recent-median for that window, scaled by
+    the day's event multiplier. The multiplier is derived from full-session
+    history (events expand the whole day), applied uniformly as a baseline.
+    Falls back to historical weekday averages for or45/full when the live
+    intraday fetch is unavailable; f90/rest have no CSV history so go null.
+    """
+    mult, tag = _event_mult(day_events, multipliers)
+
+    base = dict(anchors) if anchors else {}
+    src = 'live median20'
+    if not base:
+        # No live intraday — fall back to weekday history where we have it.
+        base = {'or45': weekday_or45, 'full': weekday_full}
+        src = 'weekday avg (no live)'
+
+    out = {'mult': round(mult, 2), 'event_tag': tag,
+           'method': f'{src} × {mult:.2f}' + (f' [{tag}]' if tag else '')}
+    for key in RANGE_BUCKETS:
+        b = base.get(key)
+        if b:
+            point = b * mult
+            out[key] = {'point': round(point), 'lo': round(point * 0.75),
+                        'hi': round(point * 1.25)}
+        else:
+            out[key] = {'point': None, 'lo': None, 'hi': None}
+    return out
 
 
 # ======================================================================
@@ -336,40 +346,84 @@ def _pctile(sorted_vals: list[float], x: float) -> float:
     return sum(1 for v in sorted_vals if v <= x) / len(sorted_vals)
 
 
-def _live_market_context(target_date: date, n: int = 20) -> dict | None:
-    """One daily-series fetch → recent-range stats, vol regime, and key
-    price-structure levels (draws for the first 90 min).
+def _intraday_day_records(lookback: str = '60d') -> list[dict]:
+    """Per-RTH-day records bucketed into Phil's trading windows.
 
-    Range estimate anchors on the MEDIAN of the last `n` RTH days, not the
-    mean: NQ spike days (saw 1600pt) inflate a 20-day mean above a typical
-    session. Vol regime = percentile of that median within ~1yr of daily
-    ranges. Levels are robust structure (prior-week H/L, 20-day H/L, recent
-    high as ATH proxy) — NOT naked POCs, which the naked-VP study killed.
-    Returns None on fetch failure.
+    Each record: {date, or45, f90, rest, full, high, low, close} where the
+    bucket values are the high-low range within that ET window. Built from
+    5-minute Yahoo bars (capped at ~60d). Empty list on fetch failure.
     """
     try:
-        from live_market import fetch_rth_daily_ranges, fetch_yahoo_1m
+        from live_market import fetch_yahoo_1m
+    except ImportError:
+        return []
+    try:
+        bars = fetch_yahoo_1m(symbol='NQ=F', range_=lookback, interval='5m')
+    except Exception:
+        return []
+    by_date: dict[date, list[dict]] = defaultdict(list)
+    for b in bars:
+        t = b['ts_ny'].time()
+        if RTH_OPEN_ET <= t < RTH_CLOSE_ET:
+            by_date[b['ts_ny'].date()].append(b)
+
+    def _rng(day_bars, lo_t, hi_t):
+        ws = [x for x in day_bars if lo_t <= x['ts_ny'].time() < hi_t]
+        if not ws:
+            return None
+        return max(x['high'] for x in ws) - min(x['low'] for x in ws)
+
+    recs = []
+    for d in sorted(by_date):
+        db = by_date[d]
+        last_bar = max(db, key=lambda x: x['ts_ny'])
+        recs.append({
+            'date': d,
+            'or45': _rng(db, RTH_OPEN_ET, OR45_END_ET),
+            'f90': _rng(db, RTH_OPEN_ET, WINDOW_END_ET),
+            'rest': _rng(db, WINDOW_END_ET, RTH_CLOSE_ET),
+            'full': max(x['high'] for x in db) - min(x['low'] for x in db),
+            'high': max(x['high'] for x in db),
+            'low': min(x['low'] for x in db),
+            'close': last_bar['close'],
+        })
+    return recs
+
+
+def _live_market_context(target_date: date, n: int = 20) -> dict | None:
+    """One 5m fetch → per-window range anchors, vol regime, and key
+    price-structure levels (draws for the first 90 min).
+
+    Anchors are the MEDIAN of the last `n` sessions per window (or45 / f90 /
+    rest / full), not the mean: NQ spike days (saw 1600pt) inflate a 20-day
+    mean above a typical session. Vol regime = percentile of the full-session
+    median within the last ~60 sessions. Levels are robust structure
+    (prior-week H/L, 20-day H/L, ATH) — NOT naked POCs (naked-VP study killed
+    those). Returns None on fetch failure.
+    """
+    try:
+        from live_market import fetch_yahoo_1m
     except ImportError:
         return None
-    try:
-        # Yahoo caps 5m intraday at ~60 days — that's our RTH-accurate series.
-        days = fetch_rth_daily_ranges(symbol='NQ=F', range_='60d', interval='5m')
-    except Exception:
-        return None
-    prior = [d for d in days if d['date'] < target_date]
+    recs = _intraday_day_records('60d')
+    prior = [r for r in recs if r['date'] < target_date]
     if len(prior) < n:
         return None
 
     import statistics
-    ranges = [d['range'] for d in prior]
-    window = ranges[-n:]
-    s = sorted(window)
-    p80 = s[min(len(s) - 1, int(round(0.8 * (len(s) - 1))))]
-    median = statistics.median(window)
 
-    # Vol regime: where this week's expected (median) range sits within the
-    # last ~60 RTH sessions — a "vs last quarter" read, all RTH-consistent.
-    hist = sorted(ranges)
+    def _bucket_median(key):
+        vals = [r[key] for r in prior[-n:] if r[key] is not None]
+        return statistics.median(vals) if vals else None
+
+    anchors = {k: _bucket_median(k) for k in RANGE_BUCKETS}
+    full_ranges = [r['full'] for r in prior if r['full'] is not None]
+    window_full = full_ranges[-n:]
+    median = statistics.median(window_full)
+
+    # Vol regime: where the full-session median sits within the last ~60
+    # sessions — a "vs last quarter" read.
+    hist = sorted(full_ranges)
     vol_pct = _pctile(hist, median)
     regime, regime_note = 'normal', ''
     for thresh, label, note in _VOL_REGIME_BANDS:
@@ -432,8 +486,9 @@ def _live_market_context(target_date: date, n: int = 20) -> dict | None:
     ath_near = abs(ath - ref) <= 100
 
     return {
-        'median': median, 'mean': statistics.mean(window), 'p80': p80,
-        'max': max(window), 'n': len(window),
+        'anchors': anchors,
+        'median': median, 'mean': statistics.mean(window_full),
+        'max': max(window_full), 'n': len(window_full),
         'vol_pct': round(vol_pct, 2), 'regime': regime, 'regime_note': regime_note,
         'ref_close': round(ref, 1), 'ref_date': last['date'].isoformat(),
         'levels': levels, 'ath_near': ath_near,
@@ -521,7 +576,7 @@ def build_week_ahead(gen_date: date) -> dict:
     mults = event_range_multipliers(rows)
     all_events, cal_ok = _fetch_week_events()
     ctx = _live_market_context(week[0])
-    atr_anchor = ctx['median'] if ctx else None
+    anchors = ctx['anchors'] if ctx else None
     regime = ctx['regime'] if ctx else 'normal'
 
     try:
@@ -542,8 +597,10 @@ def build_week_ahead(gen_date: date) -> dict:
             if earliest_wake is None or wake['pt_minutes'] < earliest_wake[0]:
                 earliest_wake = (wake['pt_minutes'], i, wake['time_pt'])
 
-        wd_avg = (wd_stats.get(d.weekday()) or {}).get('avg_rth_range')
-        est = estimate_day_range(atr_anchor, events, mults, wd_avg)
+        wd = wd_stats.get(d.weekday()) or {}
+        wd_or45 = wd.get('avg_or45_range')
+        wd_full = wd.get('avg_rth_range')
+        est = estimate_buckets(anchors, events, mults, wd_or45, wd_full)
         quad = is_quad_witching(d)
         fomc_decision = any(
             e.country == 'USD' and any(kw in e.title for kw in (
@@ -560,10 +617,8 @@ def build_week_ahead(gen_date: date) -> dict:
             'in_window_event': any(e.get('in_window') for e in events),
             'quad_witching': quad,
             'fomc_decision': fomc_decision,
-            'hist_avg_rth_range': round(wd_avg) if wd_avg else None,
-            'hist_avg_or45_range': (
-                round(v) if (v := (wd_stats.get(d.weekday()) or {}).get('avg_or45_range')) else None
-            ),
+            'hist_avg_rth_range': round(wd_full) if wd_full else None,
+            'hist_avg_or45_range': round(wd_or45) if wd_or45 else None,
             'range_estimate': est,
         }
         day['play_notes'] = day_play_notes(day, events, regime, bool(week_is_fomc), i)
@@ -583,6 +638,10 @@ def build_week_ahead(gen_date: date) -> dict:
             'has_quad_witching': any(dd['quad_witching'] for dd in days),
             'earliest_wake_pt': earliest_wake[2] if earliest_wake else None,
             'earliest_wake_day': DOW_NAMES[earliest_wake[1]] if earliest_wake else None,
+            'recent_median_or45_pts': (
+                round(ctx['anchors']['or45']) if ctx and ctx['anchors'].get('or45') else None),
+            'recent_median_f90_pts': (
+                round(ctx['anchors']['f90']) if ctx and ctx['anchors'].get('f90') else None),
             'recent_median_range_pts': round(ctx['median']) if ctx else None,
             'recent_mean_range_pts': round(ctx['mean']) if ctx else None,
             'recent_max_range_pts': round(ctx['max']) if ctx else None,
@@ -594,6 +653,7 @@ def build_week_ahead(gen_date: date) -> dict:
             'regime': ctx['regime'],
             'regime_note': ctx['regime_note'],
             'vol_pct': ctx['vol_pct'],
+            'anchors': {k: (round(v) if v else None) for k, v in ctx['anchors'].items()},
             'median_range_pts': round(ctx['median']),
             'ref_close': ctx['ref_close'],
             'ref_date': ctx['ref_date'],
@@ -611,8 +671,11 @@ def build_week_ahead(gen_date: date) -> dict:
         },
         'notes': [
             'Times shown in PST/PDT (America/Los_Angeles). 8:30 AM ET = 5:30 AM PST.',
-            'Range estimates are ATR/event-conditioned BASELINES, not the same-morning '
-            'OR-width forecast (which needs that day\'s gap + overnight range).',
+            'Range estimates are split by window — first 45 min (your opening range), '
+            'first 90 min, and the rest (11:00-close) — each the recent-median range for '
+            'that window scaled by the event multiplier.',
+            'These are event-conditioned BASELINES, not the same-morning OR-width forecast '
+            '(which needs that day\'s gap + overnight range).',
         ],
     }
 
@@ -643,8 +706,8 @@ def _print_report(data: dict) -> None:
         flags.append('FOMC WEEK')
     if s['has_quad_witching']:
         flags.append('QUAD WITCHING')
-    if s['recent_median_range_pts']:
-        flags.append(f"med range {s['recent_median_range_pts']}pt")
+    if s.get('recent_median_or45_pts'):
+        flags.append(f"OR45 med {s['recent_median_or45_pts']}pt")
     print(f"  {s['total_red_folder']} red-folder events" +
           (f" · {' · '.join(flags)}" if flags else ''))
     if s.get('vol_spike_recent'):
@@ -665,11 +728,13 @@ def _print_report(data: dict) -> None:
     print('  ' + '-' * 64)
     for d in data['days']:
         est = d['range_estimate']
-        est_s = (f"{est['lo_pts']}-{est['hi_pts']}pt (~{est['point_pts']})"
-                 if est['point_pts'] else 'n/a')
-        line = f"  {d['day_of_week']:9s} {d['date']}  est {est_s}"
-        if d['hist_avg_rth_range']:
-            line += f"  hist~{d['hist_avg_rth_range']}pt"
+        def _b(key):
+            b = est.get(key) or {}
+            return f"{b['lo']}-{b['hi']}" if b.get('point') else 'n/a'
+        line = (f"  {d['day_of_week']:9s} {d['date']}  "
+                f"OR45 {_b('or45')}  90m {_b('f90')}  rest {_b('rest')} pt")
+        if d['hist_avg_or45_range']:
+            line += f"  (OR45 hist~{d['hist_avg_or45_range']})"
         if d['quad_witching']:
             line += '  [QUAD WITCH]'
         if d.get('fomc_decision'):

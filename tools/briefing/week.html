@@ -163,6 +163,10 @@
   .est .sub { font-family:var(--mono); font-size:9px; color:var(--text-mute);
     letter-spacing:.5px; text-transform:uppercase; }
   .est .hist { font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-top:2px; }
+  .est .buckets { display:flex; gap:12px; margin-top:6px; padding-top:6px;
+    border-top:1px solid var(--line); font-family:var(--mono); font-size:10px; }
+  .est .buckets b { color:var(--text-mute); font-weight:700; letter-spacing:.3px; }
+  .est .buckets span { color:var(--text-dim); }
 
   .badge { display:inline-block; font-family:var(--mono); font-size:9px;
     font-weight:700; letter-spacing:.5px; padding:2px 6px; border-radius:5px;
@@ -216,17 +220,21 @@
     if (d.quad_witching)
       parts.push('<span class="badge">QUAD WITCHING</span>');
 
+    var or45 = est.or45 || {}, f90 = est.f90 || {}, rest = est.rest || {};
+    function band(b) { return (b && b.point != null) ? (b.lo + '–' + b.hi) : 'n/a'; }
     parts.push('<div class="est">');
-    if (est.point_pts != null) {
-      parts.push('<div class="big">' + est.lo_pts + '–' + est.hi_pts + ' pt</div>');
-      parts.push('<div class="sub">expected range · ~' + est.point_pts + 'pt' +
+    if (or45.point != null) {
+      parts.push('<div class="big">' + or45.lo + '–' + or45.hi + ' pt</div>');
+      parts.push('<div class="sub">first 45 min (opening range)' +
         (est.event_tag ? ' · ' + esc(est.event_tag) + ' ×' + est.mult : '') + '</div>');
+      parts.push('<div class="buckets">' +
+        '<span><b>90m</b> ' + band(f90) + '</span>' +
+        '<span><b>rest</b> ' + band(rest) + '</span></div>');
     } else {
       parts.push('<div class="big">n/a</div><div class="sub">no estimate</div>');
     }
-    if (d.hist_avg_rth_range != null)
-      parts.push('<div class="hist">6mo avg ' + d.hist_avg_rth_range + 'pt · OR45 ' +
-        (d.hist_avg_or45_range != null ? d.hist_avg_or45_range + 'pt' : '–') + '</div>');
+    if (d.hist_avg_or45_range != null)
+      parts.push('<div class="hist">OR45 6mo avg ' + d.hist_avg_or45_range + 'pt</div>');
     parts.push('</div>');
 
     if (d.events && d.events.length) {
@@ -302,8 +310,9 @@
     if (s.earliest_wake_pt)
       out.push('<span class="flag wake">⏰ EARLIEST WAKE ' +
         esc(s.earliest_wake_pt) + ' (' + esc(s.earliest_wake_day) + ')</span>');
-    if (s.recent_median_range_pts)
-      out.push('<span class="flag range">MEDIAN RANGE ' + s.recent_median_range_pts + 'pt</span>');
+    if (s.recent_median_or45_pts)
+      out.push('<span class="flag range">OR45 MED ' + s.recent_median_or45_pts + 'pt · 90m ' +
+        (s.recent_median_f90_pts || '–') + 'pt</span>');
     out.push('</div>');
 
     out.push(marketStrip(data.market));
