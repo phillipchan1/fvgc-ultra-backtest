@@ -2670,32 +2670,43 @@
   }
   .sizer-close:hover { color: var(--red); border-color: var(--red); }
   .sizer-body {
-    padding: 12px 14px;
     display: grid;
-    grid-template-columns: 310px 1fr;
-    gap: 20px;
-    align-items: start;
+    grid-template-columns: 260px 1fr;
+    align-items: stretch;
   }
-  /* Input rows */
-  .sizer-row {
-    margin-bottom: 8px;
-    grid-column: 1;
+  /* Left controls panel — stretches to match table height */
+  .sizer-left {
+    display: flex; flex-direction: column;
+    padding: 10px 14px;
+    border-right: 1px solid var(--line);
+    background: var(--bg-glass);
   }
+  /* Each control section fills equal vertical space */
+  .sizer-section {
+    flex: 1; display: flex; flex-direction: column;
+    justify-content: center; gap: 6px;
+  }
+  .sizer-section + .sizer-section {
+    border-top: 1px solid var(--line-soft);
+    padding-top: 10px; margin-top: 10px;
+  }
+  /* Table wrapper */
   .sizer-table-wrapper {
     grid-column: 2;
-    grid-row: 1 / -1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    padding: 8px 14px 10px;
+    display: flex; flex-direction: column; gap: 4px;
   }
-  .sizer-table-wrapper > .sizer-table {
-    margin-top: 0;
-    flex: 1;
-    overflow-y: auto;
+  .sizer-table-wrapper > .sizer-table { margin-top: 0; }
+  .sizer-table-wrapper > .sizer-foot { margin-top: 4px; }
+  /* Expand/collapse row for rare stop sizes */
+  .sizer-expand-row { cursor: pointer; }
+  .sizer-expand-row td {
+    text-align: center !important; color: var(--cyan) !important;
+    font-size: 9px !important; letter-spacing: 1px; text-transform: uppercase;
+    padding: 4px 6px !important; background: var(--bg-2) !important;
+    border-bottom: 1px solid var(--line) !important;
   }
-  .sizer-table-wrapper > .sizer-foot {
-    margin-top: 4px;
-  }
+  .sizer-expand-row:hover td { background: var(--cyan-dim) !important; }
   .sizer-lbl {
     font-family: var(--mono); font-size: 8px; letter-spacing: 1.5px;
     text-transform: uppercase; color: var(--text-mute); margin-bottom: 4px;
@@ -2717,10 +2728,10 @@
   .seg-btn .unit { font-size: 7px; opacity: 0.6; font-weight: 500; }
   /* risk tier buttons: big $ amount over a tiny tier label */
   .risk-btn { display: flex; flex-direction: column; align-items: center;
-    gap: 2px; padding: 6px 3px; }
-  .risk-btn .amt { font-size: 13px; font-weight: 700; line-height: 1; }
+    gap: 3px; padding: 11px 4px; }
+  .risk-btn .amt { font-size: 15px; font-weight: 700; line-height: 1; }
   .risk-btn .unit {
-    font-size: 6px; letter-spacing: 0.5px; font-weight: 600; opacity: 0.7;
+    font-size: 7px; letter-spacing: 0.5px; font-weight: 600; opacity: 0.7;
     text-transform: uppercase; }
   /* inline base editor in the risk-row label */
   .sizer-lbl-row {
@@ -2737,18 +2748,22 @@
   .sizer-base-input:focus { outline: none; border-color: var(--cyan); }
   /* Custom risk + stop number fields */
   .sizer-field {
-    font-family: var(--mono); font-size: 13px; font-weight: 700;
+    font-family: var(--mono); font-size: 16px; font-weight: 700;
     color: var(--text); background: var(--bg-0);
     border: 1px solid var(--line-2); border-radius: 2px;
-    padding: 8px 10px; width: 100%; text-align: center;
+    padding: 11px 10px; width: 100%; text-align: center;
+    box-sizing: border-box;
   }
   .sizer-field:focus { outline: none; border-color: var(--cyan); }
-  .sizer-field::placeholder { color: var(--text-mute); font-weight: 500; font-size: 12px; }
-  /* Accounts stepper */
-  .stepper { display: flex; align-items: stretch; gap: 0; max-width: 160px; }
+  .sizer-field::placeholder { color: var(--text-mute); font-weight: 500; font-size: 13px; }
+  .sizer-field::-webkit-inner-spin-button,
+  .sizer-field::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .sizer-field { -moz-appearance: textfield; }
+  /* Accounts stepper — full width of left column */
+  .stepper { display: flex; align-items: stretch; gap: 0; }
   .stepper button {
-    appearance: none; cursor: pointer; width: 36px;
-    font-family: var(--mono); font-size: 16px; font-weight: 700;
+    appearance: none; cursor: pointer; width: 44px;
+    font-family: var(--mono); font-size: 20px; font-weight: 700;
     color: var(--cyan); background: var(--bg-2);
     border: 1px solid var(--line-2);
     display: inline-flex; align-items: center; justify-content: center;
@@ -2762,7 +2777,7 @@
     border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2);
   }
   .stepper .val b {
-    font-family: var(--mono); font-size: 16px; font-weight: 700; color: var(--text);
+    font-family: var(--mono); font-size: 20px; font-weight: 700; color: var(--text);
   }
   .stepper .val span {
     font-family: var(--mono); font-size: 6px; letter-spacing: 0.5px;
@@ -3613,9 +3628,9 @@
     //   scale-out = MROUND(contracts * frac, accounts)   (frac = .20/.33/.50)
     // $/pt per symbol: NQ=2, ES=5, GOLD(MGC)=10 (micro point values from sheet).
     const SIZER_SYMBOLS = {
-      NQ:   {label:'NQ',   pv:2,  stops:[10,15,20,25,30,35,40,45,50,55,60,65]},
-      ES:   {label:'ES',   pv:5,  stops:[1,2,3,4,5,6,7,8,9,10]},
-      GOLD: {label:'GOLD', pv:10, stops:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]},
+      NQ:   {label:'NQ',   pv:2,  stops:[10,15,20,25,30,35,40,45,50,55,60,65], expandAt:55},
+      ES:   {label:'ES',   pv:5,  stops:[1,2,3,4,5,6,7,8,9,10],               expandAt:8},
+      GOLD: {label:'GOLD', pv:10, stops:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],expandAt:12},
     };
     // Risk presets are derived from a configurable BASE: B-setup = 0.5×,
     // base = 1×, super-A = 1.5×. Each rounded to the nearest $25 so the
@@ -3627,7 +3642,7 @@
     ];
     const round25 = (x) => Math.round(x / 25) * 25;
     const sizerState = (() => {
-      const s = {sym:'NQ', base:500, tier:'BASE', custom:'', accounts:1, stop:''};
+      const s = {sym:'NQ', base:500, tier:'BASE', custom:'', accounts:1, stop:'', expanded:false};
       try { Object.assign(s, JSON.parse(localStorage.getItem('nqSizer') || '{}')); }
       catch (e) {}
       if (!SIZER_SYMBOLS[s.sym]) s.sym = 'NQ';
@@ -3687,8 +3702,13 @@
         const risk = currentRisk();
         const acct = Math.max(1, Number(sizerState.accounts) || 1);
         const activeStop = Number(sizerState.stop);
+        const expanded = sizerState.expanded;
         tbody.textContent = '';
-        c.stops.forEach((stop) => {
+        const extStops = c.expandAt ? c.stops.filter(s => s >= c.expandAt) : [];
+        const visStops = c.expandAt && !expanded
+          ? c.stops.filter(s => s < c.expandAt)
+          : c.stops;
+        visStops.forEach((stop) => {
           const ct = sizerContracts(risk, stop, c.pv, acct);
           const tr = h('tr', activeStop === stop ? {class:'hit'} : null,
             h('td', null, String(stop)),
@@ -3703,6 +3723,18 @@
           });
           tbody.appendChild(tr);
         });
+        if (extStops.length) {
+          const label = expanded
+            ? `▲ hide  ${extStops.join(', ')}`
+            : `▼  ${extStops.join(', ')}`;
+          const toggleRow = h('tr', {class:'sizer-expand-row'},
+            h('td', {colspan:'5'}, label));
+          toggleRow.addEventListener('click', () => {
+            sizerState.expanded = !expanded;
+            sizerSave(); renderTable();
+          });
+          tbody.appendChild(toggleRow);
+        }
         const perAcct = acct > 1 ? ` · ${acct} accts (×${acct})` : '';
         foot.textContent = '';
         foot.appendChild(h('span', null,
@@ -3726,7 +3758,7 @@
       // ----- risk: base-relative tiers + custom -----
       // base editor lives in the row label; the three tier buttons derive
       // from it (0.5× / 1× / 1.5×) and re-round live as base changes.
-      const baseField = h('input', {type:'number', inputmode:'numeric',
+      const baseField = h('input', {type:'number', inputmode:'numeric', step:'100',
         class:'sizer-base-input', 'data-role':'base', value: String(sizerState.base)});
       const customRisk = h('input', {type:'number', inputmode:'numeric',
         class:'sizer-field', 'data-role':'custom-risk', placeholder:'custom $ risk',
@@ -3794,7 +3826,8 @@
 
       // ----- stop input (highlights matching row) -----
       const stopField = h('input', {type:'number', inputmode:'decimal',
-        class:'sizer-field', 'data-role':'stop', placeholder:'stop (pts) →  highlight row',
+        class:'sizer-field', 'data-role':'stop',
+        placeholder:'stop (pts) →  highlight row',
         value: sizerState.stop});
       stopField.addEventListener('input', () => {
         sizerState.stop = stopField.value === '' ? '' : Number(stopField.value);
@@ -3808,15 +3841,18 @@
           symSeg,
           h('button', {class:'sizer-close', title:'Close (Esc)', onclick: closeSizer}, '×')),
         h('div', {class:'sizer-body'},
-          h('div', {class:'sizer-row'},
-            h('div', {class:'sizer-lbl sizer-lbl-row'},
-              h('span', null, 'Risk per trade'),
-              h('label', {class:'base-edit'}, 'base $', baseField)),
-            riskSeg, customRisk),
-          h('div', {class:'sizer-row'},
-            h('div', {class:'sizer-lbl'}, 'Accounts (multiplies all)'), stepper),
-          h('div', {class:'sizer-row'},
-            h('div', {class:'sizer-lbl'}, 'Stop size'), stopField),
+          h('div', {class:'sizer-left'},
+            h('div', {class:'sizer-section'},
+              h('div', {class:'sizer-lbl sizer-lbl-row'},
+                h('span', null, 'Risk per trade'),
+                h('label', {class:'base-edit'}, 'base $', baseField)),
+              riskSeg, customRisk),
+            h('div', {class:'sizer-section'},
+              h('div', {class:'sizer-lbl'}, 'Accounts (multiplies all)'),
+              stepper),
+            h('div', {class:'sizer-section'},
+              h('div', {class:'sizer-lbl'}, 'Stop size'),
+              stopField)),
           h('div', {class:'sizer-table-wrapper'}, table, foot)));
 
       const overlay = h('div', {class:'sizer-overlay'},
