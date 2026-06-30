@@ -2,10 +2,10 @@
 window.WEEK_AHEAD = {
   "schema_version": 1,
   "meta": {
-    "generated_at_pt": "2026-06-28 12:06 PM PT",
+    "generated_at_pt": "2026-06-30 06:25 AM PT",
     "week_start": "2026-06-29",
     "week_end": "2026-07-03",
-    "gen_date": "2026-06-28"
+    "gen_date": "2026-06-30"
   },
   "summary": {
     "is_fomc_week": false,
@@ -25,7 +25,7 @@ window.WEEK_AHEAD = {
   "market": {
     "regime": "elevated",
     "regime_note": "Elevated vol \u2014 dump-capture armed, wider stops, size up on A+",
-    "vol_pct": 0.76,
+    "vol_pct": 0.75,
     "anchors": {
       "or45": 266,
       "f90": 346,
