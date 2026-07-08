@@ -2,65 +2,127 @@
 window.WEEK_AHEAD = {
   "schema_version": 1,
   "meta": {
-    "generated_at_pt": "2026-07-06 06:19 AM PT",
+    "generated_at_pt": "2026-07-08 06:34 AM PT",
     "week_start": "2026-07-06",
     "week_end": "2026-07-10",
-    "gen_date": "2026-07-06"
+    "gen_date": "2026-07-08"
   },
   "summary": {
-    "is_fomc_week": null,
-    "total_red_folder": 0,
+    "is_fomc_week": false,
+    "total_red_folder": 2,
     "has_quad_witching": false,
     "earliest_wake_pt": null,
     "earliest_wake_day": null,
-    "recent_median_or45_pts": null,
-    "recent_median_f90_pts": null,
-    "recent_median_range_pts": null,
-    "recent_mean_range_pts": null,
-    "recent_max_range_pts": null,
-    "vol_spike_recent": false,
-    "vol_regime": null,
-    "calendar_ok": false
+    "recent_median_or45_pts": 314,
+    "recent_median_f90_pts": 412,
+    "recent_median_range_pts": 577,
+    "recent_mean_range_pts": 671,
+    "recent_max_range_pts": 1620,
+    "vol_spike_recent": true,
+    "vol_regime": "elevated",
+    "calendar_ok": true
   },
-  "market": null,
+  "market": {
+    "regime": "elevated",
+    "regime_note": "Elevated vol \u2014 dump-capture armed, wider stops, size up on A+",
+    "vol_pct": 0.79,
+    "anchors": {
+      "or45": 314,
+      "f90": 412,
+      "rest": 388,
+      "full": 577
+    },
+    "median_range_pts": 577,
+    "ref_close": 29539.5,
+    "ref_date": "2026-07-02",
+    "levels": [
+      {
+        "name": "Prior-week low",
+        "price": 29273.8,
+        "dist": -265.8,
+        "dist_abs": 266
+      },
+      {
+        "name": "Prior-week high",
+        "price": 30599.8,
+        "dist": 1060.2,
+        "dist_abs": 1060
+      },
+      {
+        "name": "20-day low",
+        "price": 28227.8,
+        "dist": -1311.8,
+        "dist_abs": 1312
+      },
+      {
+        "name": "All-time high",
+        "price": 30968.0,
+        "dist": 1428.5,
+        "dist_abs": 1428
+      }
+    ],
+    "ath_near": false,
+    "ath_dist": 1428.5
+  },
   "days": [
     {
       "date": "2026-07-06",
       "day_of_week": "Monday",
-      "events": [],
-      "n_red_folder": 0,
+      "events": [
+        {
+          "date": "2026-07-06",
+          "event_type": "Other",
+          "event": "ISM Services PMI",
+          "time_et": "10:00",
+          "impact": "High",
+          "time_pt": "7:00 am",
+          "time_et_fmt": "10:00 am",
+          "pt_minutes": 420,
+          "pre_rth": false,
+          "in_window": true
+        }
+      ],
+      "n_red_folder": 1,
       "wake_up_pt": null,
-      "in_window_event": false,
+      "in_window_event": true,
       "quad_witching": false,
       "fomc_decision": false,
       "hist_avg_rth_range": 328,
       "hist_avg_or45_range": 186,
       "range_estimate": {
-        "mult": 1.0,
-        "event_tag": null,
-        "method": "weekday avg (no live) \u00d7 1.00",
+        "mult": 1.26,
+        "event_tag": "red_folder",
+        "method": "live median20 \u00d7 1.26 [red_folder]",
         "or45": {
-          "point": 186,
-          "lo": 139,
-          "hi": 232
+          "point": 395,
+          "lo": 296,
+          "hi": 494
         },
         "f90": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 518,
+          "lo": 388,
+          "hi": 647
         },
         "rest": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 488,
+          "lo": 366,
+          "hi": 610
         },
         "full": {
-          "point": 328,
-          "lo": 246,
-          "hi": 409
+          "point": 725,
+          "lo": 544,
+          "hi": 906
         }
       },
       "play_notes": [
+        {
+          "tag": "MID",
+          "text": "10:00 am ET data lands INSIDE your window \u2014 expect a second impulse; a clean 9:30-10:00 trend can reverse on the print."
+        },
+        {
+          "tag": "PLAY",
+          "text": "Vol elevated \u2014 dump-capture armed, wider OR expected; favor momentum continuation over fades."
+        },
         {
           "tag": "NOTE",
           "text": "Monday \u2014 weekend gap + range-expansion tendency; respect the opening drive direction."
@@ -81,40 +143,53 @@ window.WEEK_AHEAD = {
       "range_estimate": {
         "mult": 1.0,
         "event_tag": null,
-        "method": "weekday avg (no live) \u00d7 1.00",
+        "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 201,
-          "lo": 151,
-          "hi": 251
+          "point": 314,
+          "lo": 236,
+          "hi": 393
         },
         "f90": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 412,
+          "lo": 309,
+          "hi": 515
         },
         "rest": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 388,
+          "lo": 291,
+          "hi": 485
         },
         "full": {
-          "point": 338,
-          "lo": 254,
-          "hi": 423
+          "point": 577,
+          "lo": 433,
+          "hi": 721
         }
       },
       "play_notes": [
         {
           "tag": "PLAY",
-          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
+          "text": "Vol elevated \u2014 dump-capture armed, wider OR expected; favor momentum continuation over fades."
         }
       ]
     },
     {
       "date": "2026-07-08",
       "day_of_week": "Wednesday",
-      "events": [],
-      "n_red_folder": 0,
+      "events": [
+        {
+          "date": "2026-07-08",
+          "event_type": "FOMC Meeting Minutes",
+          "event": "FOMC Meeting Minutes",
+          "time_et": "14:00",
+          "impact": "High",
+          "time_pt": "11:00 am",
+          "time_et_fmt": "2:00 pm",
+          "pt_minutes": 660,
+          "pre_rth": false,
+          "in_window": false
+        }
+      ],
+      "n_red_folder": 1,
       "wake_up_pt": null,
       "in_window_event": false,
       "quad_witching": false,
@@ -122,34 +197,34 @@ window.WEEK_AHEAD = {
       "hist_avg_rth_range": 338,
       "hist_avg_or45_range": 171,
       "range_estimate": {
-        "mult": 1.0,
-        "event_tag": null,
-        "method": "weekday avg (no live) \u00d7 1.00",
+        "mult": 1.26,
+        "event_tag": "FOMC",
+        "method": "live median20 \u00d7 1.26 [FOMC]",
         "or45": {
-          "point": 171,
-          "lo": 129,
-          "hi": 214
+          "point": 395,
+          "lo": 296,
+          "hi": 494
         },
         "f90": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 518,
+          "lo": 388,
+          "hi": 647
         },
         "rest": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 488,
+          "lo": 366,
+          "hi": 610
         },
         "full": {
-          "point": 338,
-          "lo": 254,
-          "hi": 423
+          "point": 725,
+          "lo": 544,
+          "hi": 906
         }
       },
       "play_notes": [
         {
           "tag": "PLAY",
-          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
+          "text": "Vol elevated \u2014 dump-capture armed, wider OR expected; favor momentum continuation over fades."
         }
       ]
     },
@@ -167,32 +242,32 @@ window.WEEK_AHEAD = {
       "range_estimate": {
         "mult": 1.0,
         "event_tag": null,
-        "method": "weekday avg (no live) \u00d7 1.00",
+        "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 212,
-          "lo": 159,
-          "hi": 265
+          "point": 314,
+          "lo": 236,
+          "hi": 393
         },
         "f90": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 412,
+          "lo": 309,
+          "hi": 515
         },
         "rest": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 388,
+          "lo": 291,
+          "hi": 485
         },
         "full": {
-          "point": 366,
-          "lo": 275,
-          "hi": 458
+          "point": 577,
+          "lo": 433,
+          "hi": 721
         }
       },
       "play_notes": [
         {
           "tag": "PLAY",
-          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
+          "text": "Vol elevated \u2014 dump-capture armed, wider OR expected; favor momentum continuation over fades."
         }
       ]
     },
@@ -210,32 +285,32 @@ window.WEEK_AHEAD = {
       "range_estimate": {
         "mult": 1.0,
         "event_tag": null,
-        "method": "weekday avg (no live) \u00d7 1.00",
+        "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 203,
-          "lo": 152,
-          "hi": 253
+          "point": 314,
+          "lo": 236,
+          "hi": 393
         },
         "f90": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 412,
+          "lo": 309,
+          "hi": 515
         },
         "rest": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 388,
+          "lo": 291,
+          "hi": 485
         },
         "full": {
-          "point": 349,
-          "lo": 262,
-          "hi": 436
+          "point": 577,
+          "lo": 433,
+          "hi": 721
         }
       },
       "play_notes": [
         {
           "tag": "PLAY",
-          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
+          "text": "Vol elevated \u2014 dump-capture armed, wider OR expected; favor momentum continuation over fades."
         }
       ]
     }
