@@ -2602,20 +2602,25 @@
     color: var(--text-mute); text-transform: uppercase;
   }
   /* Result table */
-  .sizer-table { width: 100%; border-collapse: collapse; margin-top: 0; }
+  .sizer-table { width: 100%; border-collapse: collapse; margin-top: 0; table-layout: fixed; }
   .sizer-table th {
     font-family: var(--mono); font-size: 7px; letter-spacing: 1px;
     text-transform: uppercase; color: var(--text-mute); font-weight: 700;
     text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line-2);
   }
   .sizer-table th:first-child { text-align: left; }
+  .sizer-table th:nth-child(1), .sizer-table td:nth-child(1) { width: 13%; }
+  .sizer-table th:nth-child(2), .sizer-table td:nth-child(2) { width: 27%; }
+  .sizer-table th:nth-child(3), .sizer-table td:nth-child(3),
+  .sizer-table th:nth-child(4), .sizer-table td:nth-child(4),
+  .sizer-table th:nth-child(5), .sizer-table td:nth-child(5) { width: 20%; }
   .sizer-table td {
     font-family: var(--mono); font-variant-numeric: tabular-nums;
     text-align: right; padding: 5px 6px; border-bottom: 1px solid var(--line-soft);
-    color: var(--text-dim); font-size: 12px;
+    color: var(--text-dim); font-size: 15px;
   }
-  .sizer-table td:first-child { text-align: left; color: var(--text-mute); font-size: 11px; }
-  .sizer-table td.contracts { color: var(--cyan); font-weight: 700; font-size: 18px; }
+  .sizer-table td:first-child { text-align: left; color: var(--text-mute); }
+  .sizer-table td.contracts { color: var(--cyan); font-weight: 700; }
   .sizer-table tr.hit td { background: var(--cyan-dim); }
   .sizer-table tr.hit td:first-child { color: var(--cyan); font-weight: 700; }
   .sizer-table tr.hit td.contracts { color: var(--cyan); }
@@ -2627,7 +2632,7 @@
   }
   .sizer-foot b { color: var(--text-dim); font-size: 9px; }
   @media (max-width: 480px) {
-    .sizer-table td.contracts { font-size: 15px; }
+    .sizer-table td { font-size: 15px; }
     .seg-btn { font-size: 13px; padding: 10px 6px; }
   }
 </style>
