@@ -2,7 +2,7 @@
 window.WEEK_AHEAD = {
   "schema_version": 1,
   "meta": {
-    "generated_at_pt": "2026-07-16 09:42 PM PT",
+    "generated_at_pt": "2026-07-17 06:25 AM PT",
     "week_start": "2026-07-13",
     "week_end": "2026-07-17",
     "gen_date": "2026-07-17"
