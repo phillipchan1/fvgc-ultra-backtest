@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "meta": {
-    "generated_at_pt": "2026-07-16 06:11 AM PT",
+    "generated_at_pt": "2026-07-16 09:42 PM PT",
     "week_start": "2026-07-13",
     "week_end": "2026-07-17",
-    "gen_date": "2026-07-16"
+    "gen_date": "2026-07-17"
   },
   "summary": {
     "is_fomc_week": false,
@@ -12,16 +12,57 @@
     "has_quad_witching": false,
     "earliest_wake_pt": "5:30 am",
     "earliest_wake_day": "Tuesday",
-    "recent_median_or45_pts": null,
-    "recent_median_f90_pts": null,
-    "recent_median_range_pts": null,
-    "recent_mean_range_pts": null,
-    "recent_max_range_pts": null,
+    "recent_median_or45_pts": 269,
+    "recent_median_f90_pts": 389,
+    "recent_median_range_pts": 503,
+    "recent_mean_range_pts": 554,
+    "recent_max_range_pts": 967,
     "vol_spike_recent": false,
-    "vol_regime": null,
+    "vol_regime": "elevated",
     "calendar_ok": true
   },
-  "market": null,
+  "market": {
+    "regime": "elevated",
+    "regime_note": "Elevated vol \u2014 dump-capture armed, wider stops, size up on A+",
+    "vol_pct": 0.67,
+    "anchors": {
+      "or45": 269,
+      "f90": 389,
+      "rest": 345,
+      "full": 503
+    },
+    "median_range_pts": 503,
+    "ref_close": 30037.2,
+    "ref_date": "2026-07-10",
+    "levels": [
+      {
+        "name": "Prior-week high",
+        "price": 30094.0,
+        "dist": 56.8,
+        "dist_abs": 57
+      },
+      {
+        "name": "All-time high",
+        "price": 30968.0,
+        "dist": 930.8,
+        "dist_abs": 931
+      },
+      {
+        "name": "Prior-week low",
+        "price": 29034.0,
+        "dist": -1003.2,
+        "dist_abs": 1003
+      },
+      {
+        "name": "20-day low",
+        "price": 28577.5,
+        "dist": -1459.8,
+        "dist_abs": 1460
+      }
+    ],
+    "ath_near": false,
+    "ath_dist": 930.8
+  },
   "days": [
     {
       "date": "2026-07-13",
@@ -37,29 +78,33 @@
       "range_estimate": {
         "mult": 1.0,
         "event_tag": null,
-        "method": "weekday avg (no live) \u00d7 1.00",
+        "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 186,
-          "lo": 139,
-          "hi": 232
+          "point": 269,
+          "lo": 202,
+          "hi": 337
         },
         "f90": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 389,
+          "lo": 292,
+          "hi": 486
         },
         "rest": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 345,
+          "lo": 259,
+          "hi": 431
         },
         "full": {
-          "point": 328,
-          "lo": 246,
-          "hi": 409
+          "point": 503,
+          "lo": 377,
+          "hi": 629
         }
       },
       "play_notes": [
+        {
+          "tag": "PLAY",
+          "text": "Vol elevated \u2014 dump-capture armed, wider OR expected; favor momentum continuation over fades."
+        },
         {
           "tag": "NOTE",
           "text": "Monday \u2014 weekend gap + range-expansion tendency; respect the opening drive direction."
@@ -141,26 +186,26 @@
       "range_estimate": {
         "mult": 1.26,
         "event_tag": "CPI",
-        "method": "weekday avg (no live) \u00d7 1.26 [CPI]",
+        "method": "live median20 \u00d7 1.26 [CPI]",
         "or45": {
-          "point": 253,
-          "lo": 189,
-          "hi": 316
+          "point": 338,
+          "lo": 254,
+          "hi": 423
         },
         "f90": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 489,
+          "lo": 367,
+          "hi": 611
         },
         "rest": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 433,
+          "lo": 325,
+          "hi": 542
         },
         "full": {
-          "point": 426,
-          "lo": 319,
-          "hi": 532
+          "point": 632,
+          "lo": 474,
+          "hi": 790
         }
       },
       "play_notes": [
@@ -171,6 +216,10 @@
         {
           "tag": "MID",
           "text": "10:00 am ET data lands INSIDE your window \u2014 expect a second impulse; a clean 9:30-10:00 trend can reverse on the print."
+        },
+        {
+          "tag": "PLAY",
+          "text": "Vol elevated \u2014 dump-capture armed, wider OR expected; favor momentum continuation over fades."
         }
       ]
     },
@@ -225,26 +274,26 @@
       "range_estimate": {
         "mult": 1.26,
         "event_tag": "PPI",
-        "method": "weekday avg (no live) \u00d7 1.26 [PPI]",
+        "method": "live median20 \u00d7 1.26 [PPI]",
         "or45": {
-          "point": 215,
-          "lo": 162,
-          "hi": 269
+          "point": 338,
+          "lo": 254,
+          "hi": 423
         },
         "f90": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 489,
+          "lo": 367,
+          "hi": 611
         },
         "rest": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 433,
+          "lo": 325,
+          "hi": 542
         },
         "full": {
-          "point": 425,
-          "lo": 319,
-          "hi": 531
+          "point": 632,
+          "lo": 474,
+          "hi": 790
         }
       },
       "play_notes": [
@@ -255,6 +304,10 @@
         {
           "tag": "MID",
           "text": "10:00 am ET data lands INSIDE your window \u2014 expect a second impulse; a clean 9:30-10:00 trend can reverse on the print."
+        },
+        {
+          "tag": "PLAY",
+          "text": "Vol elevated \u2014 dump-capture armed, wider OR expected; favor momentum continuation over fades."
         }
       ]
     },
@@ -272,32 +325,32 @@
       "range_estimate": {
         "mult": 1.0,
         "event_tag": null,
-        "method": "weekday avg (no live) \u00d7 1.00",
+        "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 212,
-          "lo": 159,
-          "hi": 265
+          "point": 269,
+          "lo": 202,
+          "hi": 337
         },
         "f90": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 389,
+          "lo": 292,
+          "hi": 486
         },
         "rest": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 345,
+          "lo": 259,
+          "hi": 431
         },
         "full": {
-          "point": 366,
-          "lo": 275,
-          "hi": 458
+          "point": 503,
+          "lo": 377,
+          "hi": 629
         }
       },
       "play_notes": [
         {
           "tag": "PLAY",
-          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
+          "text": "Vol elevated \u2014 dump-capture armed, wider OR expected; favor momentum continuation over fades."
         }
       ]
     },
@@ -315,32 +368,32 @@
       "range_estimate": {
         "mult": 1.0,
         "event_tag": null,
-        "method": "weekday avg (no live) \u00d7 1.00",
+        "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 203,
-          "lo": 152,
-          "hi": 253
+          "point": 269,
+          "lo": 202,
+          "hi": 337
         },
         "f90": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 389,
+          "lo": 292,
+          "hi": 486
         },
         "rest": {
-          "point": null,
-          "lo": null,
-          "hi": null
+          "point": 345,
+          "lo": 259,
+          "hi": 431
         },
         "full": {
-          "point": 349,
-          "lo": 262,
-          "hi": 436
+          "point": 503,
+          "lo": 377,
+          "hi": 629
         }
       },
       "play_notes": [
         {
           "tag": "PLAY",
-          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
+          "text": "Vol elevated \u2014 dump-capture armed, wider OR expected; favor momentum continuation over fades."
         }
       ]
     }
