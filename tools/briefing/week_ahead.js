@@ -2,62 +2,27 @@
 window.WEEK_AHEAD = {
   "schema_version": 1,
   "meta": {
-    "generated_at_pt": "2026-07-19 12:14 PM PT",
+    "generated_at_pt": "2026-07-21 06:21 AM PT",
     "week_start": "2026-07-20",
     "week_end": "2026-07-24",
-    "gen_date": "2026-07-19"
+    "gen_date": "2026-07-21"
   },
   "summary": {
-    "is_fomc_week": false,
+    "is_fomc_week": null,
     "total_red_folder": 0,
     "has_quad_witching": false,
     "earliest_wake_pt": null,
     "earliest_wake_day": null,
-    "recent_median_or45_pts": 268,
-    "recent_median_f90_pts": 389,
-    "recent_median_range_pts": 468,
-    "recent_mean_range_pts": 522,
-    "recent_max_range_pts": 965,
-    "vol_spike_recent": true,
-    "vol_regime": "normal",
-    "calendar_ok": true
+    "recent_median_or45_pts": null,
+    "recent_median_f90_pts": null,
+    "recent_median_range_pts": null,
+    "recent_mean_range_pts": null,
+    "recent_max_range_pts": null,
+    "vol_spike_recent": false,
+    "vol_regime": null,
+    "calendar_ok": false
   },
-  "market": {
-    "regime": "normal",
-    "regime_note": "Normal range regime \u2014 standard matrix plays",
-    "vol_pct": 0.57,
-    "anchors": {
-      "or45": 268,
-      "f90": 389,
-      "rest": 342,
-      "full": 468
-    },
-    "median_range_pts": 468,
-    "ref_close": 28764.2,
-    "ref_date": "2026-07-17",
-    "levels": [
-      {
-        "name": "Prior-week low",
-        "price": 28408.2,
-        "dist": -356.0,
-        "dist_abs": 356
-      },
-      {
-        "name": "Prior-week high",
-        "price": 29977.5,
-        "dist": 1213.2,
-        "dist_abs": 1213
-      },
-      {
-        "name": "All-time high",
-        "price": 30968.0,
-        "dist": 2203.8,
-        "dist_abs": 2204
-      }
-    ],
-    "ath_near": false,
-    "ath_dist": 2203.8
-  },
+  "market": null,
   "days": [
     {
       "date": "2026-07-20",
@@ -73,26 +38,26 @@ window.WEEK_AHEAD = {
       "range_estimate": {
         "mult": 1.0,
         "event_tag": null,
-        "method": "live median20 \u00d7 1.00",
+        "method": "weekday avg (no live) \u00d7 1.00",
         "or45": {
-          "point": 268,
-          "lo": 201,
-          "hi": 335
+          "point": 186,
+          "lo": 139,
+          "hi": 232
         },
         "f90": {
-          "point": 389,
-          "lo": 292,
-          "hi": 486
+          "point": null,
+          "lo": null,
+          "hi": null
         },
         "rest": {
-          "point": 342,
-          "lo": 257,
-          "hi": 428
+          "point": null,
+          "lo": null,
+          "hi": null
         },
         "full": {
-          "point": 468,
-          "lo": 351,
-          "hi": 585
+          "point": 328,
+          "lo": 246,
+          "hi": 409
         }
       },
       "play_notes": [
@@ -116,26 +81,26 @@ window.WEEK_AHEAD = {
       "range_estimate": {
         "mult": 1.0,
         "event_tag": null,
-        "method": "live median20 \u00d7 1.00",
+        "method": "weekday avg (no live) \u00d7 1.00",
         "or45": {
-          "point": 268,
-          "lo": 201,
-          "hi": 335
+          "point": 201,
+          "lo": 151,
+          "hi": 251
         },
         "f90": {
-          "point": 389,
-          "lo": 292,
-          "hi": 486
+          "point": null,
+          "lo": null,
+          "hi": null
         },
         "rest": {
-          "point": 342,
-          "lo": 257,
-          "hi": 428
+          "point": null,
+          "lo": null,
+          "hi": null
         },
         "full": {
-          "point": 468,
-          "lo": 351,
-          "hi": 585
+          "point": 338,
+          "lo": 254,
+          "hi": 423
         }
       },
       "play_notes": [
@@ -159,26 +124,26 @@ window.WEEK_AHEAD = {
       "range_estimate": {
         "mult": 1.0,
         "event_tag": null,
-        "method": "live median20 \u00d7 1.00",
+        "method": "weekday avg (no live) \u00d7 1.00",
         "or45": {
-          "point": 268,
-          "lo": 201,
-          "hi": 335
+          "point": 171,
+          "lo": 129,
+          "hi": 214
         },
         "f90": {
-          "point": 389,
-          "lo": 292,
-          "hi": 486
+          "point": null,
+          "lo": null,
+          "hi": null
         },
         "rest": {
-          "point": 342,
-          "lo": 257,
-          "hi": 428
+          "point": null,
+          "lo": null,
+          "hi": null
         },
         "full": {
-          "point": 468,
-          "lo": 351,
-          "hi": 585
+          "point": 338,
+          "lo": 254,
+          "hi": 423
         }
       },
       "play_notes": [
@@ -202,26 +167,26 @@ window.WEEK_AHEAD = {
       "range_estimate": {
         "mult": 1.0,
         "event_tag": null,
-        "method": "live median20 \u00d7 1.00",
+        "method": "weekday avg (no live) \u00d7 1.00",
         "or45": {
-          "point": 268,
-          "lo": 201,
-          "hi": 335
+          "point": 212,
+          "lo": 159,
+          "hi": 265
         },
         "f90": {
-          "point": 389,
-          "lo": 292,
-          "hi": 486
+          "point": null,
+          "lo": null,
+          "hi": null
         },
         "rest": {
-          "point": 342,
-          "lo": 257,
-          "hi": 428
+          "point": null,
+          "lo": null,
+          "hi": null
         },
         "full": {
-          "point": 468,
-          "lo": 351,
-          "hi": 585
+          "point": 366,
+          "lo": 275,
+          "hi": 458
         }
       },
       "play_notes": [
@@ -245,26 +210,26 @@ window.WEEK_AHEAD = {
       "range_estimate": {
         "mult": 1.0,
         "event_tag": null,
-        "method": "live median20 \u00d7 1.00",
+        "method": "weekday avg (no live) \u00d7 1.00",
         "or45": {
-          "point": 268,
-          "lo": 201,
-          "hi": 335
+          "point": 203,
+          "lo": 152,
+          "hi": 253
         },
         "f90": {
-          "point": 389,
-          "lo": 292,
-          "hi": 486
+          "point": null,
+          "lo": null,
+          "hi": null
         },
         "rest": {
-          "point": 342,
-          "lo": 257,
-          "hi": 428
+          "point": null,
+          "lo": null,
+          "hi": null
         },
         "full": {
-          "point": 468,
-          "lo": 351,
-          "hi": 585
+          "point": 349,
+          "lo": 262,
+          "hi": 436
         }
       },
       "play_notes": [
