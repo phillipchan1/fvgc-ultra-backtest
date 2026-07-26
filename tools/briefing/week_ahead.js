@@ -2,21 +2,21 @@
 window.WEEK_AHEAD = {
   "schema_version": 1,
   "meta": {
-    "generated_at_pt": "2026-07-23 06:18 AM PT",
-    "week_start": "2026-07-20",
-    "week_end": "2026-07-24",
-    "gen_date": "2026-07-23"
+    "generated_at_pt": "2026-07-26 12:04 PM PT",
+    "week_start": "2026-07-27",
+    "week_end": "2026-07-31",
+    "gen_date": "2026-07-26"
   },
   "summary": {
-    "is_fomc_week": false,
-    "total_red_folder": 0,
+    "is_fomc_week": true,
+    "total_red_folder": 5,
     "has_quad_witching": false,
-    "earliest_wake_pt": null,
-    "earliest_wake_day": null,
-    "recent_median_or45_pts": 268,
-    "recent_median_f90_pts": 389,
-    "recent_median_range_pts": 468,
-    "recent_mean_range_pts": 522,
+    "earliest_wake_pt": "5:30 am",
+    "earliest_wake_day": "Thursday",
+    "recent_median_or45_pts": 253,
+    "recent_median_f90_pts": 311,
+    "recent_median_range_pts": 438,
+    "recent_mean_range_pts": 471,
     "recent_max_range_pts": 965,
     "vol_spike_recent": true,
     "vol_regime": "normal",
@@ -25,42 +25,48 @@ window.WEEK_AHEAD = {
   "market": {
     "regime": "normal",
     "regime_note": "Normal range regime \u2014 standard matrix plays",
-    "vol_pct": 0.57,
+    "vol_pct": 0.51,
     "anchors": {
-      "or45": 268,
-      "f90": 389,
-      "rest": 342,
-      "full": 468
+      "or45": 253,
+      "f90": 311,
+      "rest": 339,
+      "full": 438
     },
-    "median_range_pts": 468,
-    "ref_close": 28764.2,
-    "ref_date": "2026-07-17",
+    "median_range_pts": 438,
+    "ref_close": 28283.2,
+    "ref_date": "2026-07-24",
     "levels": [
       {
         "name": "Prior-week low",
-        "price": 28408.2,
-        "dist": -356.0,
-        "dist_abs": 356
+        "price": 28212.5,
+        "dist": -70.8,
+        "dist_abs": 71
       },
       {
         "name": "Prior-week high",
-        "price": 29977.5,
-        "dist": 1213.2,
-        "dist_abs": 1213
+        "price": 29364.8,
+        "dist": 1081.5,
+        "dist_abs": 1082
+      },
+      {
+        "name": "20-day high",
+        "price": 30599.8,
+        "dist": 2316.5,
+        "dist_abs": 2316
       },
       {
         "name": "All-time high",
         "price": 30968.0,
-        "dist": 2203.8,
-        "dist_abs": 2204
+        "dist": 2684.8,
+        "dist_abs": 2685
       }
     ],
     "ath_near": false,
-    "ath_dist": 2203.8
+    "ath_dist": 2684.8
   },
   "days": [
     {
-      "date": "2026-07-20",
+      "date": "2026-07-27",
       "day_of_week": "Monday",
       "events": [],
       "n_red_folder": 0,
@@ -75,24 +81,24 @@ window.WEEK_AHEAD = {
         "event_tag": null,
         "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 268,
-          "lo": 201,
-          "hi": 335
+          "point": 253,
+          "lo": 190,
+          "hi": 316
         },
         "f90": {
-          "point": 389,
-          "lo": 292,
-          "hi": 486
+          "point": 311,
+          "lo": 233,
+          "hi": 389
         },
         "rest": {
-          "point": 342,
-          "lo": 257,
-          "hi": 428
+          "point": 339,
+          "lo": 254,
+          "hi": 424
         },
         "full": {
-          "point": 468,
-          "lo": 351,
-          "hi": 585
+          "point": 438,
+          "lo": 328,
+          "hi": 547
         }
       },
       "play_notes": [
@@ -103,7 +109,7 @@ window.WEEK_AHEAD = {
       ]
     },
     {
-      "date": "2026-07-21",
+      "date": "2026-07-28",
       "day_of_week": "Tuesday",
       "events": [],
       "n_red_folder": 0,
@@ -118,24 +124,24 @@ window.WEEK_AHEAD = {
         "event_tag": null,
         "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 268,
-          "lo": 201,
-          "hi": 335
+          "point": 253,
+          "lo": 190,
+          "hi": 316
         },
         "f90": {
-          "point": 389,
-          "lo": 292,
-          "hi": 486
+          "point": 311,
+          "lo": 233,
+          "hi": 389
         },
         "rest": {
-          "point": 342,
-          "lo": 257,
-          "hi": 428
+          "point": 339,
+          "lo": 254,
+          "hi": 424
         },
         "full": {
-          "point": 468,
-          "lo": 351,
-          "hi": 585
+          "point": 438,
+          "lo": 328,
+          "hi": 547
         }
       },
       "play_notes": [
@@ -146,93 +152,155 @@ window.WEEK_AHEAD = {
       ]
     },
     {
-      "date": "2026-07-22",
+      "date": "2026-07-29",
       "day_of_week": "Wednesday",
-      "events": [],
-      "n_red_folder": 0,
+      "events": [
+        {
+          "date": "2026-07-29",
+          "event_type": "Other",
+          "event": "Federal Funds Rate",
+          "time_et": "14:00",
+          "impact": "High",
+          "time_pt": "11:00 am",
+          "time_et_fmt": "2:00 pm",
+          "pt_minutes": 660,
+          "pre_rth": false,
+          "in_window": false
+        },
+        {
+          "date": "2026-07-29",
+          "event_type": "FOMC Statement",
+          "event": "FOMC Statement",
+          "time_et": "14:00",
+          "impact": "High",
+          "time_pt": "11:00 am",
+          "time_et_fmt": "2:00 pm",
+          "pt_minutes": 660,
+          "pre_rth": false,
+          "in_window": false
+        },
+        {
+          "date": "2026-07-29",
+          "event_type": "FOMC Press Conference",
+          "event": "FOMC Press Conference",
+          "time_et": "14:30",
+          "impact": "High",
+          "time_pt": "11:30 am",
+          "time_et_fmt": "2:30 pm",
+          "pt_minutes": 690,
+          "pre_rth": false,
+          "in_window": false
+        }
+      ],
+      "n_red_folder": 3,
       "wake_up_pt": null,
       "in_window_event": false,
       "quad_witching": false,
-      "fomc_decision": false,
+      "fomc_decision": true,
       "hist_avg_rth_range": 338,
       "hist_avg_or45_range": 171,
       "range_estimate": {
-        "mult": 1.0,
-        "event_tag": null,
-        "method": "live median20 \u00d7 1.00",
+        "mult": 1.26,
+        "event_tag": "FOMC",
+        "method": "live median20 \u00d7 1.26 [FOMC]",
         "or45": {
-          "point": 268,
-          "lo": 201,
-          "hi": 335
+          "point": 318,
+          "lo": 239,
+          "hi": 398
         },
         "f90": {
-          "point": 389,
-          "lo": 292,
-          "hi": 486
+          "point": 391,
+          "lo": 293,
+          "hi": 489
         },
         "rest": {
-          "point": 342,
-          "lo": 257,
-          "hi": 428
+          "point": 426,
+          "lo": 320,
+          "hi": 533
         },
         "full": {
-          "point": 468,
-          "lo": 351,
-          "hi": 585
+          "point": 550,
+          "lo": 413,
+          "hi": 688
         }
       },
       "play_notes": [
         {
-          "tag": "PLAY",
-          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
+          "tag": "AVOID",
+          "text": "FOMC decision 2pm ET \u2014 expect compression/chop through the morning; reduce size, the move comes after your window."
         }
       ]
     },
     {
-      "date": "2026-07-23",
+      "date": "2026-07-30",
       "day_of_week": "Thursday",
-      "events": [],
-      "n_red_folder": 0,
-      "wake_up_pt": null,
+      "events": [
+        {
+          "date": "2026-07-30",
+          "event_type": "Other",
+          "event": "Advance GDP q/q",
+          "time_et": "08:30",
+          "impact": "High",
+          "time_pt": "5:30 am",
+          "time_et_fmt": "8:30 am",
+          "pt_minutes": 330,
+          "pre_rth": true,
+          "in_window": false
+        },
+        {
+          "date": "2026-07-30",
+          "event_type": "Other",
+          "event": "Core PCE Price Index m/m",
+          "time_et": "08:30",
+          "impact": "High",
+          "time_pt": "5:30 am",
+          "time_et_fmt": "8:30 am",
+          "pt_minutes": 330,
+          "pre_rth": true,
+          "in_window": false
+        }
+      ],
+      "n_red_folder": 2,
+      "wake_up_pt": "5:30 am",
       "in_window_event": false,
       "quad_witching": false,
       "fomc_decision": false,
       "hist_avg_rth_range": 366,
       "hist_avg_or45_range": 212,
       "range_estimate": {
-        "mult": 1.0,
-        "event_tag": null,
-        "method": "live median20 \u00d7 1.00",
+        "mult": 1.26,
+        "event_tag": "red_folder",
+        "method": "live median20 \u00d7 1.26 [red_folder]",
         "or45": {
-          "point": 268,
-          "lo": 201,
-          "hi": 335
+          "point": 318,
+          "lo": 239,
+          "hi": 398
         },
         "f90": {
-          "point": 389,
-          "lo": 292,
-          "hi": 486
+          "point": 391,
+          "lo": 293,
+          "hi": 489
         },
         "rest": {
-          "point": 342,
-          "lo": 257,
-          "hi": 428
+          "point": 426,
+          "lo": 320,
+          "hi": 533
         },
         "full": {
-          "point": 468,
-          "lo": 351,
-          "hi": 585
+          "point": 550,
+          "lo": 413,
+          "hi": 688
         }
       },
       "play_notes": [
         {
-          "tag": "PLAY",
-          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
+          "tag": "ARMED",
+          "text": "Pre-RTH market-mover \u2014 dump-capture watch (WR scales with dump size) + opening-FVG short tier-2 more likely. Wait for the 9:30 reaction, don't pre-position."
         }
       ]
     },
     {
-      "date": "2026-07-24",
+      "date": "2026-07-31",
       "day_of_week": "Friday",
       "events": [],
       "n_red_folder": 0,
@@ -247,24 +315,24 @@ window.WEEK_AHEAD = {
         "event_tag": null,
         "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 268,
-          "lo": 201,
-          "hi": 335
+          "point": 253,
+          "lo": 190,
+          "hi": 316
         },
         "f90": {
-          "point": 389,
-          "lo": 292,
-          "hi": 486
+          "point": 311,
+          "lo": 233,
+          "hi": 389
         },
         "rest": {
-          "point": 342,
-          "lo": 257,
-          "hi": 428
+          "point": 339,
+          "lo": 254,
+          "hi": 424
         },
         "full": {
-          "point": 468,
-          "lo": 351,
-          "hi": 585
+          "point": 438,
+          "lo": 328,
+          "hi": 547
         }
       },
       "play_notes": [
