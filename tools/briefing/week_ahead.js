@@ -2,10 +2,10 @@
 window.WEEK_AHEAD = {
   "schema_version": 1,
   "meta": {
-    "generated_at_pt": "2026-07-29 06:42 AM PT",
+    "generated_at_pt": "2026-07-31 06:17 AM PT",
     "week_start": "2026-07-27",
     "week_end": "2026-07-31",
-    "gen_date": "2026-07-29"
+    "gen_date": "2026-07-31"
   },
   "summary": {
     "is_fomc_week": true,
@@ -25,7 +25,7 @@ window.WEEK_AHEAD = {
   "market": {
     "regime": "normal",
     "regime_note": "Normal range regime \u2014 standard matrix plays",
-    "vol_pct": 0.49,
+    "vol_pct": 0.51,
     "anchors": {
       "or45": 253,
       "f90": 311,
