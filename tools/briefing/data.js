@@ -6,16 +6,16 @@ window.BRIEFING_DATA = {
   "meta": {
     "date": "2026-08-10",
     "day_of_week": "Monday",
-    "generated_at_et": "2026-08-10T09:10:10.790108-04:00",
-    "generated_at_pt": "2026-08-10T06:10:10.790108-07:00",
+    "generated_at_et": "2026-08-10T19:00:48.511339-04:00",
+    "generated_at_pt": "2026-08-10T16:00:48.511339-07:00",
     "mode": "live"
   },
   "freshness": [],
   "or_forecast": {
     "available": true,
-    "point_pts": 177.7,
-    "lo80_pts": 115.7,
-    "hi80_pts": 269.9,
+    "point_pts": 180.5,
+    "lo80_pts": 117.5,
+    "hi80_pts": 274.0,
     "baseline_pts": 117.6,
     "quintile": "Q3 typical (48th pct)",
     "tier_label": "Normal day \u2014 trade per playbook",
@@ -57,22 +57,22 @@ window.BRIEFING_DATA = {
         "delta_pts": 8.3
       },
       {
+        "factor": "gap_abs",
+        "value": 28.75,
+        "z": -0.67,
+        "delta_pts": 6.2
+      },
+      {
         "factor": "prior_day_close_position",
         "value": 0.912,
         "z": 1.13,
         "delta_pts": -4.4
       },
       {
-        "factor": "gap_abs",
-        "value": 54.0,
-        "z": -0.41,
-        "delta_pts": 3.8
-      },
-      {
         "factor": "gap_atr_ratio",
-        "value": 0.109,
-        "z": -0.78,
-        "delta_pts": -2.7
+        "value": 0.058,
+        "z": -0.93,
+        "delta_pts": -3.2
       }
     ],
     "perf": {
@@ -213,8 +213,8 @@ window.BRIEFING_DATA = {
     "narrative": null
   },
   "pre_open": {
-    "current_price": 29780.25,
-    "current_price_ts": "09:00 ET",
+    "current_price": 29805.5,
+    "current_price_ts": "09:29 ET",
     "prior_rth": {
       "close": 29834.25,
       "open": 29714.25,
@@ -240,59 +240,23 @@ window.BRIEFING_DATA = {
       "low": 29846.0
     },
     "gap": {
-      "pts": -54.0,
-      "pct": -0.18100002513889238,
+      "pts": -28.75,
+      "pct": -0.09636575412487326,
       "direction": "gap_down"
     },
     "data_notes": [],
     "vixy_regime": "elevated",
-    "vixy_value": 19.559999465942383,
+    "vixy_value": 19.549999237060547,
     "narrative": null
   },
   "levels": {
     "scope_pts": 100,
     "above": [
       {
-        "group": "asia",
-        "label": "Asia low",
-        "price": 29788.5,
-        "distance_pts": 8.25,
-        "direction": "above",
-        "tier": "A",
-        "hit_rate_45m_pct": 59.2,
-        "wr_as_magnet_pct": 54.2,
-        "pf_as_magnet": 1.22,
-        "below_baseline": false
-      },
-      {
-        "group": "htf_fvg_1H",
-        "label": "1H FVG (bearish)",
-        "price": 29797.0,
-        "distance_pts": 16.75,
-        "direction": "above",
-        "tier": "A",
-        "hit_rate_45m_pct": 22.5,
-        "wr_as_magnet_pct": 64.2,
-        "pf_as_magnet": 2.16,
-        "below_baseline": false
-      },
-      {
-        "group": "htf_fvg_15m",
-        "label": "15m FVG (bearish)",
-        "price": 29827.5,
-        "distance_pts": 47.25,
-        "direction": "above",
-        "tier": "A",
-        "hit_rate_45m_pct": 26.2,
-        "wr_as_magnet_pct": 58.4,
-        "pf_as_magnet": 1.51,
-        "below_baseline": false
-      },
-      {
         "group": "london",
         "label": "London low",
         "price": 29846.0,
-        "distance_pts": 65.75,
+        "distance_pts": 40.5,
         "direction": "above",
         "tier": "C",
         "hit_rate_45m_pct": 54.3,
@@ -304,7 +268,7 @@ window.BRIEFING_DATA = {
         "group": "prev_day",
         "label": "Prev day high",
         "price": 29860.25,
-        "distance_pts": 80.0,
+        "distance_pts": 54.75,
         "direction": "above",
         "tier": "A",
         "hit_rate_45m_pct": 40.6,
@@ -315,16 +279,40 @@ window.BRIEFING_DATA = {
     ],
     "below": [
       {
+        "group": "asia",
+        "label": "Asia low",
+        "price": 29788.5,
+        "distance_pts": -17.0,
+        "direction": "below",
+        "tier": "A",
+        "hit_rate_45m_pct": 59.2,
+        "wr_as_magnet_pct": 54.2,
+        "pf_as_magnet": 1.22,
+        "below_baseline": false
+      },
+      {
         "group": "overnight",
         "label": "Overnight low",
         "price": 29771.75,
-        "distance_pts": -8.5,
+        "distance_pts": -33.75,
         "direction": "below",
         "tier": "C",
         "hit_rate_45m_pct": 41.1,
         "wr_as_magnet_pct": 48.7,
         "pf_as_magnet": 0.86,
         "below_baseline": true
+      },
+      {
+        "group": "htf_fvg_15m",
+        "label": "15m FVG (bearish)",
+        "price": 29746.25,
+        "distance_pts": -59.25,
+        "direction": "below",
+        "tier": "A",
+        "hit_rate_45m_pct": 26.2,
+        "wr_as_magnet_pct": 58.4,
+        "pf_as_magnet": 1.51,
+        "below_baseline": false
       }
     ],
     "narrative": null
@@ -1517,21 +1505,27 @@ window.BRIEFING_DATA = {
     ],
     "best_targets": [
       {
-        "label": "Overnight low",
-        "price": 29771.75,
-        "distance_pts": -8.5,
+        "label": "Asia low",
+        "price": 29788.5,
+        "distance_pts": -17.0,
         "direction": "below"
       },
       {
-        "label": "Asia low",
-        "price": 29788.5,
-        "distance_pts": 8.25,
+        "label": "Overnight low",
+        "price": 29771.75,
+        "distance_pts": -33.75,
+        "direction": "below"
+      },
+      {
+        "label": "London low",
+        "price": 29846.0,
+        "distance_pts": 40.5,
         "direction": "above"
       },
       {
-        "label": "1H FVG (bearish)",
-        "price": 29797.0,
-        "distance_pts": 16.75,
+        "label": "Prev day high",
+        "price": 29860.25,
+        "distance_pts": 54.75,
         "direction": "above"
       }
     ],
