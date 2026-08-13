@@ -2,17 +2,17 @@
 window.WEEK_AHEAD = {
   "schema_version": 1,
   "meta": {
-    "generated_at_pt": "2026-08-11 01:53 PM PT",
+    "generated_at_pt": "2026-08-13 06:14 AM PT",
     "week_start": "2026-08-10",
     "week_end": "2026-08-14",
-    "gen_date": "2026-08-11"
+    "gen_date": "2026-08-13"
   },
   "summary": {
-    "is_fomc_week": false,
-    "total_red_folder": 6,
+    "is_fomc_week": null,
+    "total_red_folder": 0,
     "has_quad_witching": false,
-    "earliest_wake_pt": "5:30 am",
-    "earliest_wake_day": "Wednesday",
+    "earliest_wake_pt": null,
+    "earliest_wake_day": null,
     "recent_median_or45_pts": 296,
     "recent_median_f90_pts": 366,
     "recent_median_range_pts": 465,
@@ -20,12 +20,12 @@ window.WEEK_AHEAD = {
     "recent_max_range_pts": 782,
     "vol_spike_recent": false,
     "vol_regime": "normal",
-    "calendar_ok": true
+    "calendar_ok": false
   },
   "market": {
     "regime": "normal",
     "regime_note": "Normal range regime \u2014 standard matrix plays",
-    "vol_pct": 0.46,
+    "vol_pct": 0.43,
     "anchors": {
       "or45": 296,
       "f90": 366,
@@ -154,160 +154,86 @@ window.WEEK_AHEAD = {
     {
       "date": "2026-08-12",
       "day_of_week": "Wednesday",
-      "events": [
-        {
-          "date": "2026-08-12",
-          "event_type": "CPI",
-          "event": "Core CPI m/m",
-          "time_et": "08:30",
-          "impact": "High",
-          "time_pt": "5:30 am",
-          "time_et_fmt": "8:30 am",
-          "pt_minutes": 330,
-          "pre_rth": true,
-          "in_window": false
-        },
-        {
-          "date": "2026-08-12",
-          "event_type": "CPI",
-          "event": "Core CPI y/y",
-          "time_et": "08:30",
-          "impact": "High",
-          "time_pt": "5:30 am",
-          "time_et_fmt": "8:30 am",
-          "pt_minutes": 330,
-          "pre_rth": true,
-          "in_window": false
-        },
-        {
-          "date": "2026-08-12",
-          "event_type": "CPI",
-          "event": "CPI m/m",
-          "time_et": "08:30",
-          "impact": "High",
-          "time_pt": "5:30 am",
-          "time_et_fmt": "8:30 am",
-          "pt_minutes": 330,
-          "pre_rth": true,
-          "in_window": false
-        },
-        {
-          "date": "2026-08-12",
-          "event_type": "CPI",
-          "event": "CPI y/y",
-          "time_et": "08:30",
-          "impact": "High",
-          "time_pt": "5:30 am",
-          "time_et_fmt": "8:30 am",
-          "pt_minutes": 330,
-          "pre_rth": true,
-          "in_window": false
-        }
-      ],
-      "n_red_folder": 4,
-      "wake_up_pt": "5:30 am",
+      "events": [],
+      "n_red_folder": 0,
+      "wake_up_pt": null,
       "in_window_event": false,
       "quad_witching": false,
       "fomc_decision": false,
       "hist_avg_rth_range": 338,
       "hist_avg_or45_range": 171,
       "range_estimate": {
-        "mult": 1.26,
-        "event_tag": "CPI",
-        "method": "live median20 \u00d7 1.26 [CPI]",
+        "mult": 1.0,
+        "event_tag": null,
+        "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 371,
-          "lo": 279,
-          "hi": 464
+          "point": 296,
+          "lo": 222,
+          "hi": 369
         },
         "f90": {
-          "point": 460,
-          "lo": 345,
-          "hi": 575
+          "point": 366,
+          "lo": 274,
+          "hi": 458
         },
         "rest": {
-          "point": 388,
-          "lo": 291,
-          "hi": 485
+          "point": 309,
+          "lo": 232,
+          "hi": 386
         },
         "full": {
-          "point": 585,
-          "lo": 438,
-          "hi": 731
+          "point": 465,
+          "lo": 349,
+          "hi": 581
         }
       },
       "play_notes": [
         {
-          "tag": "ARMED",
-          "text": "Pre-RTH market-mover \u2014 dump-capture watch (WR scales with dump size) + opening-FVG short tier-2 more likely. Wait for the 9:30 reaction, don't pre-position."
+          "tag": "PLAY",
+          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
         }
       ]
     },
     {
       "date": "2026-08-13",
       "day_of_week": "Thursday",
-      "events": [
-        {
-          "date": "2026-08-13",
-          "event_type": "PPI",
-          "event": "Core PPI m/m",
-          "time_et": "08:30",
-          "impact": "High",
-          "time_pt": "5:30 am",
-          "time_et_fmt": "8:30 am",
-          "pt_minutes": 330,
-          "pre_rth": true,
-          "in_window": false
-        },
-        {
-          "date": "2026-08-13",
-          "event_type": "PPI",
-          "event": "PPI m/m",
-          "time_et": "08:30",
-          "impact": "High",
-          "time_pt": "5:30 am",
-          "time_et_fmt": "8:30 am",
-          "pt_minutes": 330,
-          "pre_rth": true,
-          "in_window": false
-        }
-      ],
-      "n_red_folder": 2,
-      "wake_up_pt": "5:30 am",
+      "events": [],
+      "n_red_folder": 0,
+      "wake_up_pt": null,
       "in_window_event": false,
       "quad_witching": false,
       "fomc_decision": false,
       "hist_avg_rth_range": 366,
       "hist_avg_or45_range": 212,
       "range_estimate": {
-        "mult": 1.26,
-        "event_tag": "PPI",
-        "method": "live median20 \u00d7 1.26 [PPI]",
+        "mult": 1.0,
+        "event_tag": null,
+        "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 371,
-          "lo": 279,
-          "hi": 464
+          "point": 296,
+          "lo": 222,
+          "hi": 369
         },
         "f90": {
-          "point": 460,
-          "lo": 345,
-          "hi": 575
+          "point": 366,
+          "lo": 274,
+          "hi": 458
         },
         "rest": {
-          "point": 388,
-          "lo": 291,
-          "hi": 485
+          "point": 309,
+          "lo": 232,
+          "hi": 386
         },
         "full": {
-          "point": 585,
-          "lo": 438,
-          "hi": 731
+          "point": 465,
+          "lo": 349,
+          "hi": 581
         }
       },
       "play_notes": [
         {
-          "tag": "ARMED",
-          "text": "Pre-RTH market-mover \u2014 dump-capture watch (WR scales with dump size) + opening-FVG short tier-2 more likely. Wait for the 9:30 reaction, don't pre-position."
+          "tag": "PLAY",
+          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
         }
       ]
     },
