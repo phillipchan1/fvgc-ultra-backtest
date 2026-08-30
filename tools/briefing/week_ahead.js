@@ -2,71 +2,77 @@
 window.WEEK_AHEAD = {
   "schema_version": 1,
   "meta": {
-    "generated_at_pt": "2026-08-23 12:00 PM PT",
-    "week_start": "2026-08-24",
-    "week_end": "2026-08-28",
-    "gen_date": "2026-08-23"
+    "generated_at_pt": "2026-08-30 12:00 PM PT",
+    "week_start": "2026-08-31",
+    "week_end": "2026-09-04",
+    "gen_date": "2026-08-30"
   },
   "summary": {
     "is_fomc_week": false,
     "total_red_folder": 4,
     "has_quad_witching": false,
     "earliest_wake_pt": "5:30 am",
-    "earliest_wake_day": "Wednesday",
-    "recent_median_or45_pts": 285,
-    "recent_median_f90_pts": 325,
-    "recent_median_range_pts": 388,
-    "recent_mean_range_pts": 420,
-    "recent_max_range_pts": 782,
+    "earliest_wake_day": "Friday",
+    "recent_median_or45_pts": 201,
+    "recent_median_f90_pts": 256,
+    "recent_median_range_pts": 288,
+    "recent_mean_range_pts": 339,
+    "recent_max_range_pts": 748,
     "vol_spike_recent": true,
-    "vol_regime": "normal",
+    "vol_regime": "low",
     "calendar_ok": true
   },
   "market": {
-    "regime": "normal",
-    "regime_note": "Normal range regime \u2014 standard matrix plays",
-    "vol_pct": 0.37,
+    "regime": "low",
+    "regime_note": "Quiet \u2014 expect compression; dump-capture unlikely, fade extremes",
+    "vol_pct": 0.22,
     "anchors": {
-      "or45": 285,
-      "f90": 325,
-      "rest": 240,
-      "full": 388
+      "or45": 201,
+      "f90": 256,
+      "rest": 194,
+      "full": 288
     },
-    "median_range_pts": 388,
-    "ref_close": 29395.2,
-    "ref_date": "2026-08-21",
+    "median_range_pts": 288,
+    "ref_close": 29496.2,
+    "ref_date": "2026-08-28",
     "levels": [
       {
-        "name": "Prior-week low",
-        "price": 29202.8,
-        "dist": -192.5,
-        "dist_abs": 192
+        "name": "Prior-week high",
+        "price": 29811.5,
+        "dist": 315.2,
+        "dist_abs": 315
       },
       {
-        "name": "Prior-week high",
+        "name": "Prior-week low",
+        "price": 28946.8,
+        "dist": -549.5,
+        "dist_abs": 550
+      },
+      {
+        "name": "20-day high",
         "price": 30287.5,
-        "dist": 892.2,
-        "dist_abs": 892
+        "dist": 791.2,
+        "dist_abs": 791
+      },
+      {
+        "name": "20-day low",
+        "price": 28313.5,
+        "dist": -1182.8,
+        "dist_abs": 1183
       },
       {
         "name": "All-time high",
         "price": 30968.0,
-        "dist": 1572.8,
-        "dist_abs": 1573
-      },
-      {
-        "name": "20-day low",
-        "price": 27317.5,
-        "dist": -2077.8,
-        "dist_abs": 2078
+        "dist": 1471.8,
+        "dist_abs": 1472
       }
     ],
     "ath_near": false,
-    "ath_dist": 1572.8
+    "ath_dist": 1471.8
   },
   "days": [
     {
-      "date": "2026-08-24",
+      "date": "2026-08-31",
       "day_of_week": "Monday",
       "events": [],
       "n_red_folder": 0,
@@ -81,27 +87,31 @@ window.WEEK_AHEAD = {
         "event_tag": null,
         "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 285,
-          "lo": 214,
-          "hi": 356
+          "point": 201,
+          "lo": 151,
+          "hi": 251
         },
         "f90": {
-          "point": 325,
-          "lo": 244,
-          "hi": 407
+          "point": 256,
+          "lo": 192,
+          "hi": 320
         },
         "rest": {
-          "point": 240,
-          "lo": 180,
-          "hi": 300
+          "point": 194,
+          "lo": 145,
+          "hi": 242
         },
         "full": {
-          "point": 388,
-          "lo": 291,
-          "hi": 485
+          "point": 288,
+          "lo": 216,
+          "hi": 360
         }
       },
       "play_notes": [
+        {
+          "tag": "PLAY",
+          "text": "Quiet regime \u2014 expect a tight OR; OR-H/L sweep + reversion plays over breakouts, M1 short on weak opens."
+        },
         {
           "tag": "NOTE",
           "text": "Monday \u2014 weekend gap + range-expansion tendency; respect the opening drive direction."
@@ -109,8 +119,68 @@ window.WEEK_AHEAD = {
       ]
     },
     {
-      "date": "2026-08-25",
+      "date": "2026-09-01",
       "day_of_week": "Tuesday",
+      "events": [
+        {
+          "date": "2026-09-01",
+          "event_type": "Other",
+          "event": "ISM Manufacturing PMI",
+          "time_et": "10:00",
+          "impact": "High",
+          "time_pt": "7:00 am",
+          "time_et_fmt": "10:00 am",
+          "pt_minutes": 420,
+          "pre_rth": false,
+          "in_window": true
+        }
+      ],
+      "n_red_folder": 1,
+      "wake_up_pt": null,
+      "in_window_event": true,
+      "quad_witching": false,
+      "fomc_decision": false,
+      "hist_avg_rth_range": 338,
+      "hist_avg_or45_range": 201,
+      "range_estimate": {
+        "mult": 1.26,
+        "event_tag": "red_folder",
+        "method": "live median20 \u00d7 1.26 [red_folder]",
+        "or45": {
+          "point": 253,
+          "lo": 190,
+          "hi": 316
+        },
+        "f90": {
+          "point": 322,
+          "lo": 241,
+          "hi": 402
+        },
+        "rest": {
+          "point": 244,
+          "lo": 183,
+          "hi": 304
+        },
+        "full": {
+          "point": 362,
+          "lo": 272,
+          "hi": 453
+        }
+      },
+      "play_notes": [
+        {
+          "tag": "MID",
+          "text": "10:00 am ET data lands INSIDE your window \u2014 expect a second impulse; a clean 9:30-10:00 trend can reverse on the print."
+        },
+        {
+          "tag": "PLAY",
+          "text": "Quiet regime \u2014 expect a tight OR; OR-H/L sweep + reversion plays over breakouts, M1 short on weak opens."
+        }
+      ]
+    },
+    {
+      "date": "2026-09-02",
+      "day_of_week": "Wednesday",
       "events": [],
       "n_red_folder": 0,
       "wake_up_pt": null,
@@ -118,109 +188,41 @@ window.WEEK_AHEAD = {
       "quad_witching": false,
       "fomc_decision": false,
       "hist_avg_rth_range": 338,
-      "hist_avg_or45_range": 201,
+      "hist_avg_or45_range": 171,
       "range_estimate": {
         "mult": 1.0,
         "event_tag": null,
         "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 285,
-          "lo": 214,
-          "hi": 356
+          "point": 201,
+          "lo": 151,
+          "hi": 251
         },
         "f90": {
-          "point": 325,
-          "lo": 244,
-          "hi": 407
+          "point": 256,
+          "lo": 192,
+          "hi": 320
         },
         "rest": {
-          "point": 240,
-          "lo": 180,
-          "hi": 300
+          "point": 194,
+          "lo": 145,
+          "hi": 242
         },
         "full": {
-          "point": 388,
-          "lo": 291,
-          "hi": 485
+          "point": 288,
+          "lo": 216,
+          "hi": 360
         }
       },
       "play_notes": [
         {
           "tag": "PLAY",
-          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
+          "text": "Quiet regime \u2014 expect a tight OR; OR-H/L sweep + reversion plays over breakouts, M1 short on weak opens."
         }
       ]
     },
     {
-      "date": "2026-08-26",
-      "day_of_week": "Wednesday",
-      "events": [
-        {
-          "date": "2026-08-26",
-          "event_type": "Other",
-          "event": "Core PCE Price Index m/m",
-          "time_et": "08:30",
-          "impact": "High",
-          "time_pt": "5:30 am",
-          "time_et_fmt": "8:30 am",
-          "pt_minutes": 330,
-          "pre_rth": true,
-          "in_window": false
-        },
-        {
-          "date": "2026-08-26",
-          "event_type": "Other",
-          "event": "Prelim GDP q/q",
-          "time_et": "08:30",
-          "impact": "High",
-          "time_pt": "5:30 am",
-          "time_et_fmt": "8:30 am",
-          "pt_minutes": 330,
-          "pre_rth": true,
-          "in_window": false
-        }
-      ],
-      "n_red_folder": 2,
-      "wake_up_pt": "5:30 am",
-      "in_window_event": false,
-      "quad_witching": false,
-      "fomc_decision": false,
-      "hist_avg_rth_range": 338,
-      "hist_avg_or45_range": 171,
-      "range_estimate": {
-        "mult": 1.26,
-        "event_tag": "red_folder",
-        "method": "live median20 \u00d7 1.26 [red_folder]",
-        "or45": {
-          "point": 358,
-          "lo": 269,
-          "hi": 448
-        },
-        "f90": {
-          "point": 409,
-          "lo": 307,
-          "hi": 511
-        },
-        "rest": {
-          "point": 302,
-          "lo": 226,
-          "hi": 377
-        },
-        "full": {
-          "point": 488,
-          "lo": 366,
-          "hi": 610
-        }
-      },
-      "play_notes": [
-        {
-          "tag": "ARMED",
-          "text": "Pre-RTH market-mover \u2014 dump-capture watch (WR scales with dump size) + opening-FVG short tier-2 more likely. Wait for the 9:30 reaction, don't pre-position."
-        }
-      ]
-    },
-    {
-      "date": "2026-08-27",
+      "date": "2026-09-03",
       "day_of_week": "Thursday",
       "events": [],
       "n_red_folder": 0,
@@ -235,65 +237,77 @@ window.WEEK_AHEAD = {
         "event_tag": null,
         "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 285,
-          "lo": 214,
-          "hi": 356
+          "point": 201,
+          "lo": 151,
+          "hi": 251
         },
         "f90": {
-          "point": 325,
-          "lo": 244,
-          "hi": 407
+          "point": 256,
+          "lo": 192,
+          "hi": 320
         },
         "rest": {
-          "point": 240,
-          "lo": 180,
-          "hi": 300
+          "point": 194,
+          "lo": 145,
+          "hi": 242
         },
         "full": {
-          "point": 388,
-          "lo": 291,
-          "hi": 485
+          "point": 288,
+          "lo": 216,
+          "hi": 360
         }
       },
       "play_notes": [
         {
           "tag": "PLAY",
-          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
+          "text": "Quiet regime \u2014 expect a tight OR; OR-H/L sweep + reversion plays over breakouts, M1 short on weak opens."
         }
       ]
     },
     {
-      "date": "2026-08-28",
+      "date": "2026-09-04",
       "day_of_week": "Friday",
       "events": [
         {
-          "date": "2026-08-28",
+          "date": "2026-09-04",
           "event_type": "Other",
-          "event": "Fed Chairman Warsh Speaks",
-          "time_et": "10:00",
+          "event": "Average Hourly Earnings m/m",
+          "time_et": "08:30",
           "impact": "High",
-          "time_pt": "7:00 am",
-          "time_et_fmt": "10:00 am",
-          "pt_minutes": 420,
-          "pre_rth": false,
-          "in_window": true
+          "time_pt": "5:30 am",
+          "time_et_fmt": "8:30 am",
+          "pt_minutes": 330,
+          "pre_rth": true,
+          "in_window": false
         },
         {
-          "date": "2026-08-28",
-          "event_type": "Other",
-          "event": "Prelim Benchmark Payrolls Revision",
-          "time_et": "10:00",
+          "date": "2026-09-04",
+          "event_type": "NFP",
+          "event": "Non-Farm Employment Change",
+          "time_et": "08:30",
           "impact": "High",
-          "time_pt": "7:00 am",
-          "time_et_fmt": "10:00 am",
-          "pt_minutes": 420,
-          "pre_rth": false,
-          "in_window": true
+          "time_pt": "5:30 am",
+          "time_et_fmt": "8:30 am",
+          "pt_minutes": 330,
+          "pre_rth": true,
+          "in_window": false
+        },
+        {
+          "date": "2026-09-04",
+          "event_type": "Other",
+          "event": "Unemployment Rate",
+          "time_et": "08:30",
+          "impact": "High",
+          "time_pt": "5:30 am",
+          "time_et_fmt": "8:30 am",
+          "pt_minutes": 330,
+          "pre_rth": true,
+          "in_window": false
         }
       ],
-      "n_red_folder": 2,
-      "wake_up_pt": null,
-      "in_window_event": true,
+      "n_red_folder": 3,
+      "wake_up_pt": "5:30 am",
+      "in_window_event": false,
       "quad_witching": false,
       "fomc_decision": false,
       "hist_avg_rth_range": 349,
@@ -303,30 +317,30 @@ window.WEEK_AHEAD = {
         "event_tag": "NFP",
         "method": "live median20 \u00d7 1.30 [NFP]",
         "or45": {
-          "point": 371,
-          "lo": 278,
-          "hi": 463
+          "point": 262,
+          "lo": 196,
+          "hi": 327
         },
         "f90": {
-          "point": 423,
-          "lo": 317,
-          "hi": 529
+          "point": 333,
+          "lo": 249,
+          "hi": 416
         },
         "rest": {
-          "point": 312,
-          "lo": 234,
-          "hi": 390
+          "point": 252,
+          "lo": 189,
+          "hi": 315
         },
         "full": {
-          "point": 505,
-          "lo": 379,
-          "hi": 631
+          "point": 375,
+          "lo": 281,
+          "hi": 469
         }
       },
       "play_notes": [
         {
-          "tag": "MID",
-          "text": "10:00 am ET data lands INSIDE your window \u2014 expect a second impulse; a clean 9:30-10:00 trend can reverse on the print."
+          "tag": "ARMED",
+          "text": "Pre-RTH market-mover \u2014 dump-capture watch (WR scales with dump size) + opening-FVG short tier-2 more likely. Wait for the 9:30 reaction, don't pre-position."
         }
       ]
     }
