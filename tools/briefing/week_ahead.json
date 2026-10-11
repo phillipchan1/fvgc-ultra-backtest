@@ -1,21 +1,21 @@
 {
   "schema_version": 1,
   "meta": {
-    "generated_at_pt": "2026-10-04 12:00 PM PT",
-    "week_start": "2026-10-05",
-    "week_end": "2026-10-09",
-    "gen_date": "2026-10-04"
+    "generated_at_pt": "2026-10-11 12:00 PM PT",
+    "week_start": "2026-10-12",
+    "week_end": "2026-10-16",
+    "gen_date": "2026-10-11"
   },
   "summary": {
     "is_fomc_week": false,
-    "total_red_folder": 1,
+    "total_red_folder": 9,
     "has_quad_witching": false,
-    "earliest_wake_pt": null,
-    "earliest_wake_day": null,
-    "recent_median_or45_pts": 186,
-    "recent_median_f90_pts": 215,
-    "recent_median_range_pts": 273,
-    "recent_mean_range_pts": 323,
+    "earliest_wake_pt": "5:30 am",
+    "earliest_wake_day": "Wednesday",
+    "recent_median_or45_pts": 187,
+    "recent_median_f90_pts": 211,
+    "recent_median_range_pts": 298,
+    "recent_mean_range_pts": 344,
     "recent_max_range_pts": 726,
     "vol_spike_recent": true,
     "vol_regime": "normal",
@@ -24,42 +24,42 @@
   "market": {
     "regime": "normal",
     "regime_note": "Normal range regime \u2014 standard matrix plays",
-    "vol_pct": 0.41,
+    "vol_pct": 0.59,
     "anchors": {
-      "or45": 186,
-      "f90": 215,
-      "rest": 199,
-      "full": 273
+      "or45": 187,
+      "f90": 211,
+      "rest": 207,
+      "full": 298
     },
-    "median_range_pts": 273,
-    "ref_close": 31070.0,
-    "ref_date": "2026-10-02",
+    "median_range_pts": 298,
+    "ref_close": 31112.2,
+    "ref_date": "2026-10-09",
     "levels": [
       {
-        "name": "All-time high",
-        "price": 31282.5,
-        "dist": 212.5,
-        "dist_abs": 212
+        "name": "Prior-week low",
+        "price": 30792.0,
+        "dist": -320.2,
+        "dist_abs": 320
       },
       {
-        "name": "Prior-week low",
-        "price": 30356.8,
-        "dist": -713.2,
-        "dist_abs": 713
+        "name": "All-time high",
+        "price": 31616.5,
+        "dist": 504.2,
+        "dist_abs": 504
       },
       {
         "name": "20-day low",
         "price": 28878.8,
-        "dist": -2191.2,
-        "dist_abs": 2191
+        "dist": -2233.5,
+        "dist_abs": 2234
       }
     ],
     "ath_near": false,
-    "ath_dist": 212.5
+    "ath_dist": 504.2
   },
   "days": [
     {
-      "date": "2026-10-05",
+      "date": "2026-10-12",
       "day_of_week": "Monday",
       "events": [],
       "n_red_folder": 0,
@@ -74,24 +74,24 @@
         "event_tag": null,
         "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 186,
-          "lo": 139,
-          "hi": 232
+          "point": 187,
+          "lo": 140,
+          "hi": 234
         },
         "f90": {
-          "point": 215,
-          "lo": 161,
-          "hi": 268
+          "point": 211,
+          "lo": 158,
+          "hi": 264
         },
         "rest": {
-          "point": 199,
-          "lo": 149,
-          "hi": 248
+          "point": 207,
+          "lo": 155,
+          "hi": 259
         },
         "full": {
-          "point": 273,
-          "lo": 205,
-          "hi": 341
+          "point": 298,
+          "lo": 224,
+          "hi": 373
         }
       },
       "play_notes": [
@@ -102,7 +102,7 @@
       ]
     },
     {
-      "date": "2026-10-06",
+      "date": "2026-10-13",
       "day_of_week": "Tuesday",
       "events": [],
       "n_red_folder": 0,
@@ -117,24 +117,24 @@
         "event_tag": null,
         "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 186,
-          "lo": 139,
-          "hi": 232
+          "point": 187,
+          "lo": 140,
+          "hi": 234
         },
         "f90": {
-          "point": 215,
-          "lo": 161,
-          "hi": 268
+          "point": 211,
+          "lo": 158,
+          "hi": 264
         },
         "rest": {
-          "point": 199,
-          "lo": 149,
-          "hi": 248
+          "point": 207,
+          "lo": 155,
+          "hi": 259
         },
         "full": {
-          "point": 273,
-          "lo": 205,
-          "hi": 341
+          "point": 298,
+          "lo": 224,
+          "hi": 373
         }
       },
       "play_notes": [
@@ -145,24 +145,60 @@
       ]
     },
     {
-      "date": "2026-10-07",
+      "date": "2026-10-14",
       "day_of_week": "Wednesday",
       "events": [
         {
-          "date": "2026-10-07",
-          "event_type": "FOMC Meeting Minutes",
-          "event": "FOMC Meeting Minutes",
-          "time_et": "14:00",
+          "date": "2026-10-14",
+          "event_type": "CPI",
+          "event": "Core CPI m/m",
+          "time_et": "08:30",
           "impact": "High",
-          "time_pt": "11:00 am",
-          "time_et_fmt": "2:00 pm",
-          "pt_minutes": 660,
-          "pre_rth": false,
+          "time_pt": "5:30 am",
+          "time_et_fmt": "8:30 am",
+          "pt_minutes": 330,
+          "pre_rth": true,
+          "in_window": false
+        },
+        {
+          "date": "2026-10-14",
+          "event_type": "CPI",
+          "event": "Core CPI y/y",
+          "time_et": "08:30",
+          "impact": "High",
+          "time_pt": "5:30 am",
+          "time_et_fmt": "8:30 am",
+          "pt_minutes": 330,
+          "pre_rth": true,
+          "in_window": false
+        },
+        {
+          "date": "2026-10-14",
+          "event_type": "CPI",
+          "event": "CPI m/m",
+          "time_et": "08:30",
+          "impact": "High",
+          "time_pt": "5:30 am",
+          "time_et_fmt": "8:30 am",
+          "pt_minutes": 330,
+          "pre_rth": true,
+          "in_window": false
+        },
+        {
+          "date": "2026-10-14",
+          "event_type": "CPI",
+          "event": "CPI y/y",
+          "time_et": "08:30",
+          "impact": "High",
+          "time_pt": "5:30 am",
+          "time_et_fmt": "8:30 am",
+          "pt_minutes": 330,
+          "pre_rth": true,
           "in_window": false
         }
       ],
-      "n_red_folder": 1,
-      "wake_up_pt": null,
+      "n_red_folder": 4,
+      "wake_up_pt": "5:30 am",
       "in_window_event": false,
       "quad_witching": false,
       "fomc_decision": false,
@@ -170,81 +206,142 @@
       "hist_avg_or45_range": 171,
       "range_estimate": {
         "mult": 1.26,
-        "event_tag": "FOMC",
-        "method": "live median20 \u00d7 1.26 [FOMC]",
+        "event_tag": "CPI",
+        "method": "live median20 \u00d7 1.26 [CPI]",
         "or45": {
-          "point": 234,
-          "lo": 175,
-          "hi": 292
+          "point": 235,
+          "lo": 176,
+          "hi": 294
         },
         "f90": {
-          "point": 270,
-          "lo": 202,
-          "hi": 337
+          "point": 265,
+          "lo": 199,
+          "hi": 332
         },
         "rest": {
-          "point": 250,
-          "lo": 187,
-          "hi": 312
+          "point": 260,
+          "lo": 195,
+          "hi": 325
         },
         "full": {
-          "point": 343,
-          "lo": 257,
-          "hi": 429
+          "point": 375,
+          "lo": 281,
+          "hi": 469
         }
       },
       "play_notes": [
         {
-          "tag": "PLAY",
-          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
+          "tag": "ARMED",
+          "text": "Pre-RTH market-mover \u2014 dump-capture watch (WR scales with dump size) + opening-FVG short tier-2 more likely. Wait for the 9:30 reaction, don't pre-position."
         }
       ]
     },
     {
-      "date": "2026-10-08",
+      "date": "2026-10-15",
       "day_of_week": "Thursday",
-      "events": [],
-      "n_red_folder": 0,
-      "wake_up_pt": null,
+      "events": [
+        {
+          "date": "2026-10-15",
+          "event_type": "PPI",
+          "event": "Core PPI m/m",
+          "time_et": "08:30",
+          "impact": "High",
+          "time_pt": "5:30 am",
+          "time_et_fmt": "8:30 am",
+          "pt_minutes": 330,
+          "pre_rth": true,
+          "in_window": false
+        },
+        {
+          "date": "2026-10-15",
+          "event_type": "Retail Sales",
+          "event": "Core Retail Sales m/m",
+          "time_et": "08:30",
+          "impact": "High",
+          "time_pt": "5:30 am",
+          "time_et_fmt": "8:30 am",
+          "pt_minutes": 330,
+          "pre_rth": true,
+          "in_window": false
+        },
+        {
+          "date": "2026-10-15",
+          "event_type": "PPI",
+          "event": "PPI m/m",
+          "time_et": "08:30",
+          "impact": "High",
+          "time_pt": "5:30 am",
+          "time_et_fmt": "8:30 am",
+          "pt_minutes": 330,
+          "pre_rth": true,
+          "in_window": false
+        },
+        {
+          "date": "2026-10-15",
+          "event_type": "Retail Sales",
+          "event": "Retail Sales m/m",
+          "time_et": "08:30",
+          "impact": "High",
+          "time_pt": "5:30 am",
+          "time_et_fmt": "8:30 am",
+          "pt_minutes": 330,
+          "pre_rth": true,
+          "in_window": false
+        },
+        {
+          "date": "2026-10-15",
+          "event_type": "Other",
+          "event": "Fed Chairman Warsh Speaks",
+          "time_et": "23:30",
+          "impact": "High",
+          "time_pt": "8:30 pm",
+          "time_et_fmt": "11:30 pm",
+          "pt_minutes": 1230,
+          "pre_rth": false,
+          "in_window": false
+        }
+      ],
+      "n_red_folder": 5,
+      "wake_up_pt": "5:30 am",
       "in_window_event": false,
       "quad_witching": false,
       "fomc_decision": false,
       "hist_avg_rth_range": 366,
       "hist_avg_or45_range": 212,
       "range_estimate": {
-        "mult": 1.0,
-        "event_tag": null,
-        "method": "live median20 \u00d7 1.00",
+        "mult": 1.26,
+        "event_tag": "PPI",
+        "method": "live median20 \u00d7 1.26 [PPI]",
         "or45": {
-          "point": 186,
-          "lo": 139,
-          "hi": 232
+          "point": 235,
+          "lo": 176,
+          "hi": 294
         },
         "f90": {
-          "point": 215,
-          "lo": 161,
-          "hi": 268
+          "point": 265,
+          "lo": 199,
+          "hi": 332
         },
         "rest": {
-          "point": 199,
-          "lo": 149,
-          "hi": 248
+          "point": 260,
+          "lo": 195,
+          "hi": 325
         },
         "full": {
-          "point": 273,
-          "lo": 205,
-          "hi": 341
+          "point": 375,
+          "lo": 281,
+          "hi": 469
         }
       },
       "play_notes": [
         {
-          "tag": "PLAY",
-          "text": "Standard matrix \u2014 M1 short / OR-H/L / opening-FVG geometry on a clean open."
+          "tag": "ARMED",
+          "text": "Pre-RTH market-mover \u2014 dump-capture watch (WR scales with dump size) + opening-FVG short tier-2 more likely. Wait for the 9:30 reaction, don't pre-position."
         }
       ]
     },
     {
-      "date": "2026-10-09",
+      "date": "2026-10-16",
       "day_of_week": "Friday",
       "events": [],
       "n_red_folder": 0,
@@ -259,24 +356,24 @@
         "event_tag": null,
         "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 186,
-          "lo": 139,
-          "hi": 232
+          "point": 187,
+          "lo": 140,
+          "hi": 234
         },
         "f90": {
-          "point": 215,
-          "lo": 161,
-          "hi": 268
+          "point": 211,
+          "lo": 158,
+          "hi": 264
         },
         "rest": {
-          "point": 199,
-          "lo": 149,
-          "hi": 248
+          "point": 207,
+          "lo": 155,
+          "hi": 259
         },
         "full": {
-          "point": 273,
-          "lo": 205,
-          "hi": 341
+          "point": 298,
+          "lo": 224,
+          "hi": 373
         }
       },
       "play_notes": [
