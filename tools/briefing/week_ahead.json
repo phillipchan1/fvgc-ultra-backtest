@@ -1,22 +1,22 @@
 {
   "schema_version": 1,
   "meta": {
-    "generated_at_pt": "2026-11-15 12:00 PM PT",
-    "week_start": "2026-11-16",
-    "week_end": "2026-11-20",
-    "gen_date": "2026-11-15"
+    "generated_at_pt": "2026-11-22 12:00 PM PT",
+    "week_start": "2026-11-23",
+    "week_end": "2026-11-27",
+    "gen_date": "2026-11-22"
   },
   "summary": {
     "is_fomc_week": false,
-    "total_red_folder": 4,
+    "total_red_folder": 2,
     "has_quad_witching": false,
     "earliest_wake_pt": "5:30 am",
-    "earliest_wake_day": "Tuesday",
-    "recent_median_or45_pts": 216,
-    "recent_median_f90_pts": 348,
-    "recent_median_range_pts": 505,
-    "recent_mean_range_pts": 572,
-    "recent_max_range_pts": 1510,
+    "earliest_wake_day": "Wednesday",
+    "recent_median_or45_pts": 308,
+    "recent_median_f90_pts": 382,
+    "recent_median_range_pts": 569,
+    "recent_mean_range_pts": 687,
+    "recent_max_range_pts": 1528,
     "vol_spike_recent": true,
     "vol_regime": "elevated",
     "calendar_ok": true
@@ -24,70 +24,51 @@
   "market": {
     "regime": "elevated",
     "regime_note": "Elevated vol \u2014 dump-capture armed, wider stops, size up on A+",
-    "vol_pct": 0.67,
+    "vol_pct": 0.68,
     "anchors": {
-      "or45": 216,
-      "f90": 348,
-      "rest": 294,
-      "full": 505
+      "or45": 308,
+      "f90": 382,
+      "rest": 343,
+      "full": 569
     },
-    "median_range_pts": 505,
-    "ref_close": 28038.2,
-    "ref_date": "2026-11-13",
+    "median_range_pts": 569,
+    "ref_close": 25142.0,
+    "ref_date": "2026-11-20",
     "levels": [
       {
-        "name": "Prior-week high",
-        "price": 28697.0,
-        "dist": 658.8,
-        "dist_abs": 659
-      },
-      {
         "name": "Prior-week low",
-        "price": 27316.2,
-        "dist": -722.0,
-        "dist_abs": 722
+        "price": 24976.5,
+        "dist": -165.5,
+        "dist_abs": 166
       },
       {
-        "name": "20-day low",
-        "price": 26718.0,
-        "dist": -1320.2,
-        "dist_abs": 1320
+        "name": "Prior-week high",
+        "price": 27838.0,
+        "dist": 2696.0,
+        "dist_abs": 2696
       },
       {
         "name": "20-day high",
-        "price": 30113.0,
-        "dist": 2074.8,
-        "dist_abs": 2075
+        "price": 30009.0,
+        "dist": 4867.0,
+        "dist_abs": 4867
       },
       {
         "name": "All-time high",
         "price": 31616.5,
-        "dist": 3578.2,
-        "dist_abs": 3578
+        "dist": 6474.5,
+        "dist_abs": 6474
       }
     ],
     "ath_near": false,
-    "ath_dist": 3578.2
+    "ath_dist": 6474.5
   },
   "days": [
     {
-      "date": "2026-11-16",
+      "date": "2026-11-23",
       "day_of_week": "Monday",
-      "events": [
-        {
-          "date": "2026-11-16",
-          "event_type": "Other",
-          "event": "Fed Chairman Warsh Speaks",
-          "time_et": "12:00",
-          "impact": "High",
-          "time_pt": "9:00 am",
-          "time_et_fmt": "12:00 pm",
-          "pt_minutes": 540,
-          "pre_rth": false,
-          "in_window": false
-        }
-      ],
-      "n_red_folder": 1,
+      "events": [],
+      "n_red_folder": 0,
       "wake_up_pt": null,
       "in_window_event": false,
       "quad_witching": false,
@@ -95,28 +76,28 @@
       "hist_avg_rth_range": 328,
       "hist_avg_or45_range": 186,
       "range_estimate": {
-        "mult": 1.26,
-        "event_tag": "red_folder",
-        "method": "live median20 \u00d7 1.26 [red_folder]",
+        "mult": 1.0,
+        "event_tag": null,
+        "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 272,
-          "lo": 204,
-          "hi": 339
+          "point": 308,
+          "lo": 231,
+          "hi": 385
         },
         "f90": {
-          "point": 437,
-          "lo": 328,
-          "hi": 547
+          "point": 382,
+          "lo": 287,
+          "hi": 478
         },
         "rest": {
-          "point": 370,
-          "lo": 277,
-          "hi": 462
+          "point": 343,
+          "lo": 257,
+          "hi": 428
         },
         "full": {
-          "point": 635,
-          "lo": 476,
-          "hi": 793
+          "point": 569,
+          "lo": 427,
+          "hi": 711
         }
       },
       "play_notes": [
@@ -131,13 +112,56 @@
       ]
     },
     {
-      "date": "2026-11-17",
+      "date": "2026-11-24",
       "day_of_week": "Tuesday",
+      "events": [],
+      "n_red_folder": 0,
+      "wake_up_pt": null,
+      "in_window_event": false,
+      "quad_witching": false,
+      "fomc_decision": false,
+      "hist_avg_rth_range": 338,
+      "hist_avg_or45_range": 201,
+      "range_estimate": {
+        "mult": 1.0,
+        "event_tag": null,
+        "method": "live median20 \u00d7 1.00",
+        "or45": {
+          "point": 308,
+          "lo": 231,
+          "hi": 385
+        },
+        "f90": {
+          "point": 382,
+          "lo": 287,
+          "hi": 478
+        },
+        "rest": {
+          "point": 343,
+          "lo": 257,
+          "hi": 428
+        },
+        "full": {
+          "point": 569,
+          "lo": 427,
+          "hi": 711
+        }
+      },
+      "play_notes": [
+        {
+          "tag": "PLAY",
+          "text": "Vol elevated \u2014 dump-capture armed, wider OR expected; favor momentum continuation over fades."
+        }
+      ]
+    },
+    {
+      "date": "2026-11-25",
+      "day_of_week": "Wednesday",
       "events": [
         {
-          "date": "2026-11-17",
-          "event_type": "Retail Sales",
-          "event": "Core Retail Sales m/m",
+          "date": "2026-11-25",
+          "event_type": "Other",
+          "event": "Core PCE Price Index m/m",
           "time_et": "08:30",
           "impact": "High",
           "time_pt": "5:30 am",
@@ -147,9 +171,9 @@
           "in_window": false
         },
         {
-          "date": "2026-11-17",
-          "event_type": "Retail Sales",
-          "event": "Retail Sales m/m",
+          "date": "2026-11-25",
+          "event_type": "Other",
+          "event": "Prelim GDP q/q",
           "time_et": "08:30",
           "impact": "High",
           "time_pt": "5:30 am",
@@ -165,36 +189,36 @@
       "quad_witching": false,
       "fomc_decision": false,
       "hist_avg_rth_range": 338,
-      "hist_avg_or45_range": 201,
+      "hist_avg_or45_range": 171,
       "range_estimate": {
         "mult": 1.26,
         "event_tag": "red_folder",
         "method": "live median20 \u00d7 1.26 [red_folder]",
         "or45": {
-          "point": 272,
-          "lo": 204,
-          "hi": 339
+          "point": 388,
+          "lo": 291,
+          "hi": 484
         },
         "f90": {
-          "point": 437,
-          "lo": 328,
-          "hi": 547
+          "point": 481,
+          "lo": 360,
+          "hi": 601
         },
         "rest": {
-          "point": 370,
-          "lo": 277,
-          "hi": 462
+          "point": 431,
+          "lo": 323,
+          "hi": 539
         },
         "full": {
-          "point": 635,
-          "lo": 476,
-          "hi": 793
+          "point": 715,
+          "lo": 536,
+          "hi": 894
         }
       },
       "play_notes": [
         {
-          "tag": "NEWS",
-          "text": "Pre-RTH red folder \u2014 opening impulse likely; let the first FVG form before committing."
+          "tag": "ARMED",
+          "text": "Pre-RTH market-mover \u2014 dump-capture watch (WR scales with dump size) + opening-FVG short tier-2 more likely. Wait for the 9:30 reaction, don't pre-position."
         },
         {
           "tag": "PLAY",
@@ -203,63 +227,7 @@
       ]
     },
     {
-      "date": "2026-11-18",
-      "day_of_week": "Wednesday",
-      "events": [
-        {
-          "date": "2026-11-18",
-          "event_type": "FOMC Meeting Minutes",
-          "event": "FOMC Meeting Minutes",
-          "time_et": "14:00",
-          "impact": "High",
-          "time_pt": "11:00 am",
-          "time_et_fmt": "2:00 pm",
-          "pt_minutes": 660,
-          "pre_rth": false,
-          "in_window": false
-        }
-      ],
-      "n_red_folder": 1,
-      "wake_up_pt": null,
-      "in_window_event": false,
-      "quad_witching": false,
-      "fomc_decision": false,
-      "hist_avg_rth_range": 338,
-      "hist_avg_or45_range": 171,
-      "range_estimate": {
-        "mult": 1.26,
-        "event_tag": "FOMC",
-        "method": "live median20 \u00d7 1.26 [FOMC]",
-        "or45": {
-          "point": 272,
-          "lo": 204,
-          "hi": 339
-        },
-        "f90": {
-          "point": 437,
-          "lo": 328,
-          "hi": 547
-        },
-        "rest": {
-          "point": 370,
-          "lo": 277,
-          "hi": 462
-        },
-        "full": {
-          "point": 635,
-          "lo": 476,
-          "hi": 793
-        }
-      },
-      "play_notes": [
-        {
-          "tag": "PLAY",
-          "text": "Vol elevated \u2014 dump-capture armed, wider OR expected; favor momentum continuation over fades."
-        }
-      ]
-    },
-    {
-      "date": "2026-11-19",
+      "date": "2026-11-26",
       "day_of_week": "Thursday",
       "events": [],
       "n_red_folder": 0,
@@ -274,24 +242,24 @@
         "event_tag": null,
         "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 216,
-          "lo": 162,
-          "hi": 270
+          "point": 308,
+          "lo": 231,
+          "hi": 385
         },
         "f90": {
-          "point": 348,
-          "lo": 261,
-          "hi": 435
+          "point": 382,
+          "lo": 287,
+          "hi": 478
         },
         "rest": {
-          "point": 294,
-          "lo": 220,
-          "hi": 368
+          "point": 343,
+          "lo": 257,
+          "hi": 428
         },
         "full": {
-          "point": 505,
-          "lo": 379,
-          "hi": 631
+          "point": 569,
+          "lo": 427,
+          "hi": 711
         }
       },
       "play_notes": [
@@ -302,7 +270,7 @@
       ]
     },
     {
-      "date": "2026-11-20",
+      "date": "2026-11-27",
       "day_of_week": "Friday",
       "events": [],
       "n_red_folder": 0,
@@ -317,24 +285,24 @@
         "event_tag": null,
         "method": "live median20 \u00d7 1.00",
         "or45": {
-          "point": 216,
-          "lo": 162,
-          "hi": 270
+          "point": 308,
+          "lo": 231,
+          "hi": 385
         },
         "f90": {
-          "point": 348,
-          "lo": 261,
-          "hi": 435
+          "point": 382,
+          "lo": 287,
+          "hi": 478
         },
         "rest": {
-          "point": 294,
-          "lo": 220,
-          "hi": 368
+          "point": 343,
+          "lo": 257,
+          "hi": 428
         },
         "full": {
-          "point": 505,
-          "lo": 379,
-          "hi": 631
+          "point": 569,
+          "lo": 427,
+          "hi": 711
         }
       },
       "play_notes": [
